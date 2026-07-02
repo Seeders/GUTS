@@ -1,0 +1,31 @@
+{
+  "title": "Charge Dust Trail",
+  "category": "physical",
+  "tags": [
+    "charge",
+    "dust",
+    "trail"
+  ],
+  "particleEffectData": {
+    "count": 12,
+    "lifetime": 0.5,
+    "scale": 15,
+    "scaleMultiplier": 1.5,
+    "startColor": "#9a8265",
+    "endColor": "#554433",
+    "emitterShape": "point",
+    "emitterRadius": 0,
+    "heightOffset": 5,
+    "velocityXMin": -30,
+    "velocityXMax": 30,
+    "velocityYMin": 10,
+    "velocityYMax": 40,
+    "velocityZMin": -30,
+    "velocityZMax": 30,
+    "gravity": 30,
+    "drag": 0.9,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "normal"
+  }
+}

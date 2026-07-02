@@ -1,0 +1,8 @@
+{
+  "filePath": "/projects/Ashfall/collections/scripts/systems/js/LeaderSystem.js",
+  "fileName": "LeaderSystem",
+  "services": [
+    "selectLeader",
+    "applyLeaderBonuses"
+  ]
+}

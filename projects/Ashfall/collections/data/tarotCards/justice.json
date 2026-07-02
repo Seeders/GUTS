@@ -1,0 +1,42 @@
+{
+  "id": "justice",
+  "number": 12,
+  "title": "Justice",
+  "texture": "tarot_12_justice",
+  "past": {
+    "upright": {
+      "name": "Balance",
+      "description": "Reflect 10% of damage taken",
+      "effects": [{ "target": "player_units", "stat": "damageReflect", "operation": "add", "value": 0.1 }]
+    },
+    "reversed": {
+      "name": "Retribution",
+      "description": "Deal +50% damage when below half HP",
+      "effects": [{ "target": "player_units", "stat": "lowHealthDamage", "operation": "add", "value": 0.5 }]
+    }
+  },
+  "present": {
+    "upright": {
+      "name": "Equilibrium",
+      "description": "All units have equal health",
+      "effects": [{ "target": "all_units", "stat": "equalHealth", "operation": "set", "value": true }]
+    },
+    "reversed": {
+      "name": "Vengeance",
+      "description": "Enemies gain power when allies fall",
+      "effects": [{ "target": "enemy_units", "stat": "vengefulBonus", "operation": "add", "value": 0.15 }]
+    }
+  },
+  "future": {
+    "upright": {
+      "name": "Fairness",
+      "description": "Rewards based on units surviving",
+      "effects": [{ "target": "rewards", "stat": "survivalScaling", "operation": "set", "value": true }]
+    },
+    "reversed": {
+      "name": "Punishment",
+      "description": "Bonus gold for each enemy killed",
+      "effects": [{ "target": "rewards", "stat": "killGoldBonus", "operation": "add", "value": 5 }]
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "title": "Skirmisher",
+  "description": "+10% damage and +5% attack speed to Str/Dex units",
+  "value": 40,
+  "icon": "double_strike",
+  "perUnitType": true,
+  "requirements": [ { "str": { "min": 2 }, "dex": { "min": 2 } } ],
+  "target": { "str": { "min": 2 }, "dex": { "min": 2 } },
+  "statModifiers": { "damage": { "pct": 0.10 }, "attackSpeed": { "pct": 0.05 } },
+  "requiresBuildings": [ "barracks" ]
+}

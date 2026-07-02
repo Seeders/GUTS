@@ -1,0 +1,18 @@
+{
+  "fileName": "HealAbility",
+  "filePath": "/projects/Ashfall/collections/scripts/abilities/js/HealAbility.js",
+  "name": "Heal",
+  "description": "Restores health to the most injured ally",
+  "cooldown": 30,
+  "range": 200,
+  "manaCost": 40,
+  "targetType": "ally",
+  "animation": "cast",
+  "priority": 8,
+  "castTime": 1.0,
+  "autoTrigger": "injured_ally",
+  "healAmount": 80,
+  "element": "holy",
+  "castParticleEffectSystems": ["holy_light", "holy_sparkles"],
+  "impactParticleEffectSystems": ["heal_glow", "heal_sparkles", "heal_burst"]
+}

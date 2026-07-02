@@ -1,0 +1,7 @@
+{
+  "filePath": "/projects/Ashfall/collections/scripts/systems/js/LootSystem.js",
+  "fileName": "LootSystem",
+  "services": [
+    "handleLootClick"
+  ]
+}

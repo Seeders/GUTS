@@ -1,0 +1,31 @@
+{
+  "title": "Inferno Burst",
+  "category": "fire",
+  "tags": [
+    "fire",
+    "inferno",
+    "explosion"
+  ],
+  "layers": [
+    {
+      "effect": "fire_burst_core",
+      "delay": 0,
+      "countMultiplier": 3
+    },
+    {
+      "effect": "fire_burst_secondary",
+      "delay": 0.05,
+      "countMultiplier": 2.5
+    },
+    {
+      "effect": "smoke_rising",
+      "delay": 0.1,
+      "countMultiplier": 2
+    },
+    {
+      "effect": "fire_embers",
+      "delay": 0,
+      "countMultiplier": 2.5
+    }
+  ]
+}

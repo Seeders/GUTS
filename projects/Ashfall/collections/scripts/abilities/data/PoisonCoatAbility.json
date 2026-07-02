@@ -1,0 +1,21 @@
+{
+  "cooldown": 18,
+  "range": 0,
+  "manaCost": 0,
+  "targetType": "self",
+  "animation": "cast",
+  "priority": 5,
+  "castTime": 0.4,
+  "castParticleEffectSystems": [
+    "poison_swirl"
+  ],
+  "trailParticleEffectSystems": [],
+  "impactParticleEffectSystems": [],
+  "expirationParticleEffectSystems": [],
+  "fileName": "PoisonCoatAbility",
+  "filePath": "/projects/Ashfall/collections/scripts/abilities/js/PoisonCoatAbility.js",
+  "name": "Poison Coat",
+  "description": "Coat your weapon — attacks apply poison.",
+  "duration": 20,
+  "requiresWeaponCategory": "melee"
+}

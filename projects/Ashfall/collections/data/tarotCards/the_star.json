@@ -1,0 +1,45 @@
+{
+  "id": "the_star",
+  "number": 18,
+  "title": "The Star",
+  "texture": "tarot_18_the_star",
+  "past": {
+    "upright": {
+      "name": "Hope",
+      "description": "Units regenerate health slowly",
+      "effects": [{ "target": "player_units", "stat": "healthRegen", "operation": "add", "value": 2 }]
+    },
+    "reversed": {
+      "name": "Faith",
+      "description": "Start with less gold but find more",
+      "effects": [
+        { "target": "player", "stat": "startingGold", "operation": "multiply", "value": 0.5 },
+        { "target": "mission", "stat": "goldDrops", "operation": "multiply", "value": 2 }
+      ]
+    }
+  },
+  "present": {
+    "upright": {
+      "name": "Guidance",
+      "description": "Objectives are revealed on map",
+      "effects": [{ "target": "mission", "stat": "revealObjectives", "operation": "set", "value": true }]
+    },
+    "reversed": {
+      "name": "Despair",
+      "description": "No healing available during mission",
+      "effects": [{ "target": "mission", "stat": "noHealing", "operation": "set", "value": true }]
+    }
+  },
+  "future": {
+    "upright": {
+      "name": "Renewal",
+      "description": "+10 bonus essence",
+      "effects": [{ "target": "rewards", "stat": "essenceBonus", "operation": "add", "value": 10 }]
+    },
+    "reversed": {
+      "name": "Disillusion",
+      "description": "Random reward type (could be great)",
+      "effects": [{ "target": "rewards", "stat": "randomReward", "operation": "set", "value": true }]
+    }
+  }
+}

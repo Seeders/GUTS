@@ -1,0 +1,20 @@
+{
+  "title": "Raise Dead",
+  "category": "shadow",
+  "tags": [
+    "undead",
+    "summon",
+    "necromancy"
+  ],
+  "layers": [
+    {
+      "effect": "undead_summon",
+      "delay": 0
+    },
+    {
+      "effect": "shadow_wisps",
+      "delay": 0.1,
+      "countMultiplier": 0.8
+    }
+  ]
+}

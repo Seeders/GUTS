@@ -1,0 +1,20 @@
+{
+  "title": "Shadow Teleport",
+  "category": "shadow",
+  "tags": [
+    "shadow",
+    "teleport",
+    "dark"
+  ],
+  "layers": [
+    {
+      "effect": "shadow_burst",
+      "delay": 0
+    },
+    {
+      "effect": "shadow_wisps",
+      "delay": 0,
+      "countMultiplier": 1.5
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "filePath": "/projects/Ashfall/collections/scripts/systems/js/SurvivalMissionSystem.js",
+  "fileName": "SurvivalMissionSystem",
+  "services": [
+    "spawnSurvivalWave",
+    "getSurvivalWaveInfo"
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "id": "the_fool",
+  "number": 1,
+  "title": "The Fool",
+  "texture": "tarot_1_the_fool",
+  "past": {
+    "upright": {
+      "name": "New Beginnings",
+      "description": "Start with bonus gold",
+      "effects": [{ "target": "player", "stat": "startingGold", "operation": "add", "value": 50 }]
+    },
+    "reversed": {
+      "name": "Recklessness",
+      "description": "Start with less gold",
+      "effects": [{ "target": "player", "stat": "startingGold", "operation": "add", "value": -30 }]
+    }
+  },
+  "present": {
+    "upright": {
+      "name": "Leap of Faith",
+      "description": "Enemy spawns are randomized",
+      "effects": [{ "target": "mission", "stat": "randomSpawns", "operation": "set", "value": true }]
+    },
+    "reversed": {
+      "name": "Folly",
+      "description": "Extra enemy pack appears",
+      "effects": [{ "target": "mission", "stat": "extraPacks", "operation": "add", "value": 1 }]
+    }
+  },
+  "future": {
+    "upright": {
+      "name": "Adventure",
+      "description": "+15% bonus rewards",
+      "effects": [{ "target": "rewards", "stat": "multiplier", "operation": "add", "value": 0.15 }]
+    },
+    "reversed": {
+      "name": "Naivety",
+      "description": "-10% rewards but guaranteed rare item",
+      "effects": [
+        { "target": "rewards", "stat": "multiplier", "operation": "add", "value": -0.1 },
+        { "target": "rewards", "stat": "guaranteedRare", "operation": "set", "value": true }
+      ]
+    }
+  }
+}

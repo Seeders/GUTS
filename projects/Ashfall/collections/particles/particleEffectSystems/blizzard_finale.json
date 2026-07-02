@@ -1,0 +1,35 @@
+{
+  "title": "Blizzard Finale",
+  "category": "ice",
+  "tags": [
+    "ice",
+    "blizzard",
+    "finale",
+    "explosion"
+  ],
+  "layers": [
+    {
+      "effect": "ice_shards",
+      "delay": 0,
+      "countMultiplier": 2,
+      "positionOffsetY": 50
+    },
+    {
+      "effect": "ice_mist",
+      "delay": 0,
+      "countMultiplier": 1.5,
+      "positionOffsetY": 50
+    },
+    {
+      "effect": "frost_aura",
+      "delay": 0.05,
+      "countMultiplier": 2,
+      "positionOffsetY": 50
+    },
+    {
+      "effect": "ice_sparkles",
+      "delay": 0.1,
+      "countMultiplier": 2.5
+    }
+  ]
+}

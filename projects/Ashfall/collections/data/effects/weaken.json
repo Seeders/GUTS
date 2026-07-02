@@ -1,0 +1,7 @@
+{
+  "id": "weaken",
+  "title": "Weakened",
+  "desc": "Target's armor is reduced",
+  "stat": "armor",
+  "lifeTime": 100
+}

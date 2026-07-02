@@ -1,0 +1,18 @@
+{
+  "fileName": "MindControlAbility",
+  "filePath": "/projects/Ashfall/collections/scripts/abilities/js/MindControlAbility.js",
+  "name": "Mind Control",
+  "description": "Charms enemy to fight for you",
+  "cooldown": 5.0,
+  "range": 190,
+  "manaCost": 0,
+  "targetType": "enemy",
+  "animation": "cast",
+  "priority": 8,
+  "castTime": 3.0,
+  "controlDuration": 5.0,
+  "castParticleEffectSystems": ["dark_energy", "dark_sparkles"],
+  "targetParticleEffectSystems": ["dark_burst"],
+  "buffParticleEffectSystems": ["holy_sparkles", "dark_sparkles"],
+  "expirationParticleEffectSystems": ["dark_sparkles"]
+}

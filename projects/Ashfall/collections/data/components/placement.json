@@ -1,0 +1,20 @@
+{
+  "title": "placement",
+  "schema": {
+    "placementId": null,
+    "unitTypeId": null,
+    "collection": null,
+    "team": null,
+    "playerId": null,
+    "roundPlaced": 0,
+    "isUnderConstruction": false,
+    "buildTime": 0,
+    "assignedBuilder": null,
+    "upgradeStartRound": null,
+    "productionProgress": 0,
+    "gridPosition": {
+      "x": 0,
+      "z": 0
+    }
+  }
+}

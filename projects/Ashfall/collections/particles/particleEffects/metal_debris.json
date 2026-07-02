@@ -1,0 +1,31 @@
+{
+  "title": "Metal Debris",
+  "category": "physical",
+  "tags": [
+    "metal",
+    "debris",
+    "impact"
+  ],
+  "particleEffectData": {
+    "count": 12,
+    "lifetime": 0.7,
+    "scale": 6,
+    "scaleMultiplier": 0.6,
+    "startColor": "#cccccc",
+    "endColor": "#666666",
+    "emitterShape": "point",
+    "emitterRadius": 0,
+    "heightOffset": 20,
+    "velocityXMin": -80,
+    "velocityXMax": 80,
+    "velocityYMin": 80,
+    "velocityYMax": 160,
+    "velocityZMin": -80,
+    "velocityZMax": 80,
+    "gravity": 400,
+    "drag": 0.97,
+    "fadeOut": true,
+    "scaleOverTime": false,
+    "blending": "normal"
+  }
+}

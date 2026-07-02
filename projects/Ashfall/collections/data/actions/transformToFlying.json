@@ -1,0 +1,6 @@
+{
+  "title": "Take Off",
+  "icon": "dragon",
+  "order": "transformToFlying",
+  "ability": "TakeOffAbility"
+}

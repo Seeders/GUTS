@@ -1,0 +1,22 @@
+{
+  "cooldown": 12,
+  "range": 200,
+  "manaCost": 0,
+  "targetType": "enemy",
+  "animation": "cast",
+  "priority": 5,
+  "castTime": 0.1,
+  "castParticleEffectSystems": [
+    "holy_sparkles"
+  ],
+  "trailParticleEffectSystems": [],
+  "impactParticleEffectSystems": [
+    "holy_sparkles"
+  ],
+  "expirationParticleEffectSystems": [],
+  "fileName": "BlinkAbility",
+  "filePath": "/projects/Ashfall/collections/scripts/abilities/js/BlinkAbility.js",
+  "name": "Blink",
+  "description": "Teleport a short distance toward your target.",
+  "blinkDistance": 150
+}

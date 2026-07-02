@@ -1,0 +1,23 @@
+{
+  "id": "barracks",
+  "building": "barracks",
+  "title": "Barracks",
+  "archetype": "STR",
+  "branches": [
+    { "id": "str", "label": "Might", "focus": "STR", "nodes": [
+      { "upgrade": "heavyPlating",   "requires": [] },
+      { "upgrade": "giantsMight",    "requires": ["heavyPlating"] },
+      { "upgrade": "str_unstoppable","requires": ["giantsMight"] }
+    ] },
+    { "id": "strdex", "label": "Warblade", "focus": "STR/DEX", "nodes": [
+      { "upgrade": "strdex_skirmisher", "requires": [] },
+      { "upgrade": "strdex_bladeDrill", "requires": ["strdex_skirmisher"] },
+      { "upgrade": "strdex_vanguard",   "requires": ["strdex_bladeDrill"] }
+    ] },
+    { "id": "strint", "label": "Templar", "focus": "STR/INT", "nodes": [
+      { "upgrade": "strint_zealot",   "requires": [] },
+      { "upgrade": "strint_warding",  "requires": ["strint_zealot"] },
+      { "upgrade": "strint_crusader", "requires": ["strint_warding"] }
+    ] }
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "title": "Disrupted",
+  "damageMultiplier": 1,
+  "attackSpeedMultiplier": 1,
+  "armorMultiplier": 1,
+  "damageTakenMultiplier": 1,
+  "damageReduction": 0,
+  "accuracyModifier": -30,
+  "abilitiesDisabled": 1,
+  "movementSpeedMultiplier": 0.5
+}

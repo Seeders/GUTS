@@ -1,0 +1,44 @@
+{
+  "title": "Meteor Impact",
+  "category": "fire",
+  "tags": [
+    "fire",
+    "meteor",
+    "explosion",
+    "impact"
+  ],
+  "layers": [
+    {
+      "effect": "explosion_flash",
+      "delay": 0
+    },
+    {
+      "effect": "fire_burst_core",
+      "delay": 0,
+      "countMultiplier": 2
+    },
+    {
+      "effect": "fire_burst_secondary",
+      "delay": 0.05,
+      "countMultiplier": 1.5
+    },
+    {
+      "effect": "fire_shockwave",
+      "delay": 0.1
+    },
+    {
+      "effect": "fire_embers",
+      "delay": 0.1,
+      "countMultiplier": 2
+    },
+    {
+      "effect": "smoke_rising",
+      "delay": 0.15,
+      "countMultiplier": 1.5
+    }
+  ],
+  "screenShakeDuration": 0.4,
+  "screenShakeIntensity": 5,
+  "screenFlashColor": "#ffaa00",
+  "screenFlashDuration": 0.1
+}

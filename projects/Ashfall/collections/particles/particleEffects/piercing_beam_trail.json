@@ -1,0 +1,31 @@
+{
+  "title": "Piercing Beam Trail",
+  "category": "physical",
+  "tags": [
+    "piercing",
+    "beam",
+    "trail"
+  ],
+  "particleEffectData": {
+    "count": 8,
+    "lifetime": 0.4,
+    "scale": 10,
+    "scaleMultiplier": 1.2,
+    "startColor": "#87ceeb",
+    "endColor": "#4169e1",
+    "emitterShape": "point",
+    "emitterRadius": 0,
+    "heightOffset": 15,
+    "velocityXMin": -30,
+    "velocityXMax": 30,
+    "velocityYMin": 20,
+    "velocityYMax": 60,
+    "velocityZMin": -30,
+    "velocityZMax": 30,
+    "gravity": 0,
+    "drag": 0.9,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "additive"
+  }
+}

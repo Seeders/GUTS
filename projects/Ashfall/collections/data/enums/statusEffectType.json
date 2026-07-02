@@ -1,0 +1,10 @@
+{
+  "title": "StatusEffectType",
+  "enum": [
+    "buff",
+    "debuff",
+    "dot",
+    "hot",
+    "cc"
+  ]
+}

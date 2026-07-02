@@ -1,0 +1,25 @@
+{
+  "cooldown": 8,
+  "range": 150,
+  "manaCost": 0,
+  "targetType": "enemy",
+  "animation": "cast",
+  "priority": 5,
+  "castTime": 0.4,
+  "castParticleEffectSystems": [
+    "ice_armor"
+  ],
+  "trailParticleEffectSystems": [],
+  "impactParticleEffectSystems": [
+    "ice_armor"
+  ],
+  "expirationParticleEffectSystems": [],
+  "fileName": "FrostNovaAbility",
+  "filePath": "/projects/Ashfall/collections/scripts/abilities/js/FrostNovaAbility.js",
+  "name": "Frost Nova",
+  "description": "A burst of frost freezes nearby enemies.",
+  "duration": 3,
+  "damage": 30,
+  "radius": 150,
+  "element": "cold"
+}

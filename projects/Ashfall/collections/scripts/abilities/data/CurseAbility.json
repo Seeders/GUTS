@@ -1,0 +1,21 @@
+{
+  "fileName": "CurseAbility",
+  "filePath": "/projects/Ashfall/collections/scripts/abilities/js/CurseAbility.js",
+  "name": "Curse",
+  "description": "Curses enemies, reducing their damage and making them vulnerable",
+  "cooldown": 7.0,
+  "range": 180,
+  "manaCost": 50,
+  "targetType": "auto",
+  "animation": "cast",
+  "priority": 5,
+  "castTime": 1.5,
+  "autoTrigger": "strong_enemies",
+  "curseRadius": 100,
+  "damageReduction": 0.5,
+  "vulnerabilityIncrease": 1.3,
+  "duration": 20.0,
+  "castParticleEffectSystems": ["dark_energy", "dark_sparkles"],
+  "debuffParticleEffectSystems": ["dark_burst"],
+  "expirationParticleEffectSystems": ["dark_sparkles"]
+}

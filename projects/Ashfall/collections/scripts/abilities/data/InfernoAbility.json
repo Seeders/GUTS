@@ -1,0 +1,22 @@
+{
+  "fileName": "InfernoAbility",
+  "filePath": "/projects/Ashfall/collections/scripts/abilities/js/InfernoAbility.js",
+  "name": "Inferno",
+  "description": "Creates a blazing inferno that damages all enemies in a large area",
+  "cooldown": 7.0,
+  "range": 200,
+  "manaCost": 60,
+  "targetType": "auto",
+  "animation": "cast",
+  "priority": 9,
+  "castTime": 2.0,
+  "autoTrigger": "multiple_enemies",
+  "damage": 14,
+  "infernoRadius": 120,
+  "duration": 4.0,
+  "tickInterval": 0.5,
+  "element": "fire",
+  "castParticleEffectSystems": ["fire_burst_core", "fire_burst_secondary"],
+  "impactParticleEffectSystems": ["fire_burst_core", "fire_burst_secondary", "fire_ring"],
+  "tickParticleEffectSystems": ["fire_burst_core", "fire_burst_secondary"]
+}

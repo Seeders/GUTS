@@ -1,0 +1,20 @@
+{
+  "fileName": "BashAbility",
+  "filePath": "/projects/Ashfall/collections/scripts/abilities/js/BashAbility.js",
+  "name": "Bash",
+  "description": "Slam your shield into the enemy, stunning them",
+  "cooldown": 4.0,
+  "range": 60,
+  "manaCost": 0,
+  "targetType": "enemy",
+  "animation": "attack",
+  "priority": 8,
+  "castTime": 0.3,
+  "bashDamage": 25,
+  "stunDuration": 2.5,
+  "element": "physical",
+  "castParticleEffectSystems": ["dust_burst"],
+  "trailParticleEffectSystems": [],
+  "impactParticleEffectSystems": ["rock_debris", "dust_burst"],
+  "expirationParticleEffectSystems": ["holy_sparkles"]
+}

@@ -1,0 +1,31 @@
+{
+  "title": "Ice Shards",
+  "category": "ice",
+  "tags": [
+    "ice",
+    "cold",
+    "impact"
+  ],
+  "particleEffectData": {
+    "count": 15,
+    "lifetime": 0.8,
+    "scale": 12,
+    "scaleMultiplier": 1,
+    "startColor": "#ffffff",
+    "endColor": "#88ccff",
+    "emitterShape": "sphere",
+    "emitterRadius": 15,
+    "heightOffset": 0,
+    "velocityXMin": -100,
+    "velocityXMax": 100,
+    "velocityYMin": 50,
+    "velocityYMax": 150,
+    "velocityZMin": -100,
+    "velocityZMax": 100,
+    "gravity": 50,
+    "drag": 0.94,
+    "fadeOut": true,
+    "scaleOverTime": false,
+    "blending": "additive"
+  }
+}

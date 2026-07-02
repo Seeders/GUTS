@@ -1,0 +1,6 @@
+{
+  "title": "Export Scripts Module",
+  "libraries": [
+    "ZipExporter"
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "title": "Lightning Sparks",
+  "category": "lightning",
+  "tags": [
+    "lightning",
+    "electric",
+    "sparks"
+  ],
+  "particleEffectData": {
+    "count": 20,
+    "lifetime": 0.3,
+    "scale": 8,
+    "scaleMultiplier": 1,
+    "startColor": "#ffffff",
+    "endColor": "#88aaff",
+    "emitterShape": "sphere",
+    "emitterRadius": 20,
+    "heightOffset": 0,
+    "velocityXMin": -150,
+    "velocityXMax": 150,
+    "velocityYMin": -50,
+    "velocityYMax": 150,
+    "velocityZMin": -150,
+    "velocityZMax": 150,
+    "gravity": 100,
+    "drag": 0.9,
+    "fadeOut": true,
+    "scaleOverTime": false,
+    "blending": "additive"
+  }
+}

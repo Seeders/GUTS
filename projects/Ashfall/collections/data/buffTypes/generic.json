@@ -1,0 +1,13 @@
+{
+  "title": "Generic",
+  "damageMultiplier": 1,
+  "attackSpeedMultiplier": 1,
+  "armorMultiplier": 1,
+  "damageTakenMultiplier": 1,
+  "damageReduction": 0,
+  "accuracyReduction": 0,
+  "additionalLightningResistance": 0,
+  "additionalFireResistance": 0,
+  "additionalColdResistance": 0,
+  "additionalElementalResistance": 0
+}

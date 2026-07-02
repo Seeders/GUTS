@@ -1,0 +1,32 @@
+{
+  "title": "Frost Ring",
+  "category": "ice",
+  "tags": [
+    "ice",
+    "frost",
+    "ring",
+    "ground"
+  ],
+  "particleEffectData": {
+    "count": 8,
+    "lifetime": 0.4,
+    "scale": 10,
+    "scaleMultiplier": 1,
+    "startColor": "#cceeff",
+    "endColor": "#6699ff",
+    "emitterShape": "ring",
+    "emitterRadius": 5,
+    "heightOffset": 10,
+    "velocityXMin": -50,
+    "velocityXMax": 50,
+    "velocityYMin": 5,
+    "velocityYMax": 15,
+    "velocityZMin": -50,
+    "velocityZMax": 50,
+    "gravity": 30,
+    "drag": 0.9,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "additive"
+  }
+}

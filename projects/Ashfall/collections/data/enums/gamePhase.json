@@ -1,0 +1,12 @@
+{
+  "title": "GamePhase",
+  "enum": [
+    "lobby",
+    "leaderSelect",
+    "heroSelect",
+    "placement",
+    "battle",
+    "milestone",
+    "ended"
+  ]
+}

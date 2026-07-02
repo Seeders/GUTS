@@ -1,0 +1,10 @@
+{
+  "id": "wealthy",
+  "title": "Wealthy",
+  "description": "Bonus 30% valor rewards",
+  "tier": 1,
+  "category": "reward",
+  "effects": [],
+  "rewardBonus": 0.3,
+  "weight": 50
+}

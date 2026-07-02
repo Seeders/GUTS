@@ -1,0 +1,31 @@
+{
+  "title": "Explosion Flash",
+  "category": "explosion",
+  "tags": [
+    "flash",
+    "impact",
+    "bright"
+  ],
+  "particleEffectData": {
+    "count": 8,
+    "lifetime": 0.15,
+    "scale": 40,
+    "scaleMultiplier": 3,
+    "startColor": "#ffffff",
+    "endColor": "#ffffaa",
+    "emitterShape": "point",
+    "emitterRadius": 0,
+    "heightOffset": 0,
+    "velocityXMin": -20,
+    "velocityXMax": 20,
+    "velocityYMin": -20,
+    "velocityYMax": 20,
+    "velocityZMin": -20,
+    "velocityZMax": 20,
+    "gravity": 0,
+    "drag": 0.95,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "additive"
+  }
+}

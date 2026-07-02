@@ -1,0 +1,18 @@
+{
+  "fileName": "LeapSlamAbility",
+  "filePath": "/projects/Ashfall/collections/scripts/abilities/js/LeapSlamAbility.js",
+  "name": "Leap Slam",
+  "description": "Leap into the air and slam down, dealing AoE damage",
+  "cooldown": 8.0,
+  "range": 200,
+  "manaCost": 0,
+  "targetType": "enemy",
+  "animation": "attack",
+  "priority": 7,
+  "castTime": 0.3,
+  "leapDamage": 25,
+  "splashRadius": 60,
+  "leapHeight": 120,
+  "launchParticleEffectSystems": ["leap_slam_launch"],
+  "impactParticleEffectSystems": ["leap_slam_impact"]
+}

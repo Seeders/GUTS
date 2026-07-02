@@ -1,0 +1,31 @@
+{
+  "title": "Trap Fireball",
+  "category": "explosion",
+  "tags": [
+    "trap",
+    "explosion",
+    "fire"
+  ],
+  "particleEffectData": {
+    "count": 35,
+    "lifetime": 0.6,
+    "scale": 25,
+    "scaleMultiplier": 2.5,
+    "startColor": "#ffaa44",
+    "endColor": "#ff3300",
+    "emitterShape": "point",
+    "emitterRadius": 0,
+    "heightOffset": 20,
+    "velocityXMin": -150,
+    "velocityXMax": 150,
+    "velocityYMin": 80,
+    "velocityYMax": 200,
+    "velocityZMin": -150,
+    "velocityZMax": 150,
+    "gravity": 200,
+    "drag": 0.93,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "additive"
+  }
+}

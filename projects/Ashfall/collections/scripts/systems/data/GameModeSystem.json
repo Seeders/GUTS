@@ -1,0 +1,8 @@
+{
+  "filePath": "/projects/Ashfall/collections/scripts/systems/js/GameModeSystem.js",
+  "fileName": "GameModeSystem",
+  "services": [
+    "getSelectedMode",
+    "setGameMode"
+  ]
+}

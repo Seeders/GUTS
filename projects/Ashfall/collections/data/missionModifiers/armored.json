@@ -1,0 +1,17 @@
+{
+  "id": "armored",
+  "title": "Armored",
+  "description": "Enemies have 25% more armor",
+  "tier": 1,
+  "category": "enemy_buff",
+  "effects": [
+    {
+      "target": "enemy_units",
+      "stat": "armor",
+      "operation": "multiply",
+      "value": 1.25
+    }
+  ],
+  "rewardBonus": 0.12,
+  "weight": 100
+}

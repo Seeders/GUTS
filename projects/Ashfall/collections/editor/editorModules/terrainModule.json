@@ -1,0 +1,33 @@
+{
+  "title": "Terrain Editor",
+  "container": "level-editor-container",
+  "libraries": [
+    "CoordinateTranslator",
+    "CanvasUtility",
+    "TerrainImageProcessor",
+    "RaycastHelper",
+    "SE_GizmoManager",
+    "HeadlessLogger",
+    "TerrainMapEditor"
+  ],
+  "systems": [
+    "GridSystem",
+    "TerrainSystem",
+    "WorldSystem",
+    "PlacementPreviewSystem",
+    "RenderSystem",
+    "AnimationSystem",
+    "UnitCreationSystem",
+    "SelectedUnitSystem",
+    "ParticleSystem",
+    "SchedulingSystem"
+  ],
+  "scene": "terrainMapEditor",
+  "propertyName": "tileMap",
+  "interface": "terrainEditor",
+  "inputElement": "textarea",
+  "inputDataType": "json",
+  "loadHook": "editTileMap",
+  "saveHook": "saveTileMap",
+  "unloadHook": "unloadTileMap"
+}

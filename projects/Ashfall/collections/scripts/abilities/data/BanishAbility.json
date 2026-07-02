@@ -1,0 +1,22 @@
+{
+  "cooldown": 22,
+  "range": 200,
+  "manaCost": 0,
+  "targetType": "enemy",
+  "animation": "attack",
+  "priority": 5,
+  "castTime": 0.5,
+  "castParticleEffectSystems": [
+    "holy_sparkles"
+  ],
+  "trailParticleEffectSystems": [],
+  "impactParticleEffectSystems": [
+    "holy_sparkles"
+  ],
+  "expirationParticleEffectSystems": [],
+  "fileName": "BanishAbility",
+  "filePath": "/projects/Ashfall/collections/scripts/abilities/js/BanishAbility.js",
+  "name": "Banish",
+  "description": "Banish an enemy briefly out of combat (untargetable).",
+  "duration": 4
+}

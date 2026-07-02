@@ -1,0 +1,31 @@
+{
+  "title": "Holy Light",
+  "category": "holy",
+  "tags": [
+    "holy",
+    "light",
+    "heal"
+  ],
+  "particleEffectData": {
+    "count": 10,
+    "lifetime": 1,
+    "scale": 18,
+    "scaleMultiplier": 1.5,
+    "startColor": "#ffffcc",
+    "endColor": "#ffdd88",
+    "emitterShape": "ring",
+    "emitterRadius": 20,
+    "heightOffset": 0,
+    "velocityXMin": -20,
+    "velocityXMax": 20,
+    "velocityYMin": 80,
+    "velocityYMax": 150,
+    "velocityZMin": -20,
+    "velocityZMax": 20,
+    "gravity": -50,
+    "drag": 0.94,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "additive"
+  }
+}

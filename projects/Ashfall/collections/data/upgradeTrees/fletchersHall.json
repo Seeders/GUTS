@@ -1,0 +1,23 @@
+{
+  "id": "fletchersHall",
+  "building": "fletchersHall",
+  "title": "Hunting Lodge",
+  "archetype": "DEX",
+  "branches": [
+    { "id": "dex", "label": "Marksmanship", "focus": "DEX", "nodes": [
+      { "upgrade": "sharpenedArrows", "requires": [] },
+      { "upgrade": "swiftStrikes",    "requires": ["sharpenedArrows"] },
+      { "upgrade": "dex_deadeye",     "requires": ["swiftStrikes"] }
+    ] },
+    { "id": "dexint", "label": "Trapper", "focus": "DEX/INT", "nodes": [
+      { "upgrade": "dexint_huntersMark", "requires": [] },
+      { "upgrade": "dexint_toxin",       "requires": ["dexint_huntersMark"] },
+      { "upgrade": "dexint_shadowstep",  "requires": ["dexint_toxin"] }
+    ] },
+    { "id": "dexstr", "label": "Ranger", "focus": "DEX/STR", "nodes": [
+      { "upgrade": "dexstr_skirmishDrill", "requires": [] },
+      { "upgrade": "dexstr_ironGrip",      "requires": ["dexstr_skirmishDrill"] },
+      { "upgrade": "dexstr_ranger",        "requires": ["dexstr_ironGrip"] }
+    ] }
+  ]
+}

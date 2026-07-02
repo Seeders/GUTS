@@ -1,0 +1,23 @@
+{
+  "title": "Burning Aura",
+  "category": "fire",
+  "tags": [
+    "fire",
+    "aura",
+    "buff"
+  ],
+  "layers": [
+    {
+      "effect": "fire_burst_secondary",
+      "delay": 0,
+      "countMultiplier": 0.5
+    },
+    {
+      "effect": "fire_embers",
+      "delay": 0,
+      "countMultiplier": 0.6
+    }
+  ],
+  "repeating": true,
+  "repeatInterval": 0.4
+}

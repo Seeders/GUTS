@@ -1,0 +1,6 @@
+{
+  "title": "War Chest",
+  "description": "+1 gold each round per win in your current win streak.",
+  "value": 30,
+  "economy": { "winStreakGold": 1 }
+}

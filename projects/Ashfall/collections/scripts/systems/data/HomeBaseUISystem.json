@@ -1,0 +1,15 @@
+{
+  "filePath": "/projects/Ashfall/collections/scripts/systems/js/HomeBaseUISystem.js",
+  "fileName": "HomeBaseUISystem",
+  "services": [
+    "showCampaignSelect",
+    "showHomeBase",
+    "updateCurrencyDisplay",
+    "refreshAtlas",
+    "refreshUpgrades",
+    "refreshUnlocks",
+    "refreshInventory",
+    "showCampaignMissionResults",
+    "returnToCampaignHomeBase"
+  ]
+}

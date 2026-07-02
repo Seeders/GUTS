@@ -1,0 +1,25 @@
+{
+  "cooldown": 14,
+  "range": 180,
+  "manaCost": 0,
+  "targetType": "enemy",
+  "animation": "cast",
+  "priority": 5,
+  "castTime": 0.4,
+  "castParticleEffectSystems": [
+    "holy_sparkles"
+  ],
+  "trailParticleEffectSystems": [],
+  "impactParticleEffectSystems": [
+    "holy_sparkles"
+  ],
+  "expirationParticleEffectSystems": [],
+  "fileName": "NaturesGraspAbility",
+  "filePath": "/projects/Ashfall/collections/scripts/abilities/js/NaturesGraspAbility.js",
+  "name": "Nature's Grasp",
+  "description": "Slow all nearby enemies as roots grasp their feet.",
+  "duration": 5,
+  "radius": 180,
+  "damage": 0,
+  "element": "physical"
+}

@@ -1,0 +1,21 @@
+{
+  "fileName": "PiercingShotAbility",
+  "filePath": "/projects/Ashfall/collections/scripts/abilities/js/PiercingShotAbility.js",
+  "name": "Piercing Shot",
+  "description": "Fire a bolt that pierces through multiple enemies in a line",
+  "cooldown": 6.0,
+  "range": 200,
+  "manaCost": 25,
+  "targetType": "line",
+  "animation": "attack",
+  "priority": 6,
+  "castTime": 1.5,
+  "requiresWeaponCategory": "ranged",
+  "piercingDamage": 30,
+  "lineWidth": 20,
+  "element": "physical",
+  "castParticleEffectSystems": ["ice_shards"],
+  "launchParticleEffectSystems": ["ice_shards", "ice_sparkles"],
+  "trailParticleEffectSystems": ["ice_shards"],
+  "impactParticleEffectSystems": ["ice_shards", "ice_sparkles"]
+}

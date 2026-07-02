@@ -1,0 +1,19 @@
+{
+  "fileName": "LightningBoltAbility",
+  "filePath": "/projects/Ashfall/collections/scripts/abilities/js/LightningBoltAbility.js",
+  "name": "Lightning Bolt",
+  "description": "Instantly strikes an enemy with pure lightning",
+  "cooldown": 2.0,
+  "range": 350,
+  "manaCost": 30,
+  "targetType": "auto",
+  "animation": "cast",
+  "priority": 7,
+  "castTime": 0.5,
+  "autoTrigger": "enemy_in_range",
+  "damage": 22,
+  "criticalChance": 0.3,
+  "element": "lightning",
+  "castParticleEffectSystems": ["lightning_flash"],
+  "impactParticleEffectSystems": ["lightning_sparks", "lightning_arc"]
+}

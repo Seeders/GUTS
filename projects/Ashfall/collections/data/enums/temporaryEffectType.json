@@ -1,0 +1,10 @@
+{
+  "title": "TemporaryEffectType",
+  "enum": [
+    "generic",
+    "consecrated_ground",
+    "blizzard",
+    "inferno",
+    "poison_cloud"
+  ]
+}

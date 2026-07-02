@@ -1,0 +1,45 @@
+{
+  "id": "the_world",
+  "number": 22,
+  "title": "The World",
+  "texture": "tarot_22_the_world",
+  "past": {
+    "upright": {
+      "name": "Wholeness",
+      "description": "All unit stats +10%",
+      "effects": [{ "target": "player_units", "stat": "allStats", "operation": "multiply", "value": 1.1 }]
+    },
+    "reversed": {
+      "name": "Journey",
+      "description": "Units gain stats as mission progresses",
+      "effects": [{ "target": "player_units", "stat": "scalingStats", "operation": "set", "value": true }]
+    }
+  },
+  "present": {
+    "upright": {
+      "name": "Fulfillment",
+      "description": "Extra objective with bonus rewards",
+      "effects": [{ "target": "mission", "stat": "bonusObjective", "operation": "set", "value": true }]
+    },
+    "reversed": {
+      "name": "Stagnation",
+      "description": "Mission has no time limit but no passive gold",
+      "effects": [
+        { "target": "mission", "stat": "noTimeLimit", "operation": "set", "value": true },
+        { "target": "mission", "stat": "noPassiveGold", "operation": "set", "value": true }
+      ]
+    }
+  },
+  "future": {
+    "upright": {
+      "name": "Completion",
+      "description": "+50% all rewards",
+      "effects": [{ "target": "rewards", "stat": "multiplier", "operation": "add", "value": 0.5 }]
+    },
+    "reversed": {
+      "name": "New Cycle",
+      "description": "Rewards carry to next campaign tier",
+      "effects": [{ "target": "rewards", "stat": "carryForward", "operation": "set", "value": true }]
+    }
+  }
+}

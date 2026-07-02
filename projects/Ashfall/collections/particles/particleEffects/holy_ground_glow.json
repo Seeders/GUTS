@@ -1,0 +1,31 @@
+{
+  "title": "Holy Ground Glow",
+  "category": "holy",
+  "tags": [
+    "holy",
+    "ground",
+    "glow"
+  ],
+  "particleEffectData": {
+    "count": 10,
+    "lifetime": 1.2,
+    "scale": 15,
+    "scaleMultiplier": 1,
+    "startColor": "#ffff88",
+    "endColor": "#ffaa00",
+    "emitterShape": "disk",
+    "emitterRadius": 70,
+    "heightOffset": 5,
+    "velocityXMin": -30,
+    "velocityXMax": 30,
+    "velocityYMin": 20,
+    "velocityYMax": 50,
+    "velocityZMin": -30,
+    "velocityZMax": 30,
+    "gravity": -30,
+    "drag": 0.96,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "additive"
+  }
+}

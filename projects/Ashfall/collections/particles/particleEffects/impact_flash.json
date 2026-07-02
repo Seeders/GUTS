@@ -1,0 +1,31 @@
+{
+  "title": "Impact Flash",
+  "category": "physical",
+  "tags": [
+    "impact",
+    "flash",
+    "melee"
+  ],
+  "particleEffectData": {
+    "count": 8,
+    "lifetime": 0.2,
+    "scale": 35,
+    "scaleMultiplier": 3,
+    "startColor": "#ffffff",
+    "endColor": "#ff6600",
+    "emitterShape": "point",
+    "emitterRadius": 0,
+    "heightOffset": 10,
+    "velocityXMin": -30,
+    "velocityXMax": 30,
+    "velocityYMin": 30,
+    "velocityYMax": 80,
+    "velocityZMin": -30,
+    "velocityZMax": 30,
+    "gravity": 0,
+    "drag": 0.7,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "additive"
+  }
+}

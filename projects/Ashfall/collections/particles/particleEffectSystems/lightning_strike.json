@@ -1,0 +1,33 @@
+{
+  "title": "Lightning Strike",
+  "category": "lightning",
+  "tags": [
+    "lightning",
+    "electric",
+    "damage"
+  ],
+  "layers": [
+    {
+      "effect": "explosion_flash",
+      "delay": 0
+    },
+    {
+      "effect": "lightning_sparks",
+      "delay": 0
+    },
+    {
+      "effect": "lightning_sparks",
+      "delay": 0.05,
+      "countMultiplier": 0.7
+    },
+    {
+      "effect": "lightning_sparks",
+      "delay": 0.1,
+      "countMultiplier": 0.4
+    }
+  ],
+  "screenShakeDuration": 0.1,
+  "screenShakeIntensity": 2,
+  "screenFlashColor": "#aaccff",
+  "screenFlashDuration": 0.05
+}

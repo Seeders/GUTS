@@ -1,0 +1,19 @@
+{
+  "fileName": "FireBallAbility",
+  "filePath": "/projects/Ashfall/collections/scripts/abilities/js/FireBallAbility.js",
+  "name": "Fire Ball",
+  "description": "Launch a fiery projectile that explodes on impact",
+  "cooldown": 1.5,
+  "range": 300,
+  "manaCost": 10,
+  "targetType": "enemy",
+  "animation": "attack",
+  "priority": 7,
+  "castTime": 0.5,
+  "damage": 12,
+  "splashRadius": 80,
+  "element": "fire",
+  "castParticleEffectSystems": [],
+  "trailParticleEffectSystems": ["fireball_trail"],
+  "impactParticleEffectSystems": ["fireball_impact"]
+}

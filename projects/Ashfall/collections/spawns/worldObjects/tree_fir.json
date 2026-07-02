@@ -1,0 +1,45 @@
+{
+  "title": "Tree Fir",
+  "render": {
+    "animations": {
+      "idle": [
+        {}
+      ]
+    },
+    "model": {
+      "shapes": {
+        "shapes": [
+          {
+            "type": "gltf",
+            "metalness": 0,
+            "roughness": 1,
+            "model": "new_fir"
+          }
+        ],
+        "position": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "rotation": {
+          "x": 0,
+          "y": 0,
+          "z": 0
+        },
+        "scale": {
+          "x": 1,
+          "y": 1,
+          "z": 1
+        }
+      }
+    }
+  },
+  "height": 75,
+  "size": 25,
+  "placementGridWidth": 1,
+  "placementGridHeight": 1,
+  "impassable": true,
+  "renderTexture": "tree_fir",
+  "spriteOffset": 42,
+  "spriteScale": 96
+}

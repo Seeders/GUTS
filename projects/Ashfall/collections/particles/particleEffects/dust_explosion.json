@@ -1,0 +1,31 @@
+{
+  "title": "Dust Explosion",
+  "category": "physical",
+  "tags": [
+    "dust",
+    "explosion",
+    "ground"
+  ],
+  "particleEffectData": {
+    "count": 30,
+    "lifetime": 0.8,
+    "scale": 25,
+    "scaleMultiplier": 2.5,
+    "startColor": "#a08060",
+    "endColor": "#443322",
+    "emitterShape": "point",
+    "emitterRadius": 0,
+    "heightOffset": 10,
+    "velocityXMin": -100,
+    "velocityXMax": 100,
+    "velocityYMin": 40,
+    "velocityYMax": 120,
+    "velocityZMin": -100,
+    "velocityZMax": 100,
+    "gravity": 150,
+    "drag": 0.92,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "normal"
+  }
+}

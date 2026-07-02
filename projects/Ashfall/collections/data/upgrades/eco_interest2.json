@@ -1,0 +1,6 @@
+{
+  "title": "Compound Interest",
+  "description": "Raises the interest cap by +1 each round (max +3).",
+  "value": 50,
+  "economy": { "interestCap": 1 }
+}

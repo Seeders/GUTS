@@ -1,0 +1,20 @@
+{
+  "cooldown": 12,
+  "range": 240,
+  "manaCost": 0,
+  "targetType": "enemy",
+  "animation": "attack",
+  "priority": 9,
+  "castTime": 0.2,
+  "castParticleEffectSystems": [],
+  "trailParticleEffectSystems": [],
+  "impactParticleEffectSystems": [
+    "holy_sparkles"
+  ],
+  "expirationParticleEffectSystems": [],
+  "fileName": "CounterspellAbility",
+  "filePath": "/projects/Ashfall/collections/scripts/abilities/js/CounterspellAbility.js",
+  "name": "Counterspell",
+  "description": "Interrupt and silence an enemy caster.",
+  "duration": 4
+}

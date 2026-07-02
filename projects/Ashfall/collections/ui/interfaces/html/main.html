@@ -1,0 +1,357 @@
+<!-- Main Menu Screen -->
+<div id="mainMenu" class="screen">
+    <div class="game-title">LEGENDS OF THE ARENA</div>
+    <div class="subtitle">Where Heroes Rise and Legends Are Forged</div>
+    <div class="main-menu-buttons">
+        <button id="mainMenu_PlayGameBtn" class="btn btn-primary">ENTER BATTLE</button>
+        <button id="mainMenu_SettingsBtn" class="btn btn-secondary">SETTINGS</button>
+    </div>
+</div>
+
+<!-- Game Mode Selection Screen -->
+<div id="gameModeSelect" class="screen">
+    <div class="mode-selection-wrapper">
+        <!-- Top Bar -->
+        <div class="mode-selection-topbar">
+            <button id="gameMode_BackBtn" class="topbar-btn retreat-btn">Back to Menu</button>
+            <h1 class="mode-selection-title">Choose Your Path</h1>
+            <div class="topbar-spacer"></div>
+        </div>
+
+        <!-- Mode Cards Container -->
+        <div class="mode-selection-content">
+            <div class="mode-grid" id="modeGrid">
+                <!-- Game mode cards populated by GameModeManager -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Multiplayer Lobby -->
+<div id="multiplayerLobby" class="screen">
+    <div class="multiplayer-lobby-container">
+        <div class="lobby-header">
+            <h1 class="lobby-title">WAR COUNCIL</h1>
+            <div class="room-info">
+                <div class="room-id-display">
+                    <span class="room-label">Battle Hall:</span>
+                    <span id="lobbyRoomId" class="room-id">------</span>
+                    <button id="copyRoomIdBtn" class="btn-small">Copy</button>
+                </div>
+                <div class="connection-status">
+                    <span id="connectionStatus" class="status-indicator">Summoning...</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="lobby-content">
+            <div class="players-section">
+                <h2>Warriors (<span id="playerCount">1</span>/2)</h2>
+                <div id="playersContainer" class="players-grid">
+                    <div class="player-card" id="player1Card">
+                        <div class="player-name" id="player1Name">You</div>
+                        <div class="player-status waiting" id="player1Status">Preparing...</div>
+                        <div class="player-stats">Ready to battle</div>
+                    </div>
+                    <div class="player-card empty" id="player2Card">
+                        <div class="player-name" id="player2Name">Waiting for opponent</div>
+                        <div class="player-status empty" id="player2Status">Empty slot</div>
+                        <div class="player-stats">Seeking worthy challenger</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lobby-status">
+                <div class="status-message" id="lobbyStatusMessage">Waiting for worthy opponents...</div>
+                <div class="game-progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="gameProgressFill"></div>
+                    </div>
+                    <div class="progress-text" id="gameProgressText">Preparing battlefield...</div>
+                </div>
+            </div>
+
+            <div class="game-info">
+                <h3>Battle Configuration</h3>
+                <div class="game-settings">
+                    <div class="setting">
+                        <span class="setting-label">Map</span>
+                        <select id="levelSelect" class="setting-select">
+                            <!-- Populated dynamically from levels collection -->
+                        </select>
+                    </div>
+                    <div class="setting">
+                        <span class="setting-label">Turn Timer</span>
+                        <span class="setting-value" id="lobbyTurnTimer">30 seconds</span>
+                    </div>
+                    <div class="setting">
+                        <span class="setting-label">Starting Gold</span>
+                        <span class="setting-value" id="lobbyStartGold">100 coins</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lobby-footer">
+                <div class="lobby-controls">
+                    <div class="lobby-controls-left">
+                        <button id="leaveLobbyBtn" class="btn btn-secondary">Retreat</button>
+                        <button id="loadGameBtn" class="btn btn-secondary">Load Game</button>
+                        <input type="file" id="loadGameFileInput" accept=".json" style="display: none;">
+                    </div>
+                    <div class="lobby-controls-right">
+                        <button id="player1ReadyBtn" class="ready-btn">READY FOR BATTLE</button>
+                    </div>
+                </div>
+
+                <div class="lobby-tips">
+                    <p>Prepare your strategies while waiting for opponents</p>
+                    <p>Victory requires both tactical skill and wise resource management</p>
+                    <p>The realm's fate lies in your hands, Commander</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Skirmish Lobby -->
+<div id="skirmishLobby" class="screen">
+    <div class="multiplayer-lobby-container">
+        <div class="lobby-header">
+            <h1 class="lobby-title">SKIRMISH SETUP</h1>
+            <div class="room-info">
+                <div class="room-id-display">
+                    <span class="room-label">Single Player vs AI</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="lobby-content">
+            <div class="players-section">
+                <h2>Choose Your Team</h2>
+                <div class="team-selector">
+                    <div class="team-card selected" id="teamLeftCard" data-team="left">
+                        <div class="team-icon">🔵</div>
+                        <div class="team-name">Left Team</div>
+                        <div class="team-player" id="teamLeftPlayer">You</div>
+                    </div>
+                    <div class="team-vs">VS</div>
+                    <div class="team-card" id="teamRightCard" data-team="right">
+                        <div class="team-icon">🔴</div>
+                        <div class="team-name">Right Team</div>
+                        <div class="team-player" id="teamRightPlayer">AI</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="game-info">
+                <h3>Battle Configuration</h3>
+                <div class="game-settings">
+                    <div class="setting">
+                        <span class="setting-label">Map</span>
+                        <select id="skirmishLevelSelect" class="setting-select">
+                            <!-- Populated dynamically from levels collection -->
+                        </select>
+                    </div>
+                    <div class="setting">
+                        <span class="setting-label">Starting Gold</span>
+                        <span class="setting-value">100 coins</span>
+                    </div>
+                    <div class="setting">
+                        <span class="setting-label">AI Difficulty</span>
+                        <span class="setting-value">Normal</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lobby-footer">
+                <div class="lobby-controls">
+                    <div class="lobby-controls-left">
+                        <button id="skirmishBackBtn" class="btn btn-secondary">Back</button>
+                        <button id="skirmishLoadBtn" class="btn btn-secondary">Load Game</button>
+                        <input type="file" id="skirmishLoadFileInput" accept=".json" style="display: none;">
+                    </div>
+                    <div class="lobby-controls-right">
+                        <button id="skirmishStartBtn" class="btn btn-primary">START BATTLE</button>
+                    </div>
+                </div>
+
+                <div class="lobby-tips">
+                    <p>Face off against the AI commander</p>
+                    <p>Build anywhere on the map</p>
+                    <p>The AI will dynamically build its army to challenge you</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Campaign Select Screen -->
+<div id="campaignSelect" class="screen">
+    <div class="campaign-wrapper">
+        <div class="campaign-header">
+            <button id="campaignBackBtn" class="topbar-btn retreat-btn">Back to Menu</button>
+            <h1 class="campaign-title">CAMPAIGN</h1>
+            <div class="topbar-spacer"></div>
+        </div>
+
+        <div class="campaign-select-content">
+            <div class="campaign-select-section">
+                <h2>Your Campaigns</h2>
+                <div id="campaignList" class="campaign-list">
+                    <!-- Campaign cards populated dynamically -->
+                </div>
+            </div>
+
+            <div class="campaign-actions">
+                <button id="newCampaignBtn" class="btn btn-primary">NEW CAMPAIGN</button>
+                <button id="importCampaignBtn" class="btn btn-secondary">Import</button>
+                <input type="file" id="importCampaignFile" accept=".json" style="display: none;">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- New Campaign Dialog -->
+<div id="newCampaignDialog" class="modal" style="display: none;">
+    <div class="modal-content">
+        <h2>Create New Campaign</h2>
+        <div class="form-group">
+            <label for="commanderNameInput">Commander Name:</label>
+            <input type="text" id="commanderNameInput" placeholder="Enter your name" maxlength="20" value="Commander">
+        </div>
+        <div class="modal-actions">
+            <button id="createCampaignBtn" class="btn btn-primary">Begin Journey</button>
+            <button id="cancelNewCampaignBtn" class="btn btn-secondary">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<!-- Campaign Home Base Screen -->
+<div id="campaignHomeBase" class="screen">
+    <div class="home-base-wrapper">
+        <!-- Header with commander info and currencies -->
+        <div class="home-base-header">
+            <div class="commander-info">
+                <span class="commander-name" id="homeBaseCommanderName">Commander</span>
+                <span class="campaign-stats" id="homeBaseCampaignStats">Missions: 0 | Tier: 1</span>
+            </div>
+            <div class="currency-display">
+                <div class="currency valor">
+                    <span class="currency-icon">V</span>
+                    <span class="currency-amount" id="valorAmount">0</span>
+                    <span class="currency-label">Valor</span>
+                </div>
+                <div class="currency glory">
+                    <span class="currency-icon">G</span>
+                    <span class="currency-amount" id="gloryAmount">0</span>
+                    <span class="currency-label">Glory</span>
+                </div>
+                <div class="currency essence">
+                    <span class="currency-icon">E</span>
+                    <span class="currency-amount" id="essenceAmount">0</span>
+                    <span class="currency-label">Essence</span>
+                </div>
+            </div>
+            <div class="home-base-controls">
+                <button id="homeBaseSaveBtn" class="btn btn-small">Save</button>
+                <button id="homeBaseExitBtn" class="btn btn-small btn-secondary">Exit Campaign</button>
+            </div>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="home-base-tabs">
+            <button class="tab-btn active" data-tab="atlas">Atlas</button>
+            <button class="tab-btn" data-tab="upgrades">Upgrades</button>
+            <button class="tab-btn" data-tab="unlocks">Unlocks</button>
+            <button class="tab-btn" data-tab="inventory">Inventory</button>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="home-base-content">
+            <!-- Atlas Tab -->
+            <div id="atlasTab" class="tab-content active">
+                <div class="atlas-container">
+                    <canvas id="atlasCanvas"></canvas>
+                </div>
+                <div class="atlas-sidebar">
+                    <div id="nodeInfoPanel" class="node-info-panel">
+                        <h3 id="selectedNodeTitle">Select a Node</h3>
+                        <p id="selectedNodeDesc">Click on a node in the atlas to view details.</p>
+                        <div id="nodeRewards" class="node-rewards" style="display: none;">
+                            <h4>Rewards:</h4>
+                            <div id="nodeRewardsList"></div>
+                        </div>
+                        <div id="nodeModifiers" class="node-modifiers" style="display: none;">
+                            <h4>Active Modifiers:</h4>
+                            <div id="nodeModifiersList"></div>
+                        </div>
+                        <button id="startMissionBtn" class="btn btn-primary" style="display: none;">START MISSION</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Upgrades Tab -->
+            <div id="upgradesTab" class="tab-content">
+                <div class="upgrades-container">
+                    <div class="upgrade-category" id="economyUpgrades">
+                        <h3>Economy</h3>
+                        <div class="upgrade-list"></div>
+                    </div>
+                    <div class="upgrade-category" id="militaryUpgrades">
+                        <h3>Military</h3>
+                        <div class="upgrade-list"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Unlocks Tab -->
+            <div id="unlocksTab" class="tab-content">
+                <div class="unlocks-container">
+                    <div class="unlock-filter">
+                        <button class="filter-btn active" data-filter="all">All</button>
+                        <button class="filter-btn" data-filter="unit">Units</button>
+                        <button class="filter-btn" data-filter="building">Buildings</button>
+                    </div>
+                    <div id="unlocksList" class="unlocks-list">
+                        <!-- Unlock cards populated dynamically -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Inventory Tab -->
+            <div id="inventoryTab" class="tab-content">
+                <div class="inventory-container">
+                    <div class="inventory-header">
+                        <span>Inventory Slots: <span id="inventoryUsed">0</span>/<span id="inventoryMax">20</span></span>
+                    </div>
+                    <div id="inventoryGrid" class="inventory-grid">
+                        <!-- Inventory slots populated dynamically -->
+                    </div>
+                </div>
+                <div class="inventory-sidebar">
+                    <div id="itemInfoPanel" class="item-info-panel">
+                        <h3 id="selectedItemTitle">Select an Item</h3>
+                        <p id="selectedItemDesc">Click on an item to view details.</p>
+                        <div id="itemActions" style="display: none;">
+                            <button id="useItemBtn" class="btn btn-primary">Use</button>
+                            <button id="discardItemBtn" class="btn btn-secondary">Discard</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loading Screen - inline styles ensure visibility before CSS loads -->
+<div id="loadingScreen" class="screen active" style="display:flex;position:absolute;top:0;left:0;width:100%;height:100vh;z-index:9999;background:#1a1a2e;justify-content:center;align-items:center;">
+    <div class="loading-content">
+        <div class="loading-spinner"></div>
+        <div class="loading-text" id="loadingText">Loading...</div>
+        <div class="loading-progress-container">
+            <div class="loading-progress-bar" id="loadingProgressBar"></div>
+        </div>
+        <div class="loading-progress-text" id="loadingProgressText">0%</div>
+        <div class="loading-tip">Tip: Position ranged units behind your frontline for maximum effectiveness</div>
+    </div>
+</div>

@@ -1,0 +1,31 @@
+{
+  "title": "Trap Explosion Flash",
+  "category": "explosion",
+  "tags": [
+    "trap",
+    "explosion",
+    "flash"
+  ],
+  "particleEffectData": {
+    "count": 10,
+    "lifetime": 0.15,
+    "scale": 60,
+    "scaleMultiplier": 4,
+    "startColor": "#ffffff",
+    "endColor": "#ffaa44",
+    "emitterShape": "point",
+    "emitterRadius": 0,
+    "heightOffset": 20,
+    "velocityXMin": -40,
+    "velocityXMax": 40,
+    "velocityYMin": 30,
+    "velocityYMax": 80,
+    "velocityZMin": -40,
+    "velocityZMax": 40,
+    "gravity": 0,
+    "drag": 0.7,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "additive"
+  }
+}

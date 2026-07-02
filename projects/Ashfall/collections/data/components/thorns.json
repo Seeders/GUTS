@@ -1,0 +1,9 @@
+{
+  "title": "thorns",
+  "schema": {
+    "reflectionPercent": 0.5,
+    "endTime": 0,
+    "totalReflected": 0,
+    "isActive": true
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "id": "the_emperor",
+  "number": 5,
+  "title": "The Emperor",
+  "texture": "tarot_5_the_emperor",
+  "past": {
+    "upright": {
+      "name": "Authority",
+      "description": "Your units deal +10% damage",
+      "effects": [{ "target": "player_units", "stat": "damage", "operation": "multiply", "value": 1.1 }]
+    },
+    "reversed": {
+      "name": "Tyranny",
+      "description": "+25% damage dealt, +15% damage taken",
+      "effects": [
+        { "target": "player_units", "stat": "damage", "operation": "multiply", "value": 1.25 },
+        { "target": "player_units", "stat": "damageTaken", "operation": "multiply", "value": 1.15 }
+      ]
+    }
+  },
+  "present": {
+    "upright": {
+      "name": "Structure",
+      "description": "Enemy boss appears from the start",
+      "effects": [{ "target": "mission", "stat": "bossFromStart", "operation": "set", "value": true }]
+    },
+    "reversed": {
+      "name": "Domination",
+      "description": "Enemies have a powerful leader unit",
+      "effects": [{ "target": "mission", "stat": "eliteLeader", "operation": "set", "value": true }]
+    }
+  },
+  "future": {
+    "upright": {
+      "name": "Control",
+      "description": "Choose your reward from 3 options",
+      "effects": [{ "target": "rewards", "stat": "rewardChoice", "operation": "set", "value": 3 }]
+    },
+    "reversed": {
+      "name": "Rigidity",
+      "description": "Fixed high gold reward, no items",
+      "effects": [
+        { "target": "rewards", "stat": "fixedGold", "operation": "set", "value": 200 },
+        { "target": "rewards", "stat": "noItems", "operation": "set", "value": true }
+      ]
+    }
+  }
+}

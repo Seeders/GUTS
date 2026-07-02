@@ -1,0 +1,6 @@
+{
+  "title": "Reparations",
+  "description": "+1 gold each round per loss in your current loss streak.",
+  "value": 40,
+  "economy": { "lossStreakGold": 1 }
+}

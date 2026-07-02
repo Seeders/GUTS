@@ -1,0 +1,22 @@
+{
+  "fileName": "SmiteAbility",
+  "filePath": "/projects/Ashfall/collections/scripts/abilities/js/SmiteAbility.js",
+  "name": "Holy Smite",
+  "description": "Calls down holy wrath upon the strongest enemy",
+  "cooldown": 5.0,
+  "range": 400,
+  "manaCost": 45,
+  "targetType": "auto",
+  "animation": "cast",
+  "priority": 9,
+  "castTime": 1.8,
+  "autoTrigger": "strong_enemy",
+  "damage": 40,
+  "bonusDamageVsUndead": 2.0,
+  "pillarDelay": 0.5,
+  "element": "holy",
+  "castParticleEffectSystems": ["holy_light", "holy_sparkles"],
+  "pillarParticleEffectSystems": ["holy_pillar", "holy_light"],
+  "warningParticleEffectSystems": ["holy_ring"],
+  "impactParticleEffectSystems": ["holy_explosion", "holy_sparkles"]
+}

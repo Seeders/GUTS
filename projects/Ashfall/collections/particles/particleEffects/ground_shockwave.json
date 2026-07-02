@@ -1,0 +1,31 @@
+{
+  "title": "Ground Shockwave",
+  "category": "physical",
+  "tags": [
+    "ground",
+    "shockwave",
+    "ring"
+  ],
+  "particleEffectData": {
+    "count": 24,
+    "lifetime": 0.4,
+    "scale": 15,
+    "scaleMultiplier": 1.2,
+    "startColor": "#ddaa66",
+    "endColor": "#886633",
+    "emitterShape": "ring",
+    "emitterRadius": 20,
+    "heightOffset": 10,
+    "velocityXMin": -150,
+    "velocityXMax": 150,
+    "velocityYMin": 5,
+    "velocityYMax": 20,
+    "velocityZMin": -150,
+    "velocityZMax": 150,
+    "gravity": 50,
+    "drag": 0.85,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "normal"
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "id": "strength",
+  "number": 9,
+  "title": "Strength",
+  "texture": "tarot_9_strength",
+  "past": {
+    "upright": {
+      "name": "Courage",
+      "description": "Your units have +20% health",
+      "effects": [{ "target": "player_units", "stat": "maxHealth", "operation": "multiply", "value": 1.2 }]
+    },
+    "reversed": {
+      "name": "Stubbornness",
+      "description": "Units can't be healed but take -15% damage",
+      "effects": [
+        { "target": "player_units", "stat": "noHealing", "operation": "set", "value": true },
+        { "target": "player_units", "stat": "damageTaken", "operation": "multiply", "value": 0.85 }
+      ]
+    }
+  },
+  "present": {
+    "upright": {
+      "name": "Brutality",
+      "description": "All units deal and take +25% damage",
+      "effects": [
+        { "target": "all_units", "stat": "damage", "operation": "multiply", "value": 1.25 },
+        { "target": "all_units", "stat": "damageTaken", "operation": "multiply", "value": 1.25 }
+      ]
+    },
+    "reversed": {
+      "name": "Endurance",
+      "description": "Enemies have +30% health",
+      "effects": [{ "target": "enemy_units", "stat": "maxHealth", "operation": "multiply", "value": 1.3 }]
+    }
+  },
+  "future": {
+    "upright": {
+      "name": "Fortitude",
+      "description": "Surviving units gain permanent +10% HP",
+      "effects": [{ "target": "rewards", "stat": "survivorHPPercent", "operation": "add", "value": 0.1 }]
+    },
+    "reversed": {
+      "name": "Ordeal",
+      "description": "Triple rewards but lose half your units",
+      "effects": [
+        { "target": "rewards", "stat": "multiplier", "operation": "multiply", "value": 3 },
+        { "target": "rewards", "stat": "loseHalfUnits", "operation": "set", "value": true }
+      ]
+    }
+  }
+}

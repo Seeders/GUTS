@@ -1,0 +1,31 @@
+{
+  "title": "Arrow Trail",
+  "category": "physical",
+  "tags": [
+    "arrow",
+    "projectile",
+    "trail"
+  ],
+  "particleEffectData": {
+    "count": 2,
+    "lifetime": 0.3,
+    "scale": 6,
+    "scaleMultiplier": 0.5,
+    "startColor": "#ffffff",
+    "endColor": "#aaaaaa",
+    "emitterShape": "point",
+    "emitterRadius": 0,
+    "heightOffset": 0,
+    "velocityXMin": -5,
+    "velocityXMax": 5,
+    "velocityYMin": -5,
+    "velocityYMax": 10,
+    "velocityZMin": -5,
+    "velocityZMax": 5,
+    "gravity": 0,
+    "drag": 0.95,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "additive"
+  }
+}

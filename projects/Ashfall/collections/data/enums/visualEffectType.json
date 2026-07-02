@@ -1,0 +1,11 @@
+{
+  "title": "VisualEffectType",
+  "enum": [
+    "particle",
+    "beam",
+    "aura",
+    "trail",
+    "explosion",
+    "projectile"
+  ]
+}

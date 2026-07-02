@@ -1,0 +1,20 @@
+{
+  "title": "targetingPreference",
+  "schema": {
+    "preferredTargets": {
+      "$bitmask": {
+        "sizeFrom": "units"
+      }
+    },
+    "avoidedTargets": {
+      "$bitmask": {
+        "sizeFrom": "units"
+      }
+    },
+    "targetPriority": 0,
+    "maxTargetRange": 200,
+    "requiresLineOfSight": false,
+    "currentTarget": null,
+    "targetLockTime": 0
+  }
+}

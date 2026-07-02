@@ -1,0 +1,20 @@
+{
+  "cooldown": 22,
+  "range": 0,
+  "manaCost": 0,
+  "targetType": "self",
+  "animation": "cast",
+  "priority": 5,
+  "castTime": 0.4,
+  "castParticleEffectSystems": [
+    "holy_sparkles"
+  ],
+  "trailParticleEffectSystems": [],
+  "impactParticleEffectSystems": [],
+  "expirationParticleEffectSystems": [],
+  "fileName": "MagicShieldAbility",
+  "filePath": "/projects/Ashfall/collections/scripts/abilities/js/MagicShieldAbility.js",
+  "name": "Magic Shield",
+  "description": "Wrap yourself in arcane shielding — heavy elemental damage reduction.",
+  "duration": 12
+}

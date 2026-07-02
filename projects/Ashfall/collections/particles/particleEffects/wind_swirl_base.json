@@ -1,0 +1,31 @@
+{
+  "title": "Wind Swirl Base",
+  "category": "wind",
+  "tags": [
+    "wind",
+    "tornado",
+    "swirl"
+  ],
+  "particleEffectData": {
+    "count": 6,
+    "lifetime": 0.8,
+    "scale": 10,
+    "scaleMultiplier": 1.2,
+    "startColor": "#e0ffff",
+    "endColor": "#87ceeb",
+    "emitterShape": "ring",
+    "emitterRadius": 30,
+    "heightOffset": 0,
+    "velocityXMin": -40,
+    "velocityXMax": 40,
+    "velocityYMin": 60,
+    "velocityYMax": 100,
+    "velocityZMin": -40,
+    "velocityZMax": 40,
+    "gravity": -40,
+    "drag": 0.94,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "additive"
+  }
+}

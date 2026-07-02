@@ -1,0 +1,11 @@
+{
+  "title": "Mana Conduit",
+  "description": "+15% attack speed to Intelligence units",
+  "value": 60,
+  "icon": "shock",
+  "perUnitType": true,
+  "requirements": [ { "int": { "min": 3 } } ],
+  "target": { "int": { "min": 3 } },
+  "statModifiers": { "attackSpeed": { "pct": 0.15 } },
+  "requiresBuildings": [ "mageTower" ]
+}

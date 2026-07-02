@@ -1,0 +1,22 @@
+{
+  "title": "Battle Cry Burst",
+  "category": "buff",
+  "tags": [
+    "battle",
+    "cry",
+    "rally",
+    "buff"
+  ],
+  "layers": [
+    {
+      "effect": "battle_cry",
+      "delay": 0,
+      "countMultiplier": 2
+    },
+    {
+      "effect": "rally_empowerment",
+      "delay": 0.1,
+      "countMultiplier": 1.5
+    }
+  ]
+}

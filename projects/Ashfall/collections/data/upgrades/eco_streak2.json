@@ -1,0 +1,6 @@
+{
+  "title": "Momentum",
+  "description": "+1 more gold per round for each win AND each loss in your current streak.",
+  "value": 70,
+  "economy": { "winStreakGold": 1, "lossStreakGold": 1 }
+}

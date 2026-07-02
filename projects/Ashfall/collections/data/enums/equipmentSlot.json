@@ -1,0 +1,12 @@
+{
+  "title": "EquipmentSlot",
+  "enum": [
+    "mainHand",
+    "offHand",
+    "helmet",
+    "chest",
+    "legs",
+    "feet",
+    "back"
+  ]
+}

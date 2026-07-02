@@ -1,0 +1,11 @@
+{
+  "title": "Unstoppable",
+  "description": "+20% damage and +15% HP to Strength units",
+  "value": 90,
+  "icon": "beserk",
+  "perUnitType": true,
+  "requirements": [ { "str": { "min": 3 } } ],
+  "target": { "str": { "min": 3 } },
+  "statModifiers": { "damage": { "pct": 0.20 }, "maxHP": { "pct": 0.15 } },
+  "requiresBuildings": [ "barracks" ]
+}

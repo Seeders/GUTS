@@ -1,0 +1,42 @@
+{
+  "title": "GunShot",
+  "audio": {
+    "waveform": "noise",
+    "frequency": 200,
+    "duration": 0.5,
+    "noise": {
+      "type": "pink",
+      "amount": 0.8,
+      "filter": {
+        "type": "lowpass",
+        "frequency": 400
+      }
+    },
+    "envelope": {
+      "attack": 0.01,
+      "decay": 0.3,
+      "sustain": 0.2,
+      "release": 0.1
+    },
+    "pitchEnvelope": {
+      "start": 4,
+      "end": 2,
+      "time": 0.5
+    },
+    "effects": {
+      "filter": {
+        "type": "lowpass",
+        "frequency": 800,
+        "Q": 1
+      },
+      "distortion": 2,
+      "delay": {
+        "time": 0.1,
+        "feedback": 0.3
+      },
+      "reverb": 0.4,
+      "bitcrusher": 0.5,
+      "pan": 0
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "filePath": "/projects/Ashfall/collections/scripts/systems/js/AbilitySystem.js",
+  "fileName": "AbilitySystem",
+  "services": [
+    "getEntityAbilities",
+    "removeEntityAbilities",
+    "addAbilitiesToUnit",
+    "useAbility"
+  ]
+}

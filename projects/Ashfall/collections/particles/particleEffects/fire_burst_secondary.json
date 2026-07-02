@@ -1,0 +1,30 @@
+{
+  "title": "Fire Burst Secondary",
+  "category": "fire",
+  "tags": [
+    "fire",
+    "explosion"
+  ],
+  "particleEffectData": {
+    "count": 45,
+    "lifetime": 1.0,
+    "scale": 45,
+    "scaleMultiplier": 2.0,
+    "startColor": "#ff8800",
+    "endColor": "#ff2200",
+    "emitterShape": "sphere",
+    "emitterRadius": 40,
+    "heightOffset": 0,
+    "velocityXMin": -150,
+    "velocityXMax": 150,
+    "velocityYMin": 50,
+    "velocityYMax": 200,
+    "velocityZMin": -150,
+    "velocityZMax": 150,
+    "gravity": -40,
+    "drag": 0.9,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "additive"
+  }
+}

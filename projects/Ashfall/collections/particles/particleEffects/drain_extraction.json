@@ -1,0 +1,31 @@
+{
+  "title": "Drain Extraction",
+  "category": "shadow",
+  "tags": [
+    "shadow",
+    "drain",
+    "soul"
+  ],
+  "particleEffectData": {
+    "count": 20,
+    "lifetime": 0.6,
+    "scale": 20,
+    "scaleMultiplier": 1.5,
+    "startColor": "#ff44ff",
+    "endColor": "#660099",
+    "emitterShape": "point",
+    "emitterRadius": 0,
+    "heightOffset": 50,
+    "velocityXMin": -60,
+    "velocityXMax": 60,
+    "velocityYMin": 20,
+    "velocityYMax": 80,
+    "velocityZMin": -60,
+    "velocityZMax": 60,
+    "gravity": -50,
+    "drag": 0.9,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "additive"
+  }
+}

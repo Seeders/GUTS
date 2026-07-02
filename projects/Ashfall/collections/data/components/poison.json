@@ -1,0 +1,14 @@
+{
+  "title": "poison",
+  "description": "Tracks poison damage over time. Each application adds stacks and refreshes duration.",
+  "schema": {
+    "stacks": 0,
+    "maxStacks": 10,
+    "damagePerStack": 0,
+    "duration": 0,
+    "startTime": 0,
+    "lastTickTime": 0,
+    "tickInterval": 1,
+    "sourceId": null
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "name": "Soldier vs Scout",
+  "description": "STR/DEX hybrid against the stealthy INT/DEX scout. Exercises stealth/awareness and the sentry outposts.",
+  "seed": 1337,
+  "level": "forest",
+  "heroes": ["soldier", "scout"],
+  "maxRounds": 20
+}

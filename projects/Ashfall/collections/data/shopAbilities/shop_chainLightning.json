@@ -1,0 +1,21 @@
+{
+  "abilityId": "ChainLightningAbility",
+  "title": "Chain Lightning",
+  "description": "Grants Chain Lightning to all your Intelligence units",
+  "value": 75,
+  "grantMode": "archetype",
+  "requirements": [
+    {
+      "int": {
+        "min": 2
+      }
+    }
+  ],
+  "archetypeMatch": [
+    {
+      "int": {
+        "min": 2
+      }
+    }
+  ]
+}

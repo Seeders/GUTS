@@ -1,0 +1,31 @@
+{
+  "title": "Curse Dark Mist",
+  "category": "shadow",
+  "tags": [
+    "curse",
+    "dark",
+    "mist"
+  ],
+  "particleEffectData": {
+    "count": 20,
+    "lifetime": 0.8,
+    "scale": 25,
+    "scaleMultiplier": 2,
+    "startColor": "#333333",
+    "endColor": "#000000",
+    "emitterShape": "point",
+    "emitterRadius": 0,
+    "heightOffset": 30,
+    "velocityXMin": -40,
+    "velocityXMax": 40,
+    "velocityYMin": -20,
+    "velocityYMax": 40,
+    "velocityZMin": -40,
+    "velocityZMax": 40,
+    "gravity": -10,
+    "drag": 0.9,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "normal"
+  }
+}

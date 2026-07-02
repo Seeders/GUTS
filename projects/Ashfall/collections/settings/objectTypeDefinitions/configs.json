@@ -1,0 +1,7 @@
+{
+  "id": "configs",
+  "name": "Configs",
+  "singular": "Config",
+  "objectTypeCategory": "settings",
+  "isCore": true
+}

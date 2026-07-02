@@ -1,0 +1,21 @@
+{
+  "cooldown": 18,
+  "range": 0,
+  "manaCost": 0,
+  "targetType": "self",
+  "animation": "cast",
+  "priority": 5,
+  "castTime": 0.2,
+  "castParticleEffectSystems": [
+    "dust_burst"
+  ],
+  "trailParticleEffectSystems": [],
+  "impactParticleEffectSystems": [],
+  "expirationParticleEffectSystems": [],
+  "fileName": "RapidFireAbility",
+  "filePath": "/projects/Ashfall/collections/scripts/abilities/js/RapidFireAbility.js",
+  "name": "Rapid Fire",
+  "description": "Drastically increased attack speed for a short time.",
+  "duration": 6,
+  "requiresWeaponCategory": "ranged"
+}

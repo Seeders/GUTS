@@ -1,0 +1,6 @@
+{
+  "title": "Place Bear Trap",
+  "icon": "hammer",
+  "order": "placeBearTrap",
+  "ability": "BearTrapAbility"
+}

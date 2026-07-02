@@ -1,0 +1,525 @@
+/* Aurora Theme - Modern gradient-based design for GUTS Editor */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap');
+
+:root {
+  /* Override editor module variables with Aurora theme */
+  --editor-primary: #10b981;
+  --editor-primary-hover: #059669;
+  --editor-secondary: #3b82f6;
+  --editor-secondary-hover: #2563eb;
+  --editor-danger: #f43f5e;
+  --editor-danger-hover: #e11d48;
+  --editor-success: #10b981;
+  --editor-warning: #f59e0b;
+
+  /* Aurora-specific colors */
+  --aurora-teal: #14b8a6;
+  --aurora-blue: #0ea5e9;
+  --aurora-purple: #8b5cf6;
+  --aurora-pink: #ec4899;
+
+  /* Background layers - darker for comfort */
+  --editor-bg-dark: #050810;
+  --editor-bg-medium: #0a0e1a;
+  --editor-bg-light: #0f172a;
+  --editor-bg-lighter: #1e293b;
+
+  /* Text colors - softer for eyes */
+  --editor-text-primary: #cbd5e1;
+  --editor-text-secondary: #94a3b8;
+  --editor-text-muted: #64748b;
+
+  /* Borders */
+  --editor-border-color: rgba(20, 184, 166, 0.12);
+  --editor-border-color-hover: rgba(20, 184, 166, 0.25);
+
+  /* Shadows with aurora glow - softer */
+  --editor-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5);
+  --editor-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px rgba(0, 0, 0, 0.2);
+  --editor-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+  --aurora-glow: 0 0 15px rgba(16, 185, 129, 0.2);
+  --aurora-glow-strong: 0 0 25px rgba(16, 185, 129, 0.3), 0 0 50px rgba(16, 185, 129, 0.15);
+}
+
+/* Base body with aurora gradient background - darker and subtle */
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background-color: var(--editor-bg-dark);
+  color: var(--editor-text-primary);
+  background-image:
+    radial-gradient(ellipse at 20% 20%, rgba(16, 185, 129, 0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 80%, rgba(59, 130, 246, 0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, rgba(139, 92, 246, 0.02) 0%, transparent 60%);
+  background-attachment: fixed;
+}
+
+/* Monospace font for code */
+input[type="text"],
+textarea,
+.editor-module__textarea,
+.script-editor__code {
+  font-family: 'Fira Code', 'Monaco', 'Courier New', monospace;
+}
+
+/* Force dark backgrounds on all inputs - easy on the eyes */
+input,
+textarea,
+select,
+.editor-module__input,
+.editor-module__textarea,
+.editor-module__select,
+input[type="text"],
+input[type="number"],
+input[type="email"],
+input[type="password"],
+input[type="search"],
+input[type="url"] {
+  background-color: var(--editor-bg-dark) !important;
+  border: 1px solid var(--editor-border-color) !important;
+  color: var(--editor-text-primary) !important;
+}
+
+/* Darker background for color pickers */
+input[type="color"],
+.editor-module__color-picker {
+  background-color: var(--editor-bg-medium) !important;
+  border: 1px solid var(--editor-border-color) !important;
+}
+
+/* Sidebar styling with aurora glow */
+.sidebar {
+  background: linear-gradient(180deg, var(--editor-bg-medium) 0%, var(--editor-bg-dark) 100%);
+  border-right: 1px solid var(--editor-border-color);
+  box-shadow: var(--editor-shadow-md), inset -1px 0 0 rgba(16, 185, 129, 0.1);
+}
+
+/* Main editor area */
+.editor {
+  background-color: var(--editor-bg-medium);
+  border: 1px solid var(--editor-border-color);
+  box-shadow: var(--editor-shadow-md);
+}
+
+/* Object items in sidebar - softer colors */
+.object-item {
+  background-color: transparent;
+  border-left: 2px solid transparent;
+  color: var(--editor-text-muted);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.object-item:hover {
+  background-color: rgba(16, 185, 129, 0.05);
+  border-left-color: rgba(16, 185, 129, 0.5);
+  color: var(--editor-text-secondary);
+  transform: translateX(3px);
+}
+
+.object-item.selected {
+  background: linear-gradient(90deg, rgba(16, 185, 129, 0.1), transparent);
+  border-left-color: var(--editor-primary);
+  color: var(--editor-text-primary);
+  box-shadow: var(--aurora-glow);
+  font-weight: 500;
+}
+
+/* Buttons with aurora styling - much darker and easier on eyes */
+button {
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0.02em;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  background-color: rgba(15, 23, 42, 0.6) !important;
+  border-color: rgba(20, 184, 166, 0.2) !important;
+  color: var(--editor-text-primary) !important;
+}
+
+button:hover {
+  transform: translateY(-1px);
+  background-color: rgba(15, 23, 42, 0.8) !important;
+  border-color: rgba(20, 184, 166, 0.3) !important;
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+button.primary {
+  background-color: rgba(16, 185, 129, 0.12) !important;
+  border-color: rgba(16, 185, 129, 0.3) !important;
+  color: var(--editor-text-primary) !important;
+  box-shadow: none !important;
+}
+
+button.primary:hover {
+  background-color: rgba(16, 185, 129, 0.18) !important;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.12) !important;
+}
+
+button.danger {
+  background-color: rgba(244, 63, 94, 0.08) !important;
+  border-color: rgba(244, 63, 94, 0.3) !important;
+  color: rgba(244, 63, 94, 0.75) !important;
+}
+
+button.danger:hover {
+  background-color: rgba(244, 63, 94, 0.12) !important;
+  box-shadow: 0 0 8px rgba(244, 63, 94, 0.12) !important;
+}
+
+/* Editor module buttons - much darker with !important to override base styles */
+.editor-module__btn {
+  background-color: rgba(15, 23, 42, 0.6) !important;
+  border-color: rgba(20, 184, 166, 0.2) !important;
+}
+
+.editor-module__btn:hover {
+  background-color: rgba(15, 23, 42, 0.8) !important;
+  border-color: rgba(20, 184, 166, 0.3) !important;
+}
+
+.editor-module__btn--primary {
+  background-color: rgba(16, 185, 129, 0.15) !important;
+  border-color: rgba(16, 185, 129, 0.35) !important;
+  color: var(--editor-text-primary) !important;
+  box-shadow: none !important;
+}
+
+.editor-module__btn--primary:hover {
+  background-color: rgba(16, 185, 129, 0.22) !important;
+  border-color: rgba(16, 185, 129, 0.45) !important;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.12) !important;
+}
+
+.editor-module__btn--secondary {
+  background-color: rgba(59, 130, 246, 0.12) !important;
+  border-color: rgba(59, 130, 246, 0.3) !important;
+  color: var(--editor-text-primary) !important;
+}
+
+.editor-module__btn--secondary:hover {
+  background-color: rgba(59, 130, 246, 0.18) !important;
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.12) !important;
+}
+
+.editor-module__btn--active {
+  background-color: rgba(16, 185, 129, 0.22) !important;
+  border-color: rgba(16, 185, 129, 0.5) !important;
+  color: var(--editor-text-primary) !important;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.15) !important;
+}
+
+.editor-module__btn--danger {
+  background-color: rgba(244, 63, 94, 0.12) !important;
+  border-color: rgba(244, 63, 94, 0.35) !important;
+  color: rgba(244, 63, 94, 0.85) !important;
+}
+
+.editor-module__btn--danger:hover {
+  background-color: rgba(244, 63, 94, 0.18) !important;
+  border-color: rgba(244, 63, 94, 0.45) !important;
+  box-shadow: 0 0 10px rgba(244, 63, 94, 0.12) !important;
+}
+
+.editor-module__btn--success {
+  background-color: rgba(16, 185, 129, 0.15) !important;
+  border-color: rgba(16, 185, 129, 0.35) !important;
+  color: var(--editor-text-primary) !important;
+}
+
+.editor-module__btn--success:hover {
+  background-color: rgba(16, 185, 129, 0.22) !important;
+  border-color: rgba(16, 185, 129, 0.45) !important;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.12) !important;
+}
+
+.editor-module__btn--warning {
+  background-color: rgba(245, 158, 11, 0.12) !important;
+  border-color: rgba(245, 158, 11, 0.35) !important;
+  color: rgba(245, 158, 11, 0.9) !important;
+}
+
+.editor-module__btn--warning:hover {
+  background-color: rgba(245, 158, 11, 0.18) !important;
+  border-color: rgba(245, 158, 11, 0.45) !important;
+  box-shadow: 0 0 10px rgba(245, 158, 11, 0.12) !important;
+}
+
+.editor-module__btn--small {
+  background-color: rgba(15, 23, 42, 0.5) !important;
+}
+
+.editor-module__btn--small:hover {
+  background-color: rgba(15, 23, 42, 0.7) !important;
+}
+
+.editor-module__btn--icon {
+  background-color: rgba(15, 23, 42, 0.6) !important;
+  border-color: rgba(20, 184, 166, 0.2) !important;
+}
+
+.editor-module__btn--icon:hover {
+  background-color: rgba(15, 23, 42, 0.8) !important;
+  border-color: rgba(20, 184, 166, 0.3) !important;
+}
+
+/* Form inputs with aurora accent - soft glow on focus */
+input:focus,
+textarea:focus,
+select:focus,
+.editor-module__input:focus,
+.editor-module__select:focus,
+.editor-module__textarea:focus {
+  background-color: var(--editor-bg-medium) !important;
+  border-color: var(--editor-primary) !important;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.1) !important;
+  outline: none !important;
+}
+
+/* Range sliders - darker */
+.editor-module__range::-webkit-slider-thumb {
+  background: rgba(16, 185, 129, 0.6);
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.15);
+}
+
+.editor-module__range::-moz-range-thumb {
+  background: rgba(16, 185, 129, 0.6);
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.15);
+}
+
+/* Modal styling */
+.modal {
+  background-color: rgba(10, 14, 26, 0.75);
+  backdrop-filter: blur(8px);
+}
+
+.modal-content {
+  background-color: var(--editor-bg-medium);
+  border: 1px solid var(--editor-border-color);
+  box-shadow: var(--editor-shadow-lg), var(--aurora-glow);
+}
+
+/* Property list and panels */
+.property-list {
+  background-color: var(--editor-bg-light);
+  border: 1px solid var(--editor-border-color);
+}
+
+.editor-module__panel {
+  background-color: var(--editor-bg-light);
+  border: 1px solid var(--editor-border-color);
+  box-shadow: var(--editor-shadow-sm);
+}
+
+/* Section titles with aurora accent - softer */
+.editor-module__section-title,
+.editor-module__panel-title {
+  color: var(--editor-text-primary);
+  position: relative;
+  padding-bottom: 8px;
+}
+
+.editor-module__section-title::after,
+.editor-module__panel-title::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 40px;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(16, 185, 129, 0.6), transparent);
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.3);
+}
+
+/* Items with aurora hover effect - subtle */
+.editor-module__item:hover {
+  background-color: rgba(16, 185, 129, 0.04);
+  border-color: var(--editor-border-color-hover);
+  box-shadow: none;
+}
+
+.editor-module__item--active,
+.editor-module__item--selected {
+  background: linear-gradient(90deg, rgba(16, 185, 129, 0.12), transparent);
+  border-color: var(--editor-primary);
+  box-shadow: var(--aurora-glow);
+}
+
+/* Toolbar styling */
+.toolbar,
+.editor-module__toolbar {
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.8), rgba(10, 14, 26, 0.8));
+  border-bottom: 1px solid var(--editor-border-color);
+  backdrop-filter: blur(10px);
+}
+
+/* Grid background with aurora tint */
+.grid-background,
+.editor-module__grid-background {
+  background-image:
+    linear-gradient(rgba(16, 185, 129, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(16, 185, 129, 0.05) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* Status bar */
+.editor-module__status-bar {
+  background: linear-gradient(90deg, rgba(10, 14, 26, 0.9), rgba(15, 23, 42, 0.9));
+  border-top: 1px solid var(--editor-border-color);
+  backdrop-filter: blur(8px);
+}
+
+/* Success messages */
+.success-message,
+.editor-module__message--success {
+  color: var(--editor-primary);
+  background-color: rgba(16, 185, 129, 0.1);
+  border-color: var(--editor-primary);
+  box-shadow: var(--aurora-glow);
+}
+
+/* Warning messages */
+.warning,
+.editor-module__message--warning {
+  color: var(--editor-warning);
+  background-color: rgba(245, 158, 11, 0.1);
+  border-color: var(--editor-warning);
+}
+
+/* Instructions */
+.instructions {
+  background-color: rgba(59, 130, 246, 0.08);
+  border-left: 3px solid var(--editor-secondary);
+}
+
+/* Scrollbar styling - darker */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--editor-bg-dark);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(16, 185, 129, 0.25);
+  border-radius: 4px;
+  box-shadow: none;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(16, 185, 129, 0.35);
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.15);
+}
+
+/* Canvas containers */
+#three-js-container,
+.preview-canvas-container {
+  border: 1px solid var(--editor-border-color);
+  box-shadow: var(--aurora-glow);
+}
+
+/* Camera controls */
+.camera-controls {
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid var(--editor-border-color);
+  backdrop-filter: blur(10px);
+}
+
+/* Content sidebars */
+.content-sidebar,
+.editor-module__sidebar {
+  background: linear-gradient(180deg, var(--editor-bg-medium) 0%, var(--editor-bg-dark) 100%);
+  border-right: 1px solid var(--editor-border-color);
+  box-shadow: var(--editor-shadow-md), inset -1px 0 0 rgba(16, 185, 129, 0.1);
+}
+
+.editor-module__sidebar--right {
+  border-right: none;
+  border-left: 1px solid var(--editor-border-color);
+  box-shadow: var(--editor-shadow-md), inset 1px 0 0 rgba(16, 185, 129, 0.1);
+}
+
+/* Shape list items */
+.shape-item,
+.graphics-editor__shape-item,
+.graphics-editor__group-item {
+  border-left-color: rgba(16, 185, 129, 0.3);
+}
+
+.shape-item:hover,
+.graphics-editor__shape-item:hover,
+.graphics-editor__group-item:hover {
+  background-color: rgba(16, 185, 129, 0.08);
+  box-shadow: var(--aurora-glow);
+}
+
+/* Active/selected state - Aurora theme colors (teal/green glow) */
+.terrain-editor__terrain-item:has(.terrain-editor__color-option.active),
+.terrain-editor__terrain-item:has(.terrain-editor__color-option--active),
+.terrain-editor__environment-item.active,
+.terrain-editor__environment-item--active,
+.editor-module__selectable-item.active,
+.editor-module__selectable-item--active {
+  background-color: rgba(16, 185, 129, 0.12) !important;
+  border-color: rgba(16, 185, 129, 0.4) !important;
+  box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.4), 0 0 8px rgba(16, 185, 129, 0.2) !important;
+}
+
+.terrain-editor__color-option.active,
+.terrain-editor__color-option--active {
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.6), 0 0 12px rgba(16, 185, 129, 0.5) !important;
+}
+
+/* Audio editor value displays */
+.audio-editor__value-display {
+  color: var(--editor-primary);
+  text-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
+}
+
+/* Animations - disabled pulsing for comfort */
+@keyframes aurora-pulse {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+  }
+}
+
+/* Removed automatic pulsing animation for eye comfort */
+/* .editor-module__btn--primary:hover,
+.editor-module__item--active,
+.object-item.selected {
+  animation: aurora-pulse 2s ease-in-out infinite;
+} */
+
+/* Typography enhancements */
+h1, h2, h3, h4 {
+  color: var(--editor-text-primary);
+  font-weight: 600;
+}
+
+/* Labels */
+label,
+.editor-module__label {
+  color: var(--editor-text-secondary);
+  font-weight: 500;
+}
+
+/* Info boxes */
+.editor-module__info {
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid var(--editor-border-color);
+  box-shadow: var(--editor-shadow-md);
+  backdrop-filter: blur(10px);
+}
+
+/* Scene info */
+.scene-info {
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid var(--editor-border-color);
+  box-shadow: var(--editor-shadow-sm);
+}

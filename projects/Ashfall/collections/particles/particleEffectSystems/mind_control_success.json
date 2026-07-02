@@ -1,0 +1,22 @@
+{
+  "title": "Mind Control Success",
+  "category": "shadow",
+  "tags": [
+    "shadow",
+    "mind",
+    "control",
+    "psychic"
+  ],
+  "layers": [
+    {
+      "effect": "shadow_burst",
+      "delay": 0,
+      "countMultiplier": 1.5
+    },
+    {
+      "effect": "shadow_wisps",
+      "delay": 0.05,
+      "countMultiplier": 1.2
+    }
+  ]
+}

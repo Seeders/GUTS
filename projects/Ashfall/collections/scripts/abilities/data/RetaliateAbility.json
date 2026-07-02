@@ -1,0 +1,20 @@
+{
+  "cooldown": 18,
+  "range": 0,
+  "manaCost": 0,
+  "targetType": "self",
+  "animation": "cast",
+  "priority": 5,
+  "castTime": 0.3,
+  "castParticleEffectSystems": [
+    "rock_debris"
+  ],
+  "trailParticleEffectSystems": [],
+  "impactParticleEffectSystems": [],
+  "expirationParticleEffectSystems": [],
+  "fileName": "RetaliateAbility",
+  "filePath": "/projects/Ashfall/collections/scripts/abilities/js/RetaliateAbility.js",
+  "name": "Retaliate",
+  "description": "Reflect a portion of damage taken back to attackers.",
+  "duration": 12
+}

@@ -1,0 +1,22 @@
+{
+  "cooldown": 40,
+  "range": 250,
+  "manaCost": 0,
+  "targetType": "ally",
+  "animation": "cast",
+  "priority": 5,
+  "castTime": 1.5,
+  "castParticleEffectSystems": [
+    "holy_sparkles"
+  ],
+  "trailParticleEffectSystems": [],
+  "impactParticleEffectSystems": [
+    "holy_sparkles"
+  ],
+  "expirationParticleEffectSystems": [],
+  "fileName": "ResurrectionAbility",
+  "filePath": "/projects/Ashfall/collections/scripts/abilities/js/ResurrectionAbility.js",
+  "name": "Resurrection",
+  "description": "Revive a fallen ally with partial health.",
+  "healPercent": 0.5
+}

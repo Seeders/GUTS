@@ -1,0 +1,11 @@
+{
+  "title": "Hunter's Mark",
+  "description": "+12% damage to Dex/Int units",
+  "value": 40,
+  "icon": "poison_arrow",
+  "perUnitType": true,
+  "requirements": [ { "dex": { "min": 2 }, "int": { "min": 2 } } ],
+  "target": { "dex": { "min": 2 }, "int": { "min": 2 } },
+  "statModifiers": { "damage": { "pct": 0.12 } },
+  "requiresBuildings": [ "fletchersHall" ]
+}

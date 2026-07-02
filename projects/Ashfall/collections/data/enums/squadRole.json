@@ -1,0 +1,7 @@
+{
+  "title": "SquadRole",
+  "enum": [
+    "member",
+    "leader"
+  ]
+}

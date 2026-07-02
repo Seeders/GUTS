@@ -1,0 +1,31 @@
+{
+  "title": "Holy Edge Sparkles",
+  "category": "holy",
+  "tags": [
+    "holy",
+    "sparkles",
+    "ring"
+  ],
+  "particleEffectData": {
+    "count": 6,
+    "lifetime": 0.8,
+    "scale": 8,
+    "scaleMultiplier": 0.5,
+    "startColor": "#ffffff",
+    "endColor": "#ffffaa",
+    "emitterShape": "ring",
+    "emitterRadius": 100,
+    "heightOffset": 5,
+    "velocityXMin": -20,
+    "velocityXMax": 20,
+    "velocityYMin": 30,
+    "velocityYMax": 60,
+    "velocityZMin": -20,
+    "velocityZMax": 20,
+    "gravity": -20,
+    "drag": 0.98,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "additive"
+  }
+}

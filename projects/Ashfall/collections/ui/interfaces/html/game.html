@@ -1,0 +1,178 @@
+<!-- Game Screen -->
+<div id="gameScreen" class="screen active">
+    <div id="gameContainer">
+        <div id="canvasContainer">
+            <canvas id="gameCanvas"></canvas>
+        </div>
+
+        <!-- HUD: top bar -->
+        <div id="arenaHUD">
+            <div id="playerHPSection" class="hud-hp-section">
+                <span class="hud-label">🏰 Your Town Hall</span>
+                <div class="hud-hp-bar-wrap">
+                    <div class="hud-hp-bar" id="playerHPBar" style="width:100%"></div>
+                    <span class="hud-hp-text" id="playerHPValue">–</span>
+                </div>
+            </div>
+            <div id="hudCenter">
+                <div class="hud-round" id="roundDisplay">Round 1</div>
+                <div class="hud-phase" id="phaseDisplay">–</div>
+                <div class="hud-timer hidden" id="battleTimer"></div>
+                <div class="hud-gold">💰 <span id="playerGold">0</span></div>
+            </div>
+            <div id="opponentHPSection" class="hud-hp-section hud-hp-right">
+                <span class="hud-label">Enemy Town Hall 🏰</span>
+                <div class="hud-hp-bar-wrap">
+                    <div class="hud-hp-bar hud-hp-enemy" id="opponentHPBar" style="width:100%"></div>
+                    <span class="hud-hp-text" id="opponentHPValue">–</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom-right stack (top to bottom): combat log (toggleable, hidden
+             by default), log toggle, Ready button -->
+        <div id="bottomRightStack">
+            <div id="combatLog" class="hidden">
+                <div class="panel-title">Combat Log</div>
+                <div id="combatLogEntries"></div>
+            </div>
+            <button id="combatLogToggle" title="Toggle combat log">📜 Log</button>
+            <div id="prepControls" class="hidden">
+                <button id="placementReadyBtn" class="btn btn-primary">Ready for Battle!</button>
+            </div>
+        </div>
+
+        <!-- Army shop (5 offers + reroll, visible during prep) -->
+        <div id="shopPanel" class="hidden">
+            <div class="shop-header">
+                <span class="shop-title">⚔ Shop</span>
+                <button id="shopRerollBtn" class="shop-reroll-btn">Reroll</button>
+            </div>
+            <div id="shopOffers" class="shop-offers"></div>
+            <div id="shopPendingBanner" class="shop-pending-banner hidden">
+                <div class="shop-pending-row">
+                    <span id="shopPendingText">Click one of your units to receive the ability.</span>
+                    <button id="shopPendingCancel" class="pending-cancel-btn">Cancel</button>
+                </div>
+                <div id="shopPendingTargets" class="shop-pending-targets"></div>
+            </div>
+        </div>
+
+        <!-- Bottom-left: selection panel (when units are selected) above the
+             unit re-buy panel (prep only) -->
+        <div id="bottomLeftStack">
+            <div id="selectionPanel" class="hidden">
+                <div class="panel-title" id="selectionTitle">Selection</div>
+                <div id="selectionCards" class="selection-cards"></div>
+                <div id="selectionActions" class="selection-actions">
+                    <button id="attackMoveBtn" title="Order the selected units to move to a point, attacking enemies seen on the way">⚔ Attack Move</button>
+                    <button id="clearOrderBtn" title="Cancel the selected units' orders — they will hold position">✖ Clear</button>
+                    <button id="sellUnitBtn" title="Sell the selected unit(s) for a partial gold refund">💰 Sell</button>
+                </div>
+                <div id="buildingActions" class="selection-actions hidden">
+                    <button id="buildingUpgradesBtn" title="View this building's upgrade tree">🔬 Upgrades</button>
+                </div>
+                <div id="selectionHint" class="selection-hint hidden">Left-click the terrain to set the target — Esc cancels</div>
+            </div>
+            <div id="unlockedUnitsPanel" class="hidden">
+                <div class="panel-title">Your Units</div>
+                <div id="unlockedUnitsCards" class="unlocked-units-cards"></div>
+            </div>
+        </div>
+
+        <!-- Camera controls -->
+        <div id="cameraControls">
+            <button id="rotateCameraLeftBtn" title="Rotate camera left (Q)">◀</button>
+            <button id="toggleCameraModeBtn" title="Toggle free camera mode">🎥</button>
+            <button id="rotateCameraRightBtn" title="Rotate camera right (E)">▶</button>
+        </div>
+
+        <!-- In-Game Chat -->
+        <div id="gameChat" class="game-chat">
+            <div id="gameChatMessages" class="game-chat-messages"></div>
+            <div id="gameChatInputContainer" class="game-chat-input-container hidden">
+                <input type="text" id="gameChatInput" class="game-chat-input" placeholder="" maxlength="200" autocomplete="off">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Leader Select Overlay -->
+<div id="leaderSelectOverlay" class="arena-overlay hidden">
+    <div class="arena-overlay-panel">
+        <h2 class="arena-overlay-title">Choose Your Leader</h2>
+        <p class="arena-overlay-subtitle">Your leader provides passive bonuses throughout the match</p>
+        <div id="leaderOptions" class="arena-option-grid"></div>
+    </div>
+</div>
+
+<!-- Hero Select Overlay -->
+<div id="heroSelectOverlay" class="arena-overlay hidden">
+    <div class="arena-overlay-panel">
+        <h2 class="arena-overlay-title" id="heroSelectTitle">Choose Your Starting Hero</h2>
+        <p class="arena-overlay-subtitle" id="heroSelectSubtitle">Pick a class to begin your roster</p>
+        <div id="heroOptions" class="arena-option-grid"></div>
+    </div>
+</div>
+
+<!-- Specialization Select Overlay (a unit reached the specialization level) -->
+<div id="specializeOverlay" class="arena-overlay hidden">
+    <div class="arena-overlay-panel">
+        <h2 class="arena-overlay-title" id="specializeTitle">Choose a Specialization</h2>
+        <p class="arena-overlay-subtitle" id="specializeSubtitle">Your unit can transform into one of these</p>
+        <div id="specializeOptions" class="arena-option-grid"></div>
+    </div>
+</div>
+
+<!-- Building Upgrade Tree (read-only — purchases happen in the shop) -->
+<div id="techTreeOverlay" class="arena-overlay hidden">
+    <div class="arena-overlay-panel tech-tree-panel">
+        <h2 class="arena-overlay-title" id="techTreeTitle">Upgrades</h2>
+        <p class="arena-overlay-subtitle">Buy these in the shop — each unlocks the next in its branch.</p>
+        <div id="techTreeBranches" class="tech-tree-branches"></div>
+        <button id="techTreeCloseBtn" class="tech-tree-close">Close</button>
+    </div>
+</div>
+
+<!-- Victory Screen -->
+<div id="victoryScreen" class="screen">
+    <div class="result-content">
+        <div class="result-title victory-title">VICTORY!</div>
+        <div class="stats-grid" id="victoryStats"></div>
+        <div>
+            <button id="victory_MainMenuBtn" class="btn">RETURN TO MAIN MENU</button>
+        </div>
+    </div>
+</div>
+
+<!-- Defeat Screen -->
+<div id="defeatScreen" class="screen">
+    <div class="result-content">
+        <div class="result-title defeat-title">DEFEAT</div>
+        <div class="stats-grid" id="defeatStats"></div>
+        <div>
+            <button id="defeat_MainMenuBtn" class="btn">RETURN TO MAIN MENU</button>
+        </div>
+    </div>
+</div>
+
+<!-- Pause Menu -->
+<div id="pauseMenu" class="pause-overlay">
+    <div class="pause-content">
+        <h2>PAUSED</h2>
+        <button id="paused_ResumeBtn" class="btn">RESUME</button>
+        <button id="paused_MainMenuBtn" class="btn btn-secondary">RETURN TO MENU</button>
+    </div>
+</div>
+
+<!-- Loading Screen -->
+<div id="loadingScreen" class="screen" style="display:flex;position:absolute;top:0;left:0;width:100%;height:100vh;z-index:9999;background:#1a1a2e;justify-content:center;align-items:center;">
+    <div class="loading-content">
+        <div class="loading-spinner"></div>
+        <div class="loading-text" id="loadingText">Loading...</div>
+        <div class="loading-progress-container">
+            <div class="loading-progress-bar" id="loadingProgressBar"></div>
+        </div>
+        <div class="loading-progress-text" id="loadingProgressText">0%</div>
+    </div>
+</div>

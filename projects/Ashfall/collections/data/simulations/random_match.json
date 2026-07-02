@@ -1,0 +1,7 @@
+{
+  "name": "Random Match",
+  "description": "Both sides pick seeded-random leaders and heroes — a generic smoke test of the whole HeroArena loop. Vary --seed for different matchups.",
+  "seed": 7,
+  "level": "forest",
+  "maxRounds": 20
+}

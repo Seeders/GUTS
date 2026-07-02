@@ -1,0 +1,45 @@
+{
+  "id": "the_lovers",
+  "number": 7,
+  "title": "The Lovers",
+  "texture": "tarot_7_the_lovers",
+  "past": {
+    "upright": {
+      "name": "Harmony",
+      "description": "Adjacent allies boost each other +10%",
+      "effects": [{ "target": "player_units", "stat": "adjacencyBonus", "operation": "add", "value": 0.1 }]
+    },
+    "reversed": {
+      "name": "Temptation",
+      "description": "Your units can't be adjacent to each other",
+      "effects": [{ "target": "player_units", "stat": "noAdjacency", "operation": "set", "value": true }]
+    }
+  },
+  "present": {
+    "upright": {
+      "name": "Union",
+      "description": "Enemy units always stay in pairs",
+      "effects": [{ "target": "mission", "stat": "pairedEnemies", "operation": "set", "value": true }]
+    },
+    "reversed": {
+      "name": "Discord",
+      "description": "Enemy units gain power when together",
+      "effects": [{ "target": "enemy_units", "stat": "adjacencyBonus", "operation": "add", "value": 0.2 }]
+    }
+  },
+  "future": {
+    "upright": {
+      "name": "Partnership",
+      "description": "Recruit a random allied unit",
+      "effects": [{ "target": "rewards", "stat": "freeUnit", "operation": "set", "value": true }]
+    },
+    "reversed": {
+      "name": "Heartbreak",
+      "description": "Lose one unit but gain double gold",
+      "effects": [
+        { "target": "rewards", "stat": "sacrificeUnit", "operation": "set", "value": true },
+        { "target": "rewards", "stat": "goldMultiplier", "operation": "multiply", "value": 2 }
+      ]
+    }
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "title": "Ice Explosion",
+  "category": "explosion",
+  "tags": [
+    "ice",
+    "cold",
+    "damage"
+  ],
+  "layers": [
+    {
+      "effect": "explosion_flash",
+      "delay": 0
+    },
+    {
+      "effect": "ice_shards",
+      "delay": 0
+    },
+    {
+      "effect": "ice_mist",
+      "delay": 0.1
+    }
+  ],
+  "screenShakeDuration": 0.15,
+  "screenShakeIntensity": 2
+}

@@ -1,0 +1,20 @@
+{
+  "cooldown": 20,
+  "range": 0,
+  "manaCost": 0,
+  "targetType": "self",
+  "animation": "cast",
+  "priority": 5,
+  "castTime": 0.3,
+  "castParticleEffectSystems": [
+    "holy_sparkles"
+  ],
+  "trailParticleEffectSystems": [],
+  "impactParticleEffectSystems": [],
+  "expirationParticleEffectSystems": [],
+  "fileName": "ThornsAuraAbility",
+  "filePath": "/projects/Ashfall/collections/scripts/abilities/js/ThornsAuraAbility.js",
+  "name": "Thorns Aura",
+  "description": "Damage attackers when they strike you.",
+  "duration": 15
+}

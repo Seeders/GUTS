@@ -1,0 +1,11 @@
+{
+  "title": "Archmagery",
+  "description": "+30% damage and +20 range to Intelligence units",
+  "value": 90,
+  "icon": "meteor_shower",
+  "perUnitType": true,
+  "requirements": [ { "int": { "min": 3 } } ],
+  "target": { "int": { "min": 3 } },
+  "statModifiers": { "damage": { "pct": 0.30 }, "range": { "add": 20 } },
+  "requiresBuildings": [ "mageTower" ]
+}

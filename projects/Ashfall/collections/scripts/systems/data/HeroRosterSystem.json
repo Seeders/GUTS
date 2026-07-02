@@ -1,0 +1,13 @@
+{
+  "filePath": "/projects/Ashfall/collections/scripts/systems/js/HeroRosterSystem.js",
+  "fileName": "HeroRosterSystem",
+  "services": [
+    "spawnHeroesForRound",
+    "spawnPurchasedUnit",
+    "respawnRosterEntry",
+    "despawnBattleHeroes",
+    "getHeroEntityId",
+    "getRosterEntryForEntity",
+    "snapshotHeroPositions"
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "title": "Consecration Burst",
+  "category": "holy",
+  "tags": [
+    "holy",
+    "consecration",
+    "burst"
+  ],
+  "layers": [
+    {
+      "effect": "holy_ring",
+      "delay": 0,
+      "countMultiplier": 1.5
+    },
+    {
+      "effect": "holy_pillar",
+      "delay": 0.05,
+      "countMultiplier": 1.2
+    }
+  ]
+}

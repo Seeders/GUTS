@@ -1,0 +1,25 @@
+{
+  "filePath": "/projects/Ashfall/collections/scripts/systems/js/CampaignSaveSystem.js",
+  "fileName": "CampaignSaveSystem",
+  "services": [
+    "createCampaign",
+    "loadCampaign",
+    "saveCampaign",
+    "deleteCampaign",
+    "listCampaigns",
+    "getCampaignData",
+    "exportCampaign",
+    "importCampaign",
+    "generateCampaignId",
+    "generateNewQuest",
+    "generateAvailableQuests",
+    "selectQuest",
+    "getCurrentQuest",
+    "getQuestNodes",
+    "isQuestNodeUnlocked",
+    "isQuestNodeCompleted",
+    "completeQuestNode",
+    "isQuestComplete",
+    "getQuestProgress"
+  ]
+}

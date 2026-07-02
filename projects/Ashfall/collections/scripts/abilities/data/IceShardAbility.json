@@ -1,0 +1,22 @@
+{
+  "fileName": "IceShardAbility",
+  "filePath": "/projects/Ashfall/collections/scripts/abilities/js/IceShardAbility.js",
+  "name": "Ice Shard",
+  "description": "Fires piercing ice shards that slow enemies",
+  "cooldown": 3.0,
+  "range": 280,
+  "manaCost": 25,
+  "targetType": "auto",
+  "animation": "cast",
+  "priority": 5,
+  "castTime": 0.8,
+  "autoTrigger": "enemy_in_range",
+  "damage": 18,
+  "shardCount": 3,
+  "slowDuration": 3.0,
+  "element": "cold",
+  "castParticleEffectSystems": ["ice_shard_core", "ice_shard_glow"],
+  "launchParticleEffectSystems": ["ice_shards"],
+  "trailParticleEffectSystems": ["ice_trail"],
+  "impactParticleEffectSystems": ["ice_shatter", "frost_ring"]
+}

@@ -1,0 +1,70 @@
+<div id="graphics-editor-container" class="ge">
+
+  <!-- ===== Top toolbar ===== -->
+  <div class="ge__toolbar">
+    <span class="ge__tool-label">Graphics</span>
+    <span class="ge__spacer"></span>
+    <button id="generate-isometric" class="ge__btn ge__btn--primary" title="Bake isometric sprite sheets from this model">⬒ Bake Sprites</button>
+    <!-- Required by the GE managers at init (bound/toggled unconditionally) but not
+         part of the GLTF-only workflow: kept hidden. -->
+    <span class="ge__hidden">
+      <button id="preview-animation"></button>
+      <button id="create-group"></button>
+      <button id="delete-group"></button>
+    </span>
+  </div>
+
+  <!-- ===== Main: animations/model/equipment | canvas | inspector ===== -->
+  <div class="ge__main">
+
+    <!-- Left -->
+    <div class="ge__left">
+      <div class="ge__section">
+        <div class="ge__eyebrow">
+          <span>Animations</span>
+          <span class="ge__eyebrow-actions">
+            <button id="add-animation" class="ge__btn ge__btn--mini" title="Add animation">+</button>
+            <button id="delete-animation" class="ge__btn ge__btn--mini ge__btn--quiet" title="Delete selected animation">−</button>
+          </span>
+        </div>
+        <div id="frame-list" class="ge__list"></div>
+        <div class="ge__hint">Select an animation to play it. Choose “model” to edit the base model.</div>
+      </div>
+
+      <div class="ge__section">
+        <div class="ge__eyebrow"><span>Model</span></div>
+        <div id="shape-list" class="ge__list"></div>
+        <!-- groups are single-group in the GLTF workflow; the container is still
+             required by the JS (rebuilt on every refresh) -->
+        <div id="group-list" class="ge__hidden"></div>
+      </div>
+
+      <div class="ge__section ge__section--grow">
+        <div class="ge__eyebrow"><span>Equipment</span></div>
+        <div id="equipment-root" class="ge-eq"></div>
+        <div class="ge__hint">Pick an item for a slot to equip it. Click an equipped slot to adjust how it sits.</div>
+      </div>
+    </div>
+
+    <!-- Center: 3D canvas + status bar -->
+    <div class="ge__center">
+      <canvas id="graphics-editor-canvas"></canvas>
+      <div class="ge__status">
+        <span class="ge__status-item ge__hidden">Shapes <b id="shape-count">0</b></span>
+        <span class="ge__spacer"></span>
+        <span class="ge__status-hint">click select · drag orbit · right-drag pan · scroll zoom</span>
+      </div>
+    </div>
+
+    <!-- Right: shape inspector -->
+    <div class="ge__right">
+      <div class="ge__section ge__section--grow">
+        <div class="ge__eyebrow"><span>Inspector</span></div>
+        <div id="inspector"></div>
+      </div>
+      <div id="json-editor" style="display: none;">
+        <textarea id="json-content"></textarea>
+      </div>
+    </div>
+  </div>
+</div>

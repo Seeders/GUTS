@@ -1,0 +1,11 @@
+{
+  "title": "Deadeye",
+  "description": "+25% damage and +20 range to Dexterity units",
+  "value": 90,
+  "icon": "critical_strike",
+  "perUnitType": true,
+  "requirements": [ { "dex": { "min": 3 } } ],
+  "target": { "dex": { "min": 3 } },
+  "statModifiers": { "damage": { "pct": 0.25 }, "range": { "add": 20 } },
+  "requiresBuildings": [ "fletchersHall" ]
+}

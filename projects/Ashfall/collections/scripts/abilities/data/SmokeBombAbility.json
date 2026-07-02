@@ -1,0 +1,20 @@
+{
+  "cooldown": 20,
+  "range": 0,
+  "manaCost": 0,
+  "targetType": "self",
+  "animation": "cast",
+  "priority": 5,
+  "castTime": 0.2,
+  "castParticleEffectSystems": [
+    "dust_burst"
+  ],
+  "trailParticleEffectSystems": [],
+  "impactParticleEffectSystems": [],
+  "expirationParticleEffectSystems": [],
+  "fileName": "SmokeBombAbility",
+  "filePath": "/projects/Ashfall/collections/scripts/abilities/js/SmokeBombAbility.js",
+  "name": "Smoke Bomb",
+  "description": "Vanish in smoke — gain massive evasion briefly.",
+  "duration": 6
+}

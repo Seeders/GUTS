@@ -1,0 +1,12 @@
+{
+  "title": "deathState",
+  "schema": {
+    "state": {
+      "$enum": "deathState"
+    },
+    "deathStartTime": 0,
+    "deathAnimationDuration": 2,
+    "corpseTime": 0,
+    "teamAtDeath": 0
+  }
+}

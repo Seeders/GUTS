@@ -1,0 +1,19 @@
+{
+  "fileName": "FreezingAuraAbility",
+  "filePath": "/projects/Ashfall/collections/scripts/abilities/js/FreezingAuraAbility.js",
+  "name": "Freezing Aura",
+  "description": "Emanate freezing cold",
+  "cooldown": 0,
+  "range": 100,
+  "manaCost": 0,
+  "targetType": "area",
+  "animation": "cast",
+  "priority": 6,
+  "castTime": 0,
+  "passive": true,
+  "drainPerSecond": 8,
+  "cycleDuration": 12.0,
+  "tickInterval": 1.0,
+  "auraParticleEffectSystems": ["ice_mist", "frost_aura"],
+  "buffParticleEffectSystems": ["ice_shard_sparkles"]
+}

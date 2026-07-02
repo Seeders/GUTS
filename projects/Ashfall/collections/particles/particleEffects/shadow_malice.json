@@ -1,0 +1,31 @@
+{
+  "title": "Shadow Malice",
+  "category": "shadow",
+  "tags": [
+    "shadow",
+    "dark",
+    "damage"
+  ],
+  "particleEffectData": {
+    "count": 12,
+    "lifetime": 0.3,
+    "scale": 15,
+    "scaleMultiplier": 1.2,
+    "startColor": "#aa2222",
+    "endColor": "#440000",
+    "emitterShape": "sphere",
+    "emitterRadius": 15,
+    "heightOffset": 30,
+    "velocityXMin": -50,
+    "velocityXMax": 50,
+    "velocityYMin": 20,
+    "velocityYMax": 80,
+    "velocityZMin": -50,
+    "velocityZMax": 50,
+    "gravity": -20,
+    "drag": 0.88,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "additive"
+  }
+}
