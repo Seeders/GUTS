@@ -286,7 +286,9 @@ class TextureEditor {
             if (this.isDrawing) {
                 this.draw(e);
             }
+            this.updateBrushPreview(e);
         });
+        this.canvas.addEventListener('mouseenter', (e) => this.updateBrushPreview(e));
         
         this.canvas.addEventListener('mouseup', (e) => {
             if (e.button === 0) { // Left click
@@ -298,6 +300,7 @@ class TextureEditor {
         
         this.canvas.addEventListener('mouseleave', () => {
             this.stopDrawing();
+            if (this.brushPreview) this.brushPreview.style.display = 'none';
         });
         
         // Zoom with mouse wheel
@@ -441,6 +444,54 @@ class TextureEditor {
         if (this.transparencyChecker) {
             this.transparencyChecker.style.transform = `translate(${x}px, ${y}px)`;
         }
+    }
+
+    /**
+     * Brush preview: shows the exact pixel footprint (the brush is square) that
+     * a click would paint, in the current color, following the mouse. Eraser
+     * shows a dashed outline instead of a fill.
+     */
+    _ensureBrushPreview() {
+        if (this.brushPreview || !this.canvas || !this.canvas.parentElement) return;
+        this.brushPreview = document.createElement('div');
+        this.brushPreview.className = 'texture-editor__brush-preview';
+        this.brushPreview.style.cssText =
+            'position:absolute;pointer-events:none;display:none;z-index:5;box-sizing:border-box;' +
+            'outline:1px solid rgba(0,0,0,0.55);border:1px solid rgba(255,255,255,0.75);';
+        this.canvas.parentElement.appendChild(this.brushPreview);
+    }
+
+    updateBrushPreview(e) {
+        this._ensureBrushPreview();
+        const bp = this.brushPreview;
+        if (!bp) return;
+        if (this.activeTool !== 'brush' && this.activeTool !== 'eraser') { bp.style.display = 'none'; return; }
+
+        const pos = this.getCanvasCoordinates(e);
+        const px = Math.floor(pos.x), py = Math.floor(pos.y);
+        if (px < 0 || py < 0 || px >= this.imageWidth || py >= this.imageHeight) { bp.style.display = 'none'; return; }
+
+        // Match the paint footprint exactly: N x N square, offset = floor(N/2).
+        const size = this.brushSize || 1;
+        const offset = Math.floor(size / 2);
+        const zoom = this.zoomLevel || 1;
+        const canvasRect = this.canvas.getBoundingClientRect();
+        const parentRect = this.canvas.parentElement.getBoundingClientRect();
+
+        bp.style.left = `${canvasRect.left - parentRect.left + (px - offset) * zoom}px`;
+        bp.style.top = `${canvasRect.top - parentRect.top + (py - offset) * zoom}px`;
+        bp.style.width = `${size * zoom}px`;
+        bp.style.height = `${size * zoom}px`;
+
+        if (this.activeTool === 'brush') {
+            bp.style.backgroundColor = this.hexToRgbaString(this.currentColor);
+            bp.style.border = '1px solid rgba(255,255,255,0.75)';
+            bp.style.borderStyle = 'solid';
+        } else {
+            bp.style.backgroundColor = 'transparent';
+            bp.style.border = '1px dashed rgba(255,255,255,0.85)';
+        }
+        bp.style.display = 'block';
     }
 
     setupTransparencyChecker(container) {
