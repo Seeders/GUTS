@@ -481,6 +481,11 @@ class EditorShell {
     // Select in the model so the module's saveHook updates the right object.
     this.model.setSelectedType(type); this.model.selectObject(id);
 
+    // The module's own canvas takes over as the preview — clear the docked
+    // corner preview (and any placement ghost) so the model isn't shown twice
+    // (e.g. idle looping in the Preview panel while an animation plays here).
+    if (this.viewport && this.viewport.clearPreview) this.viewport.clearPreview();
+
     const tabId = 'module:' + moduleId;
     const title = `${id} ⟨${prop}⟩`;
     if (!this._tabs[tabId]) {
