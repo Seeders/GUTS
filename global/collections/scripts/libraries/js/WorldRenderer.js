@@ -1805,6 +1805,9 @@ class WorldRenderer {
      * Create extension planes for infinite terrain appearance
      */
     createExtensionPlanes() {
+        // Guard: a stale async setup chain can reach here after the scene's
+        // terrain manager was disposed (rapid scene-to-scene transitions)
+        if (!this.terrainDataManager) return;
         const tileMap = this.terrainDataManager.tileMap;
         const extendedSize = this.terrainDataManager.extendedSize;
         const gridSize = this.terrainDataManager.gridSize;
