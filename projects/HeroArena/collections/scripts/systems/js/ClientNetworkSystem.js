@@ -36,6 +36,7 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
         'submitBuyUnitTech',
         'submitBuySquadLevel',
         'submitBuyTierUnlock',
+        'submitSetSquadFormation',
         'submitPickReinforcement',
         'submitCastCommanderSkill',
         'submitSellUnit',
@@ -1700,6 +1701,15 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
             eventName: 'BUY_TIER_UNLOCK',
             responseName: 'BUY_TIER_UNLOCK_ACK',
             data: { unitId },
+            onSuccess
+        }, () => {});
+    }
+
+    submitSetSquadFormation(rosterIndex, w, h, onSuccess) {
+        this.networkRequest({
+            eventName: 'SET_SQUAD_FORMATION',
+            responseName: 'SET_SQUAD_FORMATION_ACK',
+            data: { rosterIndex, w, h },
             onSuccess
         }, () => {});
     }

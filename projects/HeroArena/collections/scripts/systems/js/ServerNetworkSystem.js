@@ -42,6 +42,7 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         'handleBuyUnitTech',
         'handleBuySquadLevel',
         'handleBuyTierUnlock',
+        'handleSetSquadFormation',
         'handlePickReinforcement',
         'handleCastCommanderSkill',
         'handleSellUnit',
@@ -78,6 +79,7 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         'buyUnitTech',
         'buySquadLevel',
         'buyTierUnlock',
+        'setSquadFormation',
         'pickReinforcement',
         'castCommanderSkill',
         'sellUnit',
@@ -389,6 +391,7 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         this.game.serverEventManager.subscribe('BUY_UNIT_TECH',        this.handleBuyUnitTech.bind(this));
         this.game.serverEventManager.subscribe('BUY_SQUAD_LEVEL',      this.handleBuySquadLevel.bind(this));
         this.game.serverEventManager.subscribe('BUY_TIER_UNLOCK',      this.handleBuyTierUnlock.bind(this));
+        this.game.serverEventManager.subscribe('SET_SQUAD_FORMATION',  this.handleSetSquadFormation.bind(this));
         this.game.serverEventManager.subscribe('PICK_REINFORCEMENT',   this.handlePickReinforcement.bind(this));
         this.game.serverEventManager.subscribe('CAST_COMMANDER_SKILL', this.handleCastCommanderSkill.bind(this));
         this.game.serverEventManager.subscribe('SELL_UNIT',            this.handleSellUnit.bind(this));
@@ -1369,6 +1372,19 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         const d = eventData.data || eventData;
         const result = this.call.buyTierUnlock(numericPlayerId, d.unitId);
         return this.respond(playerId, 'BUY_TIER_UNLOCK_ACK', result ?? { success: false }, callback);
+    }
+
+    handleSetSquadFormation(eventData, callback) {
+        const { playerId } = eventData;
+        const numericPlayerId = eventData.numericPlayerId ?? eventData.playerId;
+        const d = eventData.data || eventData;
+        const result = this.call.setSquadFormation(numericPlayerId, d.rosterIndex, d.w, d.h);
+        // Echo the members' authoritative positions to the mover (prep positions
+        // stay hidden from the opponent until battle start, as with drags).
+        if (result?.success) {
+            this.sendToPlayer(playerId, 'HERO_MOVED', { moves: result.moves });
+        }
+        return this.respond(playerId, 'SET_SQUAD_FORMATION_ACK', result ?? { success: false }, callback);
     }
 
     handlePickReinforcement(eventData, callback) {

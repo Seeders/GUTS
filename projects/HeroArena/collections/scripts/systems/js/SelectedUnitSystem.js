@@ -549,7 +549,27 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
         const placement = this.game.getComponent(entityId, "placement");
         return placement?.placementId || null;
     }
+    // Squads select as one: expand the current selection to every live member
+    // of each selected unit's roster squad.
+    _expandSelectionToSquads() {
+        const add = [];
+        for (const id of this.selectedUnitIds) {
+            const info = this.game.getComponent(id, 'heroRosterInfo');
+            if (!info) continue;
+            for (const other of (this.game.getEntitiesWith('heroRosterInfo') || [])) {
+                if (other === id || this.selectedUnitIds.has(other)) continue;
+                if (this.game.entityAlive?.[other] !== 1) continue;
+                const oi = this.game.getComponent(other, 'heroRosterInfo');
+                if (oi?.playerId === info.playerId && oi.rosterIndex === info.rosterIndex) {
+                    add.push(other);
+                }
+            }
+        }
+        for (const id of add) this.selectedUnitIds.add(id);
+    }
+
     updateMultipleSquadSelection() {
+        this._expandSelectionToSquads();
         this.currentSelectedIndex = 0;
         const unitId = Array.from(this.selectedUnitIds)[this.currentSelectedIndex];
 
@@ -578,18 +598,26 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
             const { entityId, additive } = result.data;
 
             if (additive) {
-                // Toggle selection
+                // Toggle the whole SQUAD in or out of the selection
                 if (this.selectedUnitIds.has(entityId)) {
-                    this.selectedUnitIds.delete(entityId);
+                    const info = this.game.getComponent(entityId, 'heroRosterInfo');
+                    for (const id of [...this.selectedUnitIds]) {
+                        const oi = this.game.getComponent(id, 'heroRosterInfo');
+                        if (id === entityId ||
+                            (info && oi?.playerId === info.playerId && oi.rosterIndex === info.rosterIndex)) {
+                            this.selectedUnitIds.delete(id);
+                        }
+                    }
                 } else {
                     this.selectedUnitIds.add(entityId);
                 }
-                this.updateMultipleSquadSelection();
+                if (this.selectedUnitIds.size > 0) this.updateMultipleSquadSelection();
+                else this.deselectAll();
             } else {
-                // Replace selection
+                // Replace selection with the clicked unit's whole squad
                 this.deselectAll();
                 this.selectedUnitIds.add(entityId);
-                this.selectEntityDirectly(entityId);
+                this.updateMultipleSquadSelection();
             }
         } else if (result.action === 'select_multiple') {
             const { entityIds, additive } = result.data;

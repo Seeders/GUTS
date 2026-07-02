@@ -16,7 +16,8 @@ class HeroRosterSystem extends GUTS.BaseSystem {
         'getRosterEntryForEntity',
         'snapshotHeroPositions',
         'reapplyStandingOrders',
-        'isUnitLocked'
+        'isUnitLocked',
+        'setSquadFormation'
     ];
 
     static serviceDependencies = [
@@ -188,7 +189,9 @@ class HeroRosterSystem extends GUTS.BaseSystem {
             // default starting location.
             if (rosterEntry.lastPosition && this.game.placementSystem) {
                 const def = this.collections.units?.[HeroRosterSystem.resolveSpawnType(rosterEntry)] || {};
-                const off = HeroRosterSystem.memberOffset(memberIndex, def.squadWidth || 1, def.squadHeight || 1);
+                const fw = rosterEntry.formation?.w || def.squadWidth || 1;
+                const fh = rosterEntry.formation?.h || def.squadHeight || 1;
+                const off = HeroRosterSystem.memberOffset(memberIndex, fw, fh);
                 this.game.placementSystem.moveHero(
                     entityId,
                     rosterEntry.lastPosition.x + off.x,
@@ -199,6 +202,42 @@ class HeroRosterSystem extends GUTS.BaseSystem {
             this.battleHeroEntities.push({ entityId, playerId: stats.playerId, rosterIndex });
             this._entityToRoster.set(entityId, { playerId: stats.playerId, rosterIndex });
         });
+    }
+
+    // Rearrange a squad's live members into a w x h grid around their current
+    // centroid, and persist the choice on the roster entry so every future
+    // respawn keeps it. Prep-phase only; locked (fought) squads hold formation.
+    setSquadFormation(numericPlayerId, rosterIndex, w, h) {
+        if (this.game.state.phase !== this.enums.gamePhase.placement) {
+            return { success: false, reason: 'wrong_phase' };
+        }
+        const stats = this._statsByPlayerId(numericPlayerId);
+        const entry = stats?.heroRoster?.[rosterIndex];
+        if (!entry) return { success: false, reason: 'no_entry' };
+        if (entry.lastPosition) return { success: false, reason: 'deployment_locked' };
+
+        const members = this.getHeroEntityIds(numericPlayerId, rosterIndex);
+        if (members.length === 0) return { success: false, reason: 'not_on_field' };
+        const W = Math.max(1, w | 0), H = Math.max(1, h | 0);
+        if (W * H < members.length) return { success: false, reason: 'formation_too_small' };
+
+        entry.formation = { w: W, h: H };
+
+        // Reposition around the current centroid
+        let cx = 0, cz = 0;
+        for (const id of members) {
+            const p = this.game.getComponent(id, 'transform')?.position;
+            cx += p?.x || 0; cz += p?.z || 0;
+        }
+        cx /= members.length; cz /= members.length;
+
+        const moves = [];
+        members.forEach((id, i) => {
+            const off = HeroRosterSystem.memberOffset(i, W, H);
+            this.game.placementSystem?.moveHero(id, cx + off.x, cz + off.z);
+            moves.push({ entityId: id, x: cx + off.x, z: cz + off.z });
+        });
+        return { success: true, formation: { w: W, h: H }, moves };
     }
 
     // Squad members stand in their def's squadWidth x squadHeight grid around

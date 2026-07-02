@@ -223,6 +223,56 @@ try {
         cohesion.count === 3 && cohesion.moved === 3 && cohesion.ackMoves === 3,
         `${cohesion.moved}/${cohesion.count} members moved, ack ${cohesion.ackMoves} moves`);
 
+    // Formation switch: 3x1 archers -> 1x3 column, persisted on the entry
+    const formation = await page.evaluate(() => {
+        const game = window.game;
+        let my = null;
+        for (const eid of game.getEntitiesWith('playerStats')) {
+            const st = game.getComponent(eid, 'playerStats');
+            if (st.playerId === 0) my = st;
+        }
+        my.gold += 10;
+        game.getService('buyUnlockedUnit')(0, '1_d_archer');
+        const idx = my.heroRoster.length - 1;
+        const members = game.getService('getHeroEntityIds')(0, idx);
+        const res = game.getService('setSquadFormation')(0, idx, 1, 3);
+        const xs = members.map(id => game.getComponent(id, 'transform').position.x);
+        const zs = members.map(id => game.getComponent(id, 'transform').position.z);
+        const xSpread = Math.max(...xs) - Math.min(...xs);
+        const zSpread = Math.max(...zs) - Math.min(...zs);
+        const saved = my.heroRoster[idx].formation;
+        game.getService('sellUnit')(0, idx);
+        return { ok: res?.success, xSpread, zSpread, saved };
+    });
+    check('formation switch turns a 3x1 row into a 1x3 column and persists',
+        formation.ok && formation.xSpread < 25 && formation.zSpread >= 55 &&
+        formation.saved?.w === 1 && formation.saved?.h === 3,
+        `x spread ${Math.round(formation.xSpread)}, z spread ${Math.round(formation.zSpread)}`);
+
+    // Squad-wide selection: clicking one member selects the whole squad
+    const squadSelect = await page.evaluate(() => {
+        const game = window.game;
+        let my = null;
+        for (const eid of game.getEntitiesWith('playerStats')) {
+            const st = game.getComponent(eid, 'playerStats');
+            if (st.playerId === 0) my = st;
+        }
+        my.gold += 10;
+        game.getService('buyUnlockedUnit')(0, '1_d_archer');
+        const idx = my.heroRoster.length - 1;
+        const members = game.getService('getHeroEntityIds')(0, idx);
+        const sel = game.selectedUnitSystem;
+        sel.onInputResult({ action: 'select_entity', data: { entityId: members[0], additive: false } });
+        const selected = sel.getSelectedUnits();
+        const allIn = members.every(id => selected.includes(id));
+        sel.deselectAll();
+        game.getService('sellUnit')(0, idx);
+        return { allIn, count: selected.length, members: members.length };
+    });
+    check('selecting one member selects the whole squad',
+        squadSelect.allIn && squadSelect.count === squadSelect.members,
+        `${squadSelect.count} selected of ${squadSelect.members} members`);
+
     check('a soldier squad spawns 4 members from one purchase',
         squad.ok && squad.members === 4, `${squad.members} members`);
     check('selling a squad removes all members',

@@ -63,6 +63,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
         'submitBuyUnitTech',
         'submitBuySquadLevel',
         'submitBuyTierUnlock',
+        'submitSetSquadFormation',
         'submitPickReinforcement',
         'submitCastCommanderSkill',
         'submitSellUnit',
@@ -305,6 +306,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
         this.elements.selectionCards = document.getElementById('selectionCards');
         this.elements.attackMoveBtn  = document.getElementById('attackMoveBtn'); // legacy (orders removed)
         this.elements.clearOrderBtn  = document.getElementById('clearOrderBtn'); // legacy (orders removed)
+        this.elements.formationBtn   = document.getElementById('formationBtn');
         this.elements.levelUpBtn     = document.getElementById('levelUpBtn');
         this.elements.sellUnitBtn    = document.getElementById('sellUnitBtn');
         this.elements.selectionHint  = document.getElementById('selectionHint');
@@ -317,6 +319,9 @@ class PlacementUISystem extends GUTS.BaseSystem {
         }
         if (this.elements.clearOrderBtn) {
             this._track(this.elements.clearOrderBtn, 'click', () => this._clearSelectedOrders());
+        }
+        if (this.elements.formationBtn) {
+            this._track(this.elements.formationBtn, 'click', () => this._cycleSquadFormation());
         }
         if (this.elements.levelUpBtn) {
             this._track(this.elements.levelUpBtn, 'click', () => this._levelUpSelectedUnits());
@@ -1149,6 +1154,21 @@ class PlacementUISystem extends GUTS.BaseSystem {
             </div>`;
         }).join('');
 
+        // Formation button: shows the first selected multi-member squad's current
+        // shape; hidden when nothing selected has squadmates.
+        if (this.elements.formationBtn) {
+            const squads = this._selectedSquads().filter(sq => sq.members.length > 1 && !sq.locked);
+            if (squads.length === 0) {
+                this.elements.formationBtn.style.display = 'none';
+            } else {
+                this.elements.formationBtn.style.display = '';
+                const f = squads[0].formation;
+                this.elements.formationBtn.textContent = `⬦ Formation ${f.w}×${f.h}`;
+                this.elements.formationBtn.disabled =
+                    this.game.state.phase !== this.enums.gamePhase.placement;
+            }
+        }
+
         // Level-ups and selling only during prep. The Level Up button shows the
         // total cost for the current selection (half price for squads whose
         // combat-XP bar is full — flagged with ★).
@@ -1190,6 +1210,55 @@ class PlacementUISystem extends GUTS.BaseSystem {
             total += isReady ? Math.max(1, Math.ceil(base / 2)) : base;
         }
         return { cost: total, ready, allMaxed: unitIds.length > 0 && leveable === 0 };
+    }
+
+    // Selected squads (deduped by roster entry): members, current formation, lock.
+    _selectedSquads() {
+        const groups = new Map();
+        for (const id of this._selectedOwnUnits()) {
+            const info = this.game.getComponent(id, 'heroRosterInfo');
+            if (!info) continue;
+            const key = `${info.playerId}:${info.rosterIndex}`;
+            if (!groups.has(key)) groups.set(key, { info, members: [] });
+            groups.get(key).members.push(id);
+        }
+        return [...groups.values()].map(g => {
+            const entry = this._rosterEntryForInfo(g.info);
+            const def = this.game.getUnitTypeDef(this.game.getComponent(g.members[0], 'unitType'));
+            return {
+                rosterIndex: g.info.rosterIndex,
+                members: g.members,
+                locked: !!entry?.lastPosition,
+                formation: entry?.formation
+                    || { w: def?.squadWidth || 1, h: def?.squadHeight || 1 }
+            };
+        });
+    }
+
+    // Formation presets for a squad of n members (row / column / square shapes).
+    static formationPresets(n) {
+        if (n >= 4) return [[2, 2], [4, 1], [1, 4]];
+        if (n === 3) return [[3, 1], [1, 3]];
+        if (n === 2) return [[2, 1], [1, 2]];
+        return [[1, 1]];
+    }
+
+    // Cycle every selected squad to its next formation preset.
+    _cycleSquadFormation() {
+        if (this.game.state.phase !== this.enums.gamePhase.placement) return;
+        for (const sq of this._selectedSquads()) {
+            if (sq.members.length <= 1 || sq.locked) continue;
+            const presets = PlacementUISystem.formationPresets(sq.members.length);
+            const cur = presets.findIndex(p => p[0] === sq.formation.w && p[1] === sq.formation.h);
+            const [w, h] = presets[(cur + 1) % presets.length];
+            this.call.submitSetSquadFormation(sq.rosterIndex, w, h, (res) => {
+                if (res?.success === false && res?.reason) {
+                    GUTS.NotificationSystem?.show?.(`Formation: ${res.reason}`, 'error');
+                }
+                this._refreshSelectionPanel();
+            });
+        }
+        this._refreshSelectionPanel();
     }
 
     _rosterEntryForInfo(info) {
