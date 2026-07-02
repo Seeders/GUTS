@@ -1,0 +1,10 @@
+{
+ "title": "Frost Nova",
+ "icon": "\u2744\ufe0f",
+ "radius": 150,
+ "damage": 60,
+ "element": "cold",
+ "effect": "magic",
+ "description": "Cold damage in a wide area",
+ "fileName": "frostNova"
+}

@@ -350,6 +350,67 @@ try {
     check('level-up keeps position and teched abilities',
         levelTest.posStable && levelTest.keepsTechAbility);
 
+    // ── Commander skills: charge -> battle -> cast at enemies ─────────────
+    await page.evaluate(() => {
+        const game = window.game;
+        let my = null;
+        for (const eid of game.getEntitiesWith('playerStats')) {
+            const s = game.getComponent(eid, 'playerStats');
+            if (s.playerId === 0) my = s;
+        }
+        my.skillCharges = ['meteor'];
+        my.gold = 100;
+        // Pick this round's reinforcement if pending (so ready isn't gated oddly)
+        if (my.pendingReinforcement && !my.pendingReinforcement.picked) {
+            game.getService('pickReinforcement')(0, 0);
+        }
+    });
+    await page.evaluate(() => document.getElementById('placementReadyBtn').click());
+    await page.waitForFunction(() =>
+        window.game.state.phase === window.game.getEnums().gamePhase.battle,
+        { timeout: 60000, polling: 300 });
+    await waitSim(page, 1);
+
+    const skillTest = await page.evaluate(() => {
+        const game = window.game;
+        // Aim at the centroid of living enemies
+        const enemies = game.getEntitiesWith('heroRosterInfo', 'health', 'transform').filter(id => {
+            const info = game.getComponent(id, 'heroRosterInfo');
+            const h = game.getComponent(id, 'health');
+            return info?.playerId === 1 && h.current > 0;
+        });
+        if (!enemies.length) return { noEnemies: true };
+        let cx = 0, cz = 0;
+        for (const id of enemies) {
+            const p = game.getComponent(id, 'transform').position;
+            cx += p.x; cz += p.z;
+        }
+        cx /= enemies.length; cz /= enemies.length;
+        const hpBefore = enemies.reduce((s, id) => s + game.getComponent(id, 'health').current, 0);
+
+        const res = game.getService('castCommanderSkill')(0, 'meteor', cx, cz);
+        const hpAfter = enemies.reduce((s, id) =>
+            s + (game.getComponent(id, 'health')?.current || 0), 0);
+
+        let my = null;
+        for (const eid of game.getEntitiesWith('playerStats')) {
+            const s = game.getComponent(eid, 'playerStats');
+            if (s.playerId === 0) my = s;
+        }
+        const again = game.getService('castCommanderSkill')(0, 'meteor', cx, cz);
+        return {
+            ok: res?.success, hpBefore, hpAfter,
+            chargesLeft: (my.skillCharges || []).length,
+            secondCast: again?.reason
+        };
+    });
+    check('commander skill damages enemies at target point',
+        skillTest.ok && skillTest.hpAfter < skillTest.hpBefore,
+        `enemy hp ${Math.round(skillTest.hpBefore)} -> ${Math.round(skillTest.hpAfter)}`);
+    check('skill charge is single-use',
+        skillTest.chargesLeft === 0 && skillTest.secondCast === 'no_charge',
+        `charges left ${skillTest.chargesLeft}, recast: ${skillTest.secondCast}`);
+
     await page.screenshot({ path: 'projects/HeroArena/test_mechabellum.png' });
     console.log('screenshot: projects/HeroArena/test_mechabellum.png');
 

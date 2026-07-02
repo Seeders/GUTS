@@ -63,6 +63,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
         'submitBuyUnitTech',
         'submitBuySquadLevel',
         'submitPickReinforcement',
+        'submitCastCommanderSkill',
         'submitSellUnit',
         'submitGrantSingleAbility',
         'submitSpecializeChoice',
@@ -400,6 +401,76 @@ class PlacementUISystem extends GUTS.BaseSystem {
         return new Set();
     }
 
+    // ─── Commander skills (battle actives) ───────────────────────────────────
+
+    // Called from updateHUD each tick: show banked skill charges during battle.
+    _refreshCommanderSkillBar() {
+        const bar = document.getElementById('commanderSkillBar');
+        if (!bar) return;
+
+        const inBattle = this.game.state.phase === this.enums.gamePhase.battle;
+        const myId = this.game.clientNetworkManager?.numericPlayerId ?? 0;
+        let charges = [];
+        for (const eid of this.game.getEntitiesWith('playerStats')) {
+            const s = this.game.getComponent(eid, 'playerStats');
+            if (s?.playerId === myId) { charges = s.skillCharges || []; break; }
+        }
+
+        if (!inBattle || charges.length === 0) {
+            bar.classList.add('hidden');
+            if (!inBattle) this._skillTargeting = null;
+            return;
+        }
+        bar.classList.remove('hidden');
+
+        const html = charges.map((skillId, i) => {
+            const def = this.collections.commanderSkills?.[skillId] || {};
+            const targeting = this._skillTargeting === skillId ? 'targeting' : '';
+            return `<button class="commander-skill-btn ${targeting}" data-skill="${skillId}"
+                title="${def.title || skillId} — ${def.description || ''} (click, then click the battlefield)">
+                ${def.icon || '✴️'}</button>`;
+        }).join('');
+        if (bar._lastHtml !== html) {
+            bar.innerHTML = html;
+            bar._lastHtml = html;
+        }
+
+        if (!bar._wired) {
+            bar._wired = true;
+            bar.addEventListener('click', (e) => {
+                const btn = e.target.closest('[data-skill]');
+                if (!btn) return;
+                this._skillTargeting = this._skillTargeting === btn.dataset.skill ? null : btn.dataset.skill;
+                bar._lastHtml = null; // re-render targeting outline
+                document.body.style.cursor = this._skillTargeting ? 'crosshair' : 'default';
+            });
+            // Ground click casts while targeting (capture so battle clicks reach us)
+            this._track(document, 'mousedown', (e) => {
+                if (!this._skillTargeting || e.button !== 0) return;
+                if (e.target !== this.canvas) return;
+                const worldPos = this.getWorldPositionFromMouse(e.clientX, e.clientY, false);
+                if (!worldPos) return;
+                const skillId = this._skillTargeting;
+                this._skillTargeting = null;
+                document.body.style.cursor = 'default';
+                bar._lastHtml = null;
+                this.call.submitCastCommanderSkill(skillId, worldPos.x, worldPos.z, (res) => {
+                    if (res?.success === false && res?.reason) {
+                        GUTS.NotificationSystem?.show?.(`Skill failed: ${res.reason}`, 'error');
+                    }
+                });
+                e.stopPropagation();
+            });
+            this._track(document, 'keydown', (e) => {
+                if (e.key === 'Escape' && this._skillTargeting) {
+                    this._skillTargeting = null;
+                    document.body.style.cursor = 'default';
+                    bar._lastHtml = null;
+                }
+            });
+        }
+    }
+
     // Called by game.triggerEvent('onReinforcementStart', data) at each prep start.
     // Reuses the (otherwise retired) hero-select overlay as the 1-of-3 card pick.
     onReinforcementStart(data) {
@@ -502,6 +573,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
     }
 
     updateHUD() {
+        this._refreshCommanderSkillBar();
         // Find local player's playerStats and opponent's
         const myPlayerId = this.game.clientNetworkManager?.numericPlayerId ?? 0;
         const playerEntities = this.game.getEntitiesWith('playerStats');

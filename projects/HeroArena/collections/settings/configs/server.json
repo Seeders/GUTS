@@ -68,7 +68,8 @@
     "BuildingSystem",
     "HeroExperienceSystem",
     "BuffEffectsSystem",
-    "GoldMineCaptureSystem"
+    "GoldMineCaptureSystem",
+    "CommanderSkillSystem"
   ],
   "classes": [
     {

@@ -41,7 +41,8 @@
     "BuildingSystem",
     "HeroExperienceSystem",
     "BuffEffectsSystem",
-    "GoldMineCaptureSystem"
+    "GoldMineCaptureSystem",
+    "CommanderSkillSystem"
   ],
   "clientSystems": [
     "GameInterfaceSystem",

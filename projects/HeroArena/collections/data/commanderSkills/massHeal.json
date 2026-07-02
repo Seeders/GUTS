@@ -1,0 +1,9 @@
+{
+ "title": "Mending Wave",
+ "icon": "\ud83d\udc9a",
+ "radius": 220,
+ "healPct": 0.4,
+ "effect": "magic",
+ "description": "Heals your units in the area for 40% of max HP",
+ "fileName": "massHeal"
+}

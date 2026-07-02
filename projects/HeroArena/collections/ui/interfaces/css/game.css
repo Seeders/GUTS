@@ -977,3 +977,30 @@
 .unit-tech-desc { font-size: 0.72rem; opacity: 0.75; }
 .unit-tech-cost { flex: 0 0 auto; color: #ffd97a; font-size: 0.8rem; }
 .unit-tech-row.owned .unit-tech-cost { color: #7dff9e; }
+
+
+/* ── Commander skills (battle actives) ───────────────────── */
+#commanderSkillBar {
+    position: absolute;
+    bottom: 90px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+    z-index: 30;
+}
+.commander-skill-btn {
+    width: 58px;
+    height: 58px;
+    font-size: 1.6rem;
+    border-radius: 8px;
+    border: 2px solid rgba(255, 200, 100, 0.55);
+    background: rgba(20, 14, 8, 0.9);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 14px rgba(0,0,0,.6);
+}
+.commander-skill-btn:hover { border-color: #ffd97a; transform: translateY(-2px); }
+.commander-skill-btn.targeting { outline: 2px solid #ff6a4a; }

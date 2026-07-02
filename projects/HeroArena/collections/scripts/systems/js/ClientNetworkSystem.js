@@ -36,6 +36,7 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
         'submitBuyUnitTech',
         'submitBuySquadLevel',
         'submitPickReinforcement',
+        'submitCastCommanderSkill',
         'submitSellUnit',
         'submitGrantSingleAbility',
         'submitSpecializeChoice',
@@ -300,6 +301,10 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
             }),
             nm.listen('ROUND_RESULT', (data) => {
                 this.game.triggerEvent('onRoundResult', data);
+            }),
+            nm.listen('COMMANDER_SKILL_CAST', (data) => {
+                // Opponent's cast: play the visual locally
+                this.game.commanderSkillSystem?.onCommanderSkillCastRemote?.(data);
             }),
 
             // HeroArena: hero selection flow
@@ -1690,6 +1695,15 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
             eventName: 'PICK_REINFORCEMENT',
             responseName: 'PICK_REINFORCEMENT_ACK',
             data: { optionIndex },
+            onSuccess
+        }, () => {});
+    }
+
+    submitCastCommanderSkill(skillId, x, z, onSuccess) {
+        this.networkRequest({
+            eventName: 'CAST_COMMANDER_SKILL',
+            responseName: 'CAST_COMMANDER_SKILL_ACK',
+            data: { skillId, x, z },
             onSuccess
         }, () => {});
     }

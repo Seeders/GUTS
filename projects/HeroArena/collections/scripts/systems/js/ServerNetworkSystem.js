@@ -42,6 +42,7 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         'handleBuyUnitTech',
         'handleBuySquadLevel',
         'handlePickReinforcement',
+        'handleCastCommanderSkill',
         'handleSellUnit',
         'handleGrantSingleAbility',
         'handleSpecializeChoice',
@@ -76,6 +77,7 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         'buyUnitTech',
         'buySquadLevel',
         'pickReinforcement',
+        'castCommanderSkill',
         'sellUnit',
         'grantSingleTargetAbility',
         'applySpecializationChoice',
@@ -385,6 +387,7 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         this.game.serverEventManager.subscribe('BUY_UNIT_TECH',        this.handleBuyUnitTech.bind(this));
         this.game.serverEventManager.subscribe('BUY_SQUAD_LEVEL',      this.handleBuySquadLevel.bind(this));
         this.game.serverEventManager.subscribe('PICK_REINFORCEMENT',   this.handlePickReinforcement.bind(this));
+        this.game.serverEventManager.subscribe('CAST_COMMANDER_SKILL', this.handleCastCommanderSkill.bind(this));
         this.game.serverEventManager.subscribe('SELL_UNIT',            this.handleSellUnit.bind(this));
         this.game.serverEventManager.subscribe('GRANT_SINGLE_ABILITY', this.handleGrantSingleAbility.bind(this));
         this.game.serverEventManager.subscribe('SPECIALIZE_CHOICE',    this.handleSpecializeChoice.bind(this));
@@ -1343,6 +1346,14 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         const result = this.call.pickReinforcement(numericPlayerId, d.optionIndex);
         this.syncEntitiesToClients(playerId, numericPlayerId);   // cards may spawn units
         return this.respond(playerId, 'PICK_REINFORCEMENT_ACK', result ?? { success: false }, callback);
+    }
+
+    handleCastCommanderSkill(eventData, callback) {
+        const { playerId } = eventData;
+        const numericPlayerId = eventData.numericPlayerId ?? eventData.playerId;
+        const d = eventData.data || eventData;
+        const result = this.call.castCommanderSkill(numericPlayerId, d.skillId, d.x, d.z);
+        return this.respond(playerId, 'CAST_COMMANDER_SKILL_ACK', result ?? { success: false }, callback);
     }
 
     handleSellUnit(eventData, callback) {
