@@ -212,12 +212,15 @@ class TextureEditor {
             this.updateUIFromSettings(event.detail.data);
         });
 
-        // Tool selection
-        container.querySelectorAll('.editor-module__btn').forEach(btn => {
+        // Tool selection — scoped to the tool buttons only (previously bound to
+        // every .editor-module__btn, so clicking Undo/New/etc. silently reset
+        // the active tool back to brush).
+        container.querySelectorAll('.tx__tool').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                container.querySelectorAll('.editor-module__btn').forEach(b => b.classList.remove('active'));
-                e.target.classList.add('active');
-                this.setActiveTool(e.target.id);
+                const el = e.currentTarget;
+                container.querySelectorAll('.tx__tool').forEach(b => b.classList.remove('active'));
+                el.classList.add('active');
+                this.setActiveTool(el.id);
             });
         });
 
@@ -320,10 +323,12 @@ class TextureEditor {
             const imageY = mouseY / this.zoomLevel;
             
             // Update zoom level
-            this.zoomLevel = newZoom;            
-            
-            // Update display
+            this.zoomLevel = newZoom;
+
+            // Update display (and actually rescale the canvas — wheel zoom
+            // previously updated the % readout without resizing).
             this.updateZoomDisplay();
+            this.updateCanvasDisplaySize();
             this.renderCanvas();
         });
         

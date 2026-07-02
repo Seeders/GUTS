@@ -926,6 +926,9 @@ class EditorShell {
     if (obj.render && typeof obj.render === 'object') {
       bar.appendChild(this._miniBtn('⧉ Graphics Editor', () => this._openModuleEditor('graphicsModule', typeId, id)));
     }
+    if (typeof obj.imagePath === 'string') {
+      bar.appendChild(this._miniBtn('⧉ Texture Editor', () => this._openModuleEditor('textureEditor', typeId, id)));
+    }
     const save = this._miniBtn('Save', () => this._saveInspector(typeId, id));
     save.classList.add('eshell__btn--primary');
     bar.append(this._miniBtn('Revert', () => this._renderInspector(typeId, id)), save);
