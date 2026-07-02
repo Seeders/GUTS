@@ -313,9 +313,13 @@
 .eshell__insp-form { display: flex; flex-direction: column; gap: 8px; }
 .eshell__insp-field { display: grid; grid-template-columns: 92px 1fr 18px; align-items: center; gap: 6px; }
 .eshell__insp-field--wide { grid-template-columns: 1fr 18px; grid-template-areas: "key del" "widget widget"; }
-.eshell__insp-field--wide .eshell__insp-key { grid-area: key; }
-.eshell__insp-field--wide .eshell__insp-del { grid-area: del; }
-.eshell__insp-field--wide .eshell__insp-textarea { grid-area: widget; }
+/* Direct-child scoping matters: descendant selectors here would leak grid-area
+   onto the per-entry × buttons INSIDE the refarray widget's own grid rows,
+   knocking them out of alignment with their dropdowns. */
+.eshell__insp-field--wide > .eshell__insp-key { grid-area: key; }
+.eshell__insp-field--wide > .eshell__insp-del { grid-area: del; }
+.eshell__insp-field--wide > .eshell__insp-textarea,
+.eshell__insp-field--wide > .eshell__insp-refarray { grid-area: widget; }
 
 .eshell__insp-key {
   font-family: var(--editor-font-mono, monospace); font-size: 11px;
