@@ -93,6 +93,21 @@
   background: var(--editor-primary, #35e0c8);
   box-shadow: 0 0 6px var(--editor-cyan-glow, rgba(53, 224, 200, 0.5));
 }
+.ge__eyebrow--sub::before { background: var(--editor-text-muted, #5e708a); box-shadow: none; }
+.ge__eyebrow-actions { margin-left: auto; display: flex; gap: 4px; }
+.ge__btn--mini { padding: 1px 7px; font-size: 12px; line-height: 1.3; }
+.ge__btn--block { display: block; width: 100%; margin-top: 2px; }
+.ge__hidden { display: none !important; }
+.ge__hint {
+  font-family: var(--editor-font-mono, 'JetBrains Mono', monospace);
+  font-size: 9.5px; line-height: 1.5;
+  color: var(--editor-text-muted, #5e708a); opacity: 0.8;
+  margin-top: 6px;
+}
+.ge__equip-add {
+  margin-top: 10px; padding-top: 10px;
+  border-top: 1px dashed var(--editor-border-color, #22303f);
+}
 
 .ge__row { display: flex; gap: 6px; margin-bottom: 8px; }
 .ge__row .ge__btn { flex: 1 1 auto; }
@@ -164,13 +179,9 @@
   border-radius: var(--editor-border-radius-sm, 4px);
   padding: 4px 7px; margin-bottom: 5px; width: 100%;
 }
-#frame-list div {
-  padding: 4px 8px; border-radius: var(--editor-border-radius-sm, 4px);
-  font-size: 11.5px; color: var(--editor-text-secondary, #90a2ba);
-  cursor: pointer; border: 1px solid transparent;
-  transition: var(--editor-transition, 0.15s);
-}
-#frame-list div:hover { background: var(--editor-bg-lighter, #1d2a3c); color: var(--editor-text-primary, #e7eef7); }
+/* GLTF-only workflow: animations are single-clip — the per-frame rows the JS
+   still renders are hidden; selecting an animation in the dropdown plays it. */
+#frame-list > div { display: none; }
 
 /* Group + shape rows */
 .group-item, .shape-item {
