@@ -235,19 +235,27 @@ try {
         game.getService('buyUnlockedUnit')(0, '1_d_archer');
         const idx = my.heroRoster.length - 1;
         const members = game.getService('getHeroEntityIds')(0, idx);
+        const spread = () => {
+            const xs = members.map(id => game.getComponent(id, 'transform').position.x);
+            const zs = members.map(id => game.getComponent(id, 'transform').position.z);
+            return { x: Math.max(...xs) - Math.min(...xs), z: Math.max(...zs) - Math.min(...zs) };
+        };
+        // Player 0 is the LEFT team on battleplain: the enemy lies along +x, so a
+        // shoulder-to-shoulder line spreads along z and a column spreads along x.
+        const lineSpread = spread();
         const res = game.getService('setSquadFormation')(0, idx, 1, 3);
-        const xs = members.map(id => game.getComponent(id, 'transform').position.x);
-        const zs = members.map(id => game.getComponent(id, 'transform').position.z);
-        const xSpread = Math.max(...xs) - Math.min(...xs);
-        const zSpread = Math.max(...zs) - Math.min(...zs);
+        const columnSpread = spread();
         const saved = my.heroRoster[idx].formation;
         game.getService('sellUnit')(0, idx);
-        return { ok: res?.success, xSpread, zSpread, saved };
+        return { ok: res?.success, lineSpread, columnSpread, saved };
     });
-    check('formation switch turns a 3x1 row into a 1x3 column and persists',
-        formation.ok && formation.xSpread < 25 && formation.zSpread >= 55 &&
+    check('squads default to a shoulder-to-shoulder line facing the enemy',
+        formation.lineSpread.z >= 55 && formation.lineSpread.x < 25,
+        `line: x ${Math.round(formation.lineSpread.x)}, z ${Math.round(formation.lineSpread.z)}`);
+    check('formation switch turns the line into a column and persists',
+        formation.ok && formation.columnSpread.x >= 55 && formation.columnSpread.z < 25 &&
         formation.saved?.w === 1 && formation.saved?.h === 3,
-        `x spread ${Math.round(formation.xSpread)}, z spread ${Math.round(formation.zSpread)}`);
+        `column: x ${Math.round(formation.columnSpread.x)}, z ${Math.round(formation.columnSpread.z)}`);
 
     // Squad-wide selection: clicking one member selects the whole squad
     const squadSelect = await page.evaluate(() => {

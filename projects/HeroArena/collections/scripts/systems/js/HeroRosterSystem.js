@@ -28,7 +28,9 @@ class HeroRosterSystem extends GUTS.BaseSystem {
         'applyArmyAbilities',
         'applyLeaderBonuses',
         'applyLevelScaling',
-        'applySquadTargetPosition'
+        'applySquadTargetPosition',
+        'getStartingLocationsFromLevel',
+        'tileToWorld'
     ];
 
     static CLASS_SPAWN_MAP = {
@@ -180,23 +182,33 @@ class HeroRosterSystem extends GUTS.BaseSystem {
         // fall back to the legacy rounds-survived curve for entries without XP yet.
         const level       = rosterEntry.level || this._calcLevel(rosterEntry.roundsPlayed || 0);
 
+        const def = this.collections.units?.[HeroRosterSystem.resolveSpawnType(rosterEntry)] || {};
+        const fw = rosterEntry.formation?.w || def.squadWidth || 1;
+        const fh = rosterEntry.formation?.h || def.squadHeight || 1;
+        const basis = this.formationBasis(stats.team);
+
+        // Anchor: saved battle position for veterans, the fresh spawn's own
+        // centroid for new buys (either way, members form up around it facing
+        // the enemy — never the world-aligned single file spawnSquad produces).
+        let anchor = rosterEntry.lastPosition;
+        if (!anchor && u.squadUnits.length > 1) {
+            let cx = 0, cz = 0, n = 0;
+            for (const id of u.squadUnits) {
+                const p = this.game.getComponent(id, 'transform')?.position;
+                if (!p) continue;
+                cx += p.x; cz += p.z; n++;
+            }
+            if (n > 0) anchor = { x: cx / n, z: cz / n };
+        }
+
         u.squadUnits.forEach((entityId, memberIndex) => {
             // Tag with roster info + apply autobattler vision, level scaling, upgrades, abilities.
             this._tagHeroEntity(entityId, stats.playerId, rosterIndex, level);
 
-            // If the player positioned this squad last round (via drag), respawn
-            // its members in formation around the saved anchor instead of the
-            // default starting location.
-            if (rosterEntry.lastPosition && this.game.placementSystem) {
-                const def = this.collections.units?.[HeroRosterSystem.resolveSpawnType(rosterEntry)] || {};
-                const fw = rosterEntry.formation?.w || def.squadWidth || 1;
-                const fh = rosterEntry.formation?.h || def.squadHeight || 1;
-                const off = HeroRosterSystem.memberOffset(memberIndex, fw, fh);
+            if (anchor && this.game.placementSystem) {
+                const off = HeroRosterSystem.memberOffset(memberIndex, fw, fh, basis);
                 this.game.placementSystem.moveHero(
-                    entityId,
-                    rosterEntry.lastPosition.x + off.x,
-                    rosterEntry.lastPosition.z + off.z
-                );
+                    entityId, anchor.x + off.x, anchor.z + off.z);
             }
 
             this.battleHeroEntities.push({ entityId, playerId: stats.playerId, rosterIndex });
@@ -231,26 +243,50 @@ class HeroRosterSystem extends GUTS.BaseSystem {
         }
         cx /= members.length; cz /= members.length;
 
+        const basis = this.formationBasis(stats.team);
         const moves = [];
         members.forEach((id, i) => {
-            const off = HeroRosterSystem.memberOffset(i, W, H);
+            const off = HeroRosterSystem.memberOffset(i, W, H, basis);
             this.game.placementSystem?.moveHero(id, cx + off.x, cz + off.z);
             moves.push({ entityId: id, x: cx + off.x, z: cz + off.z });
         });
         return { success: true, formation: { w: W, h: H }, moves };
     }
 
-    // Squad members stand in their def's squadWidth x squadHeight grid around
-    // the anchor (30 world units apart), so a squad always LOOKS like a squad.
-    static memberOffset(memberIndex, squadWidth, squadHeight) {
+    // Squad members stand in a width x depth grid around the anchor (30 world
+    // units apart). WIDTH runs across the battlefield (shoulder to shoulder,
+    // facing the enemy) and DEPTH runs toward the enemy — pass the team's
+    // formation basis to orient it; defaults to world axes (across = z).
+    static memberOffset(memberIndex, squadWidth, squadHeight, basis = null) {
         const w = Math.max(1, squadWidth | 0), h = Math.max(1, squadHeight | 0);
         if (w * h <= 1) return { x: 0, z: 0 };
         const SPACING = 30;
         const col = memberIndex % w, row = Math.floor(memberIndex / w);
+        const ax = (col - (w - 1) / 2) * SPACING;   // across the line
+        const az = (row - (h - 1) / 2) * SPACING;   // toward the enemy
+        const b = basis || { across: { x: 0, z: 1 }, forward: { x: 1, z: 0 } };
         return {
-            x: (col - (w - 1) / 2) * SPACING,
-            z: (row - (h - 1) / 2) * SPACING
+            x: b.across.x * ax + b.forward.x * az,
+            z: b.across.z * ax + b.forward.z * az
         };
+    }
+
+    // Formation basis for a team: forward points at the enemy start, across is
+    // its perpendicular — squads line up shoulder to shoulder facing the enemy.
+    formationBasis(team) {
+        const locs = this.call.getStartingLocationsFromLevel?.();
+        if (locs && locs[team] != null) {
+            const enemyTeam = Object.keys(locs).map(Number).find(t => t !== team);
+            if (enemyTeam != null && locs[enemyTeam] != null) {
+                const my = this.call.tileToWorld(locs[team].x, locs[team].z);
+                const en = this.call.tileToWorld(locs[enemyTeam].x, locs[enemyTeam].z);
+                const dx = en.x - my.x, dz = en.z - my.z;
+                const len = Math.hypot(dx, dz) || 1;
+                const f = { x: dx / len, z: dz / len };
+                return { across: { x: -f.z, z: f.x }, forward: f };
+            }
+        }
+        return { across: { x: 0, z: 1 }, forward: { x: 1, z: 0 } };
     }
 
     // Resolve a roster entry → unit spawnType. entry.spawnType is authoritative

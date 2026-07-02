@@ -958,14 +958,26 @@ class PlacementUISystem extends GUTS.BaseSystem {
         const reps = [...groups.values()].map(members => members[0]);
         const squadSlots = this._computeFormationPositions(start, end, reps);
 
+        // Orient member grids to the drag line: width runs along the line
+        // (shoulder to shoulder), depth runs perpendicular.
+        const ldx = end.x - start.x, ldz = end.z - start.z;
+        const llen = Math.hypot(ldx, ldz);
+        const basis = llen > 8
+            ? { across: { x: ldx / llen, z: ldz / llen },
+                forward: { x: -ldz / llen, z: ldx / llen } }
+            : null;
+
         const slots = [];
         for (const slot of squadSlots) {
             const members = this._squadMembers(slot.id).filter(id => units.includes(id));
+            const info = this.game.getComponent(slot.id, 'heroRosterInfo');
+            const entry = info ? this._rosterEntryForInfo(info) : null;
             const def = this.game.getUnitTypeDef(this.game.getComponent(slot.id, 'unitType'));
-            const w = def?.squadWidth || 1, h = def?.squadHeight || 1;
+            const w = entry?.formation?.w || def?.squadWidth || 1;
+            const h = entry?.formation?.h || def?.squadHeight || 1;
             members.forEach((id, i) => {
                 const off = GUTS.HeroRosterSystem?.memberOffset
-                    ? GUTS.HeroRosterSystem.memberOffset(i, w, h)
+                    ? GUTS.HeroRosterSystem.memberOffset(i, w, h, basis)
                     : { x: (i % 2) * 30, z: Math.floor(i / 2) * 30 };
                 slots.push({ id, x: slot.x + off.x, z: slot.z + off.z, rotationY: slot.rotationY });
             });
@@ -1163,7 +1175,10 @@ class PlacementUISystem extends GUTS.BaseSystem {
             } else {
                 this.elements.formationBtn.style.display = '';
                 const f = squads[0].formation;
-                this.elements.formationBtn.textContent = `⬦ Formation ${f.w}×${f.h}`;
+                const preset = PlacementUISystem.formationPresets(squads[0].members.length)
+                    .find(p => p.w === f.w && p.h === f.h);
+                this.elements.formationBtn.textContent =
+                    `⬦ ${preset?.name || 'Formation'} ${f.w}×${f.h}`;
                 this.elements.formationBtn.disabled =
                     this.game.state.phase !== this.enums.gamePhase.placement;
             }
@@ -1235,12 +1250,16 @@ class PlacementUISystem extends GUTS.BaseSystem {
         });
     }
 
-    // Formation presets for a squad of n members (row / column / square shapes).
+    // Formation presets for a squad of n members. Width x depth: Line is the
+    // default (everyone shoulder to shoulder facing the enemy).
     static formationPresets(n) {
-        if (n >= 4) return [[2, 2], [4, 1], [1, 4]];
-        if (n === 3) return [[3, 1], [1, 3]];
-        if (n === 2) return [[2, 1], [1, 2]];
-        return [[1, 1]];
+        if (n >= 4) return [
+            { w: 4, h: 1, name: 'Line' }, { w: 2, h: 2, name: 'Block' }, { w: 1, h: 4, name: 'Column' }];
+        if (n === 3) return [
+            { w: 3, h: 1, name: 'Line' }, { w: 1, h: 3, name: 'Column' }];
+        if (n === 2) return [
+            { w: 2, h: 1, name: 'Line' }, { w: 1, h: 2, name: 'Column' }];
+        return [{ w: 1, h: 1, name: 'Solo' }];
     }
 
     // Cycle every selected squad to its next formation preset.
@@ -1249,8 +1268,8 @@ class PlacementUISystem extends GUTS.BaseSystem {
         for (const sq of this._selectedSquads()) {
             if (sq.members.length <= 1 || sq.locked) continue;
             const presets = PlacementUISystem.formationPresets(sq.members.length);
-            const cur = presets.findIndex(p => p[0] === sq.formation.w && p[1] === sq.formation.h);
-            const [w, h] = presets[(cur + 1) % presets.length];
+            const cur = presets.findIndex(p => p.w === sq.formation.w && p.h === sq.formation.h);
+            const { w, h } = presets[(cur + 1) % presets.length];
             this.call.submitSetSquadFormation(sq.rosterIndex, w, h, (res) => {
                 if (res?.success === false && res?.reason) {
                     GUTS.NotificationSystem?.show?.(`Formation: ${res.reason}`, 'error');
