@@ -1,61 +1,71 @@
-<div id="texture-editor-container" class="editor-module">
-    <div class="editor-module__sidebar editor-module__sidebar--left">
-        <div class="editor-module__section">
-            <h3 class="editor-module__section-title">Tools</h3>
-            <div class="editor-module__toolbar editor-module__toolbar--vertical">
-                <button id="brush-tool" class="editor-module__btn editor-module__btn--active">Brush</button>
-                <button id="eraser-tool" class="editor-module__btn">Eraser</button>
-                <button id="fill-tool" class="editor-module__btn">Fill</button>
-                <button id="eyedropper-tool" class="editor-module__btn">Eyedropper</button>
-            </div>
-        </div>
+<div id="texture-editor-container" class="tx">
 
-        <div class="editor-module__section">
-            <h3 class="editor-module__section-title">Brush Size</h3>
-            <div class="editor-module__form-row">
-                <input type="range" id="brush-size" class="editor-module__range" min="1" max="10" value="1">
-                <span id="brush-size-display">1px</span>
-            </div>
-        </div>
+  <!-- ===== Top toolbar ===== -->
+  <div class="tx__toolbar">
+    <div class="tx__tool-group">
+      <span class="tx__tool-label">Tools</span>
+      <button id="brush-tool" class="tx__btn tx__tool active" title="Paint pixels (B)">✏ Brush</button>
+      <button id="eraser-tool" class="tx__btn tx__tool" title="Erase to transparent">◻ Eraser</button>
+      <button id="fill-tool" class="tx__btn tx__tool" title="Flood fill">▨ Fill</button>
+      <button id="eyedropper-tool" class="tx__btn tx__tool" title="Pick a color from the image">◉ Pick</button>
+    </div>
+    <span class="tx__sep"></span>
+    <div class="tx__tool-group">
+      <span class="tx__tool-label">Size</span>
+      <input type="range" id="brush-size" class="tx__range" min="1" max="10" value="1">
+      <span id="brush-size-display" class="tx__readout">1px</span>
+    </div>
+    <span class="tx__sep"></span>
+    <div class="tx__tool-group">
+      <button id="undo-btn" class="tx__btn tx__btn--quiet" title="Undo" disabled>↩</button>
+      <button id="redo-btn" class="tx__btn tx__btn--quiet" title="Redo" disabled>↪</button>
+      <button id="new-btn" class="tx__btn" title="New texture">+ New</button>
+      <button id="clear-btn" class="tx__btn tx__btn--quiet" title="Clear to transparent">Clear</button>
+    </div>
+    <span class="tx__spacer"></span>
+    <label class="tx__btn tx__import" title="Import an image file">
+      ⤓ Import<input type="file" accept="image/*">
+    </label>
+    <button class="tx__btn tx__btn--primary export-btn" title="Save PNG + update imagePath">💾 Save</button>
+  </div>
 
-        <div class="editor-module__section">
-            <h3 class="editor-module__section-title">Colors</h3>
-            <div class="editor-module__form-row">
-                <select id="palette-switcher" class="editor-module__select"></select>
-            </div>
-            <div id="color-palette" class="texture-editor__color-palette"></div>
-            <button id="palettize-btn" class="editor-module__btn">Palettize</button>
-            <button id="extract-colors-btn" class="editor-module__btn">Extract Colors</button>
-            <div class="editor-module__form-row">
-                <input type="color" id="custom-color-picker" class="editor-module__color-picker" value="#000000">
-                <label for="custom-color-picker" class="editor-module__label">Custom Color</label>
-            </div>
-            <div class="editor-module__form-row">
-                <label for="transparency-slider" class="editor-module__label">Opacity:</label>
-                <input type="range" id="transparency-slider" class="editor-module__range" min="0" max="255">
-                <span id="transparency-display">100%</span>
-            </div>
-        </div>
+  <!-- ===== Main: colors | canvas ===== -->
+  <div class="tx__main">
 
-        <div class="editor-module__section">
-            <h3 class="editor-module__section-title">Actions</h3>
-            <div class="editor-module__toolbar editor-module__toolbar--vertical">
-                <button id="new-btn" class="editor-module__btn">New</button>
-                <button id="undo-btn" class="editor-module__btn" disabled>Undo</button>
-                <button id="redo-btn" class="editor-module__btn" disabled>Redo</button>
-                <button id="clear-btn" class="editor-module__btn editor-module__btn--danger">Clear</button>
-                <button class="export-btn editor-module__btn editor-module__btn--primary">Save</button>
-            </div>
+    <!-- Left: color panel -->
+    <div class="tx__left">
+      <div class="tx__section">
+        <div class="tx__eyebrow"><span>Palette</span></div>
+        <select id="palette-switcher" class="tx__select"></select>
+        <div id="color-palette" class="tx__swatches"></div>
+        <div class="tx__row">
+          <button id="palettize-btn" class="tx__btn tx__btn--block" title="Remap every pixel to the nearest palette color">Palettize Image</button>
         </div>
-
-        <div class="editor-module__section">
-            <h3 class="editor-module__section-title">Import</h3>
-            <input type="file" class="editor-module__input" accept="image/*">
+        <div class="tx__row">
+          <button id="extract-colors-btn" class="tx__btn tx__btn--block" title="Add the image's colors to the palette (session only)">Extract Colors</button>
         </div>
+      </div>
+      <div class="tx__section">
+        <div class="tx__eyebrow"><span>Color</span></div>
+        <div class="tx__form-row">
+          <label class="tx__label">Custom</label>
+          <input type="color" id="custom-color-picker" class="tx__color" value="#000000">
+        </div>
+        <div class="tx__form-row">
+          <label class="tx__label">Opacity</label>
+          <input type="range" id="transparency-slider" class="tx__range" min="0" max="255" value="255">
+          <span id="transparency-display" class="tx__readout">100%</span>
+        </div>
+      </div>
     </div>
 
-    <div class="editor-module__canvas-area editor-module__grid-background">
-        <canvas id="texture-canvas" class="editor-module__canvas"></canvas>
-        <div id="noTextureMessage" class="texture-editor__no-texture-message">No texture loaded</div>
+    <!-- Center: canvas (JS appends the zoom status bar + transparency checker here) -->
+    <div class="tx__center">
+      <canvas id="texture-canvas"></canvas>
+      <div id="noTextureMessage" class="tx__empty">
+        <h2>No texture</h2>
+        <p>Use “+ New” to create one, or “Import” to load an image.</p>
+      </div>
     </div>
+  </div>
 </div>
