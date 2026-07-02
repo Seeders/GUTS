@@ -206,19 +206,47 @@ try {
         resolve1.myRoster >= 2 && resolve1.lockedEntries === resolve1.myRoster,
         `${resolve1.myRoster} roster entries, ${resolve1.lockedEntries} locked`);
 
-    // Mechabellum rule: no combat XP — after a battle full of kills, every
-    // squad must still be level 1 (levels are bought, never earned)
-    const autoLevel = await page.evaluate(() => {
+    // Mechabellum XP: the KILLER earns the victim's worth (50% + participation),
+    // and enough kill-value earns a free level. Stage deterministic kills.
+    const combatXp = await page.evaluate(() => {
         const game = window.game;
         let my = null;
         for (const eid of game.getEntitiesWith('playerStats')) {
             const s = game.getComponent(eid, 'playerStats');
             if (s.playerId === 0) my = s;
         }
-        return (my.heroRoster || []).map(e => e.level || 1);
+        const myUnit = game.getEntitiesWith('heroRosterInfo').find(id =>
+            game.getComponent(id, 'heroRosterInfo')?.playerId === 0);
+        const info = game.getComponent(myUnit, 'heroRosterInfo');
+        const entry = my.heroRoster[info.rosterIndex];
+        const xpBefore = entry.xp || 0;
+        const levelBefore = entry.level || 1;
+
+        // Kill enemy units with lastAttacker credited to our unit until it levels
+        const spawn = game.getService('createEntityFromPrefab');
+        const apply = game.getService('applyDamage');
+        const pt = game.getComponent(myUnit, 'transform');
+        let kills = 0;
+        for (let i = 0; i < 12 && (entry.level || 1) === levelBefore; i++) {
+            const eid = spawn({
+                prefab: 'unit', type: '1_s_barbarian', collection: 'units',
+                team: game.getEnums().team.right,
+                componentOverrides: { transform: { position: { x: pt.position.x + 60, y: 0, z: pt.position.z } } }
+            });
+            game.addComponent(eid, 'heroRosterInfo', { playerId: 1, rosterIndex: 90 + i, level: 1 });
+            const cs = game.getComponent(eid, 'combatState');
+            if (cs) cs.lastAttacker = myUnit;
+            apply(myUnit, eid, 99999, 0, { isMelee: true, weaponRange: 999999 });
+            kills++;
+        }
+        return {
+            kills, xpBefore, xpAfter: entry.xp,
+            levelBefore, levelAfter: entry.level || 1
+        };
     });
-    check('units do not level automatically (no combat XP)',
-        autoLevel.every(l => l === 1), `levels after battle: [${autoLevel.join(',')}]`);
+    check('killers earn combat XP and level from kill value',
+        combatXp.levelAfter > combatXp.levelBefore,
+        `${combatXp.kills} kills: L${combatXp.levelBefore} -> L${combatXp.levelAfter}, xp remainder ${Math.round(combatXp.xpAfter || 0)}`);
 
     await waitSim(page, 1);
 

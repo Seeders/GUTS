@@ -25,8 +25,6 @@ class HeroExperienceSystem extends GUTS.BaseSystem {
         'broadcastToRoom'
     ];
 
-    static XP_PER_KILL = 1;          // each living ally gains this per enemy death
-    static XP_PER_LEVEL = 3;         // L2 at 3xp, L3 at 6xp, ...
     static MAX_LEVEL = 30;
     static SPEC_LEVEL = 3;           // tier-1 → tier-2 transform unlocks here
     static LEVEL_STAT_SCALE = 0.08;  // +8% hp & damage per level above 1
@@ -37,42 +35,121 @@ class HeroExperienceSystem extends GUTS.BaseSystem {
         this.game.heroExperienceSystem = this;
     }
 
-    // ─── XP (event hook) ──────────────────────────────────────────────────────
+    // ─── Combat XP (Mechabellum model) ────────────────────────────────────────
+    //
+    // Units earn experience BY KILLING (not by merely surviving):
+    // - The killer (victim's combatState.lastAttacker) gets 50% of the victim's
+    //   XP worth; living allies near the victim split the other 50%.
+    // - No valid killer (indirect death) → the worth splits among ALL of the
+    //   killing side's living units.
+    // - A victim's worth scales with its value and level: cost × (2·level − 1).
+    // - Earned levels stack with paid level-ups (ArmyShopSystem.buySquadLevel);
+    //   the threshold mirrors the paid price (cost × level, in kill-value),
+    //   so a rank is "earned" by destroying about what it would cost to buy.
+    // Feeding kills to a carry is a real strategy; stat scaling applies on the
+    // next round's respawn.
+    static PARTICIPATION_RADIUS = 220;
 
-    // Mechabellum redesign: units do NOT gain combat experience. Levels are a
-    // spending decision only — paid squad level-ups (ArmyShopSystem.buySquadLevel)
-    // and reinforcement cards. Free per-kill XP would give away the game's core
-    // "grow taller vs. grow wider" choice, so this hook is retired.
     onUnitKilled(deadEntityId) {
-        // intentionally no combat XP
+        if (!this.game.isServer && !this.game.state?.isLocalGame) return;
+        const deadTeam = this.game.getComponent(deadEntityId, 'team')?.team;
+        if (deadTeam == null) return;
+
+        const worth = this._victimWorth(deadEntityId);
+        if (worth <= 0) return;
+
+        // Killer: the victim's last attacker, if it's a living enemy roster unit
+        let killer = this.game.getComponent(deadEntityId, 'combatState')?.lastAttacker;
+        if (killer != null && !this._isEligibleGainer(killer, deadTeam)) killer = null;
+
+        // Participants: living enemy roster units near the victim (excluding the killer)
+        const deadPos = this.game.getComponent(deadEntityId, 'transform')?.position;
+        const participants = [];
+        const allSide = [];
+        for (const eid of (this.game.getEntitiesWith?.('heroRosterInfo', 'health') || [])) {
+            if (eid === deadEntityId || !this._isEligibleGainer(eid, deadTeam)) continue;
+            allSide.push(eid);
+            if (eid === killer || !deadPos) continue;
+            const pos = this.game.getComponent(eid, 'transform')?.position;
+            if (!pos) continue;
+            const dx = pos.x - deadPos.x, dz = pos.z - deadPos.z;
+            if (dx * dx + dz * dz <= HeroExperienceSystem.PARTICIPATION_RADIUS ** 2) {
+                participants.push(eid);
+            }
+        }
+
+        if (killer != null) {
+            this._awardXp(killer, worth * 0.5);
+            const share = participants.length ? (worth * 0.5) / participants.length : 0;
+            for (const eid of participants) this._awardXp(eid, share);
+        } else if (allSide.length) {
+            // Indirect kill: split the full worth across the side
+            const share = worth / allSide.length;
+            for (const eid of allSide) this._awardXp(eid, share);
+        }
+    }
+
+    // Victim's XP worth: shop-cost scale × (2·level − 1), Mechabellum-style.
+    _victimWorth(deadEntityId) {
+        const unitTypeComp = this.game.getComponent(deadEntityId, 'unitType');
+        const def = this.game.getUnitTypeDef?.(unitTypeComp);
+        const cost = Math.max(1, Math.ceil((def?.value || 25) / 5));
+        const level = this.game.getComponent(deadEntityId, 'heroRosterInfo')?.level || 1;
+        return cost * (2 * level - 1);
+    }
+
+    // Living roster unit on the opposite team of the victim.
+    _isEligibleGainer(eid, deadTeam) {
+        if (!this.game.getComponent(eid, 'heroRosterInfo')) return false;
+        const team = this.game.getComponent(eid, 'team')?.team;
+        if (team == null || team === deadTeam) return false;
+        const health = this.game.getComponent(eid, 'health');
+        if (!health || health.current <= 0) return false;
+        const ds = this.game.getComponent(eid, 'deathState');
+        return !ds || ds.state === this.enums.deathState.alive;
+    }
+
+    // XP needed for this entry's NEXT earned level: mirrors the paid price
+    // (own cost × current level), in destroyed-value terms.
+    _xpToNextLevel(entry) {
+        const def = this.collections.units?.[entry?.spawnType] || {};
+        const cost = Math.max(1, Math.ceil((def.value || 25) / 5));
+        return cost * Math.max(1, entry.level || 1);
     }
 
     _awardXp(entityId, amount) {
         const info = this.game.getComponent(entityId, 'heroRosterInfo');
-        if (!info) return;
+        if (!info || amount <= 0) return;
         const stats = this._statsByPlayerId(info.playerId);
         const entry = stats?.heroRoster?.[info.rosterIndex];
         if (!entry) return;
+        if ((entry.level || 1) >= HeroExperienceSystem.MAX_LEVEL) return;
+
         entry.xp = (entry.xp || 0) + amount;
-        // Paid squad level-ups (ArmyShopSystem.buySquadLevel) stack on top of XP
-        // levels — never clobber them when recomputing from xp.
-        entry.level = Math.min(HeroExperienceSystem.MAX_LEVEL,
-            HeroExperienceSystem.levelForXp(entry.xp) + (entry.paidLevels || 0));
+
+        // Consume XP into earned levels (threshold scales with the unit's own
+        // cost and level — the kill-value analogue of the paid level price).
+        let leveled = false;
+        while ((entry.level || 1) < HeroExperienceSystem.MAX_LEVEL &&
+               entry.xp >= this._xpToNextLevel(entry)) {
+            entry.xp -= this._xpToNextLevel(entry);
+            entry.level = (entry.level || 1) + 1;
+            leveled = true;
+        }
         info.level = entry.level;   // keep the live component in sync (abilities/display)
+        if (leveled) {
+            this.game.triggerEvent('onSquadLeveledFromCombat', {
+                entityId, playerId: info.playerId, rosterIndex: info.rosterIndex, level: entry.level
+            });
+        }
     }
 
     // ─── Level helpers ────────────────────────────────────────────────────────
 
-    static levelForXp(xp) {
-        const lvl = 1 + Math.floor((xp || 0) / HeroExperienceSystem.XP_PER_LEVEL);
-        return Math.max(1, Math.min(HeroExperienceSystem.MAX_LEVEL, lvl));
-    }
-
+    // entry.level is mutated directly by both level sources (combat XP in
+    // _awardXp, gold in ArmyShopSystem.buySquadLevel) — it is the truth.
     getEntryLevel(entry) {
-        if (!entry) return 1;
-        if (entry.level != null) return entry.level;
-        return Math.min(HeroExperienceSystem.MAX_LEVEL,
-            HeroExperienceSystem.levelForXp(entry.xp || 0) + (entry.paidLevels || 0));
+        return entry?.level || 1;
     }
 
     // Apply per-level stat scaling to a freshly spawned unit. Called by
