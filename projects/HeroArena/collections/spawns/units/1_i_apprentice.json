@@ -9,7 +9,7 @@
   "value": 35,
   "hp": 130,
   "speed": 55,
-  "damage": 18,
+  "damage": 24,
   "attackSpeed": 0.8,
   "range": 180,
   "projectile": "fireball",

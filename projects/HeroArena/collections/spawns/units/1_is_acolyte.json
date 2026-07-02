@@ -10,7 +10,7 @@
   "hp": 110,
   "speed": 45,
   "damage": 14,
-  "attackSpeed": 1,
+  "attackSpeed": 1.0,
   "element": "holy",
   "armor": 0,
   "fireResistance": 0.3,

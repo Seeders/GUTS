@@ -10,7 +10,7 @@
   "hp": 160,
   "speed": 45,
   "damage": 18,
-  "attackSpeed": 1,
+  "attackSpeed": 1.0,
   "element": "physical",
   "armor": 6,
   "fireResistance": 0.25,

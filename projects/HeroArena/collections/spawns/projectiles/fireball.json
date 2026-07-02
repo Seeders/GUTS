@@ -76,5 +76,7 @@
   "particle": "fire",
   "shadows": false,
   "hitSound": "explosion",
-  "attackSound": "missileLaunch"
+  "attackSound": "missileLaunch",
+  "splashOnHit": true,
+  "splashRadius": 80
 }
