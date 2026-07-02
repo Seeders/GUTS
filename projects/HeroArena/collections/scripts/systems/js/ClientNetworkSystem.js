@@ -324,9 +324,13 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
                 this.game.triggerEvent('onPlacementPhaseStart');
             }),
             nm.listen('HERO_MOVED', (data) => {
-                // Apply server-authoritative move to local transform
-                if (data?.entityId != null) {
-                    this.game.placementSystem?.moveHero(data.entityId, data.x, data.z, data.rotationY);
+                // Apply server-authoritative move(s) to local transforms. Squads
+                // send a `moves` array (whole formation); fall back to the single
+                // legacy shape.
+                const moves = Array.isArray(data?.moves) ? data.moves
+                    : (data?.entityId != null ? [data] : []);
+                for (const m of moves) {
+                    this.game.placementSystem?.moveHero(m.entityId, m.x, m.z, m.rotationY);
                 }
             }),
             nm.listen('BUILDING_MOVED', (data) => {

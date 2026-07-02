@@ -353,11 +353,12 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
         for (const eid of survivorIds) {
             const unitTypeComp = this.game.getComponent(eid, 'unitType');
             const def = this.game.getUnitTypeDef?.(unitTypeComp);
-            const value = Math.max(1, Math.ceil((def?.value || 25) / 5)); // shop-cost scale
+            const squadPrice = Math.max(1, Math.ceil((def?.value || 25) / 5)); // shop-cost scale
+            const members = Math.max(1, (def?.squadWidth || 1) * (def?.squadHeight || 1));
             const level = this.game.getComponent(eid, 'heroRosterInfo')?.level || 1;
-            total += value * level;
+            total += (squadPrice / members) * level;   // each member carries its share
         }
-        return total;
+        return Math.round(total);
     }
 
     // Battles are fully automatic (no player orders): at battle start EVERY

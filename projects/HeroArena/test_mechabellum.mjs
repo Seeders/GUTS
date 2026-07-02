@@ -174,6 +174,29 @@ try {
         const locked = game.heroRosterSystem.isUnitLocked(uid);
         return { moved: Math.hypot(after.x - before.x, after.z - before.z) > 50, locked, res: res?.success };
     });
+    // Squads: one purchase = N member entities sharing a roster entry
+    const squad = await page.evaluate(() => {
+        const game = window.game;
+        let my = null;
+        for (const eid of game.getEntitiesWith('playerStats')) {
+            const st = game.getComponent(eid, 'playerStats');
+            if (st.playerId === 0) my = st;
+        }
+        my.gold += 20;
+        const r = game.getService('buyUnlockedUnit')(0, '1_sd_soldier');
+        const idx = my.heroRoster.length - 1;
+        const members = game.getService('getHeroEntityIds')(0, idx);
+        const sellRes = game.getService('sellUnit')(0, idx);
+        const after = game.getService('getHeroEntityIds')(0, idx0 => idx0);
+        const alive = members.filter(id => game.entityAlive?.[id] === 1);
+        return { ok: r?.success, members: members.length, sellOk: sellRes?.success,
+                 aliveAfterSell: alive.length };
+    });
+    check('a soldier squad spawns 4 members from one purchase',
+        squad.ok && squad.members === 4, `${squad.members} members`);
+    check('selling a squad removes all members',
+        squad.sellOk && squad.aliveAfterSell === 0, `${squad.aliveAfterSell} left alive`);
+
     check('fresh units are placeable (not locked)', dragNew.moved && dragNew.locked === false);
 
     // ── Battle round 1 ─────────────────────────────────────────────────────

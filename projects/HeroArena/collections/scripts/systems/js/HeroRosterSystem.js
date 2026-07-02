@@ -12,6 +12,7 @@ class HeroRosterSystem extends GUTS.BaseSystem {
         'removeRosterEntry',
         'despawnBattleHeroes',
         'getHeroEntityId',
+        'getHeroEntityIds',
         'getRosterEntryForEntity',
         'snapshotHeroPositions',
         'reapplyStandingOrders',
@@ -103,10 +104,13 @@ class HeroRosterSystem extends GUTS.BaseSystem {
         const newSpawnType = HeroRosterSystem.resolveSpawnType(entry);
         if (!newSpawnType) return { success: false, reason: 'no_spawn_type' };
 
-        const liveId = this.getHeroEntityId(numericPlayerId, rosterIndex);
-        if (liveId != null && this.game.hasService?.('replaceUnit')) {
-            const newId = this.call.replaceUnit(liveId, newSpawnType);
-            if (newId != null) {
+        const liveIds = this.getHeroEntityIds(numericPlayerId, rosterIndex);
+        if (liveIds.length > 0 && this.game.hasService?.('replaceUnit')) {
+            let ok = 0;
+            for (const liveId of liveIds) {
+                const newId = this.call.replaceUnit(liveId, newSpawnType);
+                if (newId == null) continue;
+                ok++;
                 const level = entry.level || this._calcLevel(entry.roundsPlayed || 0);
                 this._tagHeroEntity(newId, numericPlayerId, rosterIndex, level);
                 // replaceUnit reuses the same id, so the battle-hero mapping still holds;
@@ -115,8 +119,8 @@ class HeroRosterSystem extends GUTS.BaseSystem {
                     this.battleHeroEntities.push({ entityId: newId, playerId: numericPlayerId, rosterIndex });
                     this._entityToRoster.set(newId, { playerId: numericPlayerId, rosterIndex });
                 }
-                return { success: true };
             }
+            if (ok > 0) return { success: true };
         }
         // Not on the field (or replaceUnit unavailable) → spawn a fresh copy.
         return this.spawnPurchasedUnit(numericPlayerId, rosterIndex);
@@ -175,23 +179,36 @@ class HeroRosterSystem extends GUTS.BaseSystem {
         // fall back to the legacy rounds-survived curve for entries without XP yet.
         const level       = rosterEntry.level || this._calcLevel(rosterEntry.roundsPlayed || 0);
 
-        u.squadUnits.forEach(entityId => {
+        u.squadUnits.forEach((entityId, memberIndex) => {
             // Tag with roster info + apply autobattler vision, level scaling, upgrades, abilities.
             this._tagHeroEntity(entityId, stats.playerId, rosterIndex, level);
 
-            // If the player positioned this hero last round (via drag), respawn
-            // them at the saved spot instead of the default starting location.
+            // If the player positioned this squad last round (via drag), respawn
+            // its members in formation around the saved anchor instead of the
+            // default starting location.
             if (rosterEntry.lastPosition && this.game.placementSystem) {
+                const off = HeroRosterSystem._memberOffset(memberIndex, u.squadUnits.length);
                 this.game.placementSystem.moveHero(
                     entityId,
-                    rosterEntry.lastPosition.x,
-                    rosterEntry.lastPosition.z
+                    rosterEntry.lastPosition.x + off.x,
+                    rosterEntry.lastPosition.z + off.z
                 );
             }
 
             this.battleHeroEntities.push({ entityId, playerId: stats.playerId, rosterIndex });
             this._entityToRoster.set(entityId, { playerId: stats.playerId, rosterIndex });
         });
+    }
+
+    // Tight formation offsets for squad members around their anchor: member 0
+    // on it, the rest ringed at ~30 world units (matches placement cell scale).
+    static _memberOffset(memberIndex, count) {
+        if (count <= 1 || memberIndex === 0) return { x: 0, z: 0 };
+        const ring = [
+            { x: 30, z: 0 }, { x: 0, z: 30 }, { x: -30, z: 0 }, { x: 0, z: -30 },
+            { x: 30, z: 30 }, { x: -30, z: 30 }, { x: 30, z: -30 }, { x: -30, z: -30 }
+        ];
+        return ring[(memberIndex - 1) % ring.length];
     }
 
     // Resolve a roster entry → unit spawnType. entry.spawnType is authoritative
@@ -212,29 +229,24 @@ class HeroRosterSystem extends GUTS.BaseSystem {
     // their next-round spawn uses that position instead of the team default.
     snapshotHeroPositions() {
         if (!this.game.isServer && !this.game.state?.isLocalGame) return;
-        const playerEntities = this.call.getPlayerEntities();
 
+        // A squad's saved position is its members' CENTROID — the anchor its
+        // members respawn in formation around every following round.
+        const acc = new Map();   // "playerId:rosterIndex" → {x, z, n, playerId, rosterIndex}
         for (const { entityId, playerId, rosterIndex } of this.battleHeroEntities) {
-            const transform = this.game.getComponent(entityId, 'transform');
-            const pos = transform?.position;
+            const pos = this.game.getComponent(entityId, 'transform')?.position;
             if (!pos) continue;
+            const key = `${playerId}:${rosterIndex}`;
+            const a = acc.get(key) || { x: 0, z: 0, n: 0, playerId, rosterIndex };
+            a.x += pos.x; a.z += pos.z; a.n++;
+            acc.set(key, a);
+        }
 
-            for (const peid of playerEntities) {
-                const stats = this.game.getComponent(peid, 'playerStats');
-                if (stats && stats.playerId === playerId) {
-                    const entry = stats.heroRoster?.[rosterIndex];
-                    if (entry) {
-                        entry.lastPosition = { x: pos.x, z: pos.z };
-                        // Standing order: persists round to round (re-applied to
-                        // the respawn) until the player changes or clears it.
-                        const po = this.game.getComponent(entityId, 'playerOrder');
-                        entry.standingOrder = (po?.enabled && po.isMoveOrder)
-                            ? { x: po.targetPositionX, z: po.targetPositionZ }
-                            : null;
-                    }
-                    break;
-                }
-            }
+        for (const a of acc.values()) {
+            const stats = this._statsByPlayerId(a.playerId);
+            const entry = stats?.heroRoster?.[a.rosterIndex];
+            if (!entry || a.n === 0) continue;
+            entry.lastPosition = { x: a.x / a.n, z: a.z / a.n };
         }
     }
 
@@ -270,7 +282,8 @@ class HeroRosterSystem extends GUTS.BaseSystem {
         }
     }
 
-    // Returns the current entityId for a player's hero at the given roster index.
+    // Returns the current entityId for a player's hero at the given roster index
+    // (first squad member for multi-member squads).
     getHeroEntityId(playerId, rosterIndex) {
         for (const entry of this.battleHeroEntities) {
             if (entry.playerId === playerId && entry.rosterIndex === rosterIndex) {
@@ -278,6 +291,17 @@ class HeroRosterSystem extends GUTS.BaseSystem {
             }
         }
         return null;
+    }
+
+    // All live member entityIds of a roster entry (a squad is 1..N entities).
+    getHeroEntityIds(playerId, rosterIndex) {
+        const ids = [];
+        for (const entry of this.battleHeroEntities) {
+            if (entry.playerId === playerId && entry.rosterIndex === rosterIndex) {
+                ids.push(entry.entityId);
+            }
+        }
+        return ids;
     }
 
     // Returns { playerId, rosterIndex } for an entity, or null if not a battle hero.
@@ -307,9 +331,8 @@ class HeroRosterSystem extends GUTS.BaseSystem {
             return { success: false, reason: 'bad_index' };
         }
 
-        // Despawn the live unit for this entry, if it's on the field.
-        const liveId = this.getHeroEntityId(numericPlayerId, rosterIndex);
-        if (liveId != null) {
+        // Despawn every live squad member for this entry, if on the field.
+        for (const liveId of this.getHeroEntityIds(numericPlayerId, rosterIndex)) {
             try { this.game.destroyEntity(liveId); } catch (_) {}
         }
 

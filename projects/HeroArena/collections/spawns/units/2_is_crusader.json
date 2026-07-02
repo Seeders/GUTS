@@ -7,9 +7,9 @@
   "size": 25,
   "height": 50,
   "value": 70,
-  "hp": 560,
+  "hp": 280,
   "speed": 38,
-  "damage": 32,
+  "damage": 16,
   "attackSpeed": 1.0,
   "element": "physical",
   "armor": 14,
@@ -138,9 +138,9 @@
   },
   "buyable": false,
   "squadWidth": 1,
-  "squadHeight": 1,
+  "squadHeight": 2,
   "placementGridWidth": 1,
-  "placementGridHeight": 1,
+  "placementGridHeight": 2,
   "abilities": [
     "HealAbility"
   ],

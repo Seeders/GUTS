@@ -7,9 +7,9 @@
   "size": 25,
   "height": 50,
   "value": 70,
-  "hp": 380,
+  "hp": 190,
   "speed": 55,
-  "damage": 36,
+  "damage": 18,
   "attackSpeed": 1.1,
   "range": 200,
   "projectile": "arrow",
@@ -160,9 +160,9 @@
   },
   "buyable": false,
   "squadWidth": 1,
-  "squadHeight": 1,
+  "squadHeight": 2,
   "placementGridWidth": 1,
-  "placementGridHeight": 1,
+  "placementGridHeight": 2,
   "abilities": [
     "SummonWolfAbility"
   ],

@@ -7,9 +7,9 @@
   "size": 25,
   "height": 50,
   "value": 70,
-  "hp": 340,
+  "hp": 170,
   "speed": 80,
-  "damage": 44,
+  "damage": 22,
   "attackSpeed": 1.8,
   "element": "poison",
   "armor": 2,
@@ -152,9 +152,9 @@
   },
   "buyable": false,
   "squadWidth": 1,
-  "squadHeight": 1,
+  "squadHeight": 2,
   "placementGridWidth": 1,
-  "placementGridHeight": 1,
+  "placementGridHeight": 2,
   "abilities": [
     "MirrorImagesAbility"
   ],

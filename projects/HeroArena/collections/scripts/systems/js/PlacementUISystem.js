@@ -1122,10 +1122,15 @@ class PlacementUISystem extends GUTS.BaseSystem {
         const hx = this.game.heroExperienceSystem;
         const maxLevel = hx?.constructor?.MAX_LEVEL || 9;
         let total = 0, ready = false, leveable = 0;
+        const seenEntries = new Set();
         for (const id of unitIds) {
             const info = this.game.getComponent(id, 'heroRosterInfo');
             const def = this.game.getUnitTypeDef(this.game.getComponent(id, 'unitType'));
             if (!info || !def) continue;
+            // A squad is N entities sharing one roster entry — price it once
+            const entryKey = `${info.playerId}:${info.rosterIndex}`;
+            if (seenEntries.has(entryKey)) continue;
+            seenEntries.add(entryKey);
             const entry = this._rosterEntryForInfo(info);
             const level = info.level || 1;
             if (level >= maxLevel) continue;
@@ -1148,9 +1153,9 @@ class PlacementUISystem extends GUTS.BaseSystem {
 
     _levelUpSelectedUnits() {
         if (this.game.state.phase !== this.enums.gamePhase.placement) return;
-        const indices = this._selectedOwnUnits()
+        const indices = [...new Set(this._selectedOwnUnits()
             .map(id => this.game.getComponent(id, 'heroRosterInfo')?.rosterIndex)
-            .filter(i => i != null);
+            .filter(i => i != null))];
         for (const rosterIndex of indices) {
             this.call.submitBuySquadLevel(rosterIndex, (res) => {
                 if (res?.success === false && res?.reason === 'insufficient_gold') {
@@ -1167,9 +1172,9 @@ class PlacementUISystem extends GUTS.BaseSystem {
     // the server's roster splice never invalidates a not-yet-sold lower index.
     _sellSelectedUnits() {
         if (this.game.state.phase !== this.enums.gamePhase.placement) return;
-        const indices = this._selectedOwnUnits()
+        const indices = [...new Set(this._selectedOwnUnits()
             .map(id => this.game.getComponent(id, 'heroRosterInfo')?.rosterIndex)
-            .filter(i => i != null)
+            .filter(i => i != null))]
             .sort((a, b) => b - a);
         if (indices.length === 0) return;
         for (const rosterIndex of indices) {

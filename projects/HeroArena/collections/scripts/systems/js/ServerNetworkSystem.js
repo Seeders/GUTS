@@ -1272,15 +1272,36 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
             return this.respond(playerId, 'HERO_MOVED_ACK', { success: false, reason: 'deployment_locked' }, callback);
         }
 
+        // Squads move as one: compute the dragged member's delta and shift its
+        // squadmates by the same amount, keeping the formation intact.
+        const draggedPos = this.game.getComponent(entityId, 'transform')?.position;
+        const dx = draggedPos ? x - draggedPos.x : 0;
+        const dz = draggedPos ? z - draggedPos.z : 0;
+
         const result = this.call.moveHero(entityId, x, z, rotationY);
-        // Echo the authoritative (grid-snapped) position back to the MOVER only — never
+        const moves = [{ entityId, x, z, rotationY }];
+        if (result?.success && draggedPos) {
+            const ref = this.game.heroRosterSystem?.getRosterEntryForEntity?.(entityId);
+            const mates = ref
+                ? (this.game.heroRosterSystem?.getHeroEntityIds?.(ref.playerId, ref.rosterIndex) || [])
+                : [];
+            for (const mate of mates) {
+                if (mate === entityId) continue;
+                const mp = this.game.getComponent(mate, 'transform')?.position;
+                if (!mp) continue;
+                const mr = this.call.moveHero(mate, mp.x + dx, mp.z + dz, rotationY);
+                if (mr?.success) moves.push({ entityId: mate, x: mp.x + dx, z: mp.z + dz, rotationY });
+            }
+        }
+        // Echo the authoritative (grid-snapped) positions back to the MOVER only — never
         // to the opponent, so prep-phase repositioning stays hidden until battle start
         // (where the full entitySync reveals everyone's real positions). The mover
         // already moved optimistically; this just reconciles any server-side snapping.
         if (result?.success) {
-            this.sendToPlayer(playerId, 'HERO_MOVED', { entityId, x, z, rotationY });
+            this.sendToPlayer(playerId, 'HERO_MOVED', { entityId, x, z, rotationY, moves });
         }
-        return this.respond(playerId, 'HERO_MOVED_ACK', result ?? { success: false, reason: 'no_system' }, callback);
+        return this.respond(playerId, 'HERO_MOVED_ACK',
+            result ? { ...result, moves } : { success: false, reason: 'no_system' }, callback);
     }
 
     // ==================== HERO ARENA: LOOT & EQUIPMENT ====================
