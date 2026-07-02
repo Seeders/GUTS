@@ -49,8 +49,13 @@ class Engine extends BaseEngine {
 
     getResourcesPath(){
         if(window){
-            // Return absolute path to prevent doubling when accessed from subdirectories
-            return window.location.pathname.replace('index.html', 'resources/');
+            // Directory of the current page + 'resources/'. Handles '/',
+            // '/index.html', and subdirectory hosting alike — the old
+            // replace('index.html') broke when the page was served at '/'
+            // (nothing to replace → the resources/ prefix was lost and
+            // every texture/model request 404'd).
+            const dir = window.location.pathname.replace(/[^/]*$/, '');
+            return dir + 'resources/';
         }
         return "resources/";
     }
