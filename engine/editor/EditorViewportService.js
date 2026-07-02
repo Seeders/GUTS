@@ -142,6 +142,22 @@ class EditorViewportService {
     const tdm = this.editorContext.terrainSystem && this.editorContext.terrainSystem.terrainDataManager;
     const terrainSize = (tdm && (tdm.extendedSize || tdm.terrainSize)) || 1024;
     this.cameraController = new G.EditorCameraController(this.worldRenderer, this.canvas, collections);
+    // Center the initial game view on the terrain. The controller's built-in
+    // default looks at (terrainSize/2, 0, terrainSize/2), but grid<->world math
+    // centers the map at the ORIGIN — so seed a saved-state it restores verbatim,
+    // using the same isometric angles/height as its default.
+    try {
+      const THREE = window.THREE;
+      const camSettings = (collections.cameras || {}).main;
+      const h = (camSettings && camSettings.position && camSettings.position.y) || 512;
+      const pitch = 35.264 * Math.PI / 180, yaw = 135 * Math.PI / 180;
+      const cdx = Math.sin(yaw) * Math.cos(pitch), cdz = Math.cos(yaw) * Math.cos(pitch);
+      this.cameraController.gameCameraState = {
+        position: new THREE.Vector3(-cdx * h, h, -cdz * h),
+        zoom: 1,
+        lookAt: new THREE.Vector3(0, 0, 0)
+      };
+    } catch (e) { /* fall back to controller default */ }
     this.cameraController.initialize(terrainSize);
 
     // 8. Start the fixed-timestep update/render loop (its own RAF).

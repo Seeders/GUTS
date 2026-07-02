@@ -375,8 +375,16 @@ class EditorShell {
     pane.className = 'eshell__tab-pane';
     const toolbar = document.createElement('div');
     toolbar.className = 'eshell__vp-toolbar';
-    [['Game', 'game'], ['Scene', 'scene']].forEach(([label, mode]) =>
-      toolbar.appendChild(this._miniBtn(label, () => { if (this.viewport) this.viewport.setCameraMode(mode); })));
+    const camBtns = {};
+    [['Game', 'game'], ['Scene', 'scene']].forEach(([label, mode]) => {
+      const b = this._miniBtn(label, () => {
+        if (this.viewport) this.viewport.setCameraMode(mode);
+        Object.keys(camBtns).forEach(m => camBtns[m].classList.toggle('eshell__btn--primary', m === mode));
+      });
+      if (mode === 'game') b.classList.add('eshell__btn--primary');   // controller defaults to game mode
+      camBtns[mode] = b;
+      toolbar.appendChild(b);
+    });
     const sep = document.createElement('span'); sep.className = 'eshell__vp-sep'; toolbar.appendChild(sep);
     [['Move', 'translate'], ['Rotate', 'rotate'], ['Scale', 'scale']].forEach(([label, mode]) =>
       toolbar.appendChild(this._miniBtn(label, () => { if (this.viewport) this.viewport.setGizmoMode(mode); })));
