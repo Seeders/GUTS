@@ -693,8 +693,10 @@ class EditorShell {
   _buildScriptEditor(pane, tab, type, id, props) {
     pane.classList.add('eshell__script-pane');
     const bar = document.createElement('div'); bar.className = 'eshell__script-bar';
+    const body = document.createElement('div'); body.className = 'eshell__script-body';
     const host = document.createElement('div'); host.className = 'eshell__script-editor';
-    pane.append(bar, host);
+    body.appendChild(host);
+    pane.append(bar, body);
     const monaco = window.monaco;
     if (!monaco) { host.innerHTML = '<div class="eshell__empty">Monaco editor not available in this build.</div>'; return; }
 
@@ -703,6 +705,40 @@ class EditorShell {
     const editor = monaco.editor.create(host, {
       theme: 'vs-dark', automaticLayout: true, fontSize: 13, minimap: { enabled: false }, scrollBeyondLastLine: false
     });
+
+    // Live preview (interfaces: html + css). Sandboxed iframe, no scripts;
+    // <base> points at the project so relative resource paths resolve.
+    const hasMarkup = props.some(([p]) => p === 'html' || p === 'css');
+    let preview = null, previewTimer = null;
+    const currentValue = (prop) => state.models[prop] ? state.models[prop].getValue() : (obj[prop] || '');
+    const renderPreview = () => {
+      if (!preview || preview.style.display === 'none') return;
+      const project = this.controller.getCurrentProject ? this.controller.getCurrentProject() : '';
+      const css = props.some(([p]) => p === 'css') ? currentValue('css') : '';
+      const html = props.some(([p]) => p === 'html') ? currentValue('html') : '';
+      preview.querySelector('iframe').srcdoc =
+        `<!DOCTYPE html><html><head><base href="/projects/${project}/">` +
+        `<style>html,body{margin:0;min-height:100%;background:#10141c;color:#e7eef7;font-family:system-ui,sans-serif;}</style>` +
+        `<style>${css}</style></head><body>${html}</body></html>`;
+    };
+    const schedulePreview = () => {
+      if (!preview) return;
+      if (previewTimer) clearTimeout(previewTimer);
+      previewTimer = setTimeout(renderPreview, 350);
+    };
+    if (hasMarkup) {
+      preview = document.createElement('div');
+      preview.className = 'eshell__script-preview';
+      const phead = document.createElement('div');
+      phead.className = 'eshell__script-preview-head';
+      phead.textContent = 'Live preview';
+      const iframe = document.createElement('iframe');
+      iframe.setAttribute('sandbox', 'allow-same-origin');   // styles + images, no scripts
+      preview.append(phead, iframe);
+      body.appendChild(preview);
+      editor.onDidChangeModelContent(() => schedulePreview());
+    }
+
     const select = (prop, lang) => {
       if (!state.models[prop]) state.models[prop] = monaco.editor.createModel(obj[prop] || '', lang);
       editor.setModel(state.models[prop]); state.current = prop;
@@ -710,6 +746,16 @@ class EditorShell {
     };
     props.forEach(([prop, lang]) => { const b = this._miniBtn(prop, () => select(prop, lang)); b.dataset.prop = prop; bar.appendChild(b); });
     const spacer = document.createElement('span'); spacer.style.flex = '1'; bar.appendChild(spacer);
+    if (hasMarkup) {
+      const previewBtn = this._miniBtn('◧ Preview', () => {
+        const off = preview.style.display === 'none';
+        preview.style.display = off ? '' : 'none';
+        previewBtn.classList.toggle('eshell__btn--primary', off);
+        if (off) renderPreview();
+      });
+      previewBtn.classList.add('eshell__btn--primary');
+      bar.appendChild(previewBtn);
+    }
     const save = this._miniBtn('Save', () => {
       const o = (this._collections()[type] || {})[id];
       props.forEach(([prop]) => { if (state.models[prop]) o[prop] = state.models[prop].getValue(); });
@@ -720,7 +766,11 @@ class EditorShell {
     });
     save.classList.add('eshell__btn--primary'); bar.appendChild(save);
     select(props[0][0], props[0][1]);
-    tab.dispose = () => { try { Object.values(state.models).forEach(m => m.dispose()); editor.dispose(); } catch (e) {} };
+    renderPreview();
+    tab.dispose = () => {
+      if (previewTimer) clearTimeout(previewTimer);
+      try { Object.values(state.models).forEach(m => m.dispose()); editor.dispose(); } catch (e) {}
+    };
   }
 
   _body(area) { return this.root.querySelector(`[data-body="${area}"]`); }
