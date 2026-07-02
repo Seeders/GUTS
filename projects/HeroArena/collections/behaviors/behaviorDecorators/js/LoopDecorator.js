@@ -69,7 +69,9 @@ class LoopDecorator extends GUTS.BaseBehaviorDecorator {
 
             // Execute child
             result = this.evaluateChild(entityId, game, this.child);
-            memory.lastResult = result;
+            // Store a plain snapshot, not the node's shared reusable result object
+            // (memory must stay JSON-safe now that it lives in ECS data).
+            memory.lastResult = result ? { action: result.action, status: result.status } : null;
             memory.currentIteration++;
             iterations++;
 
