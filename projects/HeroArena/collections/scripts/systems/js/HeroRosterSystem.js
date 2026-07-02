@@ -14,7 +14,8 @@ class HeroRosterSystem extends GUTS.BaseSystem {
         'getHeroEntityId',
         'getRosterEntryForEntity',
         'snapshotHeroPositions',
-        'reapplyStandingOrders'
+        'reapplyStandingOrders',
+        'isUnitLocked'
     ];
 
     static serviceDependencies = [
@@ -282,6 +283,17 @@ class HeroRosterSystem extends GUTS.BaseSystem {
     // Returns { playerId, rosterIndex } for an entity, or null if not a battle hero.
     getRosterEntryForEntity(entityId) {
         return this._entityToRoster.get(entityId) || null;
+    }
+
+    // Deployment is permanent: a unit that has fought a battle (its roster entry
+    // carries a snapshotted lastPosition) can no longer be repositioned or sold.
+    // Units bought this prep have no lastPosition yet and are freely placeable.
+    isUnitLocked(entityId) {
+        const ref = this._entityToRoster.get(entityId);
+        if (!ref) return false;
+        const stats = this._statsByPlayerId(ref.playerId);
+        const entry = stats?.heroRoster?.[ref.rosterIndex];
+        return !!entry?.lastPosition;
     }
 
     // Remove a roster entry (used by ArmyShopSystem.sellUnit): splice it out, despawn

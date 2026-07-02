@@ -1251,6 +1251,12 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
             }
         }
 
+        // Deployment is permanent: units that have fought a battle hold their
+        // positions for the rest of the match.
+        if (this.game.heroRosterSystem?.isUnitLocked?.(entityId)) {
+            return this.respond(playerId, 'HERO_MOVED_ACK', { success: false, reason: 'deployment_locked' }, callback);
+        }
+
         const result = this.call.moveHero(entityId, x, z, rotationY);
         // Echo the authoritative (grid-snapped) position back to the MOVER only — never
         // to the opponent, so prep-phase repositioning stays hidden until battle start

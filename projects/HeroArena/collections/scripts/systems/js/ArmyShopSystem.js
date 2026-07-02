@@ -298,6 +298,9 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         if (!this._inPlacement()) return { success: false, reason: 'wrong_phase' };
         const entry = stats.heroRoster?.[rosterIndex];
         if (!entry) return { success: false, reason: 'bad_index' };
+        // Deployment is permanent: a unit that has fought a battle can't be sold —
+        // selling is only an undo for this prep's purchases.
+        if (entry.lastPosition) return { success: false, reason: 'deployment_locked' };
 
         const def = this.collections.units?.[this._resolveSpawnType(entry)] || {};
         const pct = ArmyShopSystem.SELL_REFUND_PCT + (this.getEconomyEffects(stats).sellRefundPct || 0);
@@ -387,48 +390,13 @@ class ArmyShopSystem extends GUTS.BaseSystem {
 
     // Weighted pool of units + eligible per-type upgrades (+ abilities, later phase).
     // Units are weighted higher so they dominate the early offers.
+    // Mechabellum redesign: the random 5-offer shop is retired. All spending is
+    // deterministic — units from the roster panel, per-unit techs, squad level-ups.
+    // The one random decision per round is the reinforcement card pick (phase 5),
+    // which replaces this entirely. Returning [] keeps the offer plumbing alive
+    // for the transition without ever presenting slot-machine offers.
     _buildOffers(stats) {
-        const profiles = this.ownedUnitProfiles(stats);
-        // Units are NOT sold here — they're bought from the "Your Units" panel
-        // (buyUnlockedUnit). The shop offers only upgrades, abilities and Town Hall
-        // tier/economy upgrades.
-        const candidates = [];
-        const ownedBuildings = new Set(this.game.hasService?.('getOwnedBuildingIds')
-            ? this.call.getOwnedBuildingIds(stats.playerId) : []);
-        const ownedUpgrades = new Set(stats.ownedUpgrades || []);
-        for (const [id, def] of Object.entries(this.collections.upgrades || {})) {
-            if (!def.perUnitType) continue;
-            if (ownedUpgrades.has(id)) continue;                  // one-time: already bought
-            // Upgrades are provided by buildings: require the owning building(s) to be present.
-            const reqB = def.requiresBuildings || [];
-            if (reqB.length && !reqB.every(b => ownedBuildings.has(b))) continue;
-            // Tech-tree gating: an upgrade only enters the pool once its prerequisite
-            // node(s) are owned (see upgradeTrees collection / _treeUnlocked).
-            if (!this._treeUnlocked(stats, id)) continue;
-            if (this.isEligible(profiles, def.requirements)) {
-                candidates.push({ kind: 'upgrade', id, weight: 1 });
-            }
-        }
-        for (const [id, def] of Object.entries(this.collections.shopAbilities || {})) {
-            if (this.isEligible(profiles, def.requirements)) {
-                candidates.push({ kind: 'ability', id, weight: 1 });
-            }
-        }
-        // Economy upgrades (Town Hall tree): not per-unit and not unit-gated — every
-        // player always has a Town Hall, so they're offered once their tree prereqs
-        // are met and they aren't already owned. Bought via the normal buyOffer path.
-        for (const [id, def] of Object.entries(this.collections.upgrades || {})) {
-            if (!def.economy) continue;
-            if (ownedUpgrades.has(id)) continue;
-            if (!this._treeUnlocked(stats, id)) continue;
-            candidates.push({ kind: 'upgrade', id, weight: 1 });
-        }
-        // Buildings are NOT sold in the regular shop — they come from the starting pick
-        // and the round-5 milestone (AutobattlerRoundSystem). Town Hall tier upgrades stay
-        // here, since that's how T2/T3 unit unlocks are reached.
-        const upId = this._townhallUpgradeId(stats);
-        if (upId) candidates.push({ kind: 'townhall_upgrade', id: upId, weight: 2 });
-        return this._sampleOffers(candidates, ArmyShopSystem.OFFER_COUNT);
+        return [];
     }
 
     // upgradeId -> [prerequisite upgradeIds], built once from the upgradeTrees collection.
@@ -516,27 +484,19 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         return this._makeUnitOffer(id);
     }
 
-    // Units offered in the shop, gated by BUILDINGS:
-    //   • ALL units require a building matching one of the unit's archetypes
-    //     (Barracks=str / Hunting Lodge=dex / Mage Tower=int). Dual-archetype units need
-    //     ANY one matching building. With no building owned, no units are offered.
-    //   • Tier-1 needs only the matching building.
-    //   • Tier-2 / Tier-3 additionally require the Town Hall tier (Keep→T2, Castle→T3).
-    // (Tier-2 forms are still also reachable via leveling-up a Tier-1 unit; this just makes
-    //  them purchasable once the player has built up to them.)
+    // Units the player can buy (Mechabellum-style — no buildings):
+    //   • Every tier-1 unit is available from round 1.
+    //   • Tier-2 / tier-3 units require an explicit unlock recorded on
+    //     stats.tierUnlocks (granted by unit techs / reinforcement cards in
+    //     later phases).
     _candidateUnitIds(stats) {
-        const pid = stats.playerId;
-        const thLevel = this.game.hasService?.('townhallLevel') ? this.call.townhallLevel(pid) : 1;
-        const ownedArch = new Set(this.game.hasService?.('getOwnedBuildingArchetypes')
-            ? this.call.getOwnedBuildingArchetypes(pid) : []);
+        const unlocked = new Set(stats.tierUnlocks || []);
         const units = this.collections.units || {};
         const out = [];
         for (const id of Object.keys(units)) {
             const tier = ArmyShopSystem.unitTier(id);
             if (tier == null) continue;
-            if (tier > 1 && thLevel < tier) continue; // higher tiers also need the Town Hall tier
-            const arch = ArmyShopSystem.unitArchetypes(id);
-            if (arch.length && arch.some(a => ownedArch.has(a))) out.push(id);
+            if (tier === 1 || unlocked.has(id)) out.push(id);
         }
         return out;
     }

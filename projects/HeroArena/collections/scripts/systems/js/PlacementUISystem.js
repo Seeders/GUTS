@@ -478,15 +478,17 @@ class PlacementUISystem extends GUTS.BaseSystem {
             this.elements.goldDisplay.textContent = myStats.gold ?? 0;
         }
 
-        // The HUD health bars show each side's TOWN HALL — destroying the enemy's
-        // wins the game. Bars only update when a townhall entity is present
-        // client-side (it may not be synced yet in the first prep).
-        const myTeam = this.call.getActivePlayerTeam?.();
-        if (myTeam != null) {
-            const enemyTeam = myTeam === this.enums.team.left ? this.enums.team.right : this.enums.team.left;
-            this._renderTownHallBar(this._findTownHallHealth(myTeam),
+        // The HUD health bars show each side's COMMANDER HP — surviving enemy
+        // units chip it down after every battle; 0 loses the match.
+        const COMMANDER_HP_MAX = this.game.autobattlerRoundSystem?.constructor?.COMMANDER_HP || 1000;
+        if (myStats) {
+            this._renderTownHallBar(
+                { current: myStats.commanderHP ?? COMMANDER_HP_MAX, max: COMMANDER_HP_MAX },
                 this.elements.playerHPBar, this.elements.playerHPValue);
-            this._renderTownHallBar(this._findTownHallHealth(enemyTeam),
+        }
+        if (opStats) {
+            this._renderTownHallBar(
+                { current: opStats.commanderHP ?? COMMANDER_HP_MAX, max: COMMANDER_HP_MAX },
                 this.elements.opponentHPBar, this.elements.opponentHPValue);
         }
 
@@ -582,6 +584,11 @@ class PlacementUISystem extends GUTS.BaseSystem {
         } else {
             // Must be a hero entity (heroRosterInfo is added by HeroRosterSystem)
             if (!this.game.getComponent(heroId, 'heroRosterInfo')) return;
+            // Deployment is permanent: units that have fought hold their positions.
+            if (this._isDeploymentLocked(heroId)) {
+                GUTS.NotificationSystem?.show?.('Deployment locked — veterans hold their positions', 'info');
+                return;
+            }
             this.draggedHeroId = heroId;
         }
 
@@ -594,7 +601,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
         // Buildings always drag singly (they have their own move rules).
         this.dragUnits = null;
         if (this.draggedHeroId != null) {
-            const group = this._formationUnits();  // selected, alive, own-team, movable heroes
+            const group = this._formationUnits();  // selected, alive, own-team, movable (unlocked) heroes
             if (group.length > 1 && group.includes(heroId)) {
                 this.dragUnits = group.map((id) => {
                     const p = this.game.getComponent(id, 'transform')?.position;
@@ -682,6 +689,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
     // drag clamps to a square. Units face perpendicular to the line, toward the enemy.
 
     // Selected, alive, own-team, non-building hero/army units (the movable ones).
+    // Excludes deployment-locked veterans — only units bought this prep can move.
     _formationUnits() {
         if (this.game.state.phase !== this.enums.gamePhase.placement) return [];
         const ids = this.game.selectedUnitSystem?.getSelectedUnits?.() || [];
@@ -691,8 +699,27 @@ class PlacementUISystem extends GUTS.BaseSystem {
             const team = this.game.getComponent(id, 'team');
             if (!team || team.team !== myTeam) return false;
             if (this.game.getComponent(id, 'buildingOwner')) return false;
-            return !!this.game.getComponent(id, 'heroRosterInfo');
+            if (!this.game.getComponent(id, 'heroRosterInfo')) return false;
+            return !this._isDeploymentLocked(id);
         });
+    }
+
+    // Deployment is permanent once a unit has fought a battle (its roster entry
+    // carries lastPosition). Component-based check first — heroRosterInfo and
+    // playerStats.heroRoster are replicated, so it works on online clients where
+    // HeroRosterSystem's server-side entity map is empty. Server remains
+    // authoritative regardless (handleHeroMoved rejects locked moves).
+    _isDeploymentLocked(entityId) {
+        const info = this.game.getComponent(entityId, 'heroRosterInfo');
+        if (info) {
+            for (const eid of (this.call.getPlayerEntities?.() || [])) {
+                const stats = this.game.getComponent(eid, 'playerStats');
+                if (stats?.playerId === info.playerId) {
+                    return !!stats.heroRoster?.[info.rosterIndex]?.lastPosition;
+                }
+            }
+        }
+        return !!this.game.heroRosterSystem?.isUnitLocked?.(entityId);
     }
 
     // Disable/restore the free-fly camera's right-drag mouse-look. While units are
@@ -1249,9 +1276,15 @@ class PlacementUISystem extends GUTS.BaseSystem {
             }).join('');
         }
         if (this.elements.shopRerollBtn) {
-            const cost = s.rerollCost ?? 0;
-            this.elements.shopRerollBtn.textContent = `Reroll (${cost}g)`;
-            this.elements.shopRerollBtn.disabled = (s.gold ?? 0) < cost;
+            // Mechabellum redesign: no random offers, so nothing to reroll. The
+            // button stays hidden until the reinforcement-card pick replaces this
+            // panel entirely (phase 5).
+            this.elements.shopRerollBtn.classList.add('hidden');
+        }
+        // Hide the whole offers region when the offer list is empty (always,
+        // during the transition) so the shop panel reads as the unit roster.
+        if (this.elements.shopPanel) {
+            this.elements.shopPanel.classList.toggle('hidden', offers.length === 0);
         }
         this._renderUnlockedUnits(s);
         this.updateHUD?.();
