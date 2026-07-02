@@ -41,6 +41,7 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         'handleBuyUnlockedUnit',
         'handleBuyUnitTech',
         'handleBuySquadLevel',
+        'handleBuyTierUnlock',
         'handlePickReinforcement',
         'handleCastCommanderSkill',
         'handleSellUnit',
@@ -76,6 +77,7 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         'buyUnlockedUnit',
         'buyUnitTech',
         'buySquadLevel',
+        'buyTierUnlock',
         'pickReinforcement',
         'castCommanderSkill',
         'sellUnit',
@@ -386,6 +388,7 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         this.game.serverEventManager.subscribe('BUY_UNLOCKED_UNIT',    this.handleBuyUnlockedUnit.bind(this));
         this.game.serverEventManager.subscribe('BUY_UNIT_TECH',        this.handleBuyUnitTech.bind(this));
         this.game.serverEventManager.subscribe('BUY_SQUAD_LEVEL',      this.handleBuySquadLevel.bind(this));
+        this.game.serverEventManager.subscribe('BUY_TIER_UNLOCK',      this.handleBuyTierUnlock.bind(this));
         this.game.serverEventManager.subscribe('PICK_REINFORCEMENT',   this.handlePickReinforcement.bind(this));
         this.game.serverEventManager.subscribe('CAST_COMMANDER_SKILL', this.handleCastCommanderSkill.bind(this));
         this.game.serverEventManager.subscribe('SELL_UNIT',            this.handleSellUnit.bind(this));
@@ -1337,6 +1340,14 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         const result = this.call.buySquadLevel(numericPlayerId, d.rosterIndex);
         this.syncEntitiesToClients(playerId, numericPlayerId);   // unit rebuilt with new level
         return this.respond(playerId, 'BUY_SQUAD_LEVEL_ACK', result ?? { success: false }, callback);
+    }
+
+    handleBuyTierUnlock(eventData, callback) {
+        const { playerId } = eventData;
+        const numericPlayerId = eventData.numericPlayerId ?? eventData.playerId;
+        const d = eventData.data || eventData;
+        const result = this.call.buyTierUnlock(numericPlayerId, d.unitId);
+        return this.respond(playerId, 'BUY_TIER_UNLOCK_ACK', result ?? { success: false }, callback);
     }
 
     handlePickReinforcement(eventData, callback) {

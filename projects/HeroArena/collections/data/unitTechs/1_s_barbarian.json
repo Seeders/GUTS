@@ -36,27 +36,6 @@
    "cost": 22,
    "description": "Unlocks Leap Slam: jump into the fray",
    "unlockAbility": "LeapSlamAbility"
-  },
-  {
-   "id": "bar_berserker",
-   "title": "Unlock Berserker",
-   "cost": 28,
-   "description": "Adds the Berserker to your roster",
-   "unlockUnit": "2_s_berserker"
-  },
-  {
-   "id": "bar_gladiator",
-   "title": "Unlock Gladiator",
-   "cost": 28,
-   "description": "Adds the Gladiator to your roster",
-   "unlockUnit": "2_s_gladiator"
-  },
-  {
-   "id": "bar_warlord",
-   "title": "Unlock Warlord",
-   "cost": 28,
-   "description": "Adds the Warlord to your roster",
-   "unlockUnit": "2_s_warlord"
   }
  ],
  "fileName": "1_s_barbarian"

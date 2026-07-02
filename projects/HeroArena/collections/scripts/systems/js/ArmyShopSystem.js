@@ -21,6 +21,7 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         'buyUnlockedUnit',
         'buyUnitTech',
         'buySquadLevel',
+        'buyTierUnlock',
         'pickReinforcement',
         'getShopStateForPlayer',
         'getEligibleItems',
@@ -59,32 +60,40 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         return Math.max(1, Math.ceil((rawValue || 0) / ArmyShopSystem.SHOP_COST_DIVISOR));
     }
 
-    // ─── Unit tier + archetype (drives building-gated offers) ───────────────────
-    // Units never offered in the shop (workers, summons, transforms, unbalanced legendaries).
+    // ─── Unit tiers (Mechabellum model) ─────────────────────────────────────────
+    // Units never offered in the shop (workers, summons, transforms).
     static UNIT_EXCLUDE = new Set(['peasant', '4_archmage', 'sentry', 'dragon_red_flying', '0_skeleton']);
-    // Tier-3 "legendary" units and the archetype building(s) that unlock them.
-    static T3_UNITS = {
-        dragon_red:        ['int'],   // Mage Tower
-        '4_ancientTreant': ['dex'],   // Hunting Lodge
-        '0_golemStone':    ['str'],   // Barracks
-        '0_golemFire':     ['int'],   // Mage Tower
-        '0_golemIce':      ['int'],   // Mage Tower
-        ballista:          ['str']    // Barracks
-    };
+    // Tier-3 "heavies": strong specialists above the tier-2 roster.
+    static T3_UNIT_SET = new Set(['0_golemStone', '0_golemFire', '0_golemIce', 'ballista']);
+    // Tier-4 "giants": the Mechabellum Fortress/Overlord analogues.
+    static T4_UNIT_SET = new Set(['dragon_red', '4_ancientTreant']);
 
-    // Tier of a unit id: 1, 2, 3, or null (= not shop-offerable).
+    // Tier of a unit id: 1-4, or null (= not shop-offerable).
     static unitTier(id) {
         if (ArmyShopSystem.UNIT_EXCLUDE.has(id)) return null;
-        if (ArmyShopSystem.T3_UNITS[id]) return 3;
+        if (ArmyShopSystem.T4_UNIT_SET.has(id)) return 4;
+        if (ArmyShopSystem.T3_UNIT_SET.has(id)) return 3;
         if (/^1_/.test(id)) return 1;
         if (/^2_/.test(id)) return 2;
         return null;
     }
 
-    // Archetypes a unit belongs to (str/dex/int), derived from its id prefix letters or the
-    // T3 special table. Used to require the matching archetype building for higher tiers.
+    // Mechabellum pricing at our ~14.3-supply-per-gold scale.
+    // Squad prices by tier (Mechabellum: 100 / 200 / 300 / 400 supply):
+    static TIER_PRICE = { 1: 7, 2: 14, 3: 21, 4: 28 };
+    // One-time unlock costs (Mechabellum: T1 free, then 50 / 100 / 200 supply):
+    static TIER_UNLOCK_COST = { 2: 4, 3: 7, 4: 14 };
+
+    // Shop price of a unit: tier-based (Mechabellum numbers) when tiered,
+    // else derived from its raw value.
+    static unitPrice(id, def) {
+        const tier = ArmyShopSystem.unitTier(id);
+        if (tier && ArmyShopSystem.TIER_PRICE[tier]) return ArmyShopSystem.TIER_PRICE[tier];
+        return ArmyShopSystem.shopCost(def?.value);
+    }
+
+    // Archetypes a unit belongs to (str/dex/int), from its id prefix letters.
     static unitArchetypes(id) {
-        if (ArmyShopSystem.T3_UNITS[id]) return ArmyShopSystem.T3_UNITS[id];
         const m = id.match(/^[12]_([a-z]+)_/);
         if (!m) return [];
         const map = { s: 'str', d: 'dex', i: 'int' };
@@ -230,19 +239,15 @@ class ArmyShopSystem extends GUTS.BaseSystem {
                 break;
             }
             case 'randomUnlock': {
-                // Unlock a random not-yet-unlocked T2 belonging to a fielded T1 line
-                const fielded = new Set((stats.heroRoster || []).map(e => this._resolveSpawnType(e)));
-                const owned = new Set(stats.tierUnlocks || []);
-                const candidates = [];
-                for (const unitId of fielded) {
-                    for (const t of (this.collections.unitTechs?.[unitId]?.techs || [])) {
-                        if (t.unlockUnit && !owned.has(t.unlockUnit)) candidates.push(t.unlockUnit);
-                    }
-                }
-                if (candidates.length) {
-                    const pick = candidates[Math.floor(rng.next() * candidates.length)];
+                // Free unlock of a random still-locked unit of the card's tier
+                // (falls back to any locked unit if that tier is exhausted)
+                const locked = this._lockedUnits(stats);
+                const pool = locked.filter(u => u.tier === (def.tier || 2));
+                const from = pool.length ? pool : locked;
+                if (from.length) {
+                    const pick = from[Math.floor(rng.next() * from.length)];
                     if (!Array.isArray(stats.tierUnlocks)) stats.tierUnlocks = [];
-                    stats.tierUnlocks.push(pick);
+                    stats.tierUnlocks.push(pick.id);
                 }
                 break;
             }
@@ -374,7 +379,7 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         }
         const def = this.collections.units?.[unitTypeId];
         if (!def) return { success: false, reason: 'no_unit' };
-        const cost = ArmyShopSystem.shopCost(def.value);
+        const cost = ArmyShopSystem.unitPrice(unitTypeId, def);
         if ((stats.gold || 0) < cost) return { success: false, reason: 'insufficient_gold' };
 
         stats.gold -= cost;
@@ -420,13 +425,6 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         if (techDef.unlockAbility) {
             this._reapplyAbilitiesForUnitType(stats, unitId);
         }
-        if (techDef.unlockUnit) {
-            if (!Array.isArray(stats.tierUnlocks)) stats.tierUnlocks = [];
-            if (!stats.tierUnlocks.includes(techDef.unlockUnit)) {
-                stats.tierUnlocks.push(techDef.unlockUnit);
-            }
-        }
-
         this._broadcastShop(stats);
         return { success: true, state: this.getShopStateForPlayer(numericPlayerId) };
     }
@@ -448,6 +446,44 @@ class ArmyShopSystem extends GUTS.BaseSystem {
 
     // ─── Squad level-ups (grow taller instead of wider) ─────────────────────────
 
+    // ─── Tier unlocks (Mechabellum: pay once, buy forever) ──────────────────────
+
+    // All shop-offerable units the player has NOT unlocked yet, with their
+    // one-time unlock price. T1 is always unlocked.
+    _lockedUnits(stats) {
+        const unlocked = new Set(stats.tierUnlocks || []);
+        const out = [];
+        for (const [id, def] of Object.entries(this.collections.units || {})) {
+            const tier = ArmyShopSystem.unitTier(id);
+            if (!tier || tier === 1 || unlocked.has(id)) continue;
+            out.push({
+                id, tier,
+                title: def.title || id,
+                icon: def.icon || null,
+                cost: ArmyShopSystem.unitPrice(id, def),
+                unlockCost: ArmyShopSystem.TIER_UNLOCK_COST[tier] || 0
+            });
+        }
+        out.sort((a, b) => a.tier - b.tier || a.title.localeCompare(b.title));
+        return out;
+    }
+
+    buyTierUnlock(numericPlayerId, unitId) {
+        const stats = this._getStats(numericPlayerId);
+        if (!stats) return { success: false, reason: 'no_player' };
+        if (!this._inPlacement()) return { success: false, reason: 'wrong_phase' };
+        const tier = ArmyShopSystem.unitTier(unitId);
+        if (!tier || tier === 1) return { success: false, reason: 'not_unlockable' };
+        if ((stats.tierUnlocks || []).includes(unitId)) return { success: false, reason: 'already_unlocked' };
+        const cost = ArmyShopSystem.TIER_UNLOCK_COST[tier] || 0;
+        if ((stats.gold || 0) < cost) return { success: false, reason: 'insufficient_gold' };
+        stats.gold -= cost;
+        if (!Array.isArray(stats.tierUnlocks)) stats.tierUnlocks = [];
+        stats.tierUnlocks.push(unitId);
+        this._broadcastShop(stats);
+        return { success: true, state: this.getShopStateForPlayer(numericPlayerId) };
+    }
+
     // Cost of the squad's next rank: unit shop price × current level — HALVED
     // when the squad's combat-XP bar is full (Mechabellum: a full bar earns the
     // right to promote at half price, never a free level). Ranks are worth it:
@@ -455,7 +491,7 @@ class ArmyShopSystem extends GUTS.BaseSystem {
     squadLevelCost(entry) {
         const def = this.collections.units?.[this._resolveSpawnType(entry)] || {};
         const level = entry.level || 1;
-        const base = ArmyShopSystem.shopCost(def.value) * level;
+        const base = ArmyShopSystem.unitPrice(this._resolveSpawnType(entry), def) * level;
         const ready = this.game.heroExperienceSystem?.isLevelReady?.(entry);
         return ready ? Math.max(1, Math.ceil(base / 2)) : base;
     }
@@ -498,6 +534,15 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         const cost = this.squadLevelCost(roster[best]);
         if ((stats.gold || 0) < cost + 10) return false;
         return !!this.buySquadLevel(pid, best)?.success;
+    }
+
+    // AI: unlock the cheapest locked unit when it can afford unlock + squad.
+    _aiBuyOneUnlock(stats, pid) {
+        const locked = this._lockedUnits(stats);
+        if (!locked.length) return false;
+        const pick = locked[0]; // lowest tier first
+        if ((stats.gold || 0) < pick.unlockCost + pick.cost) return false;
+        return !!this.buyTierUnlock(pid, pick.id)?.success;
     }
 
     // AI: buy the first affordable un-owned tech for any fielded unit type.
@@ -586,7 +631,7 @@ class ArmyShopSystem extends GUTS.BaseSystem {
 
         const def = this.collections.units?.[this._resolveSpawnType(entry)] || {};
         const pct = ArmyShopSystem.SELL_REFUND_PCT + (this.getEconomyEffects(stats).sellRefundPct || 0);
-        const refund = Math.floor(ArmyShopSystem.shopCost(def.value) * pct);
+        const refund = Math.floor(ArmyShopSystem.unitPrice(this._resolveSpawnType(entry), def) * pct);
 
         const res = this.call.removeRosterEntry?.(numericPlayerId, rosterIndex);
         if (!res?.success) return { success: false, reason: res?.reason || 'remove_failed' };
@@ -607,7 +652,7 @@ class ArmyShopSystem extends GUTS.BaseSystem {
             // bought ones — units are no longer unlocked through the shop).
             unlocked:   this._candidateUnitIds(stats).map(id => {
                 const def = this.collections.units?.[id] || {};
-                return { id, title: def.title || id, cost: ArmyShopSystem.shopCost(def.value), icon: def.icon || null };
+                return { id, title: def.title || id, cost: ArmyShopSystem.unitPrice(id, def), icon: def.icon || null };
             }),
             rerollCost: this.getRerollCost(stats),
             gold:       stats.gold || 0,
@@ -620,6 +665,7 @@ class ArmyShopSystem extends GUTS.BaseSystem {
             // This round's 1-of-3 reinforcement pick (null once picked)
             pendingReinforcement: stats.pendingReinforcement && !stats.pendingReinforcement.picked
                 ? { options: stats.pendingReinforcement.options } : null,
+            locked: this._lockedUnits(stats),
             techDiscount: stats.techDiscount || 0,
             skillCharges: [...(stats.skillCharges || [])]
         };
@@ -1038,7 +1084,7 @@ class ArmyShopSystem extends GUTS.BaseSystem {
                 progress = false;
                 // Army first: one of each affordable unit type this pass.
                 for (const id of this._candidateUnitIds(stats)) {
-                    const cost = ArmyShopSystem.shopCost(this.collections.units?.[id]?.value);
+                    const cost = ArmyShopSystem.unitPrice(id, this.collections.units?.[id]);
                     if ((stats.gold || 0) < cost) continue;
                     if (this.buyUnlockedUnit(pid, id)?.success) progress = true;
                 }
@@ -1046,6 +1092,8 @@ class ArmyShopSystem extends GUTS.BaseSystem {
                 if (this._aiBuyOneTech(stats, pid)) progress = true;
                 // Then a squad level-up with a comfortable purse.
                 if (this._aiBuyOneLevel(stats, pid)) progress = true;
+                // Then a tier unlock when there's spare gold to also buy it.
+                if (this._aiBuyOneUnlock(stats, pid)) progress = true;
                 // Then one affordable shop offer with whatever's left.
                 if (buyOneOffer()) progress = true;
             }

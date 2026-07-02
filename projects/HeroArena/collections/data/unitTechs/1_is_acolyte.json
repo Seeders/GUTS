@@ -36,27 +36,6 @@
    "cost": 18,
    "description": "Unlocks Smite: holy strike",
    "unlockAbility": "SmiteAbility"
-  },
-  {
-   "id": "aco_paladin",
-   "title": "Unlock Paladin",
-   "cost": 28,
-   "description": "Adds the Paladin to your roster",
-   "unlockUnit": "2_is_paladin"
-  },
-  {
-   "id": "aco_crusader",
-   "title": "Unlock Crusader",
-   "cost": 28,
-   "description": "Adds the Crusader to your roster",
-   "unlockUnit": "2_is_crusader"
-  },
-  {
-   "id": "aco_oath",
-   "title": "Unlock Oathbreaker",
-   "cost": 28,
-   "description": "Adds the Oathbreaker to your roster",
-   "unlockUnit": "2_is_oathBreaker"
   }
  ],
  "fileName": "1_is_acolyte"

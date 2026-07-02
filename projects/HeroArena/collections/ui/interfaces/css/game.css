@@ -1004,3 +1004,10 @@
 }
 .commander-skill-btn:hover { border-color: #ffd97a; transform: translateY(-2px); }
 .commander-skill-btn.targeting { outline: 2px solid #ff6a4a; }
+
+/* ── Locked units (tier unlocks) ─────────────────────────── */
+.locked-unit-card {
+    opacity: 0.72;
+    border-style: dashed !important;
+}
+.locked-unit-card:hover { opacity: 1; border-color: #ffd97a !important; }

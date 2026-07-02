@@ -21,13 +21,6 @@
    "cost": 22,
    "description": "Unlocks ChainLightning: this unit's signature ability",
    "unlockAbility": "ChainLightningAbility"
-  },
-  {
-   "id": "elementalist_t3",
-   "title": "Unlock Fire Golem",
-   "cost": 40,
-   "description": "Adds a tier-3 monster to your roster",
-   "unlockUnit": "0_golemFire"
   }
  ],
  "fileName": "2_i_elementalist"

@@ -62,6 +62,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
         'submitBuyUnlockedUnit',
         'submitBuyUnitTech',
         'submitBuySquadLevel',
+        'submitBuyTierUnlock',
         'submitPickReinforcement',
         'submitCastCommanderSkill',
         'submitSellUnit',
@@ -1489,6 +1490,14 @@ class PlacementUISystem extends GUTS.BaseSystem {
                 <span class="unlocked-unit-cost">${u.cost}g</span>
                 ${techBtn}
             </div>`;
+        }).join('') + (s.locked || []).map(u => {
+            const affordable = (s.gold ?? 0) >= u.unlockCost;
+            return `<div class="unlocked-unit-card locked-unit-card ${affordable ? '' : 'unaffordable'}"
+                data-locked-id="${u.id}"
+                title="Tier ${u.tier} — unlock once for ${u.unlockCost}g, then buy squads for ${u.cost}g">
+                <span class="unlocked-unit-name">🔒 ${u.title}</span>
+                <span class="unlocked-unit-cost">T${u.tier} · ${u.unlockCost}g</span>
+            </div>`;
         }).join('');
     }
 
@@ -1506,6 +1515,17 @@ class PlacementUISystem extends GUTS.BaseSystem {
         const techBtn = event.target.closest('[data-tech-unit]');
         if (techBtn) {
             this._openUnitTechPanel(techBtn.dataset.techUnit);
+            return;
+        }
+        // Locked card: one-time tier unlock (Mechabellum: T2 4g / T3 7g / T4 14g)
+        const lockCard = event.target.closest('[data-locked-id]');
+        if (lockCard) {
+            this.call.submitBuyTierUnlock(lockCard.dataset.lockedId, (res) => {
+                if (res?.success === false && res?.reason === 'insufficient_gold') {
+                    GUTS.NotificationSystem?.show?.('Not enough gold to unlock', 'error');
+                }
+                this._renderShop(res?.state || res);
+            });
             return;
         }
         const card = event.target.closest('[data-unit-id]');

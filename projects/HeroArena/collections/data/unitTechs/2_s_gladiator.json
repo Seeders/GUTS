@@ -21,13 +21,6 @@
    "cost": 22,
    "description": "Unlocks ArenaPresence: this unit's signature ability",
    "unlockAbility": "ArenaPresenceAbility"
-  },
-  {
-   "id": "gladiator_t3",
-   "title": "Unlock Stone Golem",
-   "cost": 40,
-   "description": "Adds a tier-3 monster to your roster",
-   "unlockUnit": "0_golemStone"
   }
  ],
  "fileName": "2_s_gladiator"

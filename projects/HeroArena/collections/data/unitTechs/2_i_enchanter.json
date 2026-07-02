@@ -21,13 +21,6 @@
    "cost": 22,
    "description": "Unlocks MindControl: this unit's signature ability",
    "unlockAbility": "MindControlAbility"
-  },
-  {
-   "id": "enchanter_t3",
-   "title": "Unlock Ice Golem",
-   "cost": 40,
-   "description": "Adds a tier-3 monster to your roster",
-   "unlockUnit": "0_golemIce"
   }
  ],
  "fileName": "2_i_enchanter"

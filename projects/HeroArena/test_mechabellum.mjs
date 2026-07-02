@@ -340,8 +340,13 @@ try {
         const abilityRes = buyTech(0, '1_s_barbarian', 'bar_rage');
         const abilitiesAfter = game.abilitySystem.getEntityAbilities(barb).map(a => a.id);
 
-        const unlockRes = buyTech(0, '1_s_barbarian', 'bar_berserker');
-        const unlocked = game.getService('getShopStateForPlayer')(0).unlocked.map(u => u.id);
+        // Tier unlock is a direct shop purchase now (Mechabellum: T2=4g, T4=14g)
+        const lockedBefore = game.getService('getShopStateForPlayer')(0).locked.map(u => u.id);
+        const unlockRes = game.getService('buyTierUnlock')(0, '2_s_berserker');
+        const t4Res = game.getService('buyTierUnlock')(0, 'dragon_red');
+        const state = game.getService('getShopStateForPlayer')(0);
+        const unlocked = state.unlocked.map(u => u.id);
+        const berserkerPrice = state.unlocked.find(u => u.id === '2_s_berserker')?.cost;
 
         // Tech gating: can't tech a type you don't field (free reinforcement
         // units are random, so find a T1 type we genuinely don't own)
@@ -357,7 +362,11 @@ try {
         return {
             statOk: statRes?.success, hpBefore, hpAfter,
             abilityOk: abilityRes?.success, abilitiesBefore, abilitiesAfter,
-            unlockOk: unlockRes?.success, hasBerserker: unlocked.includes('2_s_berserker'),
+            unlockOk: unlockRes?.success, t4Ok: t4Res?.success,
+            hadLockedList: lockedBefore.includes('2_s_berserker') && lockedBefore.includes('dragon_red'),
+            hasBerserker: unlocked.includes('2_s_berserker'),
+            hasDragon: unlocked.includes('dragon_red'),
+            berserkerPrice,
             gateReason: gateRes?.reason
         };
     });
@@ -367,7 +376,12 @@ try {
         `before: [${techTest.abilitiesBefore.join(',')}]`);
     check('ability tech activates the ability', techTest.abilityOk && techTest.abilitiesAfter.includes('RageAbility'),
         `after: [${techTest.abilitiesAfter.join(',')}]`);
-    check('unlock tech adds tier-2 unit to roster', techTest.unlockOk && techTest.hasBerserker);
+    check('tier unlocks: shop lists locked units, unlocking T2 and T4 works',
+        techTest.hadLockedList && techTest.unlockOk && techTest.t4Ok &&
+        techTest.hasBerserker && techTest.hasDragon,
+        `berserker+dragon unlocked`);
+    check('unit prices use Mechabellum tiers (T2 = 14g)', techTest.berserkerPrice === 14,
+        `berserker ${techTest.berserkerPrice}g`);
     check('cannot tech an unfielded type', techTest.gateReason === 'no_unit_of_type', techTest.gateReason);
 
     // Tech panel UI: ⚙ button on fielded unit card opens the panel
@@ -383,7 +397,7 @@ try {
         };
     });
     check('tech panel opens from unit card with full tech list',
-        uiTest.btnExists && uiTest.panelOpen && uiTest.rows === 7 && uiTest.ownedRows === 3,
+        uiTest.btnExists && uiTest.panelOpen && uiTest.rows === 4 && uiTest.ownedRows === 2,
         `${uiTest.rows} techs, ${uiTest.ownedRows} owned`);
     await page.screenshot({ path: 'projects/HeroArena/test_techs.png' });
     await page.evaluate(() => document.getElementById('techTreeCloseBtn')?.click());

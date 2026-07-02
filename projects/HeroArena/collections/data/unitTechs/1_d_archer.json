@@ -36,27 +36,6 @@
    "cost": 18,
    "description": "Unlocks Aimed Shot: precise heavy hit",
    "unlockAbility": "AimedShotAbility"
-  },
-  {
-   "id": "arc_ranger",
-   "title": "Unlock Ranger",
-   "cost": 28,
-   "description": "Adds the Ranger to your roster",
-   "unlockUnit": "2_d_ranger"
-  },
-  {
-   "id": "arc_beast",
-   "title": "Unlock Beast Master",
-   "cost": 28,
-   "description": "Adds the Beast Master to your roster",
-   "unlockUnit": "2_d_beastMaster"
-  },
-  {
-   "id": "arc_trapper",
-   "title": "Unlock Trapper",
-   "cost": 28,
-   "description": "Adds the Trapper to your roster",
-   "unlockUnit": "2_d_trapper"
   }
  ],
  "fileName": "1_d_archer"
