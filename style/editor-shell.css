@@ -199,8 +199,9 @@
 .eshell__assets-search:focus { outline: none; border-color: var(--editor-primary, #35e0c8); }
 
 .eshell__assets-main { flex: 1 1 auto; min-height: 0; display: flex; }
-.eshell__assets-tree {
-  flex: 0 0 220px; overflow: auto; padding: 8px;
+/* Miller columns (Finder-style) */
+.eshell__assets-col {
+  flex: 0 0 185px; overflow-y: auto; overflow-x: hidden; padding: 8px;
   border-right: 1px solid var(--editor-border-color, #22303f);
 }
 .eshell__assets-grid {
@@ -225,6 +226,33 @@
   color: var(--editor-primary, #35e0c8);
 }
 .eshell__asset-img { width: 100%; height: 100%; object-fit: contain; display: block; }
+
+/* View toggle (tiles / list) */
+.eshell__assets-viewtoggle { display: flex; gap: 2px; }
+.eshell__assets-viewtoggle .eshell__btn { padding: 3px 8px; font-size: 12px; line-height: 1; }
+
+/* List view */
+.eshell__assets-grid--list { display: flex; flex-direction: column; gap: 2px; align-content: stretch; }
+.eshell__asset-listrow {
+  display: flex; align-items: center; gap: 10px;
+  padding: 4px 8px; border-radius: var(--editor-border-radius-sm, 4px);
+  border: 1px solid transparent; cursor: pointer;
+  color: var(--editor-text-secondary, #90a2ba); font-size: 12.5px;
+  transition: var(--editor-transition, 0.15s);
+}
+.eshell__asset-listrow:hover { background: var(--editor-bg-lighter, #1d2a3c); color: var(--editor-text-primary, #e7eef7); }
+.eshell__asset-listrow--active {
+  background: var(--editor-cyan-dim, rgba(53,224,200,.14)); color: var(--editor-primary, #35e0c8);
+  border-color: var(--editor-primary, #35e0c8);
+}
+.eshell__asset-listicon {
+  flex: 0 0 auto; width: 26px; height: 26px; display: flex; align-items: center; justify-content: center;
+  border-radius: 3px; background: var(--editor-bg-dark, #0b121c);
+  border: 1px solid var(--editor-border-color, #22303f);
+  font-family: 'Space Grotesk', system-ui, sans-serif; font-size: 13px; font-weight: 600;
+  color: var(--editor-primary, #35e0c8); overflow: hidden;
+}
+.eshell__asset-listname { flex: 1 1 auto; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .eshell__asset-label {
   font-size: 11px; color: var(--editor-text-secondary, #90a2ba); text-align: center;
   width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
