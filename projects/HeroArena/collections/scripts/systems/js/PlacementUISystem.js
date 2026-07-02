@@ -60,6 +60,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
         'submitBuyOffer',
         'submitRerollOffers',
         'submitBuyUnlockedUnit',
+        'submitBuyUnitTech',
         'submitSellUnit',
         'submitGrantSingleAbility',
         'submitSpecializeChoice',
@@ -1293,11 +1294,20 @@ class PlacementUISystem extends GUTS.BaseSystem {
     _renderUnlockedUnits(s) {
         if (!this.elements.unlockedUnitsCards) return;
         const unlocked = s.unlocked || [];
+        const fielded = new Set(s.ownedUnitTypes || []);
         this.elements.unlockedUnitsCards.innerHTML = unlocked.map(u => {
             const affordable = (s.gold ?? 0) >= u.cost;
+            const techs = this.collections.unitTechs?.[u.id]?.techs || [];
+            const ownedCount = (s.unitTechs?.[u.id] || []).length;
+            // Tech button shows once the player fields the type (you tech what you field)
+            const techBtn = techs.length && fielded.has(u.id)
+                ? `<button class="unit-tech-btn" data-tech-unit="${u.id}"
+                       title="Technologies (${ownedCount}/${techs.length})">⚙ ${ownedCount}/${techs.length}</button>`
+                : '';
             return `<div class="unlocked-unit-card ${affordable ? '' : 'unaffordable'}" data-unit-id="${u.id}">
                 <span class="unlocked-unit-name">${u.title}</span>
                 <span class="unlocked-unit-cost">${u.cost}g</span>
+                ${techBtn}
             </div>`;
         }).join('');
     }
@@ -1312,9 +1322,79 @@ class PlacementUISystem extends GUTS.BaseSystem {
     }
 
     _onUnlockedUnitClick(event) {
+        // Tech button opens the unit's technology panel instead of buying
+        const techBtn = event.target.closest('[data-tech-unit]');
+        if (techBtn) {
+            this._openUnitTechPanel(techBtn.dataset.techUnit);
+            return;
+        }
         const card = event.target.closest('[data-unit-id]');
         if (!card) return;
         this.call.submitBuyUnlockedUnit(card.dataset.unitId, (res) => this._renderShop(res?.state || res));
+    }
+
+    // ─── Unit technology panel (Mechabellum-style, reuses the tech-tree overlay) ──
+
+    _openUnitTechPanel(unitId) {
+        this._techPanelUnitId = unitId;
+        this._renderUnitTechPanel();
+        document.getElementById('techTreeOverlay')?.classList.remove('hidden');
+        const closeBtn = document.getElementById('techTreeCloseBtn');
+        if (closeBtn && !closeBtn._techWired) {
+            closeBtn._techWired = true;
+            closeBtn.addEventListener('click', () => {
+                document.getElementById('techTreeOverlay')?.classList.add('hidden');
+                this._techPanelUnitId = null;
+            });
+        }
+    }
+
+    _renderUnitTechPanel() {
+        const unitId = this._techPanelUnitId;
+        if (!unitId) return;
+        const title = document.getElementById('techTreeTitle');
+        const body  = document.getElementById('techTreeBranches');
+        if (!body) return;
+
+        const unitDef = this.collections.units?.[unitId] || {};
+        const techs = this.collections.unitTechs?.[unitId]?.techs || [];
+        const s = this._shopState || {};
+        const owned = new Set(s.unitTechs?.[unitId] || []);
+        const gold = s.gold ?? 0;
+
+        if (title) title.textContent = `${unitDef.title || unitId} — Technologies`;
+        const subtitle = document.querySelector('#techTreeOverlay .arena-overlay-subtitle');
+        if (subtitle) subtitle.textContent = 'Technologies apply to every unit of this type, now and in future rounds.';
+
+        body.innerHTML = `<div class="unit-tech-list">` + techs.map(t => {
+            const isOwned = owned.has(t.id);
+            const affordable = gold >= (t.cost || 0);
+            const kind = t.unlockAbility ? 'Ability' : (t.unlockUnit ? 'Unlock' : 'Upgrade');
+            const cls = `unit-tech-row ${isOwned ? 'owned' : (affordable ? 'buyable' : 'unaffordable')}`;
+            return `<div class="${cls}" data-tech-id="${t.id}">
+                <span class="unit-tech-kind">${kind}</span>
+                <span class="unit-tech-info">
+                    <span class="unit-tech-title">${t.title}</span>
+                    <span class="unit-tech-desc">${t.description || ''}</span>
+                </span>
+                <span class="unit-tech-cost">${isOwned ? '✔ Owned' : `${t.cost}g`}</span>
+            </div>`;
+        }).join('') + `</div>`;
+
+        if (!body._techWired) {
+            body._techWired = true;
+            body.addEventListener('click', (e) => {
+                const row = e.target.closest('[data-tech-id]');
+                if (!row || row.classList.contains('owned') || !this._techPanelUnitId) return;
+                this.call.submitBuyUnitTech(this._techPanelUnitId, row.dataset.techId, (res) => {
+                    if (res?.success === false && res?.reason) {
+                        GUTS.NotificationSystem?.show?.(`Cannot buy: ${res.reason}`, 'error');
+                    }
+                    this._renderShop(res?.state || res);
+                    this._renderUnitTechPanel();
+                });
+            });
+        }
     }
 
     _handleBuyResult(res) {

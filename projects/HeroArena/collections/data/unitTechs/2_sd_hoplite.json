@@ -1,0 +1,27 @@
+{
+ "unit": "2_sd_hoplite",
+ "techs": [
+  {
+   "id": "hoplite_vet",
+   "title": "Veterancy",
+   "cost": 24,
+   "description": "+20% max HP and +20% damage",
+   "statModifiers": {
+    "maxHP": {
+     "pct": 0.2
+    },
+    "damage": {
+     "pct": 0.2
+    }
+   }
+  },
+  {
+   "id": "hoplite_phalanx",
+   "title": "Phalanx",
+   "cost": 22,
+   "description": "Unlocks Phalanx: this unit's signature ability",
+   "unlockAbility": "PhalanxFormationAbility"
+  }
+ ],
+ "fileName": "2_sd_hoplite"
+}

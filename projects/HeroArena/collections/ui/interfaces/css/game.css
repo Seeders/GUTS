@@ -934,3 +934,46 @@
     .game-chat-message { animation: none !important; }
     * { transition-duration: 0.01ms !important; }
 }
+
+/* ── Unit technologies (Mechabellum-style tech panel) ────────────── */
+.unit-tech-btn {
+    margin-left: auto;
+    padding: 1px 7px;
+    font-size: 0.68rem;
+    background: rgba(120, 160, 255, 0.12);
+    border: 1px solid rgba(120, 160, 255, 0.45);
+    border-radius: 3px;
+    color: #9db9ff;
+    cursor: pointer;
+    flex: 0 0 auto;
+}
+.unit-tech-btn:hover { background: rgba(120, 160, 255, 0.3); color: #fff; }
+
+.unit-tech-list { display: flex; flex-direction: column; gap: 6px; max-height: 55vh; overflow-y: auto; }
+
+.unit-tech-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.3);
+}
+.unit-tech-row.buyable { cursor: pointer; }
+.unit-tech-row.buyable:hover { border-color: #9db9ff; background: rgba(120, 160, 255, 0.1); }
+.unit-tech-row.owned { border-color: rgba(120, 255, 160, 0.4); opacity: 0.85; }
+.unit-tech-row.unaffordable { opacity: 0.45; }
+
+.unit-tech-kind {
+    flex: 0 0 64px;
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #9db9ff;
+}
+.unit-tech-info { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.unit-tech-title { font-weight: bold; font-size: 0.85rem; }
+.unit-tech-desc { font-size: 0.72rem; opacity: 0.75; }
+.unit-tech-cost { flex: 0 0 auto; color: #ffd97a; font-size: 0.8rem; }
+.unit-tech-row.owned .unit-tech-cost { color: #7dff9e; }

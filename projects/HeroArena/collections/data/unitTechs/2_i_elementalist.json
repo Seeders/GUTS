@@ -1,0 +1,34 @@
+{
+ "unit": "2_i_elementalist",
+ "techs": [
+  {
+   "id": "elementalist_vet",
+   "title": "Veterancy",
+   "cost": 24,
+   "description": "+20% max HP and +20% damage",
+   "statModifiers": {
+    "maxHP": {
+     "pct": 0.2
+    },
+    "damage": {
+     "pct": 0.2
+    }
+   }
+  },
+  {
+   "id": "elementalist_chainlightning",
+   "title": "ChainLightning",
+   "cost": 22,
+   "description": "Unlocks ChainLightning: this unit's signature ability",
+   "unlockAbility": "ChainLightningAbility"
+  },
+  {
+   "id": "elementalist_t3",
+   "title": "Unlock Fire Golem",
+   "cost": 40,
+   "description": "Adds a tier-3 monster to your roster",
+   "unlockUnit": "0_golemFire"
+  }
+ ],
+ "fileName": "2_i_elementalist"
+}

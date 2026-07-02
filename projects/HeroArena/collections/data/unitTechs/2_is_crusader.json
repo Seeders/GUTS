@@ -1,0 +1,27 @@
+{
+ "unit": "2_is_crusader",
+ "techs": [
+  {
+   "id": "crusader_vet",
+   "title": "Veterancy",
+   "cost": 24,
+   "description": "+20% max HP and +20% damage",
+   "statModifiers": {
+    "maxHP": {
+     "pct": 0.2
+    },
+    "damage": {
+     "pct": 0.2
+    }
+   }
+  },
+  {
+   "id": "crusader_holyheal",
+   "title": "HolyHeal",
+   "cost": 22,
+   "description": "Unlocks HolyHeal: this unit's signature ability",
+   "unlockAbility": "HealAbility"
+  }
+ ],
+ "fileName": "2_is_crusader"
+}

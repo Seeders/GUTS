@@ -1,0 +1,20 @@
+{
+ "unit": "2_s_berserker",
+ "techs": [
+  {
+   "id": "berserker_vet",
+   "title": "Veterancy",
+   "cost": 24,
+   "description": "+20% max HP and +20% damage",
+   "statModifiers": {
+    "maxHP": {
+     "pct": 0.2
+    },
+    "damage": {
+     "pct": 0.2
+    }
+   }
+  }
+ ],
+ "fileName": "2_s_berserker"
+}

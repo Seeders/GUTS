@@ -1,0 +1,34 @@
+{
+ "unit": "2_d_ranger",
+ "techs": [
+  {
+   "id": "ranger_vet",
+   "title": "Veterancy",
+   "cost": 24,
+   "description": "+20% max HP and +20% damage",
+   "statModifiers": {
+    "maxHP": {
+     "pct": 0.2
+    },
+    "damage": {
+     "pct": 0.2
+    }
+   }
+  },
+  {
+   "id": "ranger_rapidfire",
+   "title": "RapidFire",
+   "cost": 22,
+   "description": "Unlocks RapidFire: this unit's signature ability",
+   "unlockAbility": "RapidFireAbility"
+  },
+  {
+   "id": "ranger_t3",
+   "title": "Unlock Ancient Treant",
+   "cost": 44,
+   "description": "Adds a tier-3 monster to your roster",
+   "unlockUnit": "4_ancientTreant"
+  }
+ ],
+ "fileName": "2_d_ranger"
+}

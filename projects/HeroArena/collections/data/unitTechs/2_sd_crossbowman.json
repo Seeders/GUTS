@@ -1,0 +1,27 @@
+{
+ "unit": "2_sd_crossbowman",
+ "techs": [
+  {
+   "id": "crossbowman_vet",
+   "title": "Veterancy",
+   "cost": 24,
+   "description": "+20% max HP and +20% damage",
+   "statModifiers": {
+    "maxHP": {
+     "pct": 0.2
+    },
+    "damage": {
+     "pct": 0.2
+    }
+   }
+  },
+  {
+   "id": "crossbowman_piercingshot",
+   "title": "PiercingShot",
+   "cost": 22,
+   "description": "Unlocks PiercingShot: this unit's signature ability",
+   "unlockAbility": "PiercingShotAbility"
+  }
+ ],
+ "fileName": "2_sd_crossbowman"
+}

@@ -1,0 +1,27 @@
+{
+ "unit": "2_d_beastMaster",
+ "techs": [
+  {
+   "id": "beastmaster_vet",
+   "title": "Veterancy",
+   "cost": 24,
+   "description": "+20% max HP and +20% damage",
+   "statModifiers": {
+    "maxHP": {
+     "pct": 0.2
+    },
+    "damage": {
+     "pct": 0.2
+    }
+   }
+  },
+  {
+   "id": "beastmaster_summonwolf",
+   "title": "SummonWolf",
+   "cost": 22,
+   "description": "Unlocks SummonWolf: this unit's signature ability",
+   "unlockAbility": "SummonWolfAbility"
+  }
+ ],
+ "fileName": "2_d_beastMaster"
+}

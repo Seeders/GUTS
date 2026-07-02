@@ -1,0 +1,27 @@
+{
+ "unit": "2_is_paladin",
+ "techs": [
+  {
+   "id": "paladin_vet",
+   "title": "Veterancy",
+   "cost": 24,
+   "description": "+20% max HP and +20% damage",
+   "statModifiers": {
+    "maxHP": {
+     "pct": 0.2
+    },
+    "damage": {
+     "pct": 0.2
+    }
+   }
+  },
+  {
+   "id": "paladin_smite",
+   "title": "Smite",
+   "cost": 22,
+   "description": "Unlocks Smite: this unit's signature ability",
+   "unlockAbility": "SmiteAbility"
+  }
+ ],
+ "fileName": "2_is_paladin"
+}

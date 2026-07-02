@@ -1,0 +1,63 @@
+{
+ "unit": "1_i_apprentice",
+ "techs": [
+  {
+   "id": "app_focus",
+   "title": "Arcane Focus",
+   "cost": 14,
+   "description": "+25% damage",
+   "statModifiers": {
+    "damage": {
+     "pct": 0.25
+    }
+   }
+  },
+  {
+   "id": "app_robes",
+   "title": "Warded Robes",
+   "cost": 14,
+   "description": "+20% max HP",
+   "statModifiers": {
+    "maxHP": {
+     "pct": 0.2
+    }
+   }
+  },
+  {
+   "id": "app_fireball",
+   "title": "Fireball",
+   "cost": 20,
+   "description": "Unlocks Fireball: explosive projectile",
+   "unlockAbility": "FireBallAbility"
+  },
+  {
+   "id": "app_iceshard",
+   "title": "Ice Shard",
+   "cost": 18,
+   "description": "Unlocks Ice Shard: chilling bolt",
+   "unlockAbility": "IceShardAbility"
+  },
+  {
+   "id": "app_elem",
+   "title": "Unlock Elementalist",
+   "cost": 28,
+   "description": "Adds the Elementalist to your roster",
+   "unlockUnit": "2_i_elementalist"
+  },
+  {
+   "id": "app_necro",
+   "title": "Unlock Necromancer",
+   "cost": 28,
+   "description": "Adds the Necromancer to your roster",
+   "unlockUnit": "2_i_necromancer"
+  },
+  {
+   "id": "app_ench",
+   "title": "Unlock Enchanter",
+   "cost": 28,
+   "description": "Adds the Enchanter to your roster",
+   "unlockUnit": "2_i_enchanter"
+  }
+ ],
+ "fileName": "1_i_apprentice"
+}

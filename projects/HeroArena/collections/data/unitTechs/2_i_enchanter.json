@@ -1,0 +1,34 @@
+{
+ "unit": "2_i_enchanter",
+ "techs": [
+  {
+   "id": "enchanter_vet",
+   "title": "Veterancy",
+   "cost": 24,
+   "description": "+20% max HP and +20% damage",
+   "statModifiers": {
+    "maxHP": {
+     "pct": 0.2
+    },
+    "damage": {
+     "pct": 0.2
+    }
+   }
+  },
+  {
+   "id": "enchanter_mindcontrol",
+   "title": "MindControl",
+   "cost": 22,
+   "description": "Unlocks MindControl: this unit's signature ability",
+   "unlockAbility": "MindControlAbility"
+  },
+  {
+   "id": "enchanter_t3",
+   "title": "Unlock Ice Golem",
+   "cost": 40,
+   "description": "Adds a tier-3 monster to your roster",
+   "unlockUnit": "0_golemIce"
+  }
+ ],
+ "fileName": "2_i_enchanter"
+}

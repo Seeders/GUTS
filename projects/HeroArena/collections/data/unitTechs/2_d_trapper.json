@@ -1,0 +1,27 @@
+{
+ "unit": "2_d_trapper",
+ "techs": [
+  {
+   "id": "trapper_vet",
+   "title": "Veterancy",
+   "cost": 24,
+   "description": "+20% max HP and +20% damage",
+   "statModifiers": {
+    "maxHP": {
+     "pct": 0.2
+    },
+    "damage": {
+     "pct": 0.2
+    }
+   }
+  },
+  {
+   "id": "trapper_explosivetrap",
+   "title": "ExplosiveTrap",
+   "cost": 22,
+   "description": "Unlocks ExplosiveTrap: this unit's signature ability",
+   "unlockAbility": "ExplosiveTrapAbility"
+  }
+ ],
+ "fileName": "2_d_trapper"
+}

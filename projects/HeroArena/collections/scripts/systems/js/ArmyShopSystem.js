@@ -19,6 +19,7 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         'buyOffer',
         'rerollOffers',
         'buyUnlockedUnit',
+        'buyUnitTech',
         'getShopStateForPlayer',
         'getEligibleItems',
         'applyArmyUpgrades',
@@ -243,6 +244,91 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         return { success: true, state: this.getShopStateForPlayer(numericPlayerId) };
     }
 
+    // ─── Unit techs (Mechabellum-style per-type technologies) ───────────────────
+
+    // Buy a tech for a unit TYPE. Effects apply to every current and future unit
+    // of that type: stat techs modify live units immediately and re-apply on each
+    // respawn; ability techs activate one of the unit's predefined abilities;
+    // unlock techs add a higher-tier unit to the buyable roster.
+    buyUnitTech(numericPlayerId, unitId, techId) {
+        const stats = this._getStats(numericPlayerId);
+        if (!stats) return { success: false, reason: 'no_player' };
+        if (!this._inPlacement()) return { success: false, reason: 'wrong_phase' };
+
+        const techDef = (this.collections.unitTechs?.[unitId]?.techs || []).find(t => t.id === techId);
+        if (!techDef) return { success: false, reason: 'no_tech' };
+
+        if (!stats.unitTechs) stats.unitTechs = {};
+        const owned = stats.unitTechs[unitId] || [];
+        if (owned.includes(techId)) return { success: false, reason: 'already_owned' };
+
+        // Techs require owning at least one unit of the type (you tech what you field)
+        const ownsType = (stats.heroRoster || []).some(e => this._resolveSpawnType(e) === unitId);
+        if (!ownsType) return { success: false, reason: 'no_unit_of_type' };
+
+        const cost = techDef.cost || 10;
+        if ((stats.gold || 0) < cost) return { success: false, reason: 'insufficient_gold' };
+
+        stats.gold -= cost;
+        stats.unitTechs[unitId] = [...owned, techId];
+
+        if (techDef.statModifiers) {
+            this._applyTechToLiveUnits(stats, unitId, techDef);
+        }
+        if (techDef.unlockAbility) {
+            this._reapplyAbilitiesForUnitType(stats, unitId);
+        }
+        if (techDef.unlockUnit) {
+            if (!Array.isArray(stats.tierUnlocks)) stats.tierUnlocks = [];
+            if (!stats.tierUnlocks.includes(techDef.unlockUnit)) {
+                stats.tierUnlocks.push(techDef.unlockUnit);
+            }
+        }
+
+        this._broadcastShop(stats);
+        return { success: true, state: this.getShopStateForPlayer(numericPlayerId) };
+    }
+
+    // Apply one tech's stat modifiers to all live units of the type.
+    _applyTechToLiveUnits(stats, unitId, techDef) {
+        for (const eid of (this.game.getEntitiesWith?.('heroRosterInfo') || [])) {
+            const info = this.game.getComponent(eid, 'heroRosterInfo');
+            if (!info || info.playerId !== stats.playerId) continue;
+            const entry = stats.heroRoster?.[info.rosterIndex];
+            if (!entry || this._resolveSpawnType(entry) !== unitId) continue;
+            this._applyStatMods(
+                this.game.getComponent(eid, 'combat'),
+                this.game.getComponent(eid, 'health'),
+                techDef.statModifiers
+            );
+        }
+    }
+
+    // AI: buy the first affordable un-owned tech for any fielded unit type.
+    _aiBuyOneTech(stats, pid) {
+        const fielded = [...new Set((stats.heroRoster || [])
+            .map(e => this._resolveSpawnType(e)))];
+        for (const unitId of fielded) {
+            const owned = new Set(stats.unitTechs?.[unitId] || []);
+            for (const t of (this.collections.unitTechs?.[unitId]?.techs || [])) {
+                if (owned.has(t.id)) continue;
+                if ((stats.gold || 0) < (t.cost || 10)) continue;
+                if (this.buyUnitTech(pid, unitId, t.id)?.success) return true;
+            }
+        }
+        return false;
+    }
+
+    _reapplyAbilitiesForUnitType(stats, unitId) {
+        for (const eid of (this.game.getEntitiesWith?.('heroRosterInfo') || [])) {
+            const info = this.game.getComponent(eid, 'heroRosterInfo');
+            if (!info || info.playerId !== stats.playerId) continue;
+            const entry = stats.heroRoster?.[info.rosterIndex];
+            if (!entry || this._resolveSpawnType(entry) !== unitId) continue;
+            this.applyArmyAbilities(eid);
+        }
+    }
+
     // Spend gold to discard the current offers and roll a fresh set.
     rerollOffers(numericPlayerId) {
         const stats = this._getStats(numericPlayerId);
@@ -330,7 +416,11 @@ class ArmyShopSystem extends GUTS.BaseSystem {
             rerollCost: this.getRerollCost(stats),
             gold:       stats.gold || 0,
             // For the building upgrade-tree modal: which tree nodes are already bought.
-            ownedUpgrades: [...(stats.ownedUpgrades || [])]
+            ownedUpgrades: [...(stats.ownedUpgrades || [])],
+            // Per-unit techs owned: { unitId: [techId, ...] } (tech defs come from collections)
+            unitTechs: JSON.parse(JSON.stringify(stats.unitTechs || {})),
+            // Which unit types the player currently fields (tech gating in the UI)
+            ownedUnitTypes: [...new Set((stats.heroRoster || []).map(e => this._resolveSpawnType(e)))]
         };
     }
 
@@ -533,8 +623,8 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         this._applyUpgradeToLiveUnits(stats, upgradeId);
     }
 
-    // Apply ALL of a player's owned upgrades to one freshly-spawned entity.
-    // Called by HeroRosterSystem at spawn (entity is "clean", no upgrades applied yet).
+    // Apply ALL of a player's owned upgrades + unit techs to one freshly-spawned
+    // entity. Called by HeroRosterSystem at spawn (entity is "clean").
     applyArmyUpgrades(entityId) {
         const info = this.game.getComponent(entityId, 'heroRosterInfo');
         if (!info) return;
@@ -549,6 +639,14 @@ class ArmyShopSystem extends GUTS.BaseSystem {
             if (!up?.statModifiers) continue;
             if (!this.matchesCombo(profile, up.target || {})) continue;
             this._applyStatMods(combat, health, up.statModifiers);
+        }
+        // Unit techs: stat techs for this unit's type re-apply on every respawn.
+        const spawnType = this._resolveSpawnType(entry);
+        const ownedTechs = new Set(stats.unitTechs?.[spawnType] || []);
+        for (const t of (this.collections.unitTechs?.[spawnType]?.techs || [])) {
+            if (t.statModifiers && ownedTechs.has(t.id)) {
+                this._applyStatMods(combat, health, t.statModifiers);
+            }
         }
     }
 
@@ -622,8 +720,17 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         const entry = stats?.heroRoster?.[info.rosterIndex];
         if (!entry) return;
         const profile = this._profileForEntry(entry);
-        const def = this.collections.units?.[this._resolveSpawnType(entry)] || {};
-        const ids = new Set(def.abilities || []);
+        const spawnType = this._resolveSpawnType(entry);
+
+        // Predefined unit abilities require INVESTMENT: only ability techs the
+        // player has bought for this unit type are active. (UnitCreationSystem
+        // grants def abilities at spawn; this rebuild replaces the whole list,
+        // so an unteched unit ends up with none — by design.)
+        const ids = new Set();
+        const ownedTechs = new Set(stats.unitTechs?.[spawnType] || []);
+        for (const t of (this.collections.unitTechs?.[spawnType]?.techs || [])) {
+            if (t.unlockAbility && ownedTechs.has(t.id)) ids.add(t.unlockAbility);
+        }
 
         for (const owned of (stats.ownedAbilities || [])) {
             const sdef = this.collections.shopAbilities?.[owned.abilityId];
@@ -636,7 +743,8 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         }
         for (const a of (entry.grantedAbilities || [])) ids.add(a);
 
-        if (ids.size > 0 && this.game.hasService?.('addAbilitiesToUnit')) {
+        // Always call, even with an empty list — it clears the free def abilities.
+        if (this.game.hasService?.('addAbilitiesToUnit')) {
             this.call.addAbilitiesToUnit(entityId,
                 [...ids].map(id => ({ id, itemLevel: profile.level })));
         }
@@ -723,6 +831,7 @@ class ArmyShopSystem extends GUTS.BaseSystem {
                 return !!this.buyOffer(pid, idx)?.success;
             };
 
+
             let guard = 0, progress = true;
             while (progress && guard++ < 80) {
                 progress = false;
@@ -732,6 +841,8 @@ class ArmyShopSystem extends GUTS.BaseSystem {
                     if ((stats.gold || 0) < cost) continue;
                     if (this.buyUnlockedUnit(pid, id)?.success) progress = true;
                 }
+                // Then one affordable unit tech for a fielded type.
+                if (this._aiBuyOneTech(stats, pid)) progress = true;
                 // Then one affordable shop offer with whatever's left.
                 if (buyOneOffer()) progress = true;
             }

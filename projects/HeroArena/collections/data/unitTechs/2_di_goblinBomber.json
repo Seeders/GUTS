@@ -1,0 +1,27 @@
+{
+ "unit": "2_di_goblinBomber",
+ "techs": [
+  {
+   "id": "goblinbomber_vet",
+   "title": "Veterancy",
+   "cost": 24,
+   "description": "+20% max HP and +20% damage",
+   "statModifiers": {
+    "maxHP": {
+     "pct": 0.2
+    },
+    "damage": {
+     "pct": 0.2
+    }
+   }
+  },
+  {
+   "id": "goblinbomber_meteorstrike",
+   "title": "MeteorStrike",
+   "cost": 22,
+   "description": "Unlocks MeteorStrike: this unit's signature ability",
+   "unlockAbility": "MeteorStrikeAbility"
+  }
+ ],
+ "fileName": "2_di_goblinBomber"
+}

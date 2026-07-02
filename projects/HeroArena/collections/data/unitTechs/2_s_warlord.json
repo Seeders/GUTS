@@ -1,0 +1,34 @@
+{
+ "unit": "2_s_warlord",
+ "techs": [
+  {
+   "id": "warlord_vet",
+   "title": "Veterancy",
+   "cost": 24,
+   "description": "+20% max HP and +20% damage",
+   "statModifiers": {
+    "maxHP": {
+     "pct": 0.2
+    },
+    "damage": {
+     "pct": 0.2
+    }
+   }
+  },
+  {
+   "id": "warlord_battlecry",
+   "title": "BattleCry",
+   "cost": 22,
+   "description": "Unlocks BattleCry: this unit's signature ability",
+   "unlockAbility": "BattleCryAbility"
+  },
+  {
+   "id": "warlord_t3",
+   "title": "Unlock Ballista",
+   "cost": 36,
+   "description": "Adds a tier-3 monster to your roster",
+   "unlockUnit": "ballista"
+  }
+ ],
+ "fileName": "2_s_warlord"
+}

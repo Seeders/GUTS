@@ -1,0 +1,63 @@
+{
+ "unit": "1_is_acolyte",
+ "techs": [
+  {
+   "id": "aco_armor",
+   "title": "Blessed Armor",
+   "cost": 14,
+   "description": "+20% max HP",
+   "statModifiers": {
+    "maxHP": {
+     "pct": 0.2
+    }
+   }
+  },
+  {
+   "id": "aco_zeal",
+   "title": "Zealotry",
+   "cost": 14,
+   "description": "+15% attack speed",
+   "statModifiers": {
+    "attackSpeed": {
+     "pct": 0.15
+    }
+   }
+  },
+  {
+   "id": "aco_heal",
+   "title": "Healing Prayer",
+   "cost": 18,
+   "description": "Unlocks Heal: restore an ally",
+   "unlockAbility": "HealAbility"
+  },
+  {
+   "id": "aco_smite",
+   "title": "Smite",
+   "cost": 18,
+   "description": "Unlocks Smite: holy strike",
+   "unlockAbility": "SmiteAbility"
+  },
+  {
+   "id": "aco_paladin",
+   "title": "Unlock Paladin",
+   "cost": 28,
+   "description": "Adds the Paladin to your roster",
+   "unlockUnit": "2_is_paladin"
+  },
+  {
+   "id": "aco_crusader",
+   "title": "Unlock Crusader",
+   "cost": 28,
+   "description": "Adds the Crusader to your roster",
+   "unlockUnit": "2_is_crusader"
+  },
+  {
+   "id": "aco_oath",
+   "title": "Unlock Oathbreaker",
+   "cost": 28,
+   "description": "Adds the Oathbreaker to your roster",
+   "unlockUnit": "2_is_oathBreaker"
+  }
+ ],
+ "fileName": "1_is_acolyte"
+}

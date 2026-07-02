@@ -33,6 +33,7 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
         'submitBuyOffer',
         'submitRerollOffers',
         'submitBuyUnlockedUnit',
+        'submitBuyUnitTech',
         'submitSellUnit',
         'submitGrantSingleAbility',
         'submitSpecializeChoice',
@@ -1652,6 +1653,15 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
             eventName: 'BUY_UNLOCKED_UNIT',
             responseName: 'BUY_UNLOCKED_UNIT_ACK',
             data: { unitTypeId },
+            onSuccess
+        }, () => {});
+    }
+
+    submitBuyUnitTech(unitId, techId, onSuccess) {
+        this.networkRequest({
+            eventName: 'BUY_UNIT_TECH',
+            responseName: 'BUY_UNIT_TECH_ACK',
+            data: { unitId, techId },
             onSuccess
         }, () => {});
     }

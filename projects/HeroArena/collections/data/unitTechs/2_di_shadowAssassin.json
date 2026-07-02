@@ -1,0 +1,27 @@
+{
+ "unit": "2_di_shadowAssassin",
+ "techs": [
+  {
+   "id": "shadowassassin_vet",
+   "title": "Veterancy",
+   "cost": 24,
+   "description": "+20% max HP and +20% damage",
+   "statModifiers": {
+    "maxHP": {
+     "pct": 0.2
+    },
+    "damage": {
+     "pct": 0.2
+    }
+   }
+  },
+  {
+   "id": "shadowassassin_shadowstrike",
+   "title": "ShadowStrike",
+   "cost": 22,
+   "description": "Unlocks ShadowStrike: this unit's signature ability",
+   "unlockAbility": "ShadowStrikeAbility"
+  }
+ ],
+ "fileName": "2_di_shadowAssassin"
+}

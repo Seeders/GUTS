@@ -175,6 +175,74 @@ try {
     check('selling a fought unit is blocked',
         lockTest.sellOk === false && lockTest.sellReason === 'deployment_locked', lockTest.sellReason);
 
+    // ── Unit techs ─────────────────────────────────────────────────────────
+    const techTest = await page.evaluate(() => {
+        const game = window.game;
+        let my = null;
+        for (const eid of game.getEntitiesWith('playerStats')) {
+            const s = game.getComponent(eid, 'playerStats');
+            if (s.playerId === 0) my = s;
+        }
+        my.gold = 500; // test budget
+
+        const buyTech = game.getService('buyUnitTech');
+
+        // Barbarian unit on the field (bought in round 1)
+        const barb = game.getEntitiesWith('heroRosterInfo').find(id => {
+            const info = game.getComponent(id, 'heroRosterInfo');
+            if (info?.playerId !== 0) return false;
+            const entry = my.heroRoster[info.rosterIndex];
+            return entry?.spawnType === '1_s_barbarian';
+        });
+        const hpBefore = game.getComponent(barb, 'health').max;
+        const abilitiesBefore = game.abilitySystem.getEntityAbilities(barb).map(a => a.id);
+
+        const statRes = buyTech(0, '1_s_barbarian', 'bar_plating');
+        const hpAfter = game.getComponent(barb, 'health').max;
+
+        const abilityRes = buyTech(0, '1_s_barbarian', 'bar_rage');
+        const abilitiesAfter = game.abilitySystem.getEntityAbilities(barb).map(a => a.id);
+
+        const unlockRes = buyTech(0, '1_s_barbarian', 'bar_berserker');
+        const unlocked = game.getService('getShopStateForPlayer')(0).unlocked.map(u => u.id);
+
+        // Tech gating: can't tech a type you don't field
+        const gateRes = buyTech(0, '1_i_apprentice', 'app_focus');
+
+        return {
+            statOk: statRes?.success, hpBefore, hpAfter,
+            abilityOk: abilityRes?.success, abilitiesBefore, abilitiesAfter,
+            unlockOk: unlockRes?.success, hasBerserker: unlocked.includes('2_s_berserker'),
+            gateReason: gateRes?.reason
+        };
+    });
+    check('stat tech boosts live units', techTest.statOk && techTest.hpAfter > techTest.hpBefore,
+        `hp ${techTest.hpBefore} -> ${techTest.hpAfter}`);
+    check('abilities require investment (none before tech)', techTest.abilitiesBefore.length === 0,
+        `before: [${techTest.abilitiesBefore.join(',')}]`);
+    check('ability tech activates the ability', techTest.abilityOk && techTest.abilitiesAfter.includes('RageAbility'),
+        `after: [${techTest.abilitiesAfter.join(',')}]`);
+    check('unlock tech adds tier-2 unit to roster', techTest.unlockOk && techTest.hasBerserker);
+    check('cannot tech an unfielded type', techTest.gateReason === 'no_unit_of_type', techTest.gateReason);
+
+    // Tech panel UI: ⚙ button on fielded unit card opens the panel
+    const uiTest = await page.evaluate(() => {
+        const btn = document.querySelector('[data-tech-unit="1_s_barbarian"]');
+        if (btn) btn.click();
+        const overlay = document.getElementById('techTreeOverlay');
+        return {
+            btnExists: !!btn,
+            panelOpen: overlay && !overlay.classList.contains('hidden'),
+            rows: document.querySelectorAll('.unit-tech-row').length,
+            ownedRows: document.querySelectorAll('.unit-tech-row.owned').length
+        };
+    });
+    check('tech panel opens from unit card with full tech list',
+        uiTest.btnExists && uiTest.panelOpen && uiTest.rows === 7 && uiTest.ownedRows === 3,
+        `${uiTest.rows} techs, ${uiTest.ownedRows} owned`);
+    await page.screenshot({ path: 'projects/HeroArena/test_techs.png' });
+    await page.evaluate(() => document.getElementById('techTreeCloseBtn')?.click());
+
     await page.screenshot({ path: 'projects/HeroArena/test_mechabellum.png' });
     console.log('screenshot: projects/HeroArena/test_mechabellum.png');
 

@@ -1,0 +1,63 @@
+{
+ "unit": "1_di_scout",
+ "techs": [
+  {
+   "id": "sco_evasion",
+   "title": "Evasive Training",
+   "cost": 14,
+   "description": "+15 evasion",
+   "statModifiers": {
+    "evasion": {
+     "add": 15
+    }
+   }
+  },
+  {
+   "id": "sco_blades",
+   "title": "Serrated Blades",
+   "cost": 14,
+   "description": "+20% damage",
+   "statModifiers": {
+    "damage": {
+     "pct": 0.2
+    }
+   }
+  },
+  {
+   "id": "sco_poison",
+   "title": "Poison Coat",
+   "cost": 18,
+   "description": "Unlocks Poison Coat: venomous weapons",
+   "unlockAbility": "PoisonCoatAbility"
+  },
+  {
+   "id": "sco_smoke",
+   "title": "Smoke Bomb",
+   "cost": 18,
+   "description": "Unlocks Smoke Bomb: blind nearby enemies",
+   "unlockAbility": "SmokeBombAbility"
+  },
+  {
+   "id": "sco_assassin",
+   "title": "Unlock Shadow Assassin",
+   "cost": 28,
+   "description": "Adds the Shadow Assassin to your roster",
+   "unlockUnit": "2_di_shadowAssassin"
+  },
+  {
+   "id": "sco_trickster",
+   "title": "Unlock Trickster",
+   "cost": 28,
+   "description": "Adds the Trickster to your roster",
+   "unlockUnit": "2_di_trickster"
+  },
+  {
+   "id": "sco_bomber",
+   "title": "Unlock Goblin Bomber",
+   "cost": 28,
+   "description": "Adds the Goblin Bomber to your roster",
+   "unlockUnit": "2_di_goblinBomber"
+  }
+ ],
+ "fileName": "1_di_scout"
+}

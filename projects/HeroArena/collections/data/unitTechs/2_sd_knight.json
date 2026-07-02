@@ -1,0 +1,27 @@
+{
+ "unit": "2_sd_knight",
+ "techs": [
+  {
+   "id": "knight_vet",
+   "title": "Veterancy",
+   "cost": 24,
+   "description": "+20% max HP and +20% damage",
+   "statModifiers": {
+    "maxHP": {
+     "pct": 0.2
+    },
+    "damage": {
+     "pct": 0.2
+    }
+   }
+  },
+  {
+   "id": "knight_charge",
+   "title": "Charge",
+   "cost": 22,
+   "description": "Unlocks Charge: this unit's signature ability",
+   "unlockAbility": "ChargeAbility"
+  }
+ ],
+ "fileName": "2_sd_knight"
+}

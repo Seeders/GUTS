@@ -1,0 +1,34 @@
+{
+ "unit": "2_i_necromancer",
+ "techs": [
+  {
+   "id": "necromancer_vet",
+   "title": "Veterancy",
+   "cost": 24,
+   "description": "+20% max HP and +20% damage",
+   "statModifiers": {
+    "maxHP": {
+     "pct": 0.2
+    },
+    "damage": {
+     "pct": 0.2
+    }
+   }
+  },
+  {
+   "id": "necromancer_raisedead",
+   "title": "RaiseDead",
+   "cost": 22,
+   "description": "Unlocks RaiseDead: this unit's signature ability",
+   "unlockAbility": "RaiseDeadAbility"
+  },
+  {
+   "id": "necromancer_t3",
+   "title": "Unlock Red Dragon",
+   "cost": 60,
+   "description": "Adds a tier-3 monster to your roster",
+   "unlockUnit": "dragon_red"
+  }
+ ],
+ "fileName": "2_i_necromancer"
+}

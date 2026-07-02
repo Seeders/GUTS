@@ -1,0 +1,66 @@
+{
+ "unit": "1_sd_soldier",
+ "techs": [
+  {
+   "id": "sol_shields",
+   "title": "Tower Shields",
+   "cost": 14,
+   "description": "+20% max HP, +5 armor",
+   "statModifiers": {
+    "maxHP": {
+     "pct": 0.2
+    },
+    "armor": {
+     "add": 5
+    }
+   }
+  },
+  {
+   "id": "sol_drill",
+   "title": "Combat Drill",
+   "cost": 14,
+   "description": "+15% attack speed",
+   "statModifiers": {
+    "attackSpeed": {
+     "pct": 0.15
+    }
+   }
+  },
+  {
+   "id": "sol_wall",
+   "title": "Shield Wall",
+   "cost": 18,
+   "description": "Unlocks Shield Wall: heavy damage reduction",
+   "unlockAbility": "ShieldWallAbility"
+  },
+  {
+   "id": "sol_charge",
+   "title": "Charge",
+   "cost": 18,
+   "description": "Unlocks Charge: rush the enemy line",
+   "unlockAbility": "ChargeAbility"
+  },
+  {
+   "id": "sol_knight",
+   "title": "Unlock Knight",
+   "cost": 28,
+   "description": "Adds the Knight to your roster",
+   "unlockUnit": "2_sd_knight"
+  },
+  {
+   "id": "sol_hoplite",
+   "title": "Unlock Hoplite",
+   "cost": 28,
+   "description": "Adds the Hoplite to your roster",
+   "unlockUnit": "2_sd_hoplite"
+  },
+  {
+   "id": "sol_crossbow",
+   "title": "Unlock Crossbowman",
+   "cost": 28,
+   "description": "Adds the Crossbowman to your roster",
+   "unlockUnit": "2_sd_crossbowman"
+  }
+ ],
+ "fileName": "1_sd_soldier"
+}

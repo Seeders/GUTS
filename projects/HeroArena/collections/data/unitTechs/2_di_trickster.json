@@ -1,0 +1,27 @@
+{
+ "unit": "2_di_trickster",
+ "techs": [
+  {
+   "id": "trickster_vet",
+   "title": "Veterancy",
+   "cost": 24,
+   "description": "+20% max HP and +20% damage",
+   "statModifiers": {
+    "maxHP": {
+     "pct": 0.2
+    },
+    "damage": {
+     "pct": 0.2
+    }
+   }
+  },
+  {
+   "id": "trickster_mirrorimages",
+   "title": "MirrorImages",
+   "cost": 22,
+   "description": "Unlocks MirrorImages: this unit's signature ability",
+   "unlockAbility": "MirrorImagesAbility"
+  }
+ ],
+ "fileName": "2_di_trickster"
+}
