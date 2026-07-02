@@ -1,0 +1,28 @@
+{
+ "title": "Cinder Quarry",
+ "set": "rock",
+ "genSlot": "gen_zone_c",
+ "sizePieces": 8,
+ "monsterLevel": 9,
+ "packCount": 12,
+ "monsters": [
+  "0_golemStone",
+  "0_golemIce",
+  "peasant"
+ ],
+ "championTypes": [
+  "0_golemFire"
+ ],
+ "world": "shire",
+ "order": 3,
+ "prev": "charred_woods",
+ "next": "keep_approach",
+ "hasWaypoint": false,
+ "boss": {
+  "unit": "0_golemStone",
+  "name": "The Stone Colossus",
+  "questId": "q3_colossus",
+  "scale": 2.2
+ },
+ "fileName": "cinder_quarry"
+}

@@ -51,10 +51,13 @@ class ArpgGameSystem extends GUTS.BaseSystem {
             this.game.clientNetworkManager.numericPlayerId = 0;
         }
 
-        // Resolve level
-        const levelName = params.selectedLevel || 'forest';
-        const levelIndex = this.enums.levels?.[levelName] ?? 0;
-        this.game.state.level = levelIndex;
+        // Resolve level. When traveling via ZoneSystem, game.state.level was
+        // already set before the scene switch (TerrainSystem reads it during load).
+        if (!params.zoneId) {
+            const levelName = params.selectedLevel || 'forest';
+            const levelIndex = this.enums.levels?.[levelName] ?? 0;
+            this.game.state.level = levelIndex;
+        }
 
         // Point the scene's terrain entity at the level
         const gameScene = this.collections?.scenes?.adventure;
@@ -83,11 +86,16 @@ class ArpgGameSystem extends GUTS.BaseSystem {
         const config = this.pendingConfig;
         this.pendingConfig = null;
 
-        // Spawn the player character
-        this.spawnPlayerCharacter(config.classId || '1_s_barbarian');
+        // Spawn the player character at the requested marker
+        this.spawnPlayerCharacter(config.classId || '1_s_barbarian', config.spawnAt || 'entrance');
 
-        // Placeholder enemy population for Phase A (replaced by EnemyPackSystem)
-        this.spawnPlaceholderEnemies();
+        // Populate the zone (packs, boss, portals, waypoints) or fall back to
+        // the simple placeholder population for direct level loads
+        if (config.zoneId && this.game.zoneSystem) {
+            this.game.zoneSystem.setupZone(config.zoneId, config);
+        } else {
+            this.spawnPlaceholderEnemies();
+        }
 
         this.call.initializeGame(null);
 
@@ -97,10 +105,10 @@ class ArpgGameSystem extends GUTS.BaseSystem {
 
     // ─── Player character ─────────────────────────────────────────────────────
 
-    spawnPlayerCharacter(classId) {
+    spawnPlayerCharacter(classId, spawnAt = 'entrance') {
         this.playerClassId = classId;
 
-        const spawn = this.getPlayerSpawnPosition();
+        const spawn = this.getPlayerSpawnPosition(spawnAt);
         const entityId = this.call.createEntityFromPrefab({
             prefab: 'unit',
             type: classId,
@@ -147,15 +155,31 @@ class ArpgGameSystem extends GUTS.BaseSystem {
         return entityId;
     }
 
-    getPlayerSpawnPosition() {
-        // Use the level's first starting location if available
+    getPlayerSpawnPosition(spawnAt = 'entrance') {
         const levelKey = this.reverseEnums.levels?.[this.game.state.level];
         const level = this.collections.levels?.[levelKey];
         const tileMap = level?.tileMap;
-        const start = tileMap?.startingLocations?.[0];
-        if (start && this.game.gridSystem?.gridToWorld) {
-            const pos = this.game.gridSystem.gridToWorld(start.gridX, start.gridZ);
-            if (pos) return { x: pos.x, y: pos.y || 0, z: pos.z };
+
+        // Generated zones carry precise markers in the arpg block
+        let marker = null;
+        if (level?.arpg) {
+            if (spawnAt === 'exit') marker = level.arpg.exit;
+            else if (spawnAt === 'waypoint') marker = level.arpg.waypoint || level.arpg.entrance;
+            else marker = level.arpg.entrance;
+        }
+        if (!marker) {
+            const idx = spawnAt === 'exit' ? 1 : 0;
+            marker = tileMap?.startingLocations?.[idx] || tileMap?.startingLocations?.[0];
+        }
+        if (marker) {
+            const gridSize = this.collections.configs?.game?.gridSize || 48;
+            const size = tileMap?.size || 64;
+            const terrainSize = size * gridSize;
+            return {
+                x: marker.gridX * gridSize - terrainSize / 2 + gridSize / 2,
+                y: 0,
+                z: marker.gridZ * gridSize - terrainSize / 2 + gridSize / 2
+            };
         }
         return { x: 0, y: 0, z: 0 };
     }

@@ -1,0 +1,25 @@
+{
+ "title": "Ashen Fields",
+ "set": "forest",
+ "genSlot": "gen_zone_a",
+ "sizePieces": 6,
+ "monsterLevel": 2,
+ "packCount": 9,
+ "monsters": [
+  "0_skeleton"
+ ],
+ "championTypes": [
+  "0_golemStone"
+ ],
+ "world": "shire",
+ "order": 1,
+ "prev": "emberrest",
+ "next": "charred_woods",
+ "hasWaypoint": false,
+ "boss": {
+  "unit": "4_archmage",
+  "name": "Bonecaller Maru",
+  "questId": "q1_bonecaller"
+ },
+ "fileName": "ashen_fields"
+}

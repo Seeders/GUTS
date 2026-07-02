@@ -94,13 +94,45 @@ try {
     check('HUD globes present', snapshot.hudHealth && snapshot.hudMana);
     check('zone name shown', !!snapshot.zoneName, snapshot.zoneName);
 
-    // ── WASD movement test ────────────────────────────────────────────────
+    // ── WFC zone checks ───────────────────────────────────────────────────
+    const zoneCheck = await page.evaluate(() => {
+        const game = window.game;
+        const zoneId = game.state.currentZoneId;
+        const zone = game.zoneSystem?.getZoneDef?.(zoneId);
+        const levelKey = zone?.genSlot || zone?.fixedLevel;
+        const level = game.getCollections().levels?.[levelKey];
+        const interactables = game.getEntitiesWith('interactable').map(id => {
+            const i = game.getComponent(id, 'interactable');
+            return { kind: i.kind, target: i.target };
+        });
+        const bosses = game.getEntitiesWith('boss');
+        const bossName = bosses.length ? game.enemyPackSystem?.getMonsterName?.(bosses[0]) : null;
+        return {
+            zoneId,
+            levelSize: level?.tileMap?.size,
+            hasArpgBlock: !!level?.arpg,
+            packSpawns: level?.arpg?.packSpawns?.length,
+            levelEntityCount: level?.tileMap?.levelEntities?.length,
+            interactables,
+            bossCount: bosses.length,
+            bossName
+        };
+    });
+    check('WFC zone generated (ashen_fields)', zoneCheck.zoneId === 'ashen_fields' &&
+        zoneCheck.hasArpgBlock && zoneCheck.levelSize === 48,
+        `size ${zoneCheck.levelSize}, ${zoneCheck.packSpawns} pack markers, ${zoneCheck.levelEntityCount} doodads`);
+    check('exit portal spawned', zoneCheck.interactables.some(i => i.kind === 'portal' && i.target === 'charred_woods'),
+        JSON.stringify(zoneCheck.interactables));
+    check('zone boss spawned', zoneCheck.bossCount === 1, `boss: ${zoneCheck.bossName}`);
+
+    // ── WASD movement test (move toward map center to avoid border clamps) ──
     const before = snapshot.pos;
-    await page.keyboard.down('KeyW');
-    await page.keyboard.down('KeyD');
+    const towardCenter = before.x + before.z < 0 ? ['KeyS', 'KeyD'] : ['KeyW', 'KeyA'];
+    await page.keyboard.down(towardCenter[0]);
+    await page.keyboard.down(towardCenter[1]);
     await waitSimTime(page, 2);
-    await page.keyboard.up('KeyW');
-    await page.keyboard.up('KeyD');
+    await page.keyboard.up(towardCenter[0]);
+    await page.keyboard.up(towardCenter[1]);
 
     const after = await page.evaluate(() => {
         const game = window.game;
@@ -118,7 +150,16 @@ try {
         const pt = game.getComponent(pid, 'transform');
         const enemies = game.getEntitiesWith('neutralMonster', 'health', 'transform');
         if (!enemies.length) return null;
-        const eid = enemies[0];
+        // Weakest enemy (avoid armored bosses shrugging off starter damage)
+        let eid = enemies[0], lowest = Infinity;
+        for (const id of enemies) {
+            const hp = game.getComponent(id, 'health')?.max ?? Infinity;
+            if (hp < lowest) { lowest = hp; eid = id; }
+        }
+        // Duel arena: move player + target away from other packs, full heal
+        pt.position.x = 0; pt.position.z = 0;
+        const ph = game.getComponent(pid, 'health');
+        ph.current = ph.max;
         const et = game.getComponent(eid, 'transform');
         // Place enemy right in front of the player
         et.position.x = pt.position.x + 40;
@@ -136,9 +177,24 @@ try {
             const alive = await page.evaluate((eid) => {
                 const game = window.game;
                 const sys = game.playerControllerSystem;
+                const pid = game.state.playerCharacterId;
                 const et = game.getComponent(eid, 'transform');
                 if (!et) return false;
-                sys.aimPos = { x: et.position.x, y: et.position.y, z: et.position.z };
+                // Keep the duel isolated: enemy pinned near the player, player healed
+                const pt = game.getComponent(pid, 'transform');
+                et.position.x = pt.position.x + 40;
+                et.position.z = pt.position.z;
+                const ph = game.getComponent(pid, 'health');
+                if (ph) ph.current = ph.max;
+                // Aim by moving the virtual mouse onto the enemy's screen position
+                // (updateAim recomputes aimPos from mouseScreen every tick)
+                const camera = game.getService('getCamera')();
+                const v = new THREE.Vector3(et.position.x, (et.position.y || 0) + 10, et.position.z);
+                v.project(camera);
+                const canvas = document.getElementById('gameCanvas');
+                const rect = canvas.getBoundingClientRect();
+                sys.mouseScreen.x = rect.left + (v.x + 1) / 2 * rect.width;
+                sys.mouseScreen.y = rect.top + (-v.y + 1) / 2 * rect.height;
                 sys.mouseDown.left = true;
                 return true;
             }, attackSetup.eid);
@@ -429,6 +485,56 @@ try {
 
     await page.screenshot({ path: 'projects/Ashfall/test_adventure.png' });
     console.log('screenshot: projects/Ashfall/test_adventure.png');
+
+    // ── Zone travel: use the exit portal to enter Charred Woods ───────────
+    const travelStart = await page.evaluate(() => {
+        const game = window.game;
+        const portals = game.getEntitiesWith('interactable').filter(id => {
+            const i = game.getComponent(id, 'interactable');
+            return i?.kind === 'portal' && i?.target === 'charred_woods';
+        });
+        if (!portals.length) return false;
+        // Teleport next to the portal and interact
+        const pid = game.state.playerCharacterId;
+        const portalT = game.getComponent(portals[0], 'transform');
+        const pt = game.getComponent(pid, 'transform');
+        pt.position.x = portalT.position.x + 20;
+        pt.position.z = portalT.position.z + 20;
+        return game.zoneSystem.interactWith(portals[0]);
+    });
+    if (travelStart) {
+        try {
+            await page.waitForFunction(() =>
+                window.game?.state?.currentZoneId === 'charred_woods' &&
+                window.game?.state?.playerCharacterId != null,
+                { timeout: 120000, polling: 500 });
+        } catch (e) {
+            const stuck = await page.evaluate(() => ({
+                zone: window.game?.state?.currentZoneId,
+                pc: window.game?.state?.playerCharacterId,
+                scene: window.game?.sceneManager?.currentSceneName,
+                phase: window.game?.state?.phase
+            })).catch(() => null);
+            console.log('TRAVEL STUCK STATE:', JSON.stringify(stuck));
+            throw e;
+        }
+        await waitSimTime(page, 1);
+        const zone2 = await page.evaluate(() => {
+            const game = window.game;
+            const sheet = game.getComponent(game.state.playerCharacterId, 'characterSheet');
+            const monsters = game.getEntitiesWith('neutralMonster').length;
+            const waypoints = game.getEntitiesWith('interactable').filter(id =>
+                game.getComponent(id, 'interactable')?.kind === 'waypoint').length;
+            return { zone: game.state.currentZoneId, level: sheet?.level, xp: sheet?.experience, monsters, waypoints };
+        });
+        check('portal travel to Charred Woods works', zone2.zone === 'charred_woods',
+            `${zone2.monsters} monsters, ${zone2.waypoints} waypoint(s)`);
+        check('character progression persists across zones', zone2.level >= 2,
+            `level ${zone2.level}, xp ${zone2.xp}`);
+        await page.screenshot({ path: 'projects/Ashfall/test_zone2.png' });
+    } else {
+        check('portal travel to Charred Woods works', false, 'no portal found');
+    }
 
 } catch (e) {
     check('test run completed', false, e.message);

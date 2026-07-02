@@ -1,0 +1,10 @@
+{
+  "title": "interactable",
+  "description": "Clickable world interaction (portals, waypoints, NPCs, chests). Object-stored.",
+  "schema": {
+    "kind": "",
+    "target": "",
+    "label": "",
+    "data": {}
+  }
+}

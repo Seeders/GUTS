@@ -31,7 +31,9 @@
     "ArpgGameSystem",
     "ArpgStatsSystem",
     "SkillTreeSystem",
-    "ItemSystem"
+    "ItemSystem",
+    "ZoneSystem",
+    "EnemyPackSystem"
   ],
   "clientSystems": [
     "GameInterfaceSystem",

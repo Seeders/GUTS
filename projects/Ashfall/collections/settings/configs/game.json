@@ -58,6 +58,7 @@
     "HeadlessLogger",
     "ChatSystem",
     "BaseCameraSystem",
+    "WFCLevelGenerator",
     "OrthographicCameraSystem",
     "FreeCameraSystem",
     "ThirdPersonCameraSystem",
@@ -151,7 +152,9 @@
     "SkillTreeSystem",
     "ItemSystem",
     "ArpgLootSystem",
-    "ArpgUiSystem"
+    "ArpgUiSystem",
+    "ZoneSystem",
+    "EnemyPackSystem"
   ],
   "classes": [
     {

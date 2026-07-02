@@ -1,0 +1,27 @@
+{
+ "title": "The Ember Throne",
+ "set": null,
+ "fixedLevel": "hell",
+ "monsterLevel": 16,
+ "packCount": 5,
+ "monsters": [
+  "0_skeleton",
+  "0_golemFire"
+ ],
+ "championTypes": [
+  "4_archmage"
+ ],
+ "world": "shire",
+ "order": 5,
+ "prev": "keep_approach",
+ "next": null,
+ "hasWaypoint": false,
+ "boss": {
+  "unit": "dragon_red",
+  "name": "Pyrelord Vazruk",
+  "questId": "q4_vazruk",
+  "scale": 1.4,
+  "actBoss": true
+ },
+ "fileName": "ember_throne"
+}

@@ -10,7 +10,8 @@ class GameModeSystem extends GUTS.BaseSystem {
         'showCampaignSelect',
         'showSkirmishLobby',
         'handleMultiplayerModeSelection',
-        'connectToServer'
+        'connectToServer',
+        'travelToZone'
     ];
 
     constructor(game) {
@@ -249,11 +250,26 @@ class GameModeSystem extends GUTS.BaseSystem {
 
     startAdventure(classId) {
         this.setGameMode('adventure');
+        this.game.state.adventureClassId = classId;
 
-        // TerrainSystem reads game.state.level during scene load, so set it now
+        // Fresh character: clear any prior run's progression
+        this.game.state.savedCharacterSheet = null;
+        this.game.state.savedInventory = null;
+        this.game.state.savedEquipment = null;
+        this.game.state.generatedZones = null;
+        this.game.state.discoveredWaypoints = null;
+
+        // Enter the first zone via the zone graph (WFC generates the map)
+        if (this.game.hasService('travelToZone')) {
+            this.game.zoneSystem
+                ? this.game.zoneSystem.travelToZone('ashen_fields')
+                : this.call.travelToZone?.('ashen_fields');
+            return;
+        }
+
+        // Fallback: direct level load
         const levelName = 'forest';
         this.game.state.level = this.enums?.levels?.[levelName] ?? 0;
-
         this.game.switchScene('adventure', {
             isAdventure: true,
             classId,

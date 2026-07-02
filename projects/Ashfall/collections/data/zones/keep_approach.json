@@ -1,0 +1,23 @@
+{
+ "title": "Ashfall Keep Approach",
+ "set": "brick",
+ "genSlot": "gen_zone_d",
+ "sizePieces": 8,
+ "monsterLevel": 12,
+ "packCount": 13,
+ "monsters": [
+  "peasant",
+  "0_skeleton",
+  "sentry"
+ ],
+ "championTypes": [
+  "4_ancientTreant",
+  "4_archmage"
+ ],
+ "world": "shire",
+ "order": 4,
+ "prev": "cinder_quarry",
+ "next": "ember_throne",
+ "hasWaypoint": true,
+ "fileName": "keep_approach"
+}

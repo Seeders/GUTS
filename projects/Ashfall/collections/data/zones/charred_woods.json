@@ -1,0 +1,27 @@
+{
+ "title": "Charred Woods",
+ "set": "forest",
+ "genSlot": "gen_zone_b",
+ "sizePieces": 8,
+ "monsterLevel": 5,
+ "packCount": 12,
+ "monsters": [
+  "0_skeleton",
+  "peasant"
+ ],
+ "championTypes": [
+  "0_golemFire"
+ ],
+ "world": "shire",
+ "order": 2,
+ "prev": "ashen_fields",
+ "next": "cinder_quarry",
+ "hasWaypoint": true,
+ "questObjects": {
+  "unit": "sentry",
+  "name": "Pyre Totem",
+  "count": 3,
+  "questId": "q2_totems"
+ },
+ "fileName": "charred_woods"
+}
