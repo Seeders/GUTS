@@ -19,7 +19,8 @@ class AutobattlerEconomySystem extends GUTS.BaseSystem {
     ];
 
     static STARTING_GOLD = 30;   // round-1 purse (a tier-1 unit costs ~7 → ~4 opening units)
-    static ROUND_INCOME  = 10;   // flat income granted every round after round 1
+    static ROUND_INCOME  = 10;   // base income granted every round after round 1
+    static INCOME_ESCALATION = 2; // +this much per round number (economies grow like Mechabellum supply)
     static ALCHEMIST_GOLD = 5;   // The Alchemist leader: flat bonus gold each round
 
     constructor(game) {
@@ -44,7 +45,8 @@ class AutobattlerEconomySystem extends GUTS.BaseSystem {
                 continue;
             }
 
-            let gold = (stats.gold || 0) + AutobattlerEconomySystem.ROUND_INCOME;
+            let gold = (stats.gold || 0) + AutobattlerEconomySystem.ROUND_INCOME
+                + round * AutobattlerEconomySystem.INCOME_ESCALATION;
 
             const eff = this.call.getEconomyEffects?.(stats) || {};
             // Interest: +1 per `interestPer` banked, capped (rewards saving).

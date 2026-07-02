@@ -401,6 +401,21 @@ class PlacementUISystem extends GUTS.BaseSystem {
         return new Set();
     }
 
+    // Round resolution feedback: how much commander damage each side took.
+    onRoundResult(data) {
+        const myId = this.game.clientNetworkManager?.numericPlayerId ?? 0;
+        const mine = (data?.report || []).find(r => r.playerId === myId);
+        const theirs = (data?.report || []).find(r => r.playerId !== myId);
+        if (!mine || !theirs) return;
+        const parts = [];
+        if (theirs.damage > 0) parts.push(`Your survivors dealt ${theirs.damage} commander damage`);
+        if (mine.damage > 0) parts.push(`you took ${mine.damage}`);
+        if (parts.length === 0) parts.push('Both armies fell — no commander damage');
+        GUTS.NotificationSystem?.show?.(
+            `Round ${data.round}: ${parts.join(', ')}.`,
+            mine.damage > theirs.damage ? 'error' : 'success', 6000);
+    }
+
     // ─── Commander skills (battle actives) ───────────────────────────────────
 
     // Called from updateHUD each tick: show banked skill charges during battle.

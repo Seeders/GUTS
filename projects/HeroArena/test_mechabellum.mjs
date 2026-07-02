@@ -138,7 +138,7 @@ try {
             mines: game.getEntitiesWith('goldMine').length
         };
     });
-    check('commander HP initialized at 1000 for both', prep1.myHP === 1000 && prep1.opHP === 1000);
+    check('commander HP initialized at 1500 for both', prep1.myHP === 1500 && prep1.opHP === 1500);
     check('no buildings or mines on the field', prep1.townHalls === 0 && prep1.mines === 0,
         `buildings ${prep1.townHalls}, mines ${prep1.mines}`);
     check('random offers gone, shop panel hidden', prep1.offers === 0 && prep1.shopPanelHidden === true);
@@ -200,7 +200,7 @@ try {
                  myRoster: my?.heroRoster?.length,
                  lockedEntries: (my?.heroRoster || []).filter(e => e.lastPosition).length };
     });
-    check('battle resolves into commander damage', resolve1.myHP < 1000 || resolve1.opHP < 1000,
+    check('battle resolves into commander damage', resolve1.myHP < 1500 || resolve1.opHP < 1500,
         `me ${resolve1.myHP}, enemy ${resolve1.opHP}`);
     check('army persists into round 2 with locked positions',
         resolve1.myRoster >= 2 && resolve1.lockedEntries === resolve1.myRoster,

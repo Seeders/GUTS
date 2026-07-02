@@ -51,8 +51,9 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
     ];
 
     // Commander HP: each surviving enemy unit deals its shop value as damage
-    // after every battle. First commander at 0 loses.
-    static COMMANDER_HP = 1000;
+    // after every battle. First commander at 0 loses. Sized for ~9-14 round
+    // matches with the escalating economy.
+    static COMMANDER_HP = 1500;
 
     // AI prep-phase formation for NEWLY BOUGHT units (veterans hold their spots).
     static FORM_SPACING = 48;        // gap between units along a row
