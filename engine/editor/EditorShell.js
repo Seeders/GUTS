@@ -681,6 +681,17 @@ class EditorShell {
     };
   }
 
+  // ---- Sub-editor: Behavior graph (Unity-style node view) --------------------
+  _openBehaviorGraph(type, id) {
+    const Graph = window.EditorBehaviorGraph || (window.GUTS && window.GUTS.EditorBehaviorGraph);
+    if (!Graph) { this._toast('Behavior graph editor not in bundle'); return; }
+    this.openTab('btgraph:' + id, id + ' ⟨tree⟩', (pane, tab) => {
+      const g = new Graph(this, pane, type, id);
+      g.build();
+      tab.dispose = () => g.dispose();
+    });
+  }
+
   // ---- Sub-editor: Script / markup / style (Monaco) --------------------------
   _openScriptEditor(type, id) {
     const obj = (this._collections()[type] || {})[id];
@@ -1032,6 +1043,9 @@ class EditorShell {
     }
     if (typeof obj.imagePath === 'string') {
       bar.appendChild(this._miniBtn('⧉ Texture Editor', () => this._openModuleEditor('textureEditor', typeId, id)));
+    }
+    if (['behaviorTrees', 'sequenceBehaviorTrees', 'behaviorActions', 'behaviorDecorators'].includes(typeId)) {
+      bar.appendChild(this._miniBtn('⧉ Behavior Graph', () => this._openBehaviorGraph(typeId, id)));
     }
     const save = this._miniBtn('Save', () => this._saveInspector(typeId, id));
     save.classList.add('eshell__btn--primary');
