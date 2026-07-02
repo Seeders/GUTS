@@ -27,12 +27,13 @@ class HeroExperienceSystem extends GUTS.BaseSystem {
         'broadcastToRoom'
     ];
 
-    static MAX_LEVEL = 7;
+    // Mechabellum cap: level 9.
+    static MAX_LEVEL = 9;
 
     // XP-bar size per level, as multiples of the unit's shop cost. Mechabellum's
-    // published progression: second rank +122%, then +32%, +17%, +11%, +8%, +6%.
-    // (Cumulative products of those increases.)
-    static XP_THRESHOLD_CHAIN = [1.0, 2.22, 2.93, 3.43, 3.81, 4.11, 4.36];
+    // published progression: second rank +122%, then +32%, +17%, +11%, +8%,
+    // +6%, +5%. (Cumulative products of those increases; 8 bars -> level 9.)
+    static XP_THRESHOLD_CHAIN = [1.0, 2.22, 2.93, 3.43, 3.81, 4.11, 4.36, 4.58];
     static SPEC_LEVEL = 3;           // tier-1 → tier-2 transform unlocks here
     static AI_PLAYER_ID = 1;
 

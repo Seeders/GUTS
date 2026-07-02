@@ -138,7 +138,7 @@ try {
             mines: game.getEntitiesWith('goldMine').length
         };
     });
-    check('commander HP initialized at 1500 for both', prep1.myHP === 1500 && prep1.opHP === 1500);
+    check('commander HP initialized at 210 for both', prep1.myHP === 210 && prep1.opHP === 210);
     check('no buildings or mines on the field', prep1.townHalls === 0 && prep1.mines === 0,
         `buildings ${prep1.townHalls}, mines ${prep1.mines}`);
     check('random offers gone, shop panel hidden', prep1.offers === 0 && prep1.shopPanelHidden === true);
@@ -200,7 +200,7 @@ try {
                  myRoster: my?.heroRoster?.length,
                  lockedEntries: (my?.heroRoster || []).filter(e => e.lastPosition).length };
     });
-    check('battle resolves into commander damage', resolve1.myHP < 1500 || resolve1.opHP < 1500,
+    check('battle resolves into commander damage', resolve1.myHP < 210 || resolve1.opHP < 210,
         `me ${resolve1.myHP}, enemy ${resolve1.opHP}`);
     check('army persists into round 2 with locked positions',
         resolve1.myRoster >= 2 && resolve1.lockedEntries === resolve1.myRoster,
@@ -276,13 +276,13 @@ try {
         my.gold = 5000;
         const idx = my.heroRoster.length - 1;
         let last = null;
-        for (let i = 0; i < 12; i++) {
+        for (let i = 0; i < 15; i++) {
             last = game.getService('buySquadLevel')(0, idx);
             if (!last?.success) break;
         }
         return { level: my.heroRoster[idx].level, reason: last?.reason };
     });
-    check('levels cap at max level 7', maxCap.level === 7 && maxCap.reason === 'max_level',
+    check('levels cap at max level 9 (Mechabellum cap)', maxCap.level === 9 && maxCap.reason === 'max_level',
         `capped at L${maxCap.level} (${maxCap.reason})`);
 
     await waitSim(page, 1);

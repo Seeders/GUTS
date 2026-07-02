@@ -196,7 +196,7 @@ class ArmyShopSystem extends GUTS.BaseSystem {
                 break;
             }
             case 'freeUnits': {
-                const maxLevel = this.game.heroExperienceSystem?.constructor?.MAX_LEVEL || 7;
+                const maxLevel = this.game.heroExperienceSystem?.constructor?.MAX_LEVEL || 9;
                 const t1 = this._candidateUnitIds(stats)
                     .filter(id => ArmyShopSystem.unitTier(id) === 1);
                 for (let i = 0; i < (def.count || 1) && t1.length; i++) {
@@ -215,7 +215,7 @@ class ArmyShopSystem extends GUTS.BaseSystem {
                 break;
             }
             case 'freeLevel': {
-                const maxLevel = this.game.heroExperienceSystem?.constructor?.MAX_LEVEL || 7;
+                const maxLevel = this.game.heroExperienceSystem?.constructor?.MAX_LEVEL || 9;
                 const roster = stats.heroRoster || [];
                 let best = -1, bestLevel = Infinity;
                 for (let i = 0; i < roster.length; i++) {
@@ -467,7 +467,7 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         const entry = stats.heroRoster?.[rosterIndex];
         if (!entry) return { success: false, reason: 'bad_index' };
 
-        const maxLevel = this.game.heroExperienceSystem?.constructor?.MAX_LEVEL || 7;
+        const maxLevel = this.game.heroExperienceSystem?.constructor?.MAX_LEVEL || 9;
         if ((entry.level || 1) >= maxLevel) return { success: false, reason: 'max_level' };
 
         const cost = this.squadLevelCost(entry);

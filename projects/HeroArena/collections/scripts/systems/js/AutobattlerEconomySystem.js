@@ -18,9 +18,12 @@ class AutobattlerEconomySystem extends GUTS.BaseSystem {
         'getLeaderDef'
     ];
 
-    static STARTING_GOLD = 30;   // round-1 purse (a tier-1 unit costs ~7 → ~4 opening units)
-    static ROUND_INCOME  = 10;   // base income granted every round after round 1
-    static INCOME_ESCALATION = 2; // +this much per round number (economies grow like Mechabellum supply)
+    // Mechabellum scale: 200 starting supply / 100-cost chaff = 2 squads in
+    // round 1. Our tier-1 squad is 7g, so 14g start and a flat 14g per round
+    // (Mechabellum's base income is flat; growth comes from upgrades/cards).
+    static STARTING_GOLD = 14;
+    static ROUND_INCOME  = 14;
+    static INCOME_ESCALATION = 0;
     static ALCHEMIST_GOLD = 5;   // The Alchemist leader: flat bonus gold each round
 
     constructor(game) {

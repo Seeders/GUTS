@@ -1119,7 +1119,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
     // XP bar is full, hard cap at max level).
     _levelUpCostForSelection(unitIds) {
         const hx = this.game.heroExperienceSystem;
-        const maxLevel = hx?.constructor?.MAX_LEVEL || 7;
+        const maxLevel = hx?.constructor?.MAX_LEVEL || 9;
         let total = 0, ready = false, leveable = 0;
         for (const id of unitIds) {
             const info = this.game.getComponent(id, 'heroRosterInfo');
