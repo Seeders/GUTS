@@ -206,6 +206,20 @@ try {
         resolve1.myRoster >= 2 && resolve1.lockedEntries === resolve1.myRoster,
         `${resolve1.myRoster} roster entries, ${resolve1.lockedEntries} locked`);
 
+    // Mechabellum rule: no combat XP — after a battle full of kills, every
+    // squad must still be level 1 (levels are bought, never earned)
+    const autoLevel = await page.evaluate(() => {
+        const game = window.game;
+        let my = null;
+        for (const eid of game.getEntitiesWith('playerStats')) {
+            const s = game.getComponent(eid, 'playerStats');
+            if (s.playerId === 0) my = s;
+        }
+        return (my.heroRoster || []).map(e => e.level || 1);
+    });
+    check('units do not level automatically (no combat XP)',
+        autoLevel.every(l => l === 1), `levels after battle: [${autoLevel.join(',')}]`);
+
     await waitSim(page, 1);
 
     // ── Round 2: veterans are locked ───────────────────────────────────────

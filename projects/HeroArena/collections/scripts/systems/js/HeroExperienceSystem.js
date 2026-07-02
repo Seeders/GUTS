@@ -39,21 +39,12 @@ class HeroExperienceSystem extends GUTS.BaseSystem {
 
     // ─── XP (event hook) ──────────────────────────────────────────────────────
 
-    // Fired by DeathSystem.triggerEvent('onUnitKilled', entityId).
+    // Mechabellum redesign: units do NOT gain combat experience. Levels are a
+    // spending decision only — paid squad level-ups (ArmyShopSystem.buySquadLevel)
+    // and reinforcement cards. Free per-kill XP would give away the game's core
+    // "grow taller vs. grow wider" choice, so this hook is retired.
     onUnitKilled(deadEntityId) {
-        if (!this.game.isServer && !this.game.state?.isLocalGame) return;
-        const deadTeam = this.game.getComponent(deadEntityId, 'team')?.team;
-        if (deadTeam == null) return;
-
-        const units = this.game.getEntitiesWith?.('heroRosterInfo', 'health') || [];
-        for (const eid of units) {
-            if (eid === deadEntityId) continue;
-            const team = this.game.getComponent(eid, 'team')?.team;
-            if (team == null || team === deadTeam) continue;          // only enemies of the dead
-            const health = this.game.getComponent(eid, 'health');
-            if (!health || health.current <= 0) continue;            // must be alive
-            this._awardXp(eid, HeroExperienceSystem.XP_PER_KILL);
-        }
+        // intentionally no combat XP
     }
 
     _awardXp(entityId, amount) {
