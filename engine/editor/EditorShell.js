@@ -88,6 +88,7 @@ class EditorShell {
 
   /** Re-render data panels and restart the viewport for a (re)loaded project. */
   refresh() {
+    this._levelChoice = null;   // per-project level memory is read from localStorage
     this.renderAssets();
     this._restartViewport();
   }
@@ -108,6 +109,7 @@ class EditorShell {
       this.viewport.onSceneChange = () => this._renderHierarchy();
       const started = this.viewport.start();
       Promise.resolve(started).then((ok) => {
+        this._populateLevelSelect();
         if (ok === false) return;
         // Entities spawn a few ticks after scene load; refresh the hierarchy a couple times.
         this._renderHierarchy();
@@ -124,8 +126,39 @@ class EditorShell {
   _viewportOptions() {
     try {
       const cfg = (this.model.getCollections().configs || {}).editor || {};
-      return { scene: cfg.viewportScene, level: cfg.viewportLevel };
+      const levels = this.model.getCollections().levels || {};
+      // Level priority: explicit user choice > remembered per project > config.
+      let lvl = this._levelChoice;
+      if (!lvl) {
+        try { lvl = localStorage.getItem('guts-editor-level-' + (this.controller.getCurrentProject ? this.controller.getCurrentProject() : '')); } catch (e) {}
+      }
+      if (lvl && !levels[lvl]) lvl = null;     // stale choice — level no longer exists
+      return { scene: cfg.viewportScene, level: lvl || cfg.viewportLevel };
     } catch (e) { return {}; }
+  }
+
+  _onLevelChange(name) {
+    this._levelChoice = name;
+    try { localStorage.setItem('guts-editor-level-' + (this.controller.getCurrentProject ? this.controller.getCurrentProject() : ''), name); } catch (e) {}
+    this._restartViewport();
+  }
+
+  _populateLevelSelect() {
+    const sel = this._levelSelect;
+    if (!sel) return;
+    const levels = this._collections().levels || {};
+    const current = (this.viewport && this.viewport.levelName) || this._levelChoice || '';
+    sel.innerHTML = '';
+    const ids = Object.keys(levels).sort();
+    if (!ids.length) { const o = document.createElement('option'); o.textContent = '(no levels)'; sel.appendChild(o); sel.disabled = true; return; }
+    sel.disabled = false;
+    ids.forEach(id => {
+      const o = document.createElement('option');
+      o.value = id;
+      o.textContent = this._title(levels[id], id);
+      if (id === current) o.selected = true;
+      sel.appendChild(o);
+    });
   }
 
   // Docked bottom-right Preview panel (mini renderer driven by the viewport) with a
@@ -395,6 +428,18 @@ class EditorShell {
     pane.className = 'eshell__tab-pane';
     const toolbar = document.createElement('div');
     toolbar.className = 'eshell__vp-toolbar';
+    // Level selector — makes it explicit WHICH level the viewport is editing.
+    const lvlWrap = document.createElement('span');
+    lvlWrap.className = 'eshell__vp-level';
+    const lvlLabel = document.createElement('span');
+    lvlLabel.className = 'eshell__vp-level-label';
+    lvlLabel.textContent = 'Level';
+    this._levelSelect = document.createElement('select');
+    this._levelSelect.className = 'eshell__select';
+    this._levelSelect.addEventListener('change', () => this._onLevelChange(this._levelSelect.value));
+    lvlWrap.append(lvlLabel, this._levelSelect);
+    toolbar.appendChild(lvlWrap);
+    const sepL = document.createElement('span'); sepL.className = 'eshell__vp-sep'; toolbar.appendChild(sepL);
     const camBtns = {};
     [['Game', 'game'], ['Scene', 'scene']].forEach(([label, mode]) => {
       const b = this._miniBtn(label, () => {
