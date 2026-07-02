@@ -99,8 +99,19 @@ class EditorViewportService {
     this.editorContext = new G.EditorECSGame(this.app, this.canvas);
 
     // 2. Load assets + init (empty systems list => scene may enable any system).
+    //    A single missing asset (404 model etc.) must not kill the whole viewport.
     this.editorLoader = new G.EditorLoader(this.editorContext);
-    await this.editorLoader.load({ systems: [], levelName });
+    try {
+      await this.editorLoader.load({ systems: [], levelName });
+    } catch (e) {
+      console.warn('[EditorViewportService] asset loading had errors (continuing):', e);
+      // Ensure the ECS context is initialized even if loadAssets threw mid-way.
+      try { if (!this.editorContext.sceneManager) await this.editorContext.init(false, { systems: [], managers: [] }); } catch (e2) {
+        console.error('[EditorViewportService] context init failed:', e2);
+        this._message('Viewport init failed — see console');
+        return false;
+      }
+    }
 
     // 3. Level index must be set before scene load (TerrainSystem reads state.level).
     const enums = this.editorContext.getEnums ? this.editorContext.getEnums() : {};
