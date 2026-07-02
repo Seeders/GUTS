@@ -916,6 +916,17 @@ class EditorViewportService {
       }, undefined, () => {});
     } catch (e) { console.warn('[viewport] idle animation load failed:', e); }
   }
+  // Set a sprite renderer to the 'idle' animation (preferred) and REBIND the frame
+  // lookup uniform — buildFrameLookupTexture() creates a fresh DataTexture but does
+  // not update material.uniforms.frameLookup, so init()'s default 'walk' would stick.
+  _applySpriteAnim(sbr, gs) {
+    const types = (gs && gs.animationTypes) || [];
+    sbr.currentAnimationType = types.includes('idle') ? 'idle' : (types[0] || 'idle');
+    if (sbr.buildFrameLookupTexture) sbr.buildFrameLookupTexture();
+    if (sbr.material && sbr.material.uniforms && sbr.material.uniforms.frameLookup) {
+      sbr.material.uniforms.frameLookup.value = sbr.frameLookupTexture;
+    }
+  }
   async _showSpritePreviewMini(set, token) {
     const G = this.GUTS;
     if (!this.previewCanvas || !G.SpriteBillboardRenderer || !set.spriteSheet) return;
@@ -928,9 +939,7 @@ class EditorViewportService {
     await sbr.init(set.spriteSheet, set);
     if (token !== this._previewToken) { try { sbr.dispose(); } catch (e) {} return; }
     const gs = set.generatorSettings || {};
-    const types = gs.animationTypes || [];
-    sbr.currentAnimationType = types.includes('idle') ? 'idle' : (types[0] || 'idle');
-    if (sbr.buildFrameLookupTexture) sbr.buildFrameLookupTexture();
+    this._applySpriteAnim(sbr, gs);
     if (sbr.setInstanceCount) sbr.setInstanceCount(1);
     if (sbr.setInstance) sbr.setInstance(0, 0, 0, 0, 1.7, 0, -1);   // centered on origin
     if (sbr.setAmbientLight) { try { sbr.setAmbientLight(new window.THREE.Color(1, 1, 1)); } catch (e) {} }
@@ -1019,9 +1028,7 @@ class EditorViewportService {
     await sbr.init(set.spriteSheet, set);
     if (token !== this._previewToken) { try { sbr.dispose(); } catch (e) {} return; }
     const gs = set.generatorSettings || {};
-    const types = gs.animationTypes || [];
-    sbr.currentAnimationType = types.includes('idle') ? 'idle' : (types[0] || 'idle');
-    if (sbr.buildFrameLookupTexture) sbr.buildFrameLookupTexture();
+    this._applySpriteAnim(sbr, gs);
     if (sbr.setAmbientLight) { try { sbr.setAmbientLight(new window.THREE.Color(1, 1, 1)); } catch (e) {} }
     if (sbr.setInstanceCount) sbr.setInstanceCount(0);
     if (sbr.finalizeUpdates) sbr.finalizeUpdates();
