@@ -222,9 +222,17 @@ class FileSystemSyncService {
     }
 
     async importProject(projectId) {
-        // Load project data from storage via the model    
-        await this.importModulesFromFilesystem();      
-        await this.importProjectFromFilesystem(projectId);      
+        // Start from a clean slate: these accumulate per file group, so without a
+        // reset a project SWITCH merges the previous project's collections into
+        // the new one (e.g. HeroArena models leaking into UseYourIllusions and
+        // 404ing against the wrong resources path).
+        this.currentCollections = {};
+        this.collectionCategories = {};
+        this.typeHasSpecialProperties = {};
+
+        // Load project data from storage via the model
+        await this.importModulesFromFilesystem();
+        await this.importProjectFromFilesystem(projectId);
         this.setCollectionDefs();
         this.gameEditor.model.saveProject();
     }
