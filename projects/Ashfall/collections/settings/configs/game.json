@@ -143,7 +143,10 @@
     "HuntMissionSystem",
     "SurvivalMissionSystem",
     "LootSystem",
-    "GoldMineCaptureSystem"
+    "GoldMineCaptureSystem",
+    "ArpgGameSystem",
+    "PlayerControllerSystem",
+    "ArpgHudSystem"
   ],
   "classes": [
     {

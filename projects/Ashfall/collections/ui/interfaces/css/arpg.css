@@ -1,0 +1,292 @@
+/* ===== Ashfall ARPG interface ===== */
+
+#gameScreen {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+    background: #000;
+    font-family: 'Georgia', 'Times New Roman', serif;
+}
+
+#gameContainer {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+#canvasContainer {
+    position: absolute;
+    inset: 0;
+}
+
+#gameCanvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+    cursor: crosshair;
+}
+
+.hidden { display: none !important; }
+
+/* ── Zone name ─────────────────────────────────────────── */
+#arpgZoneBar {
+    position: absolute;
+    top: 14px;
+    left: 50%;
+    transform: translateX(-50%);
+    pointer-events: none;
+    z-index: 20;
+}
+
+#arpgZoneName {
+    color: #d8c9a3;
+    font-size: 1.15rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    text-shadow: 0 2px 6px #000, 0 0 18px rgba(0,0,0,.8);
+}
+
+/* ── Bottom HUD ────────────────────────────────────────── */
+#arpgHud {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 22px;
+    padding: 0 24px 14px;
+    pointer-events: none;
+    z-index: 20;
+}
+
+.arpg-globe {
+    position: relative;
+    width: 108px;
+    height: 108px;
+    border-radius: 50%;
+    border: 3px solid #4a3a22;
+    box-shadow: inset 0 0 24px rgba(0,0,0,.9), 0 4px 14px rgba(0,0,0,.7);
+    background: radial-gradient(circle at 35% 30%, #1a1410 0%, #0a0705 75%);
+    overflow: hidden;
+    flex: 0 0 auto;
+}
+
+.arpg-globe-fill {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 100%;
+    transition: height 120ms linear;
+}
+
+.arpg-health-globe .arpg-globe-fill {
+    background: radial-gradient(circle at 40% 20%, #ff5a49 0%, #a3120a 55%, #5e0703 100%);
+    box-shadow: inset 0 6px 16px rgba(255,255,255,.25);
+}
+
+.arpg-mana-globe .arpg-globe-fill {
+    background: radial-gradient(circle at 40% 20%, #4f8cff 0%, #123c9e 55%, #071d56 100%);
+    box-shadow: inset 0 6px 16px rgba(255,255,255,.25);
+}
+
+.arpg-globe-text {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #f3e9d4;
+    font-size: .8rem;
+    font-weight: bold;
+    text-shadow: 0 1px 3px #000, 0 0 6px #000;
+    z-index: 2;
+}
+
+/* ── Center stack: skills, xp, gold ────────────────────── */
+#arpgHudCenter {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    padding-bottom: 4px;
+}
+
+#arpgSkillBar {
+    display: flex;
+    gap: 6px;
+    pointer-events: auto;
+}
+
+.arpg-skill-slot {
+    position: relative;
+    width: 52px;
+    height: 52px;
+    border: 2px solid #4a3a22;
+    border-radius: 6px;
+    background: linear-gradient(145deg, #17110c, #0b0805);
+    box-shadow: inset 0 0 12px rgba(0,0,0,.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.arpg-skill-key {
+    position: absolute;
+    top: 2px;
+    left: 4px;
+    font-size: .55rem;
+    color: #8d7a55;
+    letter-spacing: 1px;
+}
+
+.arpg-skill-icon {
+    font-size: 1.5rem;
+    filter: drop-shadow(0 2px 3px #000);
+}
+
+.arpg-skill-cooldown {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,.72);
+    pointer-events: none;
+}
+
+#arpgXpBar {
+    position: relative;
+    width: 372px;
+    height: 10px;
+    border: 1px solid #4a3a22;
+    border-radius: 5px;
+    background: #0b0805;
+    overflow: hidden;
+}
+
+#arpgXpFill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #b28a2f, #f0cf70);
+    transition: width 200ms linear;
+}
+
+#arpgLevelWrap {
+    position: absolute;
+    right: 6px;
+    top: -2px;
+    font-size: .6rem;
+    color: #d8c9a3;
+    text-shadow: 0 1px 2px #000;
+}
+
+#arpgGoldWrap {
+    color: #f0cf70;
+    font-size: .85rem;
+    text-shadow: 0 1px 3px #000;
+}
+
+/* ── Death overlay ─────────────────────────────────────── */
+#arpgDeathOverlay {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle, rgba(60,0,0,.45) 0%, rgba(10,0,0,.82) 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 60;
+    pointer-events: none;
+}
+
+.arpg-death-text {
+    color: #b3110a;
+    font-size: 3.4rem;
+    letter-spacing: 8px;
+    text-shadow: 0 4px 18px #000;
+}
+
+.arpg-death-sub {
+    color: #d8c9a3;
+    margin-top: 12px;
+    letter-spacing: 2px;
+}
+
+/* ── Result / pause / loading (engine compatibility) ───── */
+#victoryScreen, #defeatScreen {
+    position: absolute;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,.85);
+    z-index: 80;
+}
+
+#victoryScreen.active, #defeatScreen.active { display: flex; }
+
+.result-content { text-align: center; color: #d8c9a3; }
+.result-title { font-size: 3rem; letter-spacing: 6px; margin-bottom: 1rem; }
+.victory-title { color: #f0cf70; }
+.defeat-title { color: #b3110a; }
+
+.pause-overlay {
+    position: absolute;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0,0,0,.7);
+    z-index: 90;
+}
+
+.pause-overlay.active { display: flex; }
+.pause-content { text-align: center; color: #d8c9a3; }
+.pause-content .btn { display: block; margin: .6rem auto; }
+
+.btn {
+    padding: .7rem 2rem;
+    background: linear-gradient(145deg, #3a2c18, #241a0e);
+    color: #e9dcbc;
+    border: 1px solid #6b5432;
+    border-radius: 4px;
+    letter-spacing: 2px;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.btn:hover { background: linear-gradient(145deg, #4b3a20, #2e2212); }
+
+/* Loading screen bits (mirrors game.css so it looks right standalone) */
+.loading-content { text-align: center; color: #d8c9a3; }
+
+.loading-spinner {
+    width: 46px;
+    height: 46px;
+    margin: 0 auto 14px;
+    border: 4px solid #2c2115;
+    border-top-color: #f0cf70;
+    border-radius: 50%;
+    animation: arpgspin 0.9s linear infinite;
+}
+
+@keyframes arpgspin { to { transform: rotate(360deg); } }
+
+.loading-progress-container {
+    width: 280px;
+    height: 8px;
+    margin: 12px auto 6px;
+    background: #17110c;
+    border: 1px solid #4a3a22;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.loading-progress-bar {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #b28a2f, #f0cf70);
+}

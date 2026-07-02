@@ -32,6 +32,21 @@ class GameModeSystem extends GUTS.BaseSystem {
 
     initializeSinglePlayerModes() {
         return {
+            adventure: {
+                id: 'adventure',
+                title: 'Adventure',
+                icon: '🗡️',
+                interfaceId: null,
+                description: 'Descend into the ashlands — a dark action RPG',
+                difficulty: 'Action RPG',
+                difficultyClass: 'campaign',
+                isMultiplayer: false,
+                maxPlayers: 1,
+                startingGold: 0,
+                onStart: () => {
+                    this.showClassSelect();
+                }
+            },
             campaign: {
                 id: 'campaign',
                 title: 'Campaign',
@@ -139,6 +154,125 @@ class GameModeSystem extends GUTS.BaseSystem {
         card.addEventListener('click', () => this.selectMode(mode.id));
 
         return card;
+    }
+
+    // ─── ARPG Adventure: class selection ─────────────────────────────────────
+
+    getAdventureClasses() {
+        // Tier-1 hero units are the six playable classes
+        const classIds = [
+            '1_s_barbarian', '1_sd_soldier', '1_d_archer',
+            '1_di_scout', '1_i_apprentice', '1_is_acolyte'
+        ];
+        const icons = {
+            '1_s_barbarian': '🪓', '1_sd_soldier': '🛡️', '1_d_archer': '🏹',
+            '1_di_scout': '🗡️', '1_i_apprentice': '🔮', '1_is_acolyte': '✨'
+        };
+        const themes = {
+            '1_s_barbarian': 'Strength — raw melee fury',
+            '1_sd_soldier': 'Strength / Dexterity — disciplined arms',
+            '1_d_archer': 'Dexterity — deadly precision',
+            '1_di_scout': 'Dexterity / Intelligence — shadows and tricks',
+            '1_i_apprentice': 'Intelligence — elemental devastation',
+            '1_is_acolyte': 'Intelligence / Strength — holy zeal'
+        };
+        return classIds
+            .filter(id => this.collections.units?.[id])
+            .map(id => {
+                const def = this.collections.units[id];
+                return {
+                    id,
+                    title: def.title || id,
+                    icon: icons[id] || '⚔️',
+                    theme: themes[id] || '',
+                    hp: def.hp,
+                    damage: def.damage,
+                    str: def.strength || 0,
+                    dex: def.dexterity || 0,
+                    int: def.intelligence || 0
+                };
+            });
+    }
+
+    showClassSelect() {
+        // Remove any previous dialog
+        document.getElementById('arpgClassSelectDialog')?.remove();
+
+        const dialog = document.createElement('div');
+        dialog.id = 'arpgClassSelectDialog';
+        dialog.style.cssText = `
+            position: fixed; inset: 0; z-index: 3000;
+            background: rgba(5,3,2,.92); display: flex; flex-direction: column;
+            align-items: center; justify-content: center; gap: 1.2rem;
+            font-family: Georgia, serif;`;
+
+        const title = document.createElement('h2');
+        title.textContent = 'CHOOSE YOUR CLASS';
+        title.style.cssText = 'color:#d8c9a3; letter-spacing:6px; margin:0;';
+        dialog.appendChild(title);
+
+        const grid = document.createElement('div');
+        grid.style.cssText = `
+            display: grid; grid-template-columns: repeat(3, 220px); gap: 14px;`;
+        dialog.appendChild(grid);
+
+        for (const cls of this.getAdventureClasses()) {
+            const card = document.createElement('div');
+            card.className = 'arpg-class-card';
+            card.style.cssText = `
+                border: 2px solid #4a3a22; border-radius: 8px; padding: 14px;
+                background: linear-gradient(160deg, #1a130c, #0c0806);
+                color: #d8c9a3; cursor: pointer; text-align: center;
+                transition: border-color .15s, transform .15s;`;
+            card.innerHTML = `
+                <div style="font-size:2.2rem;">${cls.icon}</div>
+                <div style="font-size:1.15rem; letter-spacing:2px; margin:6px 0 2px;">${cls.title.toUpperCase()}</div>
+                <div style="font-size:.72rem; color:#8d7a55; min-height:2.1em;">${cls.theme}</div>
+                <div style="font-size:.75rem; margin-top:8px; display:flex; justify-content:space-around;">
+                    <span title="Strength" style="color:#e06a5a;">STR ${cls.str}</span>
+                    <span title="Dexterity" style="color:#7fca6a;">DEX ${cls.dex}</span>
+                    <span title="Intelligence" style="color:#6a9fe0;">INT ${cls.int}</span>
+                </div>
+                <div style="font-size:.7rem; color:#8d7a55; margin-top:4px;">HP ${cls.hp} · DMG ${cls.damage}</div>`;
+            card.addEventListener('mouseenter', () => {
+                card.style.borderColor = '#f0cf70';
+                card.style.transform = 'translateY(-3px)';
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.borderColor = '#4a3a22';
+                card.style.transform = 'none';
+            });
+            card.addEventListener('click', () => {
+                dialog.remove();
+                this.startAdventure(cls.id);
+            });
+            grid.appendChild(card);
+        }
+
+        const cancel = document.createElement('button');
+        cancel.textContent = 'Back';
+        cancel.style.cssText = `
+            padding:.55rem 2.2rem; background:#241a0e; color:#d8c9a3;
+            border:1px solid #6b5432; border-radius:4px; cursor:pointer; letter-spacing:2px;`;
+        cancel.addEventListener('click', () => dialog.remove());
+        dialog.appendChild(cancel);
+
+        document.body.appendChild(dialog);
+    }
+
+    startAdventure(classId) {
+        this.setGameMode('adventure');
+
+        // TerrainSystem reads game.state.level during scene load, so set it now
+        const levelName = 'forest';
+        this.game.state.level = this.enums?.levels?.[levelName] ?? 0;
+
+        this.game.switchScene('adventure', {
+            isAdventure: true,
+            classId,
+            selectedLevel: levelName,
+            startingGold: 0
+        });
     }
 
     showMultiplayerConnect() {

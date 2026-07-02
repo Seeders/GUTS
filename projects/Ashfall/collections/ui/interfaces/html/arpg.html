@@ -1,0 +1,97 @@
+<!-- ARPG Adventure Screen -->
+<div id="gameScreen" class="screen active">
+    <div id="gameContainer">
+        <div id="canvasContainer">
+            <canvas id="gameCanvas"></canvas>
+        </div>
+
+        <!-- Zone name (top center) -->
+        <div id="arpgZoneBar">
+            <span id="arpgZoneName"></span>
+        </div>
+
+        <!-- Bottom HUD: globes + skill bar -->
+        <div id="arpgHud">
+            <div class="arpg-globe arpg-health-globe" title="Life">
+                <div class="arpg-globe-fill" id="arpgHealthFill"></div>
+                <span class="arpg-globe-text" id="arpgHealthText">–</span>
+            </div>
+
+            <div id="arpgHudCenter">
+                <div id="arpgSkillBar">
+                    <div class="arpg-skill-slot" data-slot="lmb" title="Basic Attack (Left Mouse)">
+                        <span class="arpg-skill-key">LMB</span>
+                        <span class="arpg-skill-icon">⚔️</span>
+                    </div>
+                    <div class="arpg-skill-slot" data-slot="rmb" title="Skill (Right Mouse)">
+                        <span class="arpg-skill-key">RMB</span>
+                        <span class="arpg-skill-icon"></span>
+                    </div>
+                    <div class="arpg-skill-slot" data-slot="1"><span class="arpg-skill-key">1</span><span class="arpg-skill-icon"></span></div>
+                    <div class="arpg-skill-slot" data-slot="2"><span class="arpg-skill-key">2</span><span class="arpg-skill-icon"></span></div>
+                    <div class="arpg-skill-slot" data-slot="3"><span class="arpg-skill-key">3</span><span class="arpg-skill-icon"></span></div>
+                    <div class="arpg-skill-slot" data-slot="4"><span class="arpg-skill-key">4</span><span class="arpg-skill-icon"></span></div>
+                </div>
+                <div id="arpgXpBar">
+                    <div id="arpgXpFill"></div>
+                    <span id="arpgLevelWrap">Lv <span id="arpgLevel">1</span></span>
+                </div>
+                <div id="arpgGoldWrap">💰 <span id="arpgGold">0</span></div>
+            </div>
+
+            <div class="arpg-globe arpg-mana-globe" title="Mana">
+                <div class="arpg-globe-fill" id="arpgManaFill"></div>
+                <span class="arpg-globe-text" id="arpgManaText">–</span>
+            </div>
+        </div>
+
+        <!-- Death overlay -->
+        <div id="arpgDeathOverlay" class="hidden">
+            <div class="arpg-death-text">YOU HAVE DIED</div>
+            <div class="arpg-death-sub">Rising again shortly...</div>
+        </div>
+    </div>
+</div>
+
+<!-- Victory Screen (kept for engine compatibility) -->
+<div id="victoryScreen" class="screen">
+    <div class="result-content">
+        <div class="result-title victory-title">VICTORY!</div>
+        <div class="stats-grid" id="victoryStats"></div>
+        <div>
+            <button id="victory_MainMenuBtn" class="btn">RETURN TO MAIN MENU</button>
+        </div>
+    </div>
+</div>
+
+<!-- Defeat Screen (kept for engine compatibility) -->
+<div id="defeatScreen" class="screen">
+    <div class="result-content">
+        <div class="result-title defeat-title">DEFEAT</div>
+        <div class="stats-grid" id="defeatStats"></div>
+        <div>
+            <button id="defeat_MainMenuBtn" class="btn">RETURN TO MAIN MENU</button>
+        </div>
+    </div>
+</div>
+
+<!-- Pause Menu -->
+<div id="pauseMenu" class="pause-overlay">
+    <div class="pause-content">
+        <h2>PAUSED</h2>
+        <button id="paused_ResumeBtn" class="btn">RESUME</button>
+        <button id="paused_MainMenuBtn" class="btn btn-secondary">RETURN TO MENU</button>
+    </div>
+</div>
+
+<!-- Loading Screen -->
+<div id="loadingScreen" class="screen" style="display:flex;position:absolute;top:0;left:0;width:100%;height:100vh;z-index:9999;background:#120c08;justify-content:center;align-items:center;">
+    <div class="loading-content">
+        <div class="loading-spinner"></div>
+        <div class="loading-text" id="loadingText">Loading...</div>
+        <div class="loading-progress-container">
+            <div class="loading-progress-bar" id="loadingProgressBar"></div>
+        </div>
+        <div class="loading-progress-text" id="loadingProgressText">0%</div>
+    </div>
+</div>
