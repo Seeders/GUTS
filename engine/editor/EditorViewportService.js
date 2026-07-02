@@ -636,6 +636,7 @@ class EditorViewportService {
     } else {
       this._ensureTerrainMapperReady();   // data mutated; full redraw will reflect it
     }
+    this._terrainTextureDirty = true;
     this._scheduleLevelPersist();
   }
   _paintHeight(cell) {
@@ -671,6 +672,7 @@ class EditorViewportService {
       if (wr.spawnCliffs) wr.spawnCliffs(er, false);
       if (wr.updateHeightMap) wr.updateHeightMap();
     } catch (e) { console.warn('[viewport] ramp update failed', e); }
+    this._terrainTextureDirty = true;
     this._scheduleLevelPersist();
   }
   _hasRamp(x, z) {
@@ -1198,6 +1200,31 @@ class EditorViewportService {
     try {
       if (this.app.fs && this.app.fs.syncObjectToFilesystem) this.app.fs.syncObjectToFilesystem('levels', this.levelName, level);
     } catch (e) { console.warn('[viewport] level persist failed', e); }
+    if (this._terrainTextureDirty) this._saveBakedTerrainPng();
+  }
+
+  /**
+   * Re-bake the terrain cache PNG after texture-affecting paints. Levels load
+   * via renderTerrainFromCache(resources/levels/<level>.png), so without this
+   * the next load would show the stale pre-paint texture. The live groundCanvas
+   * is always current (incremental repaints land on it), so it IS the bake.
+   */
+  async _saveBakedTerrainPng() {
+    try {
+      const wr = this.worldRenderer;
+      const canvas = wr && (wr.groundCanvas || (wr.tileMapper && wr.tileMapper.canvas));
+      const project = this.app.getCurrentProject ? this.app.getCurrentProject() : null;
+      if (!canvas || !project || !this.levelName) return;
+      const base64 = canvas.toDataURL('image/png').split(',')[1];
+      if (!base64) return;
+      const res = await fetch('/save-file', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ path: `${project}/resources/levels/${this.levelName}.png`, content: base64, encoding: 'base64' })
+      });
+      if (res.ok) this._terrainTextureDirty = false;
+      else console.warn('[viewport] baked terrain PNG save failed:', res.status);
+    } catch (e) { console.warn('[viewport] baked terrain PNG save failed:', e); }
   }
   _exportLevelEntities(collections) {
     const defs = collections.objectTypeDefinitions || {};
