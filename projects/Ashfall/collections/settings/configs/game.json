@@ -146,7 +146,9 @@
     "GoldMineCaptureSystem",
     "ArpgGameSystem",
     "PlayerControllerSystem",
-    "ArpgHudSystem"
+    "ArpgHudSystem",
+    "ArpgStatsSystem",
+    "ArpgUiSystem"
   ],
   "classes": [
     {

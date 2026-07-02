@@ -159,37 +159,24 @@ class GameModeSystem extends GUTS.BaseSystem {
     // ─── ARPG Adventure: class selection ─────────────────────────────────────
 
     getAdventureClasses() {
-        // Tier-1 hero units are the six playable classes
-        const classIds = [
-            '1_s_barbarian', '1_sd_soldier', '1_d_archer',
-            '1_di_scout', '1_i_apprentice', '1_is_acolyte'
-        ];
-        const icons = {
-            '1_s_barbarian': '🪓', '1_sd_soldier': '🛡️', '1_d_archer': '🏹',
-            '1_di_scout': '🗡️', '1_i_apprentice': '🔮', '1_is_acolyte': '✨'
-        };
-        const themes = {
-            '1_s_barbarian': 'Strength — raw melee fury',
-            '1_sd_soldier': 'Strength / Dexterity — disciplined arms',
-            '1_d_archer': 'Dexterity — deadly precision',
-            '1_di_scout': 'Dexterity / Intelligence — shadows and tricks',
-            '1_i_apprentice': 'Intelligence — elemental devastation',
-            '1_is_acolyte': 'Intelligence / Strength — holy zeal'
-        };
-        return classIds
-            .filter(id => this.collections.units?.[id])
-            .map(id => {
-                const def = this.collections.units[id];
+        // Classes collection is the source of truth (data/classes/*.json)
+        const classes = this.collections.classes || {};
+        const order = ['barbarian', 'soldier', 'archer', 'scout', 'apprentice', 'acolyte'];
+        return order
+            .filter(key => classes[key] && this.collections.units?.[classes[key].unitType])
+            .map(key => {
+                const cls = classes[key];
+                const unit = this.collections.units[cls.unitType];
                 return {
-                    id,
-                    title: def.title || id,
-                    icon: icons[id] || '⚔️',
-                    theme: themes[id] || '',
-                    hp: def.hp,
-                    damage: def.damage,
-                    str: def.strength || 0,
-                    dex: def.dexterity || 0,
-                    int: def.intelligence || 0
+                    id: cls.unitType,
+                    title: cls.title || unit.title || key,
+                    icon: cls.icon || '⚔️',
+                    theme: cls.theme || '',
+                    hp: cls.baseLife ?? unit.hp,
+                    damage: unit.damage,
+                    str: cls.baseAttributes?.strength ?? 0,
+                    dex: cls.baseAttributes?.dexterity ?? 0,
+                    int: cls.baseAttributes?.intelligence ?? 0
                 };
             });
     }

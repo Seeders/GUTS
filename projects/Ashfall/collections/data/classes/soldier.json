@@ -1,0 +1,25 @@
+{
+  "title": "Soldier",
+  "unitType": "1_sd_soldier",
+  "icon": "\ud83d\udee1\ufe0f",
+  "theme": "Strength / Dexterity \u2014 disciplined arms",
+  "baseAttributes": {
+    "strength": 25,
+    "dexterity": 25,
+    "intelligence": 10,
+    "vitality": 25
+  },
+  "baseLife": 200,
+  "lifePerLevel": 12,
+  "lifePerVitality": 3.5,
+  "baseMana": 24,
+  "manaPerLevel": 2,
+  "manaPerIntelligence": 1.5,
+  "damagePerLevel": 1.1,
+  "ascensions": [
+    "2_sd_crossbowman",
+    "2_sd_hoplite",
+    "2_sd_knight"
+  ],
+  "fileName": "soldier"
+}

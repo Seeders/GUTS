@@ -1,0 +1,25 @@
+{
+  "title": "Scout",
+  "unitType": "1_di_scout",
+  "icon": "\ud83d\udde1\ufe0f",
+  "theme": "Dexterity / Intelligence \u2014 shadows and tricks",
+  "baseAttributes": {
+    "strength": 15,
+    "dexterity": 28,
+    "intelligence": 22,
+    "vitality": 20
+  },
+  "baseLife": 150,
+  "lifePerLevel": 9,
+  "lifePerVitality": 3,
+  "baseMana": 40,
+  "manaPerLevel": 3,
+  "manaPerIntelligence": 1.75,
+  "damagePerLevel": 1.0,
+  "ascensions": [
+    "2_di_goblinBomber",
+    "2_di_shadowAssassin",
+    "2_di_trickster"
+  ],
+  "fileName": "scout"
+}

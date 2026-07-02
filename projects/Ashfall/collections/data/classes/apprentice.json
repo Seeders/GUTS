@@ -1,0 +1,25 @@
+{
+  "title": "Apprentice",
+  "unitType": "1_i_apprentice",
+  "icon": "\ud83d\udd2e",
+  "theme": "Intelligence \u2014 elemental devastation",
+  "baseAttributes": {
+    "strength": 10,
+    "dexterity": 15,
+    "intelligence": 35,
+    "vitality": 20
+  },
+  "baseLife": 130,
+  "lifePerLevel": 8,
+  "lifePerVitality": 2.5,
+  "baseMana": 60,
+  "manaPerLevel": 4,
+  "manaPerIntelligence": 2,
+  "damagePerLevel": 0.8,
+  "ascensions": [
+    "2_i_elementalist",
+    "2_i_enchanter",
+    "2_i_necromancer"
+  ],
+  "fileName": "apprentice"
+}

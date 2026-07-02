@@ -122,5 +122,6 @@
   "spriteAnimationSet": "peasant",
   "range": 1,
   "requiresUnits": [],
-  "requiresBuildings": []
+  "requiresBuildings": [],
+  "xpValue": 6
 }

@@ -1,0 +1,25 @@
+{
+  "title": "Barbarian",
+  "unitType": "1_s_barbarian",
+  "icon": "\ud83e\ude93",
+  "theme": "Strength \u2014 raw melee fury",
+  "baseAttributes": {
+    "strength": 30,
+    "dexterity": 20,
+    "intelligence": 10,
+    "vitality": 25
+  },
+  "baseLife": 220,
+  "lifePerLevel": 14,
+  "lifePerVitality": 4,
+  "baseMana": 24,
+  "manaPerLevel": 2,
+  "manaPerIntelligence": 1.5,
+  "damagePerLevel": 1.2,
+  "ascensions": [
+    "2_s_berserker",
+    "2_s_gladiator",
+    "2_s_warlord"
+  ],
+  "fileName": "barbarian"
+}

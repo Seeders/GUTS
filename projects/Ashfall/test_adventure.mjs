@@ -160,6 +160,75 @@ try {
         check('basic attack damages enemy', false, 'no enemy found for attack test');
     }
 
+    // ── Phase B: stats / XP / leveling ────────────────────────────────────
+    const sheetCheck = await page.evaluate(() => {
+        const game = window.game;
+        const pid = game.state.playerCharacterId;
+        const sheet = game.getComponent(pid, 'characterSheet');
+        return sheet ? {
+            classId: sheet.classId, level: sheet.level, xp: sheet.experience,
+            attrs: sheet.attributes, points: sheet.unspentAttributePoints
+        } : null;
+    });
+    check('characterSheet exists', !!sheetCheck, JSON.stringify(sheetCheck));
+
+    // Kill several enemies via direct damage and confirm XP + level up
+    const xpResult = await page.evaluate(() => {
+        const game = window.game;
+        const pid = game.state.playerCharacterId;
+        const sheetBefore = JSON.parse(JSON.stringify(game.getComponent(pid, 'characterSheet')));
+        const applyDamage = game.getService('applyDamage');
+        const enemies = game.getEntitiesWith('neutralMonster', 'health');
+        let killed = 0;
+        for (const eid of enemies.slice(0, 12)) {
+            applyDamage(pid, eid, 99999, 0, { isMelee: true, weaponRange: 99999 });
+            killed++;
+        }
+        return { killed, before: { level: sheetBefore.level, xp: sheetBefore.experience } };
+    });
+    await waitSimTime(page, 2); // let deaths/death events process
+
+    const xpAfter = await page.evaluate(() => {
+        const game = window.game;
+        const pid = game.state.playerCharacterId;
+        const sheet = game.getComponent(pid, 'characterSheet');
+        const health = game.getComponent(pid, 'health');
+        return {
+            level: sheet.level, xp: sheet.experience, points: sheet.unspentAttributePoints,
+            skillPoints: sheet.unspentSkillPoints, maxLife: health.max
+        };
+    });
+    check('kills grant XP', xpAfter.xp > 0 || xpAfter.level > 1,
+        `killed ${xpResult.killed}: lvl ${xpResult.before.level}→${xpAfter.level}, xp ${xpAfter.xp}`);
+    check('level up grants points', xpAfter.level > 1 && xpAfter.points >= 5,
+        `level ${xpAfter.level}, ${xpAfter.points} attr points, ${xpAfter.skillPoints} skill points`);
+
+    // Allocate vitality and confirm max life increases
+    const lifeBefore = xpAfter.maxLife;
+    const allocResult = await page.evaluate(() => {
+        const game = window.game;
+        const ok = game.getService('allocateAttribute')('vitality', 1);
+        const pid = game.state.playerCharacterId;
+        return { ok, maxLife: game.getComponent(pid, 'health').max };
+    });
+    check('allocating vitality raises max life', allocResult.ok && allocResult.maxLife > lifeBefore,
+        `maxLife ${lifeBefore} -> ${allocResult.maxLife}`);
+
+    // Character panel opens with C
+    await page.keyboard.press('KeyC');
+    await new Promise(r => setTimeout(r, 800));
+    const panelState = await page.evaluate(() => {
+        const panel = document.getElementById('arpgPanel_character');
+        const body = document.getElementById('arpgCharacterBody');
+        return {
+            visible: panel && !panel.classList.contains('hidden'),
+            hasContent: body && body.innerHTML.length > 200
+        };
+    });
+    check('character panel opens (C) and renders', panelState.visible && panelState.hasContent);
+    await page.screenshot({ path: 'projects/Ashfall/test_character_panel.png' });
+    await page.keyboard.press('KeyC');
+
     await page.screenshot({ path: 'projects/Ashfall/test_adventure.png' });
     console.log('screenshot: projects/Ashfall/test_adventure.png');
 

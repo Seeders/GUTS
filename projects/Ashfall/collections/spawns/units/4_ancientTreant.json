@@ -106,5 +106,6 @@
   "placementGridHeight": 1,
   "requiresUnits": [],
   "requiresBuildings": [],
-  "spriteAnimationSet": "ancienttreant"
+  "spriteAnimationSet": "ancienttreant",
+  "xpValue": 260
 }

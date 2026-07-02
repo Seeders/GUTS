@@ -1,0 +1,25 @@
+{
+  "title": "Archer",
+  "unitType": "1_d_archer",
+  "icon": "\ud83c\udff9",
+  "theme": "Dexterity \u2014 deadly precision",
+  "baseAttributes": {
+    "strength": 20,
+    "dexterity": 30,
+    "intelligence": 15,
+    "vitality": 20
+  },
+  "baseLife": 160,
+  "lifePerLevel": 10,
+  "lifePerVitality": 3,
+  "baseMana": 30,
+  "manaPerLevel": 2.5,
+  "manaPerIntelligence": 1.5,
+  "damagePerLevel": 1.1,
+  "ascensions": [
+    "2_d_beastMaster",
+    "2_d_ranger",
+    "2_d_trapper"
+  ],
+  "fileName": "archer"
+}

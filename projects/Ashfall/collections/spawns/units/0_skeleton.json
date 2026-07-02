@@ -143,5 +143,6 @@
   "placementGridHeight": 1,
   "spriteAnimationSet": "skeleton",
   "requiresUnits": [],
-  "requiresBuildings": []
+  "requiresBuildings": [],
+  "xpValue": 12
 }

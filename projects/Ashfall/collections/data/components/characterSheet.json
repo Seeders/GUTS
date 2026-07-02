@@ -1,0 +1,20 @@
+{
+  "title": "characterSheet",
+  "description": "ARPG player character progression: class, attributes, points, skills. Object-stored (classId string keeps it non-numeric).",
+  "schema": {
+    "classId": "",
+    "level": 1,
+    "experience": 0,
+    "experienceToNext": 80,
+    "attributes": {
+      "strength": 0,
+      "dexterity": 0,
+      "intelligence": 0,
+      "vitality": 0
+    },
+    "unspentAttributePoints": 0,
+    "unspentSkillPoints": 0,
+    "allocatedSkills": {},
+    "ascension": ""
+  }
+}

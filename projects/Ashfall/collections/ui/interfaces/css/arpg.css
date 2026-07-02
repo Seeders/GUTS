@@ -189,6 +189,109 @@
     text-shadow: 0 1px 3px #000;
 }
 
+/* ── Panels ────────────────────────────────────────────── */
+.arpg-panel {
+    position: absolute;
+    top: 60px;
+    left: 24px;
+    width: 420px;
+    max-height: calc(100vh - 220px);
+    background: linear-gradient(160deg, rgba(24,17,11,.97), rgba(12,8,5,.97));
+    border: 2px solid #4a3a22;
+    border-radius: 8px;
+    box-shadow: 0 8px 30px rgba(0,0,0,.8);
+    color: #d8c9a3;
+    z-index: 40;
+    display: flex;
+    flex-direction: column;
+    font-family: Georgia, serif;
+}
+
+.arpg-panel-right { left: auto; right: 24px; }
+.arpg-panel-wide { width: 720px; left: 50%; transform: translateX(-50%); }
+
+.arpg-panel-titlebar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    border-bottom: 1px solid #4a3a22;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    font-size: .85rem;
+    color: #f0cf70;
+}
+
+.arpg-panel-close {
+    background: none;
+    border: none;
+    color: #8d7a55;
+    font-size: 1rem;
+    cursor: pointer;
+}
+.arpg-panel-close:hover { color: #f0cf70; }
+
+.arpg-panel-body {
+    padding: 12px 14px;
+    overflow-y: auto;
+    font-size: .85rem;
+}
+
+.arpg-char-header { text-align: center; margin-bottom: 10px; }
+.arpg-char-name { font-size: 1.15rem; letter-spacing: 2px; }
+.arpg-char-level { color: #f0cf70; font-size: .85rem; margin-top: 2px; }
+.arpg-char-xp { color: #8d7a55; font-size: .72rem; }
+
+.arpg-char-columns { display: flex; gap: 18px; }
+.arpg-char-col { flex: 1; }
+
+.arpg-section-title {
+    color: #f0cf70;
+    letter-spacing: 2px;
+    font-size: .72rem;
+    text-transform: uppercase;
+    border-bottom: 1px solid #3a2d1a;
+    margin-bottom: 6px;
+    padding-bottom: 2px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.arpg-points-badge {
+    background: #f0cf70;
+    color: #241a0e;
+    border-radius: 8px;
+    padding: 0 8px;
+    font-size: .68rem;
+}
+
+.arpg-attr-row, .arpg-stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2px 0;
+}
+
+.arpg-attr-label { flex: 1; }
+.arpg-attr-value { width: 40px; text-align: right; color: #fff; }
+
+.arpg-attr-plus {
+    width: 20px;
+    height: 20px;
+    margin-left: 8px;
+    background: #2c2115;
+    border: 1px solid #f0cf70;
+    border-radius: 3px;
+    color: #f0cf70;
+    cursor: pointer;
+    font-weight: bold;
+    line-height: 1;
+}
+.arpg-attr-plus:hover { background: #f0cf70; color: #241a0e; }
+
+.arpg-stat-row span:last-child { color: #fff; }
+
 /* ── Death overlay ─────────────────────────────────────── */
 #arpgDeathOverlay {
     position: absolute;

@@ -1,0 +1,25 @@
+{
+  "title": "Acolyte",
+  "unitType": "1_is_acolyte",
+  "icon": "\u2728",
+  "theme": "Intelligence / Strength \u2014 holy zeal",
+  "baseAttributes": {
+    "strength": 22,
+    "dexterity": 15,
+    "intelligence": 28,
+    "vitality": 20
+  },
+  "baseLife": 170,
+  "lifePerLevel": 11,
+  "lifePerVitality": 3,
+  "baseMana": 50,
+  "manaPerLevel": 3.5,
+  "manaPerIntelligence": 1.75,
+  "damagePerLevel": 1.0,
+  "ascensions": [
+    "2_is_crusader",
+    "2_is_oathBreaker",
+    "2_is_paladin"
+  ],
+  "fileName": "acolyte"
+}

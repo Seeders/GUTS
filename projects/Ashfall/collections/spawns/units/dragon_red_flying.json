@@ -154,5 +154,6 @@
   "range": 10,
   "requiresUnits": [],
   "requiresBuildings": [],
-  "icon": "dragon"
+  "icon": "dragon",
+  "xpValue": 1200
 }

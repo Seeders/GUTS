@@ -28,7 +28,8 @@
     "PathfindingSystem",
     "SupplySystem",
     "CheatCodeSystem",
-    "ArpgGameSystem"
+    "ArpgGameSystem",
+    "ArpgStatsSystem"
   ],
   "clientSystems": [
     "GameInterfaceSystem",
@@ -48,7 +49,8 @@
     "ThirdPersonCameraSystem",
     "CameraSystem",
     "PlayerControllerSystem",
-    "ArpgHudSystem"
+    "ArpgHudSystem",
+    "ArpgUiSystem"
   ],
   "serverSystems": []
 }
