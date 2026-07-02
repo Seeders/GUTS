@@ -4,7 +4,7 @@ import BaseSystem from '../../systems/js/BaseSystem.js';
 class BaseECSGame {
     constructor(app) {
         this.app = app;
-        this.state = {};
+        this._state = {};
 
         this.entitiesToAdd = [];
         this.classes = [];
@@ -66,7 +66,14 @@ class BaseECSGame {
         // These components are managed locally and should not be overwritten by server
         this._clientOnlyComponents = new Set([
             'renderable',
-            'animationState'
+            'animationState',
+            // Singleton game state: synced via the existing curated flows
+            // (BATTLE_END broadcast / syncWithServerState), never wholesale —
+            // wholesale sync would double-apply and clobber client-local fields.
+            'gameState',
+            // Per-client deterministic sim data; syncing would fight the
+            // correction-only entity sync and flood deltas at 20 TPS.
+            'behaviorState'
         ]);
 
         // Proxy cache for getComponent - avoids creating new proxies every call
@@ -982,9 +989,53 @@ class BaseECSGame {
         await this.loadGameScripts(config);
     }
 
+    /**
+     * game.state IS the singleton `gameState` component: the accessor keeps the
+     * component slot pointed at the live object even when subclasses replace the
+     * whole state (e.g. ECSGame's `new GUTS.GameState(collections)`).
+     */
+    get state() {
+        return this._state;
+    }
+    set state(value) {
+        this._state = value;
+        if (this.gameStateEntityId && this.entityAlive[this.gameStateEntityId]) {
+            const storage = this._objectComponents.get('gameState');
+            if (storage) storage[this.gameStateEntityId] = value;
+        }
+    }
+
+    /**
+     * Create the singleton game-state entity and register game.state as its
+     * `gameState` component (same object — ECS owns it; game.state is an alias).
+     *
+     * Deliberately uses a RESERVED slot (MAX_ENTITIES - 1) instead of
+     * createEntity(): allocating a normal ID would shift every subsequent
+     * entity ID by one, which can reorder equidistant-target picks and break
+     * seeded-simulation comparability. The reserved slot keeps all gameplay
+     * entity IDs identical. (Consequence: the singleton is not returned by
+     * getAllEntities(), which scans 1..nextEntityId — intentional.)
+     */
+    _ensureGameStateEntity() {
+        const id = this.MAX_ENTITIES - 1;
+        this.gameStateEntityId = id;
+        if (!this.entityAlive[id]) {
+            this.entityAlive[id] = 1;
+            this.entityComponentMask.fill(0, id * this.MASK_UINT32_COUNT, (id + 1) * this.MASK_UINT32_COUNT);
+        }
+        const typeId = this._getComponentTypeId('gameState');
+        this._setComponentBit(id, typeId);
+        const storage = this._getObjectStorage('gameState');
+        storage[id] = this._state;
+        return id;
+    }
+
     async loadGameScripts(config, options = {}) {
         this.collections = this.getCollections();
         this.gameConfig = config ? config : (this.isServer ? this.collections.configs.server : this.collections.configs.game);
+
+        // Register game.state as the singleton gameState component (ECS-owned).
+        this._ensureGameStateEntity();
 
         // Initialize SceneManager (handles lazy system instantiation)
         this.sceneManager = new GUTS.SceneManager(this);

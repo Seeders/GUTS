@@ -36,12 +36,15 @@ class BaseBehaviorNode {
         // Child for decorator nodes (single node name)
         this.child = config.child || config.childAction || null;
 
-        // Per-entity memory storage
-        this.entityMemory = new Map();
+        // Per-entity memory + running state now live in ECS data: the entity's
+        // `behaviorState` component at nodes[<nodeName>].{memory,running}.
+        // Map-compatible adapters preserve the existing call sites (subclasses
+        // use this.runningState.get/.set/.delete directly). Benefits: state is
+        // serializable with the entity and cleaned up automatically on death
+        // (the old Maps leaked — nothing removed dead entities' entries).
         this.memoryDefaults = config.memory || {};
-
-        // Running state tracking for composites
-        this.runningState = new Map();
+        this.entityMemory = new BehaviorNodeStateMap(this, 'memory');
+        this.runningState = new BehaviorNodeStateMap(this, 'running');
 
         // Reusable result objects to avoid per-evaluation allocations
         this._successResult = {
@@ -55,20 +58,40 @@ class BaseBehaviorNode {
             meta: null
         };
 
-        // Reusable running state object per entity
-        this._runningStatePool = new Map();
     }
 
     /**
-     * Get or create a reusable running state object for an entity
+     * Get this node's per-entity state slot inside the entity's behaviorState
+     * component (created on demand). Returns null for dead/missing entities.
+     */
+    _nodeSlot(entityId, create) {
+        const game = this.game;
+        if (!game || !game.getComponent) return null;
+        let c = game.getComponent(entityId, 'behaviorState');
+        if (!c) {
+            if (!create || !game.entityAlive || !game.entityAlive[entityId]) return null;
+            game.addComponent(entityId, 'behaviorState', {});
+            c = game.getComponent(entityId, 'behaviorState');
+            if (!c) return null;
+        }
+        if (!c.nodes) c.nodes = {};
+        const key = this.constructor.name;
+        let slot = c.nodes[key];
+        if (!slot) {
+            if (!create) return null;
+            slot = c.nodes[key] = {};
+        }
+        return slot;
+    }
+
+    /**
+     * Get or create the stable running-state object for an entity
      */
     _getRunningStateObj(entityId) {
-        let obj = this._runningStatePool.get(entityId);
-        if (!obj) {
-            obj = { childIndex: 0, childName: null };
-            this._runningStatePool.set(entityId, obj);
-        }
-        return obj;
+        const slot = this._nodeSlot(entityId, true);
+        if (!slot) return { childIndex: 0, childName: null };   // dead entity: detached scratch
+        if (!slot.running) slot.running = { childIndex: 0, childName: null };
+        return slot.running;
     }
 
     // ==================== Core Interface ====================
@@ -301,14 +324,15 @@ class BaseBehaviorNode {
     // ==================== Memory & State ====================
 
     getMemory(entityId) {
-        if (!this.entityMemory.has(entityId)) {
-            this.entityMemory.set(entityId, JSON.parse(JSON.stringify(this.memoryDefaults)));
-        }
-        return this.entityMemory.get(entityId);
+        const slot = this._nodeSlot(entityId, true);
+        if (!slot) return JSON.parse(JSON.stringify(this.memoryDefaults));   // dead entity: detached scratch
+        if (!slot.memory) slot.memory = JSON.parse(JSON.stringify(this.memoryDefaults));
+        return slot.memory;
     }
 
     clearMemory(entityId) {
-        this.entityMemory.delete(entityId);
+        const slot = this._nodeSlot(entityId, false);
+        if (slot) delete slot.memory;
     }
 
     getShared(entityId, game) {
@@ -354,7 +378,6 @@ class BaseBehaviorNode {
             node.onBattleEnd(entityId, game);
         });
         this.runningState.delete(entityId);
-        this._runningStatePool.delete(entityId);
         this.clearMemory(entityId);
     }
 
@@ -377,6 +400,40 @@ class BaseBehaviorNode {
         const dz = pos2.z - pos1.z;
         return Math.sqrt(dx * dx + dz * dz);
     }
+}
+
+/**
+ * Map-compatible view over a node's per-entity slot in the behaviorState
+ * component (keyed by entityId). Preserves the Map API the composite
+ * evaluators and tree subclasses already use (get/set/has/delete/clear),
+ * while the actual data lives in ECS.
+ */
+class BehaviorNodeStateMap {
+    constructor(node, field) {
+        this.node = node;
+        this.field = field;   // 'memory' | 'running'
+    }
+    get(entityId) {
+        const slot = this.node._nodeSlot(entityId, false);
+        return slot ? slot[this.field] : undefined;
+    }
+    set(entityId, value) {
+        const slot = this.node._nodeSlot(entityId, true);
+        if (slot) slot[this.field] = value;
+        return this;
+    }
+    has(entityId) {
+        return this.get(entityId) !== undefined;
+    }
+    delete(entityId) {
+        const slot = this.node._nodeSlot(entityId, false);
+        if (slot && slot[this.field] !== undefined) {
+            delete slot[this.field];
+            return true;
+        }
+        return false;
+    }
+    clear() { /* per-entity ECS storage; cleared with entities / on scene unload */ }
 }
 
 // Export for use in both browser and Node.js environments

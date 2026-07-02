@@ -1,0 +1,7 @@
+{
+  "title": "behaviorState",
+  "description": "Per-entity behavior-tree state: { meta, shared, nodes: { [nodeName]: { memory, running } } }. Owned by ECS so it is cleaned up on entity destruction; excluded from wholesale sync (deterministic per-client sim data). The string _storage marker forces object storage (ad-hoc keys are required).",
+  "schema": {
+    "_storage": "objectData"
+  }
+}

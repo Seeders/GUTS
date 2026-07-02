@@ -20,10 +20,9 @@ class BaseBehaviorSystem extends BaseSystem {
 
         this.rootTree = null;
 
-        // Entity behavior state storage (moved out of component for TypedArray compatibility)
-        // Stores { meta: {}, shared: {} } per entity
-        this.entityBehaviorState = new Map();
-
+        // Per-entity behavior state ({meta, shared}) lives in the entity's
+        // `behaviorState` component (object storage — arbitrary keys allowed,
+        // cleaned up automatically on entity destruction, serializable).
     }
 
     init() {
@@ -60,13 +59,23 @@ class BaseBehaviorSystem extends BaseSystem {
     // ==================== Behavior State Accessors ====================
 
     /**
-     * Get or create behavior state for an entity
+     * Get or create behavior state ({meta, shared}) for an entity — backed by
+     * the entity's `behaviorState` component. Returns a detached scratch object
+     * for dead entities so callers never crash.
      */
     getOrCreateBehaviorState(entityId) {
-        if (!this.entityBehaviorState.has(entityId)) {
-            this.entityBehaviorState.set(entityId, { meta: {}, shared: {} });
+        let c = this.game.getComponent(entityId, 'behaviorState');
+        if (!c) {
+            if (!this.game.entityAlive || !this.game.entityAlive[entityId]) {
+                return { meta: {}, shared: {} };
+            }
+            this.game.addComponent(entityId, 'behaviorState', {});
+            c = this.game.getComponent(entityId, 'behaviorState');
+            if (!c) return { meta: {}, shared: {} };
         }
-        return this.entityBehaviorState.get(entityId);
+        if (!c.meta) c.meta = {};
+        if (!c.shared) c.shared = {};
+        return c;
     }
 
     /**
@@ -114,7 +123,10 @@ class BaseBehaviorSystem extends BaseSystem {
      * Remove behavior state for a destroyed entity
      */
     removeBehaviorState(entityId) {
-        this.entityBehaviorState.delete(entityId);
+        if (this.game.entityAlive && this.game.entityAlive[entityId]) {
+            this.game.removeComponent(entityId, 'behaviorState');
+        }
+        // Dead entities need nothing: destroyEntity clears component slots.
     }
 
     /**
@@ -133,8 +145,11 @@ class BaseBehaviorSystem extends BaseSystem {
      * Called when scene unloads - clear all behavior instances and state
      */
     onSceneUnload() {
-        // Clear all behavior state
-        this.entityBehaviorState.clear();
+        // Clear all behavior state (per-entity behaviorState components)
+        if (this.game.getEntitiesWith) {
+            const ids = this.game.getEntitiesWith('behaviorState');
+            for (const id of ids) this.game.removeComponent(id, 'behaviorState');
+        }
 
         // Clear processor nodes - they'll be recreated when new scene loads
         this.processor.nodes.clear();
@@ -242,11 +257,13 @@ class BaseBehaviorSystem extends BaseSystem {
     }
 
     /**
-     * Called when an entity is removed - clear its state and debug data
+     * Called by the engine when an entity is destroyed (destroyEntity dispatches
+     * `entityDestroyed` — the previous `onEntityRemoved` name was never invoked,
+     * which is why behavior state used to leak for dead entities).
      */
-    onEntityRemoved(entityId) {
+    entityDestroyed(entityId) {
         this.processor.clearDebugData(entityId);
-        this.removeBehaviorState(entityId);
+        // behaviorState component slot is cleared by destroyEntity itself.
     }
 
     /**
