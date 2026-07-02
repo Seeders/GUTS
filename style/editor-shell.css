@@ -414,7 +414,8 @@
 
 /* ---- Legacy editor-module hosting (e.g. Graphics Editor in a tab) ---- */
 .eshell__module-pane { overflow: hidden; }
-.eshell__module-pane > .editor-module { flex: 1 1 auto; min-height: 0; height: auto; }
+.eshell__module-pane > .editor-module,
+.eshell__module-pane > .ge { flex: 1 1 auto; min-height: 0; height: auto; }
 
 /* Hide the legacy chrome when new shell is active. NOTE: #modals stays visible —
    re-hosted editor modules (graphics rotate/move/bake dialogs) inject into it,
