@@ -227,6 +227,10 @@
 }
 .eshell__asset-img { width: 100%; height: 100%; object-fit: contain; display: block; }
 
+/* Collapsible group headers (hierarchy) */
+.eshell__group-title--toggle { cursor: pointer; user-select: none; }
+.eshell__group-title--toggle:hover { color: var(--editor-text-secondary, #90a2ba); }
+
 /* View toggle (tiles / list) */
 .eshell__assets-viewtoggle { display: flex; gap: 2px; }
 .eshell__assets-viewtoggle .eshell__btn { padding: 3px 8px; font-size: 12px; line-height: 1; }
