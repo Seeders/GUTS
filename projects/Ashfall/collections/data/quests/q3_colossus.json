@@ -1,0 +1,18 @@
+{
+ "title": "The Stone Colossus",
+ "order": 3,
+ "zone": "cinder_quarry",
+ "kind": "killBoss",
+ "intro": "The quarry golems answer to a colossus of living stone. Break it, and the road to the keep lies open. Survive it, and you will be ready to ascend beyond what you are.",
+ "objectiveText": "Destroy the Stone Colossus in the Cinder Quarry",
+ "completeText": "You shattered the unshatterable. You are ready \u2014 seek your ascension when your legend is great enough.",
+ "rewards": {
+  "gold": 500,
+  "skillPoints": 1,
+  "item": {
+   "rarity": "rare"
+  }
+ },
+ "next": "q4_vazruk",
+ "fileName": "q3_colossus"
+}

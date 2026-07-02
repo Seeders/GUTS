@@ -63,6 +63,77 @@ try {
     // Give the scene a moment to settle (sim time)
     await waitSimTime(page, 1.5);
 
+    // ── Town: Emberrest ────────────────────────────────────────────────────
+    const town = await page.evaluate(() => {
+        const game = window.game;
+        const inters = game.getEntitiesWith('interactable').map(id => {
+            const i = game.getComponent(id, 'interactable');
+            return { kind: i.kind, target: i.target };
+        });
+        return {
+            zone: game.state.currentZoneId,
+            monsters: game.getEntitiesWith('neutralMonster').length,
+            npcs: inters.filter(i => i.kind === 'npc').map(i => i.target),
+            hasStash: inters.some(i => i.kind === 'stash'),
+            hasWaypoint: inters.some(i => i.kind === 'waypoint'),
+            hasFieldsPortal: inters.some(i => i.kind === 'portal' && i.target === 'ashen_fields')
+        };
+    });
+    check('adventure starts in Emberrest (town, safe)',
+        town.zone === 'emberrest' && town.monsters === 0,
+        `${town.monsters} monsters`);
+    check('town NPCs present', ['kael', 'mira', 'rowan'].every(n => town.npcs.includes(n)),
+        `npcs: ${town.npcs.join(',')}, stash: ${town.hasStash}, waypoint: ${town.hasWaypoint}`);
+    check('portal to Ashen Fields in town', town.hasFieldsPortal);
+
+    // Quest accept from Kael (via services)
+    const questAccept = await page.evaluate(() => {
+        const game = window.game;
+        const actions = game.getService('getQuestActionsForNpc')('kael');
+        const offer = actions.find(a => a.kind === 'offer');
+        const started = offer ? game.getService('startQuest')(offer.questId) : false;
+        return { actions, started, state: game.getService('getQuestState')('q1_bonecaller') };
+    });
+    check('Kael offers the first quest and it can be accepted',
+        questAccept.started === true && questAccept.state?.state === 'active',
+        JSON.stringify(questAccept.state));
+
+    // Vendor: buy something from Mira
+    const vendorTest = await page.evaluate(() => {
+        const game = window.game;
+        game.getService('addGold')(500);
+        const stock = game.getService('getVendorStock')('mira');
+        const res = stock.length ? game.getService('buyVendorItem')('mira', 0) : null;
+        const pid = game.state.playerCharacterId;
+        const inv = game.getComponent(pid, 'inventory');
+        return { stockCount: stock.length, res, invCount: inv.items.length, gold: game.getService('getGold')() };
+    });
+    check('vendor stocks and sells items', vendorTest.stockCount > 0 && vendorTest.res?.success === true,
+        `${vendorTest.stockCount} in stock, bought for ${vendorTest.res?.price}g, ${vendorTest.gold}g left`);
+
+    await page.screenshot({ path: 'projects/Ashfall/test_town.png' });
+
+    // Travel to Ashen Fields through the town portal
+    await page.evaluate(() => {
+        const game = window.game;
+        const portals = game.getEntitiesWith('interactable').filter(id => {
+            const i = game.getComponent(id, 'interactable');
+            return i?.kind === 'portal' && i?.target === 'ashen_fields';
+        });
+        const pid = game.state.playerCharacterId;
+        const pt = game.getComponent(pid, 'transform');
+        const portalT = game.getComponent(portals[0], 'transform');
+        pt.position.x = portalT.position.x;
+        pt.position.z = portalT.position.z;
+        game.zoneSystem.interactWith(portals[0]);
+    });
+    await page.waitForFunction(() =>
+        window.game?.state?.currentZoneId === 'ashen_fields' &&
+        window.game?.state?.playerCharacterId != null,
+        { timeout: 120000, polling: 500 });
+    check('town portal leads to Ashen Fields', true);
+    await waitSimTime(page, 1.5);
+
     const snapshot = await page.evaluate(() => {
         const game = window.game;
         const pid = game.state.playerCharacterId;
@@ -92,7 +163,7 @@ try {
     check('player has mana pool', !!snapshot.mana, JSON.stringify(snapshot.mana));
     check('enemies spawned', snapshot.enemyCount > 0, `${snapshot.enemyCount} monsters`);
     check('HUD globes present', snapshot.hudHealth && snapshot.hudMana);
-    check('zone name shown', !!snapshot.zoneName, snapshot.zoneName);
+    check('zone name shown', snapshot.zoneName === 'Ashen Fields', snapshot.zoneName);
 
     // ── WFC zone checks ───────────────────────────────────────────────────
     const zoneCheck = await page.evaluate(() => {
@@ -124,6 +195,39 @@ try {
     check('exit portal spawned', zoneCheck.interactables.some(i => i.kind === 'portal' && i.target === 'charred_woods'),
         JSON.stringify(zoneCheck.interactables));
     check('zone boss spawned', zoneCheck.bossCount === 1, `boss: ${zoneCheck.bossName}`);
+
+    // Kill the zone boss -> quest objective completes -> turn in for rewards
+    const questFlow = await page.evaluate(() => {
+        const game = window.game;
+        const pid = game.state.playerCharacterId;
+        const boss = game.getEntitiesWith('boss')[0];
+        const apply = game.getService('applyDamage');
+        for (let i = 0; i < 30 && game.getComponent(boss, 'health')?.current > 0; i++) {
+            apply(pid, boss, 99999, 0, { isMelee: true, weaponRange: 999999 });
+        }
+        return { bossHp: game.getComponent(boss, 'health')?.current };
+    });
+    await waitSimTime(page, 1.5);
+    const questDone = await page.evaluate(() => {
+        const game = window.game;
+        const state = JSON.parse(JSON.stringify(game.getService('getQuestState')('q1_bonecaller')));
+        const goldBefore = game.getService('getGold')();
+        const sheetBefore = game.getComponent(game.state.playerCharacterId, 'characterSheet').unspentSkillPoints;
+        const turnIn = game.getService('turnInQuest')('q1_bonecaller');
+        const sheet = game.getComponent(game.state.playerCharacterId, 'characterSheet');
+        return {
+            state, turnIn,
+            goldGain: game.getService('getGold')() - goldBefore,
+            skillPointGain: sheet.unspentSkillPoints - sheetBefore,
+            after: game.getService('getQuestState')('q1_bonecaller')
+        };
+    });
+    check('killing zone boss completes quest objective', questDone.state?.state === 'done',
+        `bossHp ${questFlow.bossHp}, quest ${JSON.stringify(questDone.state)}`);
+    check('quest turn-in grants rewards', questDone.turnIn === true &&
+        questDone.goldGain >= 150 && questDone.skillPointGain >= 1 &&
+        questDone.after?.state === 'turnedIn',
+        `+${questDone.goldGain}g, +${questDone.skillPointGain} skill pts`);
 
     // ── WASD movement test (move toward map center to avoid border clamps) ──
     const before = snapshot.pos;
@@ -160,12 +264,14 @@ try {
         pt.position.x = 0; pt.position.z = 0;
         const ph = game.getComponent(pid, 'health');
         ph.current = ph.max;
+        let totalHp = 0;
+        for (const id of enemies) totalHp += game.getComponent(id, 'health').current;
         const et = game.getComponent(eid, 'transform');
         // Place enemy right in front of the player
         et.position.x = pt.position.x + 40;
         et.position.z = pt.position.z;
         const eh = game.getComponent(eid, 'health');
-        return { eid, hp: eh.current, px: pt.position.x, pz: pt.position.z };
+        return { eid, hp: eh.current, totalHp, px: pt.position.x, pz: pt.position.z };
     });
 
     if (attackSetup) {
@@ -206,11 +312,19 @@ try {
         const hpAfter = await page.evaluate((eid) => {
             const game = window.game;
             const h = game.getComponent(eid, 'health');
-            return h ? h.current : -999;   // -999: entity gone (killed + cleaned up)
+            // Also count total enemy hp — held-LMB may hit whichever enemy is
+            // nearest the cursor if others wandered in
+            let total = 0;
+            for (const id of game.getEntitiesWith('neutralMonster', 'health')) {
+                total += game.getComponent(id, 'health').current;
+            }
+            return { pinned: h ? h.current : -999, total };
         }, attackSetup.eid);
 
-        const damaged = hpAfter === -999 || hpAfter < attackSetup.hp;
-        check('basic attack damages enemy', damaged, `hp ${attackSetup.hp} -> ${hpAfter === -999 ? 'dead/removed' : hpAfter}`);
+        const damaged = hpAfter.pinned === -999 || hpAfter.pinned < attackSetup.hp ||
+            hpAfter.total < (attackSetup.totalHp ?? Infinity);
+        check('basic attack damages enemy', damaged,
+            `pinned hp ${attackSetup.hp} -> ${hpAfter.pinned === -999 ? 'dead/removed' : hpAfter.pinned}, total ${attackSetup.totalHp} -> ${hpAfter.total}`);
     } else {
         check('basic attack damages enemy', false, 'no enemy found for attack test');
     }

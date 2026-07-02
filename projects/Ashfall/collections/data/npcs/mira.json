@@ -1,0 +1,12 @@
+{
+ "title": "Mira the Smith",
+ "unit": "1_sd_soldier",
+ "role": "vendor",
+ "vendor": {
+  "stock": "arms",
+  "count": 8
+ },
+ "color": "#7fc7ff",
+ "greeting": "Steel keeps you breathing out there. Buy something that won't shatter on the first skeleton.",
+ "fileName": "mira"
+}

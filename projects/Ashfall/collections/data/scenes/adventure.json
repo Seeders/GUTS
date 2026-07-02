@@ -33,7 +33,9 @@
     "SkillTreeSystem",
     "ItemSystem",
     "ZoneSystem",
-    "EnemyPackSystem"
+    "EnemyPackSystem",
+    "QuestSystem",
+    "NpcSystem"
   ],
   "clientSystems": [
     "GameInterfaceSystem",

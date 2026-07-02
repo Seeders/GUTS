@@ -1,0 +1,18 @@
+{
+ "title": "The Ember Throne",
+ "order": 4,
+ "zone": "ember_throne",
+ "kind": "killBoss",
+ "intro": "Pyrelord Vazruk roosts upon the Ember Throne beyond the keep. He burned this land once. He means to finish it. End him, and Act One of your legend is written.",
+ "objectiveText": "Slay Pyrelord Vazruk at the Ember Throne",
+ "completeText": "The Pyrelord has fallen... Emberrest is saved. Rest, champion \u2014 the ashes beyond the mountains await.",
+ "rewards": {
+  "gold": 1500,
+  "skillPoints": 2,
+  "item": {
+   "rarity": "unique"
+  }
+ },
+ "next": null,
+ "fileName": "q4_vazruk"
+}

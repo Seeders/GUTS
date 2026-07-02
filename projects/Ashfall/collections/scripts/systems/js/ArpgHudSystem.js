@@ -111,6 +111,24 @@ class ArpgHudSystem extends GUTS.BaseSystem {
         }
 
         this.updateSkillBar(entityId);
+        this.updateQuestTracker();
+    }
+
+    updateQuestTracker() {
+        const el = document.getElementById('arpgQuestTracker');
+        if (!el) return;
+        const active = this.game.questSystem?.getActiveQuest?.();
+        if (!active) {
+            if (el.innerHTML) el.innerHTML = '';
+            return;
+        }
+        const { def, state } = active;
+        const progress = def.count ? ` (${state.progress || 0}/${def.count})` : '';
+        const status = state.state === 'done'
+            ? '<div style="color:#7fe0c3">Return to Warlord Kael</div>'
+            : `<div>${def.objectiveText}${progress}</div>`;
+        const html = `<div class="qt-title">${def.title}</div>${status}`;
+        if (el.innerHTML !== html) el.innerHTML = html;
     }
 
     // ─── Skill bar (icons + cooldown sweep) ──────────────────────────────────

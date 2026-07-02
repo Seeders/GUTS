@@ -1,0 +1,15 @@
+{
+ "title": "The Bonecaller",
+ "order": 1,
+ "zone": "ashen_fields",
+ "kind": "killBoss",
+ "intro": "The dead of the Ashen Fields do not rest \u2014 a creature called Bonecaller Maru drags them from the soil. Find it east of town and end its chant.",
+ "objectiveText": "Slay Bonecaller Maru in the Ashen Fields",
+ "completeText": "The fields fall quiet at last. You have my thanks \u2014 and my coin.",
+ "rewards": {
+  "gold": 150,
+  "skillPoints": 1
+ },
+ "next": "q2_totems",
+ "fileName": "q1_bonecaller"
+}

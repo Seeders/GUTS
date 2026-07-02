@@ -1,0 +1,18 @@
+{
+ "title": "Pyres of the Charred Woods",
+ "order": 2,
+ "zone": "charred_woods",
+ "kind": "destroyObjects",
+ "count": 3,
+ "intro": "Cultists raised burning pyre totems deep in the Charred Woods; they cook the air and call fire down on my scouts. Smash all three.",
+ "objectiveText": "Destroy 3 Pyre Totems in the Charred Woods",
+ "completeText": "The smoke thins already. Whatever they were summoning, you starved it.",
+ "rewards": {
+  "gold": 300,
+  "item": {
+   "rarity": "rare"
+  }
+ },
+ "next": "q3_colossus",
+ "fileName": "q2_totems"
+}

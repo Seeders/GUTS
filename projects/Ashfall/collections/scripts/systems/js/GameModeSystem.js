@@ -259,11 +259,11 @@ class GameModeSystem extends GUTS.BaseSystem {
         this.game.state.generatedZones = null;
         this.game.state.discoveredWaypoints = null;
 
-        // Enter the first zone via the zone graph (WFC generates the map)
+        // Begin in the town of Emberrest
         if (this.game.hasService('travelToZone')) {
             this.game.zoneSystem
-                ? this.game.zoneSystem.travelToZone('ashen_fields')
-                : this.call.travelToZone?.('ashen_fields');
+                ? this.game.zoneSystem.travelToZone('emberrest')
+                : this.call.travelToZone?.('emberrest');
             return;
         }
 

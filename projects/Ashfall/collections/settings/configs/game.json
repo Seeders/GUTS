@@ -154,7 +154,9 @@
     "ArpgLootSystem",
     "ArpgUiSystem",
     "ZoneSystem",
-    "EnemyPackSystem"
+    "EnemyPackSystem",
+    "QuestSystem",
+    "NpcSystem"
   ],
   "classes": [
     {

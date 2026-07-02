@@ -17,7 +17,16 @@ class ArpgUiSystem extends GUTS.BaseSystem {
         'unequipItem',
         'socketGem',
         'drinkPotion',
-        'getGold'
+        'getGold',
+        'getQuestActionsForNpc',
+        'startQuest',
+        'turnInQuest',
+        'getQuestState',
+        'getVendorStock',
+        'buyVendorItem',
+        'sellItem',
+        'depositToStash',
+        'withdrawFromStash'
     ];
 
     constructor(game) {
@@ -176,6 +185,224 @@ class ArpgUiSystem extends GUTS.BaseSystem {
         if (this.openPanel === 'character') this.renderCharacterPanel();
         else if (this.openPanel === 'skilltree') this.renderSkillTreePanel();
         else if (this.openPanel === 'inventory') this.renderInventoryPanel();
+        else if (this.openPanel === 'quests') this.renderQuestsPanel();
+    }
+
+    // ─── Quest log panel ──────────────────────────────────────────────────────
+
+    renderQuestsPanel() {
+        const body = document.getElementById('arpgQuestsBody');
+        if (!body) return;
+        const defs = this.collections.quests || {};
+        const ordered = Object.keys(defs).sort((a, b) => (defs[a].order || 0) - (defs[b].order || 0));
+
+        const rows = ordered.map(id => {
+            const def = defs[id];
+            const s = this.call.getQuestState?.(id) || { state: 'notStarted', progress: 0 };
+            if (s.state === 'notStarted') return '';
+            const stateLabel = {
+                active: `<span style="color:#f0cf70">In progress${def.count ? ` (${s.progress || 0}/${def.count})` : ''}</span>`,
+                done: '<span style="color:#7fe0c3">Return to Warlord Kael</span>',
+                turnedIn: '<span style="color:#6d5c3f">Completed ✔</span>'
+            }[s.state] || '';
+            return `
+                <div class="arpg-quest-row ${s.state}">
+                    <div class="arpg-quest-title">${def.title}</div>
+                    <div class="arpg-quest-obj">${def.objectiveText}</div>
+                    <div class="arpg-quest-state">${stateLabel}</div>
+                </div>`;
+        }).filter(Boolean);
+
+        body.innerHTML = rows.length
+            ? rows.join('')
+            : '<em style="color:#8d7a55">No quests yet. Speak with Warlord Kael in Emberrest.</em>';
+    }
+
+    // ─── Dialogue panel ───────────────────────────────────────────────────────
+
+    openDialoguePanel(npcId, def) {
+        this.closeDialoguePanel();
+
+        const box = document.createElement('div');
+        box.id = 'arpgDialogue';
+        box.innerHTML = `
+            <div class="arpg-dialogue-name" style="color:${def.color || '#f0cf70'}">${def.title}</div>
+            <div class="arpg-dialogue-text" id="arpgDialogueText">${def.greeting || '...'}</div>
+            <div class="arpg-dialogue-actions" id="arpgDialogueActions"></div>`;
+        document.getElementById('gameContainer')?.appendChild(box);
+
+        const actions = box.querySelector('#arpgDialogueActions');
+        const addBtn = (label, fn, highlight = false) => {
+            const b = document.createElement('button');
+            b.className = 'btn';
+            b.style.cssText = `font-size:.72rem; padding:.35rem 1rem; ${highlight ? 'border-color:#f0cf70;' : ''}`;
+            b.textContent = label;
+            b.addEventListener('click', fn);
+            actions.appendChild(b);
+        };
+
+        // Quest actions
+        for (const action of this.call.getQuestActionsForNpc?.(npcId) || []) {
+            if (action.kind === 'offer') {
+                box.querySelector('#arpgDialogueText').textContent = action.text;
+                addBtn(`Accept: ${this.collections.quests?.[action.questId]?.title}`, () => {
+                    this.call.startQuest(action.questId);
+                    this.closeDialoguePanel();
+                }, true);
+            } else if (action.kind === 'turnIn') {
+                box.querySelector('#arpgDialogueText').textContent = action.text;
+                addBtn(action.label, () => {
+                    this.call.turnInQuest(action.questId);
+                    this.closeDialoguePanel();
+                }, true);
+            } else if (action.kind === 'reminder') {
+                box.querySelector('#arpgDialogueText').textContent = `${action.text}`;
+                const hint = document.createElement('div');
+                hint.style.cssText = 'color:#f0cf70; font-size:.72rem; margin-top:4px;';
+                hint.textContent = `Objective: ${action.label}`;
+                box.querySelector('#arpgDialogueText').appendChild(hint);
+            }
+        }
+
+        // Vendor
+        if (def.vendor) {
+            addBtn('🪙 Trade', () => {
+                this.closeDialoguePanel();
+                this.openVendorPanel(npcId, def);
+            }, true);
+        }
+
+        addBtn('Farewell', () => this.closeDialoguePanel());
+    }
+
+    closeDialoguePanel() {
+        document.getElementById('arpgDialogue')?.remove();
+    }
+
+    // ─── Vendor panel ─────────────────────────────────────────────────────────
+
+    openVendorPanel(npcId, def) {
+        this.closePanel();
+        document.getElementById('arpgVendor')?.remove();
+
+        const panel = document.createElement('div');
+        panel.id = 'arpgVendor';
+        panel.className = 'arpg-panel arpg-panel-wide';
+        panel.innerHTML = `
+            <div class="arpg-panel-titlebar">
+                <span>${def.title} — Trade</span>
+                <button class="arpg-panel-close">✕</button>
+            </div>
+            <div class="arpg-panel-body">
+                <div class="arpg-gold-line" id="arpgVendorGold"></div>
+                <div class="arpg-vendor-cols">
+                    <div class="arpg-vendor-col">
+                        <div class="arpg-section-title">For sale</div>
+                        <div id="arpgVendorStock"></div>
+                    </div>
+                    <div class="arpg-vendor-col">
+                        <div class="arpg-section-title">Your items (click to sell)</div>
+                        <div id="arpgVendorSell"></div>
+                    </div>
+                </div>
+            </div>`;
+        document.getElementById('gameContainer')?.appendChild(panel);
+        panel.querySelector('.arpg-panel-close').addEventListener('click', () => panel.remove());
+
+        const render = () => {
+            const goldEl = panel.querySelector('#arpgVendorGold');
+            goldEl.textContent = `💰 ${this.call.getGold?.() ?? 0} gold`;
+
+            // Stock
+            const stockEl = panel.querySelector('#arpgVendorStock');
+            stockEl.innerHTML = '';
+            const stock = this.call.getVendorStock(npcId) || [];
+            stock.forEach((item, index) => {
+                const price = item.price ?? Math.round((this.game.itemSystem?.itemValue(item) || 20) * 1.5);
+                const row = document.createElement('div');
+                row.className = `arpg-vendor-row rarity-${item.rarity}`;
+                row.innerHTML = `<span>${item.name}</span><span class="arpg-vendor-price">${price}g</span>`;
+                row.addEventListener('click', () => {
+                    const res = this.call.buyVendorItem(npcId, index);
+                    if (!res?.success) GUTS.NotificationSystem?.show?.(res?.reason || 'Cannot buy', 'error');
+                    render();
+                });
+                stockEl.appendChild(row);
+            });
+
+            // Player items
+            const sellEl = panel.querySelector('#arpgVendorSell');
+            sellEl.innerHTML = '';
+            const pid = this.call.getPlayerCharacter?.();
+            const inv = pid != null ? this.game.getComponent(pid, 'inventory') : null;
+            for (const entry of inv?.items || []) {
+                const item = entry.item;
+                const value = Math.round((this.game.itemSystem?.itemValue(item) || 10) * 0.3);
+                const row = document.createElement('div');
+                row.className = `arpg-vendor-row rarity-${item.rarity}`;
+                row.innerHTML = `<span>${item.name}</span><span class="arpg-vendor-price">+${value}g</span>`;
+                row.addEventListener('click', () => {
+                    this.call.sellItem(item.uid);
+                    render();
+                });
+                sellEl.appendChild(row);
+            }
+        };
+        render();
+    }
+
+    // ─── Stash panel ──────────────────────────────────────────────────────────
+
+    openStashPanel() {
+        this.closePanel();
+        document.getElementById('arpgStash')?.remove();
+
+        const panel = document.createElement('div');
+        panel.id = 'arpgStash';
+        panel.className = 'arpg-panel arpg-panel-wide';
+        panel.innerHTML = `
+            <div class="arpg-panel-titlebar">
+                <span>Stash</span>
+                <button class="arpg-panel-close">✕</button>
+            </div>
+            <div class="arpg-panel-body">
+                <div class="arpg-vendor-cols">
+                    <div class="arpg-vendor-col">
+                        <div class="arpg-section-title">Stash (click to withdraw)</div>
+                        <div id="arpgStashList"></div>
+                    </div>
+                    <div class="arpg-vendor-col">
+                        <div class="arpg-section-title">Inventory (click to deposit)</div>
+                        <div id="arpgStashInv"></div>
+                    </div>
+                </div>
+            </div>`;
+        document.getElementById('gameContainer')?.appendChild(panel);
+        panel.querySelector('.arpg-panel-close').addEventListener('click', () => panel.remove());
+
+        const render = () => {
+            const stashEl = panel.querySelector('#arpgStashList');
+            stashEl.innerHTML = '';
+            for (const item of this.game.state.stashItems || []) {
+                const row = document.createElement('div');
+                row.className = `arpg-vendor-row rarity-${item.rarity}`;
+                row.innerHTML = `<span>${item.name}</span>`;
+                row.addEventListener('click', () => { this.call.withdrawFromStash(item.uid); render(); });
+                stashEl.appendChild(row);
+            }
+            const invEl = panel.querySelector('#arpgStashInv');
+            invEl.innerHTML = '';
+            const pid = this.call.getPlayerCharacter?.();
+            const inv = pid != null ? this.game.getComponent(pid, 'inventory') : null;
+            for (const entry of inv?.items || []) {
+                const row = document.createElement('div');
+                row.className = `arpg-vendor-row rarity-${entry.item.rarity}`;
+                row.innerHTML = `<span>${entry.item.name}</span>`;
+                row.addEventListener('click', () => { this.call.depositToStash(entry.item.uid); render(); });
+                invEl.appendChild(row);
+            }
+        };
+        render();
     }
 
     // ─── Inventory panel ──────────────────────────────────────────────────────

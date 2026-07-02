@@ -496,6 +496,69 @@
 #arpgTooltip .tt-req { color: #b3564a; margin-top: 4px; font-size: .7rem; }
 #arpgTooltip .tt-lore { color: #c7893c; font-style: italic; margin-top: 4px; font-size: .7rem; }
 
+/* ── Dialogue ──────────────────────────────────────────── */
+#arpgDialogue {
+    position: absolute;
+    bottom: 150px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 480px;
+    background: rgba(10,7,4,.96);
+    border: 2px solid #4a3a22;
+    border-radius: 8px;
+    padding: 14px 18px;
+    z-index: 70;
+    font-family: Georgia, serif;
+    box-shadow: 0 8px 30px rgba(0,0,0,.8);
+}
+.arpg-dialogue-name { font-size: 1rem; letter-spacing: 2px; margin-bottom: 6px; }
+.arpg-dialogue-text { color: #d8c9a3; font-size: .85rem; line-height: 1.5; margin-bottom: 10px; }
+.arpg-dialogue-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ── Vendor / stash ────────────────────────────────────── */
+.arpg-vendor-cols { display: flex; gap: 16px; }
+.arpg-vendor-col { flex: 1; min-width: 0; }
+.arpg-vendor-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 8px;
+    border: 1px solid #3a2d1a;
+    border-radius: 4px;
+    margin-bottom: 4px;
+    cursor: pointer;
+    font-size: .78rem;
+}
+.arpg-vendor-row:hover { filter: brightness(1.5); background: rgba(240,207,112,.06); }
+.arpg-vendor-price { color: #f0cf70; }
+
+/* ── Quest log ─────────────────────────────────────────── */
+.arpg-quest-row {
+    border: 1px solid #3a2d1a;
+    border-radius: 5px;
+    padding: 7px 10px;
+    margin-bottom: 6px;
+}
+.arpg-quest-row.turnedIn { opacity: .55; }
+.arpg-quest-title { color: #f0cf70; font-size: .85rem; letter-spacing: 1px; }
+.arpg-quest-obj { color: #d8c9a3; font-size: .74rem; margin: 2px 0; }
+.arpg-quest-state { font-size: .7rem; }
+
+/* ── Quest tracker (HUD) ───────────────────────────────── */
+#arpgQuestTracker {
+    position: absolute;
+    top: 48px;
+    right: 18px;
+    max-width: 260px;
+    text-align: right;
+    color: #d8c9a3;
+    font-family: Georgia, serif;
+    font-size: .74rem;
+    text-shadow: 0 1px 3px #000;
+    pointer-events: none;
+    z-index: 18;
+}
+#arpgQuestTracker .qt-title { color: #f0cf70; letter-spacing: 1px; }
+
 /* ── Ground loot labels ────────────────────────────────── */
 #arpgLootLabels {
     position: absolute;

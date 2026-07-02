@@ -1,0 +1,12 @@
+{
+ "title": "Elder Rowan",
+ "unit": "4_archmage",
+ "role": "vendor",
+ "vendor": {
+  "stock": "arcana",
+  "count": 8
+ },
+ "color": "#c58cf0",
+ "greeting": "The embers whisper of the Pyrelord's return. Take what potions and stones I can offer \u2014 you will need them.",
+ "fileName": "rowan"
+}

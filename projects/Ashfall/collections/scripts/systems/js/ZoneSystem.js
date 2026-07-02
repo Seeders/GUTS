@@ -156,13 +156,18 @@ class ZoneSystem extends GUTS.BaseSystem {
             if (!discovered.includes(zoneId)) discovered.push(zoneId);
         }
 
-        // Monsters (EnemyPackSystem)
+        // Monsters (EnemyPackSystem) — towns are safe
         const packs = this.game.enemyPackSystem;
-        if (packs) {
+        if (packs && !zone.isTown && (zone.monsters || []).length) {
             packs.populateZone(zone, level, {
                 entrance,
                 toWorld: (m) => toWorld(m)
             });
+        }
+
+        // Town NPCs
+        if (this.game.npcSystem) {
+            this.game.npcSystem.spawnZoneNpcs(level, (m) => toWorld(m));
         }
     }
 

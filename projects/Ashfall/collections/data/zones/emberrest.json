@@ -1,0 +1,16 @@
+{
+ "title": "Emberrest",
+ "set": null,
+ "fixedLevel": "town_emberrest",
+ "monsterLevel": 0,
+ "packCount": 0,
+ "monsters": [],
+ "championTypes": [],
+ "world": "shire",
+ "order": 0,
+ "isTown": true,
+ "prev": null,
+ "next": "ashen_fields",
+ "hasWaypoint": true,
+ "fileName": "emberrest"
+}

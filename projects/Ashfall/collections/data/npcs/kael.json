@@ -1,0 +1,8 @@
+{
+ "title": "Warlord Kael",
+ "unit": "2_s_warlord",
+ "role": "quest",
+ "color": "#f0cf70",
+ "greeting": "Emberrest still stands, stranger \u2014 barely. The ashlands crawl with the risen dead, and worse stirs in the old keep. Are you here to fight, or to die politely?",
+ "fileName": "kael"
+}
