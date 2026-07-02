@@ -45,8 +45,8 @@ class EditorSystemsGraph {
         const obj = systems[name];
         this.nodes.set(name, {
           id: name, list, obj: obj || null, missing: !obj,
-          provides: (obj && Array.isArray(obj.services)) ? obj.services.slice() : this._parseProvides(obj),
-          consumes: this._parseConsumes(obj),
+          provides: this._resolveProvides(name),
+          consumes: this._parseConsumes(obj, name),
           x: 0, y: 0
         });
       });
@@ -56,20 +56,57 @@ class EditorSystemsGraph {
     this.nodes.forEach(n => n.provides.forEach(s => { this.providerOf[s] = this.providerOf[s] || []; this.providerOf[s].push(n.id); }));
     this.autoLayout(false);
   }
-  _parseProvides(obj) {
-    if (!obj || typeof obj.script !== 'string') return [];
-    const m = obj.script.match(/static\s+services\s*=\s*\[([^\]]*)\]/);
-    if (!m) return [];
-    return (m[1].match(/['"]([\w$]+)['"]/g) || []).map(s => s.slice(1, -1));
+  /**
+   * Resolve a system's provided services the way the RUNTIME does:
+   * BaseECSGame reads SystemClass.services — a STATIC, so an own declaration
+   * shadows the parent's, otherwise it's INHERITED through the extends chain
+   * (e.g. skirmish's CameraSystem extends CameraCoordinatorSystem and provides
+   * getCamera without declaring anything). Also resolves the
+   * `...Base.services` spread pattern the camera subclasses use.
+   */
+  _resolveProvides(name, seen = new Set()) {
+    if (!name || seen.has(name)) return [];
+    seen.add(name);
+    const systems = this._cols().systems || {};
+    const obj = systems[name];
+    if (!obj) return [];
+    const script = typeof obj.script === 'string' ? obj.script : '';
+    const out = new Set();
+    const own = script.match(/static\s+services\s*=\s*\[([^\]]*)\]/);
+    if (own) {
+      (own[1].match(/['"]([\w$]+)['"]/g) || []).forEach(s => out.add(s.slice(1, -1)));
+      (own[1].match(/\.\.\.(?:GUTS\.)?([A-Za-z_$][\w$]*)\.services/g) || []).forEach(sp => {
+        const base = sp.replace(/^\.\.\.(?:GUTS\.)?/, '').replace(/\.services$/, '');
+        this._resolveProvides(base, seen).forEach(s => out.add(s));
+      });
+      return [...out];
+    }
+    if (Array.isArray(obj.services) && obj.services.length) return obj.services.slice();
+    // no own declaration -> inherit the parent's statics
+    const em = script.match(/class\s+[\w$]+\s+extends\s+(?:GUTS\.)?([A-Za-z_$][\w$]*)/);
+    if (em) return this._resolveProvides(em[1], seen);
+    return [];
   }
-  _parseConsumes(obj) {
+  _parseConsumes(obj, name, seen = new Set()) {
     if (!obj || typeof obj.script !== 'string') return [];
     const out = new Set();
+    const script = obj.script;
     const re1 = /\.call\.([A-Za-z_$][\w$]*)\s*\(/g;
     const re2 = /\.call\(\s*['"]([\w$]+)['"]/g;
     let m;
-    while ((m = re1.exec(obj.script))) out.add(m[1]);
-    while ((m = re2.exec(obj.script))) out.add(m[1]);
+    while ((m = re1.exec(script))) out.add(m[1]);
+    while ((m = re2.exec(script))) out.add(m[1]);
+    // declared dependencies (static serviceDependencies = [...]) — own or inherited
+    const dep = script.match(/static\s+serviceDependencies\s*=\s*\[([^\]]*)\]/);
+    if (dep) (dep[1].match(/['"]([\w$]+)['"]/g) || []).forEach(s => out.add(s.slice(1, -1)));
+    if (name && !seen.has(name)) {
+      seen.add(name);
+      const em = script.match(/class\s+[\w$]+\s+extends\s+(?:GUTS\.)?([A-Za-z_$][\w$]*)/);
+      const systems = this._cols().systems || {};
+      if (em && systems[em[1]]) {
+        this._parseConsumes(systems[em[1]], em[1], seen).forEach(s => out.add(s));
+      }
+    }
     return [...out];
   }
 
