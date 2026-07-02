@@ -792,12 +792,34 @@ class EditorShell {
     return 'string';
   }
 
+  /**
+   * Resolve which collection a field references. Matches the runtime convention
+   * (exact, then suffix): a `requiresBuildings` field with no `requiresBuildings`
+   * collection maps to the `buildings` collection — its values are building ids.
+   * Order: exact plural → exact singular → endsWith plural → endsWith singular
+   * (longest suffix wins). Meta collections are excluded.
+   */
   _referenceCollection(key) {
     if (!key) return null;
+    const EXCLUDE = { objectTypeCategories: 1, objectTypeDefinitions: 1 };
     const cols = this._collections();
-    if (cols[key] && key !== 'objectTypeCategories') return key;          // plural key names a collection
-    const def = this._collectionDefs().find(d => d.singular && d.singular.toLowerCase() === key.toLowerCase());
-    return def ? def.id : null;
+    const lk = key.toLowerCase();
+    if (cols[key] && !EXCLUDE[key]) return key;                            // exact plural
+    const defs = this._collectionDefs();
+    const exactSing = defs.find(d => d.singular && d.singular.toLowerCase() === lk);
+    if (exactSing && !EXCLUDE[exactSing.id]) return exactSing.id;          // exact singular
+    let best = null;
+    for (const id of Object.keys(cols)) {                                  // endsWith plural
+      if (EXCLUDE[id] || id.length >= key.length) continue;
+      if (lk.endsWith(id.toLowerCase()) && (!best || id.length > best.length)) best = id;
+    }
+    if (best) return best;
+    let bestDef = null;
+    for (const d of defs) {                                                // endsWith singular
+      if (!d.singular || EXCLUDE[d.id] || d.singular.length >= key.length) continue;
+      if (lk.endsWith(d.singular.toLowerCase()) && (!bestDef || d.singular.length > bestDef.singular.length)) bestDef = d;
+    }
+    return bestDef ? bestDef.id : null;
   }
 
   _inspWidget(type, key, value, kind) {
