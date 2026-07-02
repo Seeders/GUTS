@@ -266,6 +266,26 @@ try {
     check('WASD moves the character', moved > 20,
         `moved ${moved.toFixed(1)} units (${before.x.toFixed(0)},${before.z.toFixed(0)}) -> (${after.x.toFixed(0)},${after.z.toFixed(0)})`);
 
+    // Camera must keep the character centered while moving (WASD must not
+    // engage the camera's own pan, which would detach the follow)
+    const centered = await page.evaluate(() => {
+        const game = window.game;
+        const pid = game.state.playerCharacterId;
+        const t = game.getComponent(pid, 'transform');
+        const camera = game.getService('getCamera')();
+        const v = new THREE.Vector3(t.position.x, t.position.y || 0, t.position.z);
+        v.project(camera);
+        const followTarget = game.getService('getCameraFollowTarget')();
+        return {
+            ndcX: v.x, ndcY: v.y,
+            offCenter: Math.hypot(v.x, v.y),
+            following: followTarget === pid
+        };
+    });
+    check('camera stays centered on character while moving',
+        centered.following && centered.offCenter < 0.3,
+        `follow=${centered.following}, off-center ${(centered.offCenter * 100).toFixed(0)}% of half-screen`);
+
     // ── Attack test: teleport a skeleton next to the player, hold LMB at it ──
     const attackSetup = await page.evaluate(() => {
         const game = window.game;
