@@ -169,14 +169,22 @@ class EditorShell {
     const entities = (this.viewport && this.viewport.getSceneEntities && this.viewport.getSceneEntities()) || [];
     body.innerHTML = '';
     if (!entities.length) { this._empty(body, 'No entities yet — drag an asset into the viewport to place one.'); return; }
+    if (!this._collapsedHierarchy) this._collapsedHierarchy = new Set();
     const groups = {};
     entities.forEach(e => { (groups[e.collection] = groups[e.collection] || []).push(e); });
     const sel = this.viewport && this.viewport.getSelectedEntity && this.viewport.getSelectedEntity();
     Object.keys(groups).sort().forEach(col => {
+      const collapsed = this._collapsedHierarchy.has(col);
       const title = document.createElement('div');
-      title.className = 'eshell__group-title';
-      title.textContent = `${col} (${groups[col].length})`;
+      title.className = 'eshell__group-title eshell__group-title--toggle';
+      title.textContent = `${collapsed ? '▸' : '▾'} ${col} (${groups[col].length})`;
+      title.addEventListener('click', () => {
+        if (this._collapsedHierarchy.has(col)) this._collapsedHierarchy.delete(col);
+        else this._collapsedHierarchy.add(col);
+        this._renderHierarchy();
+      });
       body.appendChild(title);
+      if (collapsed) return;
       groups[col].sort((a, b) => String(a.spawnType).localeCompare(String(b.spawnType))).forEach(e => {
         const row = document.createElement('div');
         row.className = 'eshell__row' + (e.id === sel ? ' eshell__row--active' : '');
@@ -191,6 +199,11 @@ class EditorShell {
 
   _onEntitySelected(id, rec) {
     if (this.viewport && this.viewport.clearPreview) this.viewport.clearPreview();  // scene entity, not an asset
+    // Auto-expand the selected entity's group so its row is visible.
+    if (rec && rec.collection && this._collapsedHierarchy && this._collapsedHierarchy.has(rec.collection)) {
+      this._collapsedHierarchy.delete(rec.collection);
+      this._renderHierarchy();
+    }
     const body = this._body('hierarchy');
     if (body) body.querySelectorAll('.eshell__row').forEach(r => r.classList.toggle('eshell__row--active', Number(r.dataset.eid) === id));
     if (id == null) { this._renderInspectorEmpty('Select an asset or entity to inspect.'); return; }
