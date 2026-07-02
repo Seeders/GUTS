@@ -155,7 +155,22 @@
   flex: 0 0 auto; display: flex; align-items: center; gap: 6px; padding: 6px 10px;
   background: var(--editor-bg-light, #16202f); border-bottom: 1px solid var(--editor-border-color, #22303f);
 }
-.eshell__script-editor { flex: 1 1 auto; min-height: 0; }
+.eshell__script-body { flex: 1 1 auto; min-height: 0; display: flex; }
+.eshell__script-editor { flex: 1 1 auto; min-width: 0; min-height: 0; }
+.eshell__script-preview {
+  flex: 0 0 44%; min-width: 0; display: flex; flex-direction: column;
+  border-left: 1px solid var(--editor-border-color, #22303f);
+  background: var(--editor-bg-medium, #111a27);
+}
+.eshell__script-preview-head {
+  flex: 0 0 auto; padding: 5px 10px;
+  font-family: var(--editor-font-mono, monospace); font-size: 10px;
+  letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--editor-text-muted, #5e708a);
+  background: var(--editor-bg-light, #16202f);
+  border-bottom: 1px solid var(--editor-border-color, #22303f);
+}
+.eshell__script-preview iframe { flex: 1 1 auto; min-height: 0; width: 100%; border: 0; background: #10141c; }
 .eshell__viewport-placeholder {
   position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 10px; text-align: center; color: var(--editor-text-muted, #5e708a);
