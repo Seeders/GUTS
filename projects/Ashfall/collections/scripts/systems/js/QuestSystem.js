@@ -77,6 +77,10 @@ class QuestSystem extends GUTS.BaseSystem {
         // Rewards
         const rewards = def.rewards || {};
         if (rewards.gold) this.call.addGold(rewards.gold);
+        if (rewards.xp) {
+            const pid = this.call.getPlayerCharacter?.();
+            if (pid != null) this.game.arpgStatsSystem?.awardExperience(pid, rewards.xp);
+        }
         if (rewards.skillPoints) {
             const pid = this.call.getPlayerCharacter?.();
             const sheet = pid != null ? this.game.getComponent(pid, 'characterSheet') : null;
@@ -97,6 +101,12 @@ class QuestSystem extends GUTS.BaseSystem {
 
         this.game.triggerEvent('onQuestTurnedIn', { questId });
         this.notify(`Quest complete: ${def.title}`);
+
+        // Turning in the final quest completes the act
+        if (!def.next) {
+            this.game.state.act1Complete = true;
+            this.game.triggerEvent('onActCompleted', { act: 1 });
+        }
         return true;
     }
 

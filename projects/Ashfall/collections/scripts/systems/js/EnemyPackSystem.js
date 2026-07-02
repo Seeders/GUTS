@@ -201,7 +201,7 @@ class EnemyPackSystem extends GUTS.BaseSystem {
     spawnBoss(zone, pos, mlvl, team) {
         const boss = zone.boss;
         const entityId = this.spawnMonster(boss.unit, pos, mlvl + 2, team, {
-            hpMult: 6, dmgMult: 1.6, scale: boss.scale || 1.6, armorBonus: 10,
+            hpMult: boss.hpMult || 3, dmgMult: boss.dmgMult || 1.5, scale: boss.scale || 1.6, armorBonus: 10,
             rarityBonus: 2, guaranteedLoot: true, lootTable: 'boss',
             name: boss.name
         });
@@ -222,7 +222,7 @@ class EnemyPackSystem extends GUTS.BaseSystem {
             // Stationary: anchor it
             const vel = this.game.getComponent(entityId, 'velocity');
             if (vel) { vel.anchored = true; vel.maxSpeed = 0; }
-            this.game.addComponent(entityId, 'trap', { isQuestObject: 1 });
+            this.game.addComponent(entityId, 'questObject', { questId: q.questId, index });
             this.game.removeComponent(entityId, 'aiState'); // totems don't think
             this.monsterNames.set(entityId, `${q.name} ${index}`);
             this.game.triggerEvent('onQuestObjectSpawned', { entityId, questId: q.questId });
@@ -249,11 +249,12 @@ class EnemyPackSystem extends GUTS.BaseSystem {
             });
         }
 
-        const trap = this.game.getComponent(deadEntityId, 'trap');
-        if (trap?.isQuestObject) {
+        const questObject = this.game.getComponent(deadEntityId, 'questObject');
+        if (questObject) {
             this.game.triggerEvent('onQuestObjectDestroyed', {
                 zoneId: this.game.state.currentZoneId,
-                entityId: deadEntityId
+                entityId: deadEntityId,
+                questId: questObject.questId
             });
         }
 

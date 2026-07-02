@@ -21,7 +21,9 @@
   "name": "Pyrelord Vazruk",
   "questId": "q4_vazruk",
   "scale": 1.4,
-  "actBoss": true
+  "actBoss": true,
+  "hpMult": 2.0,
+  "dmgMult": 1.4
  },
  "fileName": "ember_throne"
 }

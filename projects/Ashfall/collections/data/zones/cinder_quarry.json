@@ -22,7 +22,9 @@
   "unit": "0_golemStone",
   "name": "The Stone Colossus",
   "questId": "q3_colossus",
-  "scale": 2.2
+  "scale": 2.2,
+  "hpMult": 2.5,
+  "dmgMult": 1.3
  },
  "fileName": "cinder_quarry"
 }

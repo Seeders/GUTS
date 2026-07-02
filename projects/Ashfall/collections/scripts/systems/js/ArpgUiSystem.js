@@ -635,6 +635,19 @@ class ArpgUiSystem extends GUTS.BaseSystem {
     onDerivedStatsChanged() { this._dirty = true; }
     onPlayerLevelUp() { this._dirty = true; }
 
+    onActCompleted() {
+        if (document.getElementById('arpgActComplete')) return;
+        const el = document.createElement('div');
+        el.id = 'arpgActComplete';
+        el.innerHTML = `
+            <div class="act-title">ACT I COMPLETE</div>
+            <div class="act-sub">Pyrelord Vazruk is no more. Emberrest breathes free air for the
+                first time in a generation — and beyond the mountains, the ash is still falling...</div>
+            <button class="btn" style="margin-top:26px;">Continue</button>`;
+        el.querySelector('button').addEventListener('click', () => el.remove());
+        document.getElementById('gameContainer')?.appendChild(el);
+    }
+
     // ─── Character sheet panel ────────────────────────────────────────────────
 
     renderCharacterPanel() {

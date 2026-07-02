@@ -72,10 +72,11 @@ class ArpgGameSystem extends GUTS.BaseSystem {
 
         this.call.showLoadingScreen();
 
-        // Player entity (stats container, not the character)
+        // Player entity (stats container, not the character).
+        // Gold persists across zone travels via state.savedGold.
         this.call.createPlayerEntity(0, {
             team: this.enums.team.left,
-            gold: params.startingGold ?? 0,
+            gold: this.game.state.savedGold ?? params.startingGold ?? 0,
             upgrades: 0
         });
         this.call.setActivePlayer(0, this.enums.team.left);

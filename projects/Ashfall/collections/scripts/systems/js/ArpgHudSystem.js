@@ -112,6 +112,29 @@ class ArpgHudSystem extends GUTS.BaseSystem {
 
         this.updateSkillBar(entityId);
         this.updateQuestTracker();
+        this.updateBossBar();
+    }
+
+    updateBossBar() {
+        const bar = document.getElementById('arpgBossBar');
+        if (!bar) return;
+        const bosses = this.game.getEntitiesWith('boss', 'health');
+        let target = null;
+        for (const id of bosses) {
+            const h = this.game.getComponent(id, 'health');
+            if (h && h.current > 0) { target = id; break; }
+        }
+        if (target == null) {
+            bar.classList.add('hidden');
+            return;
+        }
+        bar.classList.remove('hidden');
+        const h = this.game.getComponent(target, 'health');
+        const nameEl = document.getElementById('arpgBossName');
+        const fill = document.getElementById('arpgBossBarFill');
+        const name = this.game.enemyPackSystem?.getMonsterName?.(target) || 'Boss';
+        if (nameEl && nameEl.textContent !== name) nameEl.textContent = name;
+        if (fill) fill.style.width = `${Math.max(0, Math.min(100, h.current / h.max * 100))}%`;
     }
 
     updateQuestTracker() {

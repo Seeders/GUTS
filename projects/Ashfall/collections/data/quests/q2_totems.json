@@ -11,7 +11,8 @@
   "gold": 300,
   "item": {
    "rarity": "rare"
-  }
+  },
+  "xp": 800
  },
  "next": "q3_colossus",
  "fileName": "q2_totems"

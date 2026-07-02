@@ -256,8 +256,12 @@ class GameModeSystem extends GUTS.BaseSystem {
         this.game.state.savedCharacterSheet = null;
         this.game.state.savedInventory = null;
         this.game.state.savedEquipment = null;
+        this.game.state.savedGold = null;
         this.game.state.generatedZones = null;
         this.game.state.discoveredWaypoints = null;
+        this.game.state.quests = null;
+        this.game.state.stashItems = null;
+        this.game.state.act1Complete = false;
 
         // Begin in the town of Emberrest
         if (this.game.hasService('travelToZone')) {

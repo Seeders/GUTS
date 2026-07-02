@@ -1,0 +1,8 @@
+{
+  "title": "questObject",
+  "description": "Marks a destructible quest objective (e.g. Pyre Totems). Object-stored.",
+  "schema": {
+    "questId": "",
+    "index": 0
+  }
+}

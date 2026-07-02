@@ -543,6 +543,65 @@
 .arpg-quest-obj { color: #d8c9a3; font-size: .74rem; margin: 2px 0; }
 .arpg-quest-state { font-size: .7rem; }
 
+/* ── Boss bar ──────────────────────────────────────────── */
+#arpgBossBar {
+    position: absolute;
+    top: 46px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 420px;
+    text-align: center;
+    z-index: 18;
+    pointer-events: none;
+    font-family: Georgia, serif;
+}
+#arpgBossName {
+    color: #e0b3ff;
+    letter-spacing: 2px;
+    font-size: .9rem;
+    text-shadow: 0 2px 6px #000;
+    margin-bottom: 3px;
+}
+#arpgBossBarWrap {
+    height: 12px;
+    border: 1px solid #6b3a6b;
+    border-radius: 6px;
+    background: #170a17;
+    overflow: hidden;
+}
+#arpgBossBarFill {
+    height: 100%;
+    width: 100%;
+    background: linear-gradient(90deg, #7a1f5e, #c74070);
+    transition: width 150ms linear;
+}
+
+/* ── Act complete banner ───────────────────────────────── */
+#arpgActComplete {
+    position: absolute;
+    inset: 0;
+    z-index: 95;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle, rgba(30,18,4,.75) 0%, rgba(5,3,1,.94) 100%);
+    font-family: Georgia, serif;
+}
+#arpgActComplete .act-title {
+    color: #f0cf70;
+    font-size: 3.4rem;
+    letter-spacing: 10px;
+    text-shadow: 0 0 30px rgba(240,207,112,.5), 0 4px 18px #000;
+}
+#arpgActComplete .act-sub {
+    color: #d8c9a3;
+    margin-top: 14px;
+    max-width: 520px;
+    text-align: center;
+    line-height: 1.6;
+}
+
 /* ── Quest tracker (HUD) ───────────────────────────────── */
 #arpgQuestTracker {
     position: absolute;

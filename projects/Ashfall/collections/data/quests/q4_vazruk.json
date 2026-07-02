@@ -11,7 +11,8 @@
   "skillPoints": 2,
   "item": {
    "rarity": "unique"
-  }
+  },
+  "xp": 4000
  },
  "next": null,
  "fileName": "q4_vazruk"

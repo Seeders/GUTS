@@ -8,7 +8,8 @@
  "completeText": "The fields fall quiet at last. You have my thanks \u2014 and my coin.",
  "rewards": {
   "gold": 150,
-  "skillPoints": 1
+  "skillPoints": 1,
+  "xp": 300
  },
  "next": "q2_totems",
  "fileName": "q1_bonecaller"

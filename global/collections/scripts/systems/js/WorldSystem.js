@@ -340,6 +340,10 @@ class WorldSystem extends GUTS.BaseSystem {
         }
         _subs['renderTerrain'] = +(performance.now() - _tRender).toFixed(1);
 
+        // The scene may have unloaded while terrain was painting (rapid scene
+        // switches) — the renderer is gone, so abandon this stale setup chain.
+        if (!this.worldRenderer) return;
+
         // Create extension planes
         _tickSync('createExtensionPlanes', () => this.worldRenderer.createExtensionPlanes());
 
@@ -367,6 +371,9 @@ class WorldSystem extends GUTS.BaseSystem {
         if (this.setupWorldRenderingPromise) {
             await this.setupWorldRenderingPromise;
         }
+
+        // The scene may have unloaded during the await (rapid scene switches)
+        if (!this.worldRenderer) return;
 
         // Setup post-processing passes (must happen each scene load since passes are cleared on unload)
         this.setupPostProcessing();

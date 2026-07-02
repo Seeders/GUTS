@@ -92,7 +92,10 @@ class ItemSystem extends GUTS.BaseSystem {
 
     addGold(amount) {
         const stats = this.playerStats();
-        if (stats) stats.gold = Math.max(0, (stats.gold || 0) + amount);
+        if (stats) {
+            stats.gold = Math.max(0, (stats.gold || 0) + amount);
+            this.game.state.savedGold = stats.gold;   // persists across zone travels
+        }
         return stats?.gold ?? 0;
     }
 

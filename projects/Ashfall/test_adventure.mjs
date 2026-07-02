@@ -16,6 +16,25 @@ const browser = await puppeteer.launch({
     args: ['--window-size=1280,800', '--enable-gpu', '--use-angle=default']
 });
 
+// Wait until the player character is alive (respawn takes ~3s after a death),
+// then pull them to a safe corner and heal so nearby packs can't interfere.
+async function ensureAlive(page) {
+    await page.waitForFunction(() => {
+        const g = window.game;
+        const pid = g?.state?.playerCharacterId;
+        if (pid == null) return false;
+        const h = g.getComponent(pid, 'health');
+        const d = g.getComponent(pid, 'deathState');
+        return h && h.current > 0 && (!d || d.state === g.getEnums().deathState.alive);
+    }, { timeout: 30000, polling: 300 });
+    await page.evaluate(() => {
+        const g = window.game;
+        const pid = g.state.playerCharacterId;
+        const h = g.getComponent(pid, 'health');
+        if (h) h.current = h.max;
+    });
+}
+
 // Wait until the sim clock advances by `simSeconds` (software rendering makes
 // wall-clock waits unreliable — the sim may run far slower than realtime headless)
 async function waitSimTime(page, simSeconds, maxWallMs = 120000) {
@@ -330,6 +349,7 @@ try {
     }
 
     // ── Phase B: stats / XP / leveling ────────────────────────────────────
+    await ensureAlive(page);
     const sheetCheck = await page.evaluate(() => {
         const game = window.game;
         const pid = game.state.playerCharacterId;
@@ -373,6 +393,7 @@ try {
         `level ${xpAfter.level}, ${xpAfter.points} attr points, ${xpAfter.skillPoints} skill points`);
 
     // Allocate vitality and confirm max life increases
+    await ensureAlive(page);
     const lifeBefore = xpAfter.maxLife;
     const allocResult = await page.evaluate(() => {
         const game = window.game;
@@ -449,6 +470,7 @@ try {
     await page.keyboard.press('KeyT');
 
     // ── Items: generation, drops, pickup, equip, gems ─────────────────────
+    await ensureAlive(page);
     const itemGen = await page.evaluate(() => {
         const game = window.game;
         const gen = game.getService('generateItem');
@@ -509,6 +531,7 @@ try {
         `${lootState.pickedUp} picked up, ${lootState.invItems} in bag, ${lootState.gold} gold`);
 
     // Give a specific weapon and equip it; verify combat.damage changes
+    await ensureAlive(page);
     const equipTest = await page.evaluate(() => {
         const game = window.game;
         const pid = game.state.playerCharacterId;
@@ -551,6 +574,7 @@ try {
         `abilities: ${gemTest.abilities.join(',')}`);
 
     // Potion pickup + drink
+    await ensureAlive(page);
     const potionTest = await page.evaluate(() => {
         const game = window.game;
         const pid = game.state.playerCharacterId;

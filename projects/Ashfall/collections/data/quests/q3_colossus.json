@@ -11,7 +11,8 @@
   "skillPoints": 1,
   "item": {
    "rarity": "rare"
-  }
+  },
+  "xp": 1800
  },
  "next": "q4_vazruk",
  "fileName": "q3_colossus"

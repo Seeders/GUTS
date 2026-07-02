@@ -19,7 +19,9 @@
  "boss": {
   "unit": "4_archmage",
   "name": "Bonecaller Maru",
-  "questId": "q1_bonecaller"
+  "questId": "q1_bonecaller",
+  "hpMult": 2.2,
+  "dmgMult": 1.2
  },
  "fileName": "ashen_fields"
 }

@@ -28,8 +28,8 @@ class ArpgStatsSystem extends GUTS.BaseSystem {
         'getPlayerCharacter'
     ];
 
-    static XP_CURVE_BASE = 80;
-    static XP_CURVE_EXP = 1.6;
+    static XP_CURVE_BASE = 70;
+    static XP_CURVE_EXP = 1.5;
     static ATTR_POINTS_PER_LEVEL = 5;
     static SKILL_POINTS_PER_LEVEL = 1;
     static MAX_LEVEL = 60;
@@ -130,7 +130,7 @@ class ArpgStatsSystem extends GUTS.BaseSystem {
 
         // Monster level scaling (EnemyPackSystem sets monsterLevel on spawn)
         const mLevel = this.game.getComponent(deadEntityId, 'neutralMonster')?.monsterLevel;
-        if (mLevel) xp = Math.round(xp * (1 + (mLevel - 1) * 0.25));
+        if (mLevel) xp = Math.round(xp * (1 + (mLevel - 1) * 0.35));
 
         this.awardExperience(playerId, xp);
     }
