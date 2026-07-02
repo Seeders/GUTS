@@ -844,14 +844,28 @@ class TextureEditor {
                 `${Math.round((pixel[3] / 255) * 100)}%`;
         }
         
-        // Deselect any color in the palette
+        // If the picked color exists in the palette, select that swatch and use
+        // its canonical value (comparison is normalized: case-insensitive, with
+        // 6-digit palette entries treated as fully opaque).
+        const normalizeHex = (h) => {
+            if (!h) return '';
+            let s = String(h).toUpperCase();
+            if (s.length === 7) s += 'FF';
+            return s;
+        };
+        const picked = normalizeHex(hexColor);
+        let matchedSwatch = null;
         document.querySelectorAll('.texture-editor__color-btn').forEach(btn => {
             btn.classList.remove('active');
-            if (btn.dataset.color === hexColor) {
-                btn.classList.add('active');
+            if (!matchedSwatch && normalizeHex(btn.dataset.color) === picked) {
+                matchedSwatch = btn;
             }
         });
-        
+        if (matchedSwatch) {
+            matchedSwatch.classList.add('active');
+            this.currentColor = matchedSwatch.dataset.color;
+        }
+
         // Restore transform
         this.ctx.restore();
     }
