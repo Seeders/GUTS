@@ -45,8 +45,13 @@ class FilterVisibleEnemiesBehaviorAction extends GUTS.BaseBehaviorAction {
             return this.failure();
         }
 
-        // Store results
-        shared[targetKey] = visibleEnemies;
+        // Store plain snapshots — shared state is persisted behavior data and
+        // must not hold live component/position references.
+        shared[targetKey] = visibleEnemies.map(e => ({
+            id: e.id,
+            distance: e.distance,
+            position: e.position ? { x: e.position.x, y: e.position.y, z: e.position.z } : null
+        }));
 
         if (alsoSetTarget) {
             // Set nearest visible enemy as target (list is already sorted by distance)

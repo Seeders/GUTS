@@ -212,12 +212,15 @@ class TextureEditor {
             this.updateUIFromSettings(event.detail.data);
         });
 
-        // Tool selection
-        container.querySelectorAll('.editor-module__btn').forEach(btn => {
+        // Tool selection — scoped to the tool buttons only (previously bound to
+        // every .editor-module__btn, so clicking Undo/New/etc. silently reset
+        // the active tool back to brush).
+        container.querySelectorAll('.tx__tool').forEach(btn => {
             btn.addEventListener('click', (e) => {
-                container.querySelectorAll('.editor-module__btn').forEach(b => b.classList.remove('active'));
-                e.target.classList.add('active');
-                this.setActiveTool(e.target.id);
+                const el = e.currentTarget;
+                container.querySelectorAll('.tx__tool').forEach(b => b.classList.remove('active'));
+                el.classList.add('active');
+                this.setActiveTool(el.id);
             });
         });
 
@@ -283,7 +286,9 @@ class TextureEditor {
             if (this.isDrawing) {
                 this.draw(e);
             }
+            this.updateBrushPreview(e);
         });
+        this.canvas.addEventListener('mouseenter', (e) => this.updateBrushPreview(e));
         
         this.canvas.addEventListener('mouseup', (e) => {
             if (e.button === 0) { // Left click
@@ -295,6 +300,7 @@ class TextureEditor {
         
         this.canvas.addEventListener('mouseleave', () => {
             this.stopDrawing();
+            if (this.brushPreview) this.brushPreview.style.display = 'none';
         });
         
         // Zoom with mouse wheel
@@ -320,10 +326,12 @@ class TextureEditor {
             const imageY = mouseY / this.zoomLevel;
             
             // Update zoom level
-            this.zoomLevel = newZoom;            
-            
-            // Update display
+            this.zoomLevel = newZoom;
+
+            // Update display (and actually rescale the canvas — wheel zoom
+            // previously updated the % readout without resizing).
             this.updateZoomDisplay();
+            this.updateCanvasDisplaySize();
             this.renderCanvas();
         });
         
@@ -339,6 +347,27 @@ class TextureEditor {
         container.querySelector('#reset-zoom-btn').addEventListener('click', () => {
             this.resetZoom();
         });
+
+        // Panning (right- or middle-drag anywhere in the canvas area) — the canvas
+        // is CSS-centered, so without this the edges are unreachable when zoomed in.
+        const panSurface = this.canvas.parentElement;
+        if (panSurface) {
+            panSurface.addEventListener('mousedown', (e) => {
+                if (e.button !== 1 && e.button !== 2) return;
+                e.preventDefault();
+                this.isPanning = true;
+                this._panStartX = e.clientX - (this.panX || 0);
+                this._panStartY = e.clientY - (this.panY || 0);
+            });
+            panSurface.addEventListener('contextmenu', (e) => e.preventDefault());
+            document.addEventListener('mousemove', (e) => {
+                if (!this.isPanning) return;
+                this.panX = e.clientX - this._panStartX;
+                this.panY = e.clientY - this._panStartY;
+                this.applyPan();
+            });
+            document.addEventListener('mouseup', () => { this.isPanning = false; });
+        }
 
         // Action buttons
         container.querySelector('#new-btn').addEventListener('click', () => this.newImage());
@@ -398,8 +427,73 @@ class TextureEditor {
         
         // Update the cursor based on the active tool
         this.canvas.style.cursor = this.getToolCursor();
+
+        // Keep the pan offset applied through size changes
+        this.applyPan();
     }
-    
+
+    /**
+     * Apply the current pan offset. The canvas centers via translate(-50%,-50%)
+     * and the checker via margin:auto — both get the offset on top.
+     */
+    applyPan() {
+        const x = this.panX || 0, y = this.panY || 0;
+        if (this.canvas) {
+            this.canvas.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
+        }
+        if (this.transparencyChecker) {
+            this.transparencyChecker.style.transform = `translate(${x}px, ${y}px)`;
+        }
+    }
+
+    /**
+     * Brush preview: shows the exact pixel footprint (the brush is square) that
+     * a click would paint, in the current color, following the mouse. Eraser
+     * shows a dashed outline instead of a fill.
+     */
+    _ensureBrushPreview() {
+        if (this.brushPreview || !this.canvas || !this.canvas.parentElement) return;
+        this.brushPreview = document.createElement('div');
+        this.brushPreview.className = 'texture-editor__brush-preview';
+        this.brushPreview.style.cssText =
+            'position:absolute;pointer-events:none;display:none;z-index:5;box-sizing:border-box;' +
+            'outline:1px solid rgba(0,0,0,0.55);border:1px solid rgba(255,255,255,0.75);';
+        this.canvas.parentElement.appendChild(this.brushPreview);
+    }
+
+    updateBrushPreview(e) {
+        this._ensureBrushPreview();
+        const bp = this.brushPreview;
+        if (!bp) return;
+        if (this.activeTool !== 'brush' && this.activeTool !== 'eraser') { bp.style.display = 'none'; return; }
+
+        const pos = this.getCanvasCoordinates(e);
+        const px = Math.floor(pos.x), py = Math.floor(pos.y);
+        if (px < 0 || py < 0 || px >= this.imageWidth || py >= this.imageHeight) { bp.style.display = 'none'; return; }
+
+        // Match the paint footprint exactly: N x N square, offset = floor(N/2).
+        const size = this.brushSize || 1;
+        const offset = Math.floor(size / 2);
+        const zoom = this.zoomLevel || 1;
+        const canvasRect = this.canvas.getBoundingClientRect();
+        const parentRect = this.canvas.parentElement.getBoundingClientRect();
+
+        bp.style.left = `${canvasRect.left - parentRect.left + (px - offset) * zoom}px`;
+        bp.style.top = `${canvasRect.top - parentRect.top + (py - offset) * zoom}px`;
+        bp.style.width = `${size * zoom}px`;
+        bp.style.height = `${size * zoom}px`;
+
+        if (this.activeTool === 'brush') {
+            bp.style.backgroundColor = this.hexToRgbaString(this.currentColor);
+            bp.style.border = '1px solid rgba(255,255,255,0.75)';
+            bp.style.borderStyle = 'solid';
+        } else {
+            bp.style.backgroundColor = 'transparent';
+            bp.style.border = '1px dashed rgba(255,255,255,0.85)';
+        }
+        bp.style.display = 'block';
+    }
+
     setupTransparencyChecker(container) {
         const displayWidth = Math.ceil(this.imageWidth * this.zoomLevel);
         const displayHeight = Math.ceil(this.imageHeight * this.zoomLevel);
@@ -424,8 +518,11 @@ class TextureEditor {
     }
     
     resetZoom() {
-        // Reset zoom level
+        // Reset zoom level and pan
         this.zoomLevel = 1;
+        this.panX = 0;
+        this.panY = 0;
+        this.applyPan();
 
         // Update display
         this.updateZoomDisplay();
@@ -798,14 +895,28 @@ class TextureEditor {
                 `${Math.round((pixel[3] / 255) * 100)}%`;
         }
         
-        // Deselect any color in the palette
+        // If the picked color exists in the palette, select that swatch and use
+        // its canonical value (comparison is normalized: case-insensitive, with
+        // 6-digit palette entries treated as fully opaque).
+        const normalizeHex = (h) => {
+            if (!h) return '';
+            let s = String(h).toUpperCase();
+            if (s.length === 7) s += 'FF';
+            return s;
+        };
+        const picked = normalizeHex(hexColor);
+        let matchedSwatch = null;
         document.querySelectorAll('.texture-editor__color-btn').forEach(btn => {
             btn.classList.remove('active');
-            if (btn.dataset.color === hexColor) {
-                btn.classList.add('active');
+            if (!matchedSwatch && normalizeHex(btn.dataset.color) === picked) {
+                matchedSwatch = btn;
             }
         });
-        
+        if (matchedSwatch) {
+            matchedSwatch.classList.add('active');
+            this.currentColor = matchedSwatch.dataset.color;
+        }
+
         // Restore transform
         this.ctx.restore();
     }

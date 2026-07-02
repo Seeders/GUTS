@@ -29,9 +29,13 @@ class HoldPositionBehaviorAction extends GUTS.BaseBehaviorAction {
         // Return success - unit is holding position
         // This will prevent combat and other behaviors from taking over
         const transform = game.getComponent(entityId, 'transform');
+        // Copy the position: meta is persisted behavior state and must not hold
+        // a live component-proxy reference.
         return this.success({
             holdingPosition: true,
             position: transform?.position
+                ? { x: transform.position.x, y: transform.position.y, z: transform.position.z }
+                : null
         });
     }
 }

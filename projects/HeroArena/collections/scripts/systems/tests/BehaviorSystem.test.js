@@ -14,10 +14,6 @@ describe('BehaviorSystem', () => {
     });
 
     describe('initialization', () => {
-        it('should have empty entity behavior state', () => {
-            expect(behaviorSystem.entityBehaviorState.size).toBe(0);
-        });
-
         it('should have a processor', () => {
             expect(behaviorSystem.processor).toBeDefined();
         });
@@ -28,52 +24,65 @@ describe('BehaviorSystem', () => {
     });
 
     describe('getOrCreateBehaviorState', () => {
-        it('should create new state for unknown entity', () => {
-            const state = behaviorSystem.getOrCreateBehaviorState(123);
+        it('should create new state (behaviorState component) for an entity', () => {
+            const id = game.createEntityWith({ unitType: {} });
+            const state = behaviorSystem.getOrCreateBehaviorState(id);
 
             expect(state).toBeDefined();
             expect(state.meta).toEqual({});
             expect(state.shared).toEqual({});
+            expect(game.getComponent(id, 'behaviorState')).toBeTruthy();
         });
 
         it('should return existing state for known entity', () => {
-            const state1 = behaviorSystem.getOrCreateBehaviorState(123);
+            const id = game.createEntityWith({ unitType: {} });
+            const state1 = behaviorSystem.getOrCreateBehaviorState(id);
             state1.meta = { target: 456 };
 
-            const state2 = behaviorSystem.getOrCreateBehaviorState(123);
+            const state2 = behaviorSystem.getOrCreateBehaviorState(id);
 
             expect(state2.meta.target).toBe(456);
+        });
+
+        it('should return a detached scratch state for dead entities (no crash)', () => {
+            const state = behaviorSystem.getOrCreateBehaviorState(99999);
+            expect(state.meta).toEqual({});
+            expect(state.shared).toEqual({});
         });
     });
 
     describe('getBehaviorMeta', () => {
         it('should return meta for entity', () => {
-            behaviorSystem.entityBehaviorState.set(123, { meta: { target: 456 }, shared: {} });
+            const id = game.createEntityWith({ unitType: {} });
+            behaviorSystem.setBehaviorMeta(id, { target: 456 });
 
-            const meta = behaviorSystem.getBehaviorMeta(123);
+            const meta = behaviorSystem.getBehaviorMeta(id);
 
             expect(meta.target).toBe(456);
         });
 
         it('should create and return empty meta for new entity', () => {
-            const meta = behaviorSystem.getBehaviorMeta(999);
+            const id = game.createEntityWith({ unitType: {} });
+            const meta = behaviorSystem.getBehaviorMeta(id);
 
             expect(meta).toEqual({});
-            expect(behaviorSystem.entityBehaviorState.has(999)).toBe(true);
+            expect(game.getComponent(id, 'behaviorState')).toBeTruthy();
         });
     });
 
     describe('getBehaviorShared', () => {
         it('should return shared state for entity', () => {
-            behaviorSystem.entityBehaviorState.set(123, { meta: {}, shared: { lastAction: 'attack' } });
+            const id = game.createEntityWith({ unitType: {} });
+            behaviorSystem.getOrCreateBehaviorState(id).shared.lastAction = 'attack';
 
-            const shared = behaviorSystem.getBehaviorShared(123);
+            const shared = behaviorSystem.getBehaviorShared(id);
 
             expect(shared.lastAction).toBe('attack');
         });
 
         it('should create and return empty shared for new entity', () => {
-            const shared = behaviorSystem.getBehaviorShared(999);
+            const id = game.createEntityWith({ unitType: {} });
+            const shared = behaviorSystem.getBehaviorShared(id);
 
             expect(shared).toEqual({});
         });
@@ -81,18 +90,20 @@ describe('BehaviorSystem', () => {
 
     describe('setBehaviorMeta', () => {
         it('should set meta for entity', () => {
-            behaviorSystem.setBehaviorMeta(123, { target: 789, action: 'move' });
+            const id = game.createEntityWith({ unitType: {} });
+            behaviorSystem.setBehaviorMeta(id, { target: 789, action: 'move' });
 
-            const state = behaviorSystem.entityBehaviorState.get(123);
+            const state = behaviorSystem.getOrCreateBehaviorState(id);
             expect(state.meta.target).toBe(789);
             expect(state.meta.action).toBe('move');
         });
 
         it('should replace existing meta', () => {
-            behaviorSystem.setBehaviorMeta(123, { old: 'data' });
-            behaviorSystem.setBehaviorMeta(123, { new: 'data' });
+            const id = game.createEntityWith({ unitType: {} });
+            behaviorSystem.setBehaviorMeta(id, { old: 'data' });
+            behaviorSystem.setBehaviorMeta(id, { new: 'data' });
 
-            const state = behaviorSystem.entityBehaviorState.get(123);
+            const state = behaviorSystem.getOrCreateBehaviorState(id);
             expect(state.meta.old).toBeUndefined();
             expect(state.meta.new).toBe('data');
         });
@@ -100,34 +111,49 @@ describe('BehaviorSystem', () => {
 
     describe('clearBehaviorState', () => {
         it('should clear meta and shared for entity', () => {
-            behaviorSystem.entityBehaviorState.set(123, {
-                meta: { target: 456 },
-                shared: { lastAction: 'attack' }
-            });
+            const id = game.createEntityWith({ unitType: {} });
+            const state0 = behaviorSystem.getOrCreateBehaviorState(id);
+            state0.meta = { target: 456 };
+            state0.shared = { lastAction: 'attack' };
 
-            behaviorSystem.clearBehaviorState(123);
+            behaviorSystem.clearBehaviorState(id);
 
-            const state = behaviorSystem.entityBehaviorState.get(123);
+            const state = behaviorSystem.getOrCreateBehaviorState(id);
             expect(state.meta).toEqual({});
             expect(state.shared).toEqual({});
         });
 
+        it('should preserve persistent shared keys (patrolWaypoints)', () => {
+            const id = game.createEntityWith({ unitType: {} });
+            const state0 = behaviorSystem.getOrCreateBehaviorState(id);
+            state0.shared = { patrolWaypoints: [{ x: 1, z: 2 }], currentWaypointIndex: 1, other: 'gone' };
+
+            behaviorSystem.clearBehaviorState(id);
+
+            const state = behaviorSystem.getOrCreateBehaviorState(id);
+            expect(state.shared.patrolWaypoints).toEqual([{ x: 1, z: 2 }]);
+            expect(state.shared.currentWaypointIndex).toBe(1);
+            expect(state.shared.other).toBeUndefined();
+        });
+
         it('should not throw for new entity', () => {
-            expect(() => behaviorSystem.clearBehaviorState(999)).not.toThrow();
+            expect(() => behaviorSystem.clearBehaviorState(99999)).not.toThrow();
         });
     });
 
     describe('removeBehaviorState', () => {
-        it('should remove state for entity', () => {
-            behaviorSystem.entityBehaviorState.set(123, { meta: {}, shared: {} });
+        it('should remove the behaviorState component', () => {
+            const id = game.createEntityWith({ unitType: {} });
+            behaviorSystem.getOrCreateBehaviorState(id);
+            expect(game.getComponent(id, 'behaviorState')).toBeTruthy();
 
-            behaviorSystem.removeBehaviorState(123);
+            behaviorSystem.removeBehaviorState(id);
 
-            expect(behaviorSystem.entityBehaviorState.has(123)).toBe(false);
+            expect(game.getComponent(id, 'behaviorState')).toBeFalsy();
         });
 
         it('should not throw for non-existent entity', () => {
-            expect(() => behaviorSystem.removeBehaviorState(999)).not.toThrow();
+            expect(() => behaviorSystem.removeBehaviorState(99999)).not.toThrow();
         });
     });
 
@@ -236,13 +262,15 @@ describe('BehaviorSystem', () => {
         });
     });
 
-    describe('onEntityRemoved', () => {
-        it('should remove behavior state', () => {
-            behaviorSystem.entityBehaviorState.set(123, { meta: {}, shared: {} });
+    describe('entityDestroyed', () => {
+        it('behavior state is cleared when an entity is destroyed', () => {
+            const id = game.createEntityWith({ unitType: {} });
+            behaviorSystem.setBehaviorMeta(id, { target: 1 });
+            expect(game.getComponent(id, 'behaviorState')).toBeTruthy();
 
-            behaviorSystem.onEntityRemoved(123);
+            game.destroyEntity(id);
 
-            expect(behaviorSystem.entityBehaviorState.has(123)).toBe(false);
+            expect(game.getComponent(id, 'behaviorState')).toBeFalsy();
         });
     });
 
