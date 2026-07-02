@@ -1,0 +1,43 @@
+{
+  "id": "spellDamage",
+  "type": "prefix",
+  "tierNames": [
+    "Arcane",
+    "Mystic",
+    "Occult",
+    "Eldritch"
+  ],
+  "applicable": [
+    "weapon",
+    "helmet",
+    "amulet"
+  ],
+  "tiers": [
+    {
+      "ilvl": 1,
+      "min": 8,
+      "max": 15
+    },
+    {
+      "ilvl": 7,
+      "min": 15,
+      "max": 25
+    },
+    {
+      "ilvl": 13,
+      "min": 25,
+      "max": 40
+    },
+    {
+      "ilvl": 19,
+      "min": 40,
+      "max": 60
+    }
+  ],
+  "stat": null,
+  "damageTags": [
+    "spell"
+  ],
+  "text": "{v}% Increased Spell Damage",
+  "fileName": "spellDamage"
+}

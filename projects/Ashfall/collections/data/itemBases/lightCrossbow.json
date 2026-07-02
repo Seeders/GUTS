@@ -1,0 +1,21 @@
+{
+  "title": "Light Crossbow",
+  "slot": "mainHand",
+  "category": "weapon",
+  "weaponCategory": "ranged",
+  "minDamage": 7,
+  "maxDamage": 14,
+  "attackSpeed": 0.9,
+  "range": 300,
+  "projectile": "arrow",
+  "reqStr": 10,
+  "reqDex": 14,
+  "reqLevel": 4,
+  "ilvlMin": 4,
+  "maxSockets": 2,
+  "icon": "🏹",
+  "model": "woodBow",
+  "w": 2,
+  "h": 3,
+  "fileName": "lightCrossbow"
+}

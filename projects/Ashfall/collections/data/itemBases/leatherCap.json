@@ -1,0 +1,13 @@
+{
+  "title": "Leather Cap",
+  "slot": "helmet",
+  "category": "armor",
+  "armor": 3,
+  "reqLevel": 1,
+  "ilvlMin": 1,
+  "maxSockets": 1,
+  "icon": "🧢",
+  "w": 2,
+  "h": 2,
+  "fileName": "leatherCap"
+}

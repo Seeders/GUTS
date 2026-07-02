@@ -1,0 +1,11 @@
+{
+  "title": "Frost Nova Gem",
+  "gemType": "skill",
+  "ability": "FrostNovaAbility",
+  "icon": "💠",
+  "reqLevel": 5,
+  "ilvlMin": 5,
+  "description": "Grants the Frost Nova skill while socketed",
+  "color": "#2fbf71",
+  "fileName": "gemFrostNova"
+}

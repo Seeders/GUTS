@@ -1,0 +1,15 @@
+{
+  "title": "Chain Mail",
+  "slot": "chest",
+  "category": "armor",
+  "armor": 26,
+  "reqStr": 26,
+  "reqLevel": 9,
+  "ilvlMin": 9,
+  "maxSockets": 3,
+  "icon": "🦺",
+  "model": "tunic",
+  "w": 2,
+  "h": 3,
+  "fileName": "chainMail"
+}

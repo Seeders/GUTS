@@ -1,0 +1,11 @@
+{
+  "title": "Fireball Gem",
+  "gemType": "skill",
+  "ability": "FireBallAbility",
+  "icon": "🔥",
+  "reqLevel": 1,
+  "ilvlMin": 1,
+  "description": "Grants the Fireball skill while socketed in an equipped item",
+  "color": "#2fbf71",
+  "fileName": "gemFireball"
+}

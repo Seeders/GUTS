@@ -1,0 +1,39 @@
+{
+  "id": "flatDamage",
+  "type": "prefix",
+  "tierNames": [
+    "Jagged",
+    "Deadly",
+    "Vicious",
+    "Cruel"
+  ],
+  "applicable": [
+    "weapon"
+  ],
+  "tiers": [
+    {
+      "ilvl": 1,
+      "min": 1,
+      "max": 3
+    },
+    {
+      "ilvl": 6,
+      "min": 3,
+      "max": 6
+    },
+    {
+      "ilvl": 12,
+      "min": 6,
+      "max": 10
+    },
+    {
+      "ilvl": 18,
+      "min": 10,
+      "max": 16
+    }
+  ],
+  "stat": "flatDamage",
+  "damageTags": null,
+  "text": "+{v} to Damage",
+  "fileName": "flatDamage"
+}

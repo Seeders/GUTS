@@ -1,0 +1,35 @@
+{
+  "id": "accuracy",
+  "type": "suffix",
+  "tierNames": [
+    "of Precision",
+    "of the Marksman",
+    "of the Deadeye"
+  ],
+  "applicable": [
+    "weapon",
+    "gloves",
+    "helmet"
+  ],
+  "tiers": [
+    {
+      "ilvl": 1,
+      "min": 8,
+      "max": 15
+    },
+    {
+      "ilvl": 7,
+      "min": 15,
+      "max": 28
+    },
+    {
+      "ilvl": 13,
+      "min": 28,
+      "max": 45
+    }
+  ],
+  "stat": "accuracy",
+  "damageTags": null,
+  "text": "+{v} to Accuracy",
+  "fileName": "accuracy"
+}

@@ -1,0 +1,16 @@
+{
+  "title": "Tower Shield",
+  "slot": "offHand",
+  "category": "armor",
+  "armor": 24,
+  "blockChance": 0.24,
+  "reqStr": 38,
+  "reqLevel": 13,
+  "ilvlMin": 13,
+  "maxSockets": 2,
+  "icon": "🛡️",
+  "model": "shieldSnowflake",
+  "w": 2,
+  "h": 3,
+  "fileName": "towerShield"
+}

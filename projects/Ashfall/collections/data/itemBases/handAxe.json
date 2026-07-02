@@ -1,0 +1,19 @@
+{
+  "title": "Hand Axe",
+  "slot": "mainHand",
+  "category": "weapon",
+  "weaponCategory": "melee",
+  "minDamage": 5,
+  "maxDamage": 11,
+  "attackSpeed": 1.1,
+  "range": 11,
+  "reqStr": 10,
+  "reqLevel": 1,
+  "ilvlMin": 1,
+  "maxSockets": 1,
+  "icon": "🪓",
+  "model": "axe1h",
+  "w": 1,
+  "h": 3,
+  "fileName": "handAxe"
+}

@@ -1,0 +1,40 @@
+{
+  "id": "maxLife",
+  "type": "prefix",
+  "tierNames": [
+    "Hale",
+    "Stalwart",
+    "Vigorous",
+    "Virile"
+  ],
+  "applicable": [
+    "armor",
+    "jewelry"
+  ],
+  "tiers": [
+    {
+      "ilvl": 1,
+      "min": 10,
+      "max": 20
+    },
+    {
+      "ilvl": 5,
+      "min": 20,
+      "max": 35
+    },
+    {
+      "ilvl": 10,
+      "min": 35,
+      "max": 55
+    },
+    {
+      "ilvl": 16,
+      "min": 55,
+      "max": 80
+    }
+  ],
+  "stat": "maxLife",
+  "damageTags": null,
+  "text": "+{v} to Maximum Life",
+  "fileName": "maxLife"
+}

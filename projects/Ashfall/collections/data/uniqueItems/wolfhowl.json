@@ -1,0 +1,28 @@
+{
+  "title": "Wolfhowl",
+  "base": "shortBow",
+  "reqLevel": 5,
+  "ilvlMin": 5,
+  "lore": "Its string sings with the voice of the pack.",
+  "fixedStats": {
+    "flatDamage": 4,
+    "dexterity": 8,
+    "attackSpeed": 0.12
+  },
+  "fixedDamageMods": [
+    {
+      "type": "increased",
+      "tags": [
+        "ranged"
+      ],
+      "value": 0.3
+    }
+  ],
+  "affixTexts": [
+    "+4 to Damage",
+    "+8 to Dexterity",
+    "12% Increased Attack Speed",
+    "30% Increased Ranged Damage"
+  ],
+  "fileName": "wolfhowl"
+}

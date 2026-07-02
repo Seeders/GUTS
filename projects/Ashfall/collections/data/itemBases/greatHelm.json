@@ -1,0 +1,14 @@
+{
+  "title": "Great Helm",
+  "slot": "helmet",
+  "category": "armor",
+  "armor": 15,
+  "reqStr": 28,
+  "reqLevel": 11,
+  "ilvlMin": 11,
+  "maxSockets": 2,
+  "icon": "⛑️",
+  "w": 2,
+  "h": 2,
+  "fileName": "greatHelm"
+}

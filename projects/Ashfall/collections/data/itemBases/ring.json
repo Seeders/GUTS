@@ -1,0 +1,12 @@
+{
+  "title": "Ring",
+  "slot": "ring",
+  "category": "jewelry",
+  "reqLevel": 1,
+  "ilvlMin": 2,
+  "maxSockets": 0,
+  "icon": "💍",
+  "w": 1,
+  "h": 1,
+  "fileName": "ring"
+}

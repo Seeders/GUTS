@@ -1,0 +1,43 @@
+{
+  "id": "rangedDamage",
+  "type": "prefix",
+  "tierNames": [
+    "Keen",
+    "Piercing",
+    "Impaling",
+    "Skewering"
+  ],
+  "applicable": [
+    "weapon",
+    "gloves",
+    "amulet"
+  ],
+  "tiers": [
+    {
+      "ilvl": 1,
+      "min": 8,
+      "max": 15
+    },
+    {
+      "ilvl": 7,
+      "min": 15,
+      "max": 25
+    },
+    {
+      "ilvl": 13,
+      "min": 25,
+      "max": 40
+    },
+    {
+      "ilvl": 19,
+      "min": 40,
+      "max": 60
+    }
+  ],
+  "stat": null,
+  "damageTags": [
+    "ranged"
+  ],
+  "text": "{v}% Increased Ranged Damage",
+  "fileName": "rangedDamage"
+}

@@ -1,0 +1,15 @@
+{
+  "title": "Plate Mail",
+  "slot": "chest",
+  "category": "armor",
+  "armor": 40,
+  "reqStr": 40,
+  "reqLevel": 14,
+  "ilvlMin": 14,
+  "maxSockets": 3,
+  "icon": "🛡️",
+  "model": "tunic",
+  "w": 2,
+  "h": 3,
+  "fileName": "plateMail"
+}

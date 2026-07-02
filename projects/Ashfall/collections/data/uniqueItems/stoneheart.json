@@ -1,0 +1,19 @@
+{
+  "title": "Stoneheart",
+  "base": "kiteShield",
+  "reqLevel": 9,
+  "ilvlMin": 9,
+  "lore": "Cut from the core of the Stone Colossus.",
+  "fixedStats": {
+    "armor": 20,
+    "maxLife": 40,
+    "coldResistance": 20
+  },
+  "fixedDamageMods": [],
+  "affixTexts": [
+    "+20 to Armor",
+    "+40 to Maximum Life",
+    "+20% Cold Resistance"
+  ],
+  "fileName": "stoneheart"
+}

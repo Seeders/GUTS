@@ -1,0 +1,11 @@
+{
+  "title": "Ice Shard Gem",
+  "gemType": "skill",
+  "ability": "IceShardAbility",
+  "icon": "🧊",
+  "reqLevel": 1,
+  "ilvlMin": 1,
+  "description": "Grants the Ice Shard skill while socketed",
+  "color": "#2fbf71",
+  "fileName": "gemIceShard"
+}

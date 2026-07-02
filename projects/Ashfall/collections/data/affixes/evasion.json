@@ -1,0 +1,33 @@
+{
+  "id": "evasion",
+  "type": "suffix",
+  "tierNames": [
+    "of Dodging",
+    "of Evasion",
+    "of the Phantom"
+  ],
+  "applicable": [
+    "armor"
+  ],
+  "tiers": [
+    {
+      "ilvl": 1,
+      "min": 4,
+      "max": 8
+    },
+    {
+      "ilvl": 7,
+      "min": 8,
+      "max": 15
+    },
+    {
+      "ilvl": 13,
+      "min": 15,
+      "max": 25
+    }
+  ],
+  "stat": "evasion",
+  "damageTags": null,
+  "text": "+{v} to Evasion",
+  "fileName": "evasion"
+}

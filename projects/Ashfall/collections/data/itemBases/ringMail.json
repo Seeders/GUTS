@@ -1,0 +1,15 @@
+{
+  "title": "Ring Mail",
+  "slot": "chest",
+  "category": "armor",
+  "armor": 16,
+  "reqStr": 16,
+  "reqLevel": 5,
+  "ilvlMin": 5,
+  "maxSockets": 2,
+  "icon": "👕",
+  "model": "tunic",
+  "w": 2,
+  "h": 3,
+  "fileName": "ringMail"
+}

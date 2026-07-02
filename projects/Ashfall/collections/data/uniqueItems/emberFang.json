@@ -1,0 +1,34 @@
+{
+  "title": "Ember Fang",
+  "base": "shortSword",
+  "reqLevel": 4,
+  "ilvlMin": 4,
+  "lore": "Still warm from the forge that birthed the ashlands.",
+  "fixedStats": {
+    "flatDamage": 6,
+    "lifeLeech": 0.03
+  },
+  "fixedDamageMods": [
+    {
+      "type": "increased",
+      "tags": [
+        "fire"
+      ],
+      "value": 0.35
+    },
+    {
+      "type": "increased",
+      "tags": [
+        "melee"
+      ],
+      "value": 0.2
+    }
+  ],
+  "affixTexts": [
+    "+6 to Damage",
+    "35% Increased Fire Damage",
+    "20% Increased Melee Damage",
+    "3% Life Leech"
+  ],
+  "fileName": "emberFang"
+}

@@ -1,0 +1,19 @@
+{
+  "title": "Ruthless Gem",
+  "gemType": "support",
+  "icon": "🗜️",
+  "reqLevel": 5,
+  "ilvlMin": 5,
+  "description": "+20% increased melee damage while socketed",
+  "color": "#4f8cff",
+  "damageModifiers": [
+    {
+      "type": "increased",
+      "tags": [
+        "melee"
+      ],
+      "value": 0.2
+    }
+  ],
+  "fileName": "gemRuthless"
+}

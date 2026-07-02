@@ -1,0 +1,14 @@
+{
+  "title": "Helm",
+  "slot": "helmet",
+  "category": "armor",
+  "armor": 8,
+  "reqStr": 14,
+  "reqLevel": 5,
+  "ilvlMin": 5,
+  "maxSockets": 1,
+  "icon": "🪖",
+  "w": 2,
+  "h": 2,
+  "fileName": "helm"
+}

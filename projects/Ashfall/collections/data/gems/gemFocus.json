@@ -1,0 +1,19 @@
+{
+  "title": "Focus Gem",
+  "gemType": "support",
+  "icon": "🎯",
+  "reqLevel": 5,
+  "ilvlMin": 5,
+  "description": "+20% increased spell damage while socketed",
+  "color": "#4f8cff",
+  "damageModifiers": [
+    {
+      "type": "increased",
+      "tags": [
+        "spell"
+      ],
+      "value": 0.2
+    }
+  ],
+  "fileName": "gemFocus"
+}

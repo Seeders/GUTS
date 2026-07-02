@@ -1,0 +1,41 @@
+{
+  "id": "intelligence",
+  "type": "suffix",
+  "tierNames": [
+    "of the Owl",
+    "of the Sage",
+    "of the Oracle",
+    "of the Archmage"
+  ],
+  "applicable": [
+    "armor",
+    "jewelry",
+    "weapon"
+  ],
+  "tiers": [
+    {
+      "ilvl": 1,
+      "min": 2,
+      "max": 4
+    },
+    {
+      "ilvl": 6,
+      "min": 4,
+      "max": 7
+    },
+    {
+      "ilvl": 12,
+      "min": 7,
+      "max": 11
+    },
+    {
+      "ilvl": 18,
+      "min": 11,
+      "max": 16
+    }
+  ],
+  "stat": "intelligence",
+  "damageTags": null,
+  "text": "+{v} to Intelligence",
+  "fileName": "intelligence"
+}

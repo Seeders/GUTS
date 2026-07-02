@@ -1,0 +1,21 @@
+{
+  "title": "Runed Staff",
+  "slot": "mainHand",
+  "category": "weapon",
+  "weaponCategory": "spell",
+  "minDamage": 9,
+  "maxDamage": 16,
+  "attackSpeed": 1.0,
+  "range": 280,
+  "projectile": "fireball",
+  "reqInt": 30,
+  "reqLevel": 10,
+  "ilvlMin": 10,
+  "maxSockets": 3,
+  "icon": "🦯",
+  "model": "staff_feathers",
+  "w": 1,
+  "h": 3,
+  "spellDamage": 0.3,
+  "fileName": "runedStaff"
+}

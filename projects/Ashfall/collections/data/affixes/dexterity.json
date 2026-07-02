@@ -1,0 +1,41 @@
+{
+  "id": "dexterity",
+  "type": "suffix",
+  "tierNames": [
+    "of the Fox",
+    "of the Lynx",
+    "of the Falcon",
+    "of the Wind"
+  ],
+  "applicable": [
+    "armor",
+    "jewelry",
+    "weapon"
+  ],
+  "tiers": [
+    {
+      "ilvl": 1,
+      "min": 2,
+      "max": 4
+    },
+    {
+      "ilvl": 6,
+      "min": 4,
+      "max": 7
+    },
+    {
+      "ilvl": 12,
+      "min": 7,
+      "max": 11
+    },
+    {
+      "ilvl": 18,
+      "min": 11,
+      "max": 16
+    }
+  ],
+  "stat": "dexterity",
+  "damageTags": null,
+  "text": "+{v} to Dexterity",
+  "fileName": "dexterity"
+}

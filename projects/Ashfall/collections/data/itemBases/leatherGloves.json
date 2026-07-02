@@ -1,0 +1,13 @@
+{
+  "title": "Leather Gloves",
+  "slot": "gloves",
+  "category": "armor",
+  "armor": 2,
+  "reqLevel": 1,
+  "ilvlMin": 1,
+  "maxSockets": 0,
+  "icon": "🧤",
+  "w": 2,
+  "h": 2,
+  "fileName": "leatherGloves"
+}

@@ -1,0 +1,11 @@
+{
+  "title": "Shadow Gem",
+  "gemType": "skill",
+  "ability": "SmokeBombAbility",
+  "icon": "🌫️",
+  "reqLevel": 4,
+  "ilvlMin": 4,
+  "description": "Grants the Smoke Bomb skill while socketed",
+  "color": "#2fbf71",
+  "fileName": "gemSmokeBomb"
+}

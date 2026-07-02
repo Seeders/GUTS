@@ -1,0 +1,13 @@
+{
+  "title": "Clarity Gem",
+  "gemType": "support",
+  "icon": "🧘",
+  "reqLevel": 4,
+  "ilvlMin": 4,
+  "description": "+3 mana per second while socketed",
+  "color": "#4f8cff",
+  "stats": {
+    "manaRegen": 3
+  },
+  "fileName": "gemClarity"
+}

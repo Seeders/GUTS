@@ -1,0 +1,14 @@
+{
+  "title": "Gauntlets",
+  "slot": "gloves",
+  "category": "armor",
+  "armor": 7,
+  "reqStr": 20,
+  "reqLevel": 8,
+  "ilvlMin": 8,
+  "maxSockets": 0,
+  "icon": "🧤",
+  "w": 2,
+  "h": 2,
+  "fileName": "gauntlets"
+}

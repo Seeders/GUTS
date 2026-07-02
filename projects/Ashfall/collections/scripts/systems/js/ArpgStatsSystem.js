@@ -20,7 +20,8 @@ class ArpgStatsSystem extends GUTS.BaseSystem {
         'awardExperience',
         'allocateAttribute',
         'recomputeDerivedStats',
-        'getEquipmentStatBonuses'
+        'getEquipmentStatBonuses',
+        'getEffectiveAttributes'
     ];
 
     static serviceDependencies = [
@@ -225,7 +226,6 @@ class ArpgStatsSystem extends GUTS.BaseSystem {
         // Ascended characters use their tier-2 unit's base stats
         const unitDef = this.collections.units?.[sheet.ascension || classDef.unitType]
             || this.collections.units?.[classDef.unitType] || {};
-        const attrs = sheet.attributes;
         const base = classDef.baseAttributes;
 
         // Flat bonuses: equipment affixes + skill tree passives
@@ -234,6 +234,16 @@ class ArpgStatsSystem extends GUTS.BaseSystem {
         for (const [stat, value] of Object.entries(tree)) {
             eq[stat] = (eq[stat] || 0) + value;
         }
+
+        // Effective attributes = allocated + item/tree attribute bonuses
+        const attrs = {
+            strength: sheet.attributes.strength + (eq.strength || 0),
+            dexterity: sheet.attributes.dexterity + (eq.dexterity || 0),
+            intelligence: sheet.attributes.intelligence + (eq.intelligence || 0),
+            vitality: sheet.attributes.vitality + (eq.vitality || 0)
+        };
+        this._effectiveAttrsCache = this._effectiveAttrsCache || new Map();
+        this._effectiveAttrsCache.set(entityId, attrs);
 
         // Life
         const maxLife = Math.round(
@@ -263,28 +273,48 @@ class ArpgStatsSystem extends GUTS.BaseSystem {
             pool.manaRegen = 1 + attrs.intelligence * 0.04 + (eq.manaRegen || 0);
         }
 
-        // Combat
+        // Combat — weapon replaces unarmed fundamentals when equipped
         const combat = this.game.getComponent(entityId, 'combat');
         if (combat) {
+            const baseDamage = eq.weaponDamage != null ? eq.weaponDamage : (unitDef.damage ?? 10);
             combat.damage = Math.round(
-                (unitDef.damage ?? 10) +
+                baseDamage +
                 (classDef.damagePerLevel ?? 1) * (sheet.level - 1) +
                 (eq.flatDamage || 0)
             );
+            if (eq.weaponRange != null) {
+                combat.range = eq.weaponRange;
+            } else {
+                combat.range = unitDef.range ?? combat.range;
+            }
+            if (eq.weaponProjectile !== undefined) {
+                combat.projectile = eq.weaponProjectile
+                    ? (this.enums.projectiles?.[eq.weaponProjectile] ?? null)
+                    : null;
+            } else if (unitDef.projectile !== undefined) {
+                combat.projectile = unitDef.projectile != null
+                    ? (this.enums.projectiles?.[unitDef.projectile] ?? unitDef.projectile)
+                    : null;
+            }
+            const baseAttackSpeed = eq.weaponAttackSpeed != null ? eq.weaponAttackSpeed : (unitDef.attackSpeed ?? 1);
+            combat.attackSpeed = baseAttackSpeed * (1 + (eq.attackSpeed || 0));
+
             combat.accuracy = (unitDef.accuracy ?? 90) + attrs.dexterity + (eq.accuracy || 0);
             combat.evasion = (unitDef.evasion ?? 0) + Math.floor(attrs.dexterity * 0.25) + (eq.evasion || 0);
             combat.criticalChance = (unitDef.criticalChance ?? 0.05) + attrs.dexterity * 0.001 + (eq.criticalChance || 0);
             combat.criticalMultiplier = (unitDef.criticalMultiplier ?? 1.5) + (eq.criticalMultiplier || 0);
             combat.armor = (unitDef.armor ?? 0) + (eq.armor || 0);
+            combat.blockChance = eq.blockChance || 0;
             combat.fireResistance = (unitDef.fireResistance ?? 0) + (eq.fireResistance || 0);
             combat.coldResistance = (unitDef.coldResistance ?? 0) + (eq.coldResistance || 0);
             combat.lightningResistance = (unitDef.lightningResistance ?? 0) + (eq.lightningResistance || 0);
             combat.poisonResistance = (eq.poisonResistance || 0);
             combat.lifeLeech = (unitDef.lifeLeech ?? 0) + (eq.lifeLeech || 0);
-            if (eq.attackSpeed) {
-                combat.attackSpeed = (unitDef.attackSpeed ?? 1) * (1 + eq.attackSpeed);
-            }
         }
+
+        // Bonus life regen from items (added to vitality regen in update())
+        this._bonusLifeRegen = this._bonusLifeRegen || new Map();
+        this._bonusLifeRegen.set(entityId, eq.lifeRegen || 0);
 
         // Movement speed bonuses
         const vel = this.game.getComponent(entityId, 'velocity');
@@ -297,14 +327,23 @@ class ArpgStatsSystem extends GUTS.BaseSystem {
     }
 
     /**
-     * Flat stat bonuses from equipment. Base implementation returns zeros;
-     * ItemSystem replaces this service registration when it loads.
+     * Flat stat bonuses from equipment (delegates to ItemSystem when present).
      */
     getEquipmentStatBonuses(entityId) {
         if (this.game.itemSystem?.getEquipmentStatBonuses) {
             return this.game.itemSystem.getEquipmentStatBonuses(entityId);
         }
         return {};
+    }
+
+    /**
+     * Attributes including item/tree bonuses (cached by recomputeDerivedStats).
+     */
+    getEffectiveAttributes(entityId) {
+        const cached = this._effectiveAttrsCache?.get(entityId);
+        if (cached) return cached;
+        const sheet = this.game.getComponent(entityId, 'characterSheet');
+        return sheet?.attributes || { strength: 0, dexterity: 0, intelligence: 0, vitality: 0 };
     }
 
     // ─── Regen tick ───────────────────────────────────────────────────────────
@@ -325,11 +364,12 @@ class ArpgStatsSystem extends GUTS.BaseSystem {
             pool.mana = Math.min(pool.maxMana, pool.mana + (pool.manaRegen || 1) * dt);
         }
 
-        // Life regen from vitality
+        // Life regen from vitality (+ item lifeRegen affixes)
         const sheet = this.game.getComponent(entityId, 'characterSheet');
         const health = this.game.getComponent(entityId, 'health');
         if (sheet && health && health.current > 0 && health.current < health.max) {
-            const regen = sheet.attributes.vitality * 0.05;
+            const attrs = this.getEffectiveAttributes(entityId);
+            const regen = attrs.vitality * 0.05 + (this._bonusLifeRegen?.get(entityId) || 0);
             health.current = Math.min(health.max, health.current + regen * dt);
         }
     }

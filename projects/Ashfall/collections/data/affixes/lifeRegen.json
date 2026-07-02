@@ -1,0 +1,34 @@
+{
+  "id": "lifeRegen",
+  "type": "suffix",
+  "tierNames": [
+    "of Mending",
+    "of Healing",
+    "of Renewal"
+  ],
+  "applicable": [
+    "armor",
+    "ring"
+  ],
+  "tiers": [
+    {
+      "ilvl": 1,
+      "min": 1,
+      "max": 2
+    },
+    {
+      "ilvl": 7,
+      "min": 2,
+      "max": 4
+    },
+    {
+      "ilvl": 13,
+      "min": 4,
+      "max": 7
+    }
+  ],
+  "stat": "lifeRegen",
+  "damageTags": null,
+  "text": "+{v} Life per Second",
+  "fileName": "lifeRegen"
+}

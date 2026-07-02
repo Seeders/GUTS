@@ -1,0 +1,40 @@
+{
+  "id": "lightningRes",
+  "type": "suffix",
+  "tierNames": [
+    "of Shock",
+    "of Storms",
+    "of the Tempest",
+    "of the Maelstrom"
+  ],
+  "applicable": [
+    "armor",
+    "jewelry"
+  ],
+  "tiers": [
+    {
+      "ilvl": 1,
+      "min": 5,
+      "max": 10
+    },
+    {
+      "ilvl": 5,
+      "min": 10,
+      "max": 18
+    },
+    {
+      "ilvl": 11,
+      "min": 18,
+      "max": 28
+    },
+    {
+      "ilvl": 17,
+      "min": 28,
+      "max": 40
+    }
+  ],
+  "stat": "lightningResistance",
+  "damageTags": null,
+  "text": "+{v}% Lightning Resistance",
+  "fileName": "lightningRes"
+}

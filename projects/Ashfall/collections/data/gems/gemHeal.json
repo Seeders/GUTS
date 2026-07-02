@@ -1,0 +1,11 @@
+{
+  "title": "Healing Gem",
+  "gemType": "skill",
+  "ability": "HealAbility",
+  "icon": "💚",
+  "reqLevel": 2,
+  "ilvlMin": 2,
+  "description": "Grants the Heal skill while socketed",
+  "color": "#2fbf71",
+  "fileName": "gemHeal"
+}

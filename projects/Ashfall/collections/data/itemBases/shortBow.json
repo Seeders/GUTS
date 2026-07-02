@@ -1,0 +1,20 @@
+{
+  "title": "Short Bow",
+  "slot": "mainHand",
+  "category": "weapon",
+  "weaponCategory": "ranged",
+  "minDamage": 4,
+  "maxDamage": 8,
+  "attackSpeed": 1.3,
+  "range": 280,
+  "projectile": "arrow",
+  "reqDex": 12,
+  "reqLevel": 1,
+  "ilvlMin": 1,
+  "maxSockets": 1,
+  "icon": "🏹",
+  "model": "woodBow",
+  "w": 2,
+  "h": 3,
+  "fileName": "shortBow"
+}

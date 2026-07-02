@@ -1,0 +1,38 @@
+{
+  "id": "lightningDamage",
+  "type": "prefix",
+  "tierNames": [
+    "Static",
+    "Sparking",
+    "Charged",
+    "Tempest"
+  ],
+  "applicable": [
+    "weapon",
+    "ring",
+    "amulet"
+  ],
+  "tiers": [
+    {
+      "ilvl": 3,
+      "min": 10,
+      "max": 18
+    },
+    {
+      "ilvl": 9,
+      "min": 18,
+      "max": 30
+    },
+    {
+      "ilvl": 15,
+      "min": 30,
+      "max": 45
+    }
+  ],
+  "stat": null,
+  "damageTags": [
+    "lightning"
+  ],
+  "text": "{v}% Increased Lightning Damage",
+  "fileName": "lightningDamage"
+}

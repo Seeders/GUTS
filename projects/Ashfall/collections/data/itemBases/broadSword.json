@@ -1,0 +1,19 @@
+{
+  "title": "Broad Sword",
+  "slot": "mainHand",
+  "category": "weapon",
+  "weaponCategory": "melee",
+  "minDamage": 9,
+  "maxDamage": 17,
+  "attackSpeed": 1.0,
+  "range": 13,
+  "reqStr": 20,
+  "reqLevel": 6,
+  "ilvlMin": 6,
+  "maxSockets": 2,
+  "icon": "⚔️",
+  "model": "knightSword",
+  "w": 1,
+  "h": 3,
+  "fileName": "broadSword"
+}

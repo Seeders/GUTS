@@ -30,7 +30,8 @@
     "CheatCodeSystem",
     "ArpgGameSystem",
     "ArpgStatsSystem",
-    "SkillTreeSystem"
+    "SkillTreeSystem",
+    "ItemSystem"
   ],
   "clientSystems": [
     "GameInterfaceSystem",
@@ -51,7 +52,8 @@
     "CameraSystem",
     "PlayerControllerSystem",
     "ArpgHudSystem",
-    "ArpgUiSystem"
+    "ArpgUiSystem",
+    "ArpgLootSystem"
   ],
   "serverSystems": []
 }

@@ -1,0 +1,17 @@
+{
+  "title": "Ferocity Gem",
+  "gemType": "support",
+  "icon": "💢",
+  "reqLevel": 3,
+  "ilvlMin": 3,
+  "description": "+15% increased damage while socketed",
+  "color": "#4f8cff",
+  "damageModifiers": [
+    {
+      "type": "increased",
+      "tags": [],
+      "value": 0.15
+    }
+  ],
+  "fileName": "gemFerocity"
+}

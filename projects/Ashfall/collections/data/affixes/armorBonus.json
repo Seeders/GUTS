@@ -1,0 +1,39 @@
+{
+  "id": "armorBonus",
+  "type": "prefix",
+  "tierNames": [
+    "Sturdy",
+    "Strong",
+    "Reinforced",
+    "Fortified"
+  ],
+  "applicable": [
+    "armor"
+  ],
+  "tiers": [
+    {
+      "ilvl": 1,
+      "min": 2,
+      "max": 5
+    },
+    {
+      "ilvl": 6,
+      "min": 5,
+      "max": 10
+    },
+    {
+      "ilvl": 12,
+      "min": 10,
+      "max": 18
+    },
+    {
+      "ilvl": 18,
+      "min": 18,
+      "max": 28
+    }
+  ],
+  "stat": "armor",
+  "damageTags": null,
+  "text": "+{v} to Armor",
+  "fileName": "armorBonus"
+}

@@ -1,0 +1,12 @@
+{
+  "title": "inventory",
+  "description": "ARPG grid inventory + potion belt. Object-stored (items array of objects).",
+  "schema": {
+    "kind": "arpg",
+    "gridW": 10,
+    "gridH": 6,
+    "items": [],
+    "beltLife": 0,
+    "beltMana": 0
+  }
+}

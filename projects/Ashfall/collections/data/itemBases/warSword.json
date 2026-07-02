@@ -1,0 +1,19 @@
+{
+  "title": "War Sword",
+  "slot": "mainHand",
+  "category": "weapon",
+  "weaponCategory": "melee",
+  "minDamage": 15,
+  "maxDamage": 26,
+  "attackSpeed": 1.0,
+  "range": 13,
+  "reqStr": 32,
+  "reqLevel": 12,
+  "ilvlMin": 12,
+  "maxSockets": 3,
+  "icon": "⚔️",
+  "model": "knightSword",
+  "w": 1,
+  "h": 3,
+  "fileName": "warSword"
+}

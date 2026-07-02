@@ -1,0 +1,21 @@
+{
+  "title": "Gnarled Staff",
+  "slot": "mainHand",
+  "category": "weapon",
+  "weaponCategory": "spell",
+  "minDamage": 5,
+  "maxDamage": 10,
+  "attackSpeed": 1.0,
+  "range": 260,
+  "projectile": "fireball",
+  "reqInt": 18,
+  "reqLevel": 4,
+  "ilvlMin": 4,
+  "maxSockets": 2,
+  "icon": "🦯",
+  "model": "woodStaff",
+  "w": 1,
+  "h": 3,
+  "spellDamage": 0.18,
+  "fileName": "gnarledStaff"
+}

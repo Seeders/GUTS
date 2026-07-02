@@ -1,0 +1,11 @@
+{
+  "title": "Storm Gem",
+  "gemType": "skill",
+  "ability": "ChainLightningAbility",
+  "icon": "🌩️",
+  "reqLevel": 8,
+  "ilvlMin": 8,
+  "description": "Grants the Chain Lightning skill while socketed",
+  "color": "#2fbf71",
+  "fileName": "gemChainLightning"
+}

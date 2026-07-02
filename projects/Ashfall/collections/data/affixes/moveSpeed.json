@@ -1,0 +1,33 @@
+{
+  "id": "moveSpeed",
+  "type": "suffix",
+  "tierNames": [
+    "of Haste",
+    "of the Zephyr",
+    "of the Cheetah"
+  ],
+  "applicable": [
+    "boots"
+  ],
+  "tiers": [
+    {
+      "ilvl": 2,
+      "min": 8,
+      "max": 12
+    },
+    {
+      "ilvl": 8,
+      "min": 12,
+      "max": 18
+    },
+    {
+      "ilvl": 14,
+      "min": 18,
+      "max": 25
+    }
+  ],
+  "stat": "moveSpeed",
+  "damageTags": null,
+  "text": "{v}% Increased Movement Speed",
+  "fileName": "moveSpeed"
+}

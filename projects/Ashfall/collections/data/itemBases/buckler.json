@@ -1,0 +1,16 @@
+{
+  "title": "Buckler",
+  "slot": "offHand",
+  "category": "armor",
+  "armor": 6,
+  "blockChance": 0.12,
+  "reqStr": 8,
+  "reqLevel": 1,
+  "ilvlMin": 1,
+  "maxSockets": 1,
+  "icon": "🛡️",
+  "model": "shieldLeaf",
+  "w": 2,
+  "h": 2,
+  "fileName": "buckler"
+}

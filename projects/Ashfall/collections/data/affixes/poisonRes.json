@@ -1,0 +1,34 @@
+{
+  "id": "poisonRes",
+  "type": "suffix",
+  "tierNames": [
+    "of Venom",
+    "of the Serpent",
+    "of the Hydra"
+  ],
+  "applicable": [
+    "armor",
+    "jewelry"
+  ],
+  "tiers": [
+    {
+      "ilvl": 1,
+      "min": 5,
+      "max": 10
+    },
+    {
+      "ilvl": 6,
+      "min": 10,
+      "max": 18
+    },
+    {
+      "ilvl": 12,
+      "min": 18,
+      "max": 28
+    }
+  ],
+  "stat": "poisonResistance",
+  "damageTags": null,
+  "text": "+{v}% Poison Resistance",
+  "fileName": "poisonRes"
+}

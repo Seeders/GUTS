@@ -1,0 +1,13 @@
+{
+  "title": "Vigor Gem",
+  "gemType": "support",
+  "icon": "❤️",
+  "reqLevel": 4,
+  "ilvlMin": 4,
+  "description": "+30 maximum life while socketed",
+  "color": "#4f8cff",
+  "stats": {
+    "maxLife": 30
+  },
+  "fileName": "gemVigor"
+}

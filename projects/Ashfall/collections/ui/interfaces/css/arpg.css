@@ -189,6 +189,15 @@
     text-shadow: 0 1px 3px #000;
 }
 
+#arpgBottomRow {
+    display: flex;
+    gap: 18px;
+    align-items: center;
+    font-size: .8rem;
+    color: #d8c9a3;
+    text-shadow: 0 1px 3px #000;
+}
+
 /* ── Panels ────────────────────────────────────────────── */
 .arpg-panel {
     position: absolute;
@@ -381,6 +390,135 @@
     color: #6d5c3f;
     text-align: center;
 }
+
+/* ── Inventory ─────────────────────────────────────────── */
+.arpg-inv-top { display: flex; gap: 14px; margin-bottom: 10px; }
+
+.arpg-paper-doll {
+    display: grid;
+    grid-template-columns: repeat(3, 52px);
+    gap: 5px;
+    justify-items: center;
+}
+
+.arpg-eq-slot {
+    width: 50px;
+    height: 50px;
+    border: 2px solid #3a2d1a;
+    border-radius: 5px;
+    background: rgba(0,0,0,.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    cursor: pointer;
+}
+.arpg-eq-slot:hover { border-color: #f0cf70; }
+.arpg-eq-placeholder { opacity: .22; font-size: 1.2rem; }
+
+.arpg-inv-side { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+.arpg-gold-line { color: #f0cf70; }
+
+.arpg-belt { display: flex; gap: 8px; }
+.arpg-belt-slot {
+    border: 1px solid #4a3a22;
+    border-radius: 5px;
+    padding: 6px 10px;
+    cursor: pointer;
+    font-size: .82rem;
+    position: relative;
+}
+.arpg-belt-slot:hover { border-color: #f0cf70; }
+.arpg-belt-key {
+    font-size: .58rem;
+    color: #8d7a55;
+    border: 1px solid #4a3a22;
+    border-radius: 3px;
+    padding: 0 3px;
+    margin-left: 4px;
+}
+
+.arpg-gem-hint { color: #2fbf71; font-size: .72rem; }
+
+.arpg-inv-grid {
+    position: relative;
+    background-image:
+        linear-gradient(#2a2013 1px, transparent 1px),
+        linear-gradient(90deg, #2a2013 1px, transparent 1px);
+    background-size: 34px 34px;
+    border: 1px solid #4a3a22;
+    background-color: rgba(0,0,0,.35);
+}
+
+.arpg-inv-item {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    border: 1px solid;
+    border-radius: 4px;
+    background: rgba(10,7,4,.85);
+    cursor: pointer;
+    box-sizing: border-box;
+    margin: 1px;
+}
+.arpg-inv-item:hover { filter: brightness(1.4); }
+.arpg-inv-item.selected { outline: 2px solid #2fbf71; }
+
+.rarity-normal { border-color: #6f6c66; }
+.rarity-magic { border-color: #7f7fff; }
+.rarity-rare { border-color: #ffff77; }
+.rarity-unique { border-color: #c7893c; }
+.rarity-gem { border-color: #2fbf71; }
+
+/* ── Tooltip ───────────────────────────────────────────── */
+#arpgTooltip {
+    position: fixed;
+    display: none;
+    z-index: 5000;
+    max-width: 250px;
+    background: rgba(8,5,3,.96);
+    border: 1px solid #4a3a22;
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-family: Georgia, serif;
+    font-size: .78rem;
+    color: #d8c9a3;
+    pointer-events: none;
+    box-shadow: 0 6px 20px rgba(0,0,0,.8);
+}
+#arpgTooltip .tt-name { font-size: .9rem; margin-bottom: 4px; }
+#arpgTooltip .tt-type { color: #8d7a55; font-size: .68rem; margin-bottom: 4px; }
+#arpgTooltip .tt-stat { color: #e8e6e3; }
+#arpgTooltip .tt-affix { color: #7f7fff; }
+#arpgTooltip .tt-sockets { margin-top: 4px; }
+#arpgTooltip .tt-req { color: #b3564a; margin-top: 4px; font-size: .7rem; }
+#arpgTooltip .tt-lore { color: #c7893c; font-style: italic; margin-top: 4px; font-size: .7rem; }
+
+/* ── Ground loot labels ────────────────────────────────── */
+#arpgLootLabels {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 15;
+    overflow: hidden;
+}
+
+.arpg-loot-label {
+    position: absolute;
+    transform: translate(-50%, -100%);
+    pointer-events: auto;
+    background: rgba(5,3,2,.85);
+    border: 1px solid;
+    border-radius: 3px;
+    padding: 1px 7px;
+    font-family: Georgia, serif;
+    font-size: .72rem;
+    white-space: nowrap;
+    cursor: pointer;
+}
+.arpg-loot-label:hover { filter: brightness(1.5); background: rgba(30,20,10,.95); }
 
 /* ── Death overlay ─────────────────────────────────────── */
 #arpgDeathOverlay {

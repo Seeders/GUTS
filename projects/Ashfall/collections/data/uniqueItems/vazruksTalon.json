@@ -1,0 +1,36 @@
+{
+  "title": "Vazruk's Talon",
+  "base": "warAxe",
+  "reqLevel": 14,
+  "ilvlMin": 14,
+  "lore": "A claw torn from the Pyrelord himself.",
+  "fixedStats": {
+    "flatDamage": 14,
+    "strength": 10,
+    "lifeLeech": 0.05
+  },
+  "fixedDamageMods": [
+    {
+      "type": "increased",
+      "tags": [
+        "fire"
+      ],
+      "value": 0.5
+    },
+    {
+      "type": "increased",
+      "tags": [
+        "melee"
+      ],
+      "value": 0.3
+    }
+  ],
+  "affixTexts": [
+    "+14 to Damage",
+    "+10 to Strength",
+    "50% Increased Fire Damage",
+    "30% Increased Melee Damage",
+    "5% Life Leech"
+  ],
+  "fileName": "vazruksTalon"
+}

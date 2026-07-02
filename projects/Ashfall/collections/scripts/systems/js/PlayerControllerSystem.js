@@ -24,7 +24,8 @@ class PlayerControllerSystem extends GUTS.BaseSystem {
         'triggerSinglePlayAnimation',
         'getNearbyUnits',
         'getTerrainHeightAtPosition',
-        'useAbility'
+        'useAbility',
+        'drinkPotion'
     ];
 
     constructor(game) {
@@ -60,6 +61,11 @@ class PlayerControllerSystem extends GUTS.BaseSystem {
 
         this._boundKeyDown = (e) => {
             if (this.isTypingInInput(e)) return;
+            // Edge-triggered actions
+            if (!this.keys[e.code]) {
+                if (e.code === 'KeyQ') this.call.drinkPotion?.('life');
+                else if (e.code === 'KeyE') this.call.drinkPotion?.('mana');
+            }
             this.keys[e.code] = true;
         };
         this._boundKeyUp = (e) => {

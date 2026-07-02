@@ -1,0 +1,19 @@
+{
+  "title": "War Axe",
+  "slot": "mainHand",
+  "category": "weapon",
+  "weaponCategory": "melee",
+  "minDamage": 12,
+  "maxDamage": 22,
+  "attackSpeed": 0.9,
+  "range": 12,
+  "reqStr": 26,
+  "reqLevel": 8,
+  "ilvlMin": 8,
+  "maxSockets": 2,
+  "icon": "🪓",
+  "model": "axe1h",
+  "w": 1,
+  "h": 3,
+  "fileName": "warAxe"
+}

@@ -1,0 +1,11 @@
+{
+  "title": "Necromancy Gem",
+  "gemType": "skill",
+  "ability": "RaiseDeadAbility",
+  "icon": "💀",
+  "reqLevel": 6,
+  "ilvlMin": 6,
+  "description": "Grants the Raise Dead skill while socketed",
+  "color": "#2fbf71",
+  "fileName": "gemRaiseDead"
+}

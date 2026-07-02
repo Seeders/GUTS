@@ -1,0 +1,13 @@
+{
+  "title": "Alacrity Gem",
+  "gemType": "support",
+  "icon": "💨",
+  "reqLevel": 6,
+  "ilvlMin": 6,
+  "description": "+10% attack speed while socketed",
+  "color": "#4f8cff",
+  "stats": {
+    "attackSpeed": 0.1
+  },
+  "fileName": "gemAlacrity"
+}

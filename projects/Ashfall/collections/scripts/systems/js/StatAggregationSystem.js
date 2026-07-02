@@ -22,7 +22,9 @@ class StatAggregationSystem extends BaseStatAggregationSystem {
         const sheet = this.game.getComponent(entityId, 'characterSheet');
         if (!sheet?.attributes) return;
 
-        const { strength, dexterity, intelligence } = sheet.attributes;
+        // Effective attributes include +attribute affixes from items
+        const attrs = this.game.arpgStatsSystem?.getEffectiveAttributes?.(entityId) || sheet.attributes;
+        const { strength, dexterity, intelligence } = attrs;
         if (strength > 0) {
             modifiers.increased.push({ tags: ['melee'], value: strength * 0.01 });
         }

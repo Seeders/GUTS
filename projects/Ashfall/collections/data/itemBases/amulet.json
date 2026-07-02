@@ -1,0 +1,12 @@
+{
+  "title": "Amulet",
+  "slot": "amulet",
+  "category": "jewelry",
+  "reqLevel": 1,
+  "ilvlMin": 3,
+  "maxSockets": 0,
+  "icon": "📿",
+  "w": 1,
+  "h": 1,
+  "fileName": "amulet"
+}

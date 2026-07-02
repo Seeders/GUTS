@@ -1,0 +1,11 @@
+{
+  "title": "Lightning Gem",
+  "gemType": "skill",
+  "ability": "LightningBoltAbility",
+  "icon": "⚡",
+  "reqLevel": 3,
+  "ilvlMin": 3,
+  "description": "Grants the Lightning Bolt skill while socketed",
+  "color": "#2fbf71",
+  "fileName": "gemLightning"
+}

@@ -1,0 +1,16 @@
+{
+  "title": "Kite Shield",
+  "slot": "offHand",
+  "category": "armor",
+  "armor": 14,
+  "blockChance": 0.18,
+  "reqStr": 22,
+  "reqLevel": 7,
+  "ilvlMin": 7,
+  "maxSockets": 2,
+  "icon": "🛡️",
+  "model": "knightShield",
+  "w": 2,
+  "h": 3,
+  "fileName": "kiteShield"
+}

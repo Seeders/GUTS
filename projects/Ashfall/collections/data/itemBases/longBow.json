@@ -1,0 +1,20 @@
+{
+  "title": "Long Bow",
+  "slot": "mainHand",
+  "category": "weapon",
+  "weaponCategory": "ranged",
+  "minDamage": 8,
+  "maxDamage": 15,
+  "attackSpeed": 1.1,
+  "range": 320,
+  "projectile": "arrow",
+  "reqDex": 22,
+  "reqLevel": 6,
+  "ilvlMin": 6,
+  "maxSockets": 2,
+  "icon": "🏹",
+  "model": "woodBow",
+  "w": 2,
+  "h": 3,
+  "fileName": "longBow"
+}

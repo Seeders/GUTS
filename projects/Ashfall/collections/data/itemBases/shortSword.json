@@ -1,0 +1,19 @@
+{
+  "title": "Short Sword",
+  "slot": "mainHand",
+  "category": "weapon",
+  "weaponCategory": "melee",
+  "minDamage": 4,
+  "maxDamage": 9,
+  "attackSpeed": 1.2,
+  "range": 12,
+  "reqStr": 8,
+  "reqLevel": 1,
+  "ilvlMin": 1,
+  "maxSockets": 1,
+  "icon": "🗡️",
+  "model": "knightSword",
+  "w": 1,
+  "h": 3,
+  "fileName": "shortSword"
+}

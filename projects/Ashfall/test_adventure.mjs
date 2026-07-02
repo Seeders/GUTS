@@ -278,6 +278,140 @@ try {
     await page.screenshot({ path: 'projects/Ashfall/test_skilltree.png' });
     await page.keyboard.press('KeyT');
 
+    // ── Items: generation, drops, pickup, equip, gems ─────────────────────
+    const itemGen = await page.evaluate(() => {
+        const game = window.game;
+        const gen = game.getService('generateItem');
+        const results = { magic: null, rare: null, unique: null };
+        results.magic = gen({ itemLevel: 5, rarity: 'magic' });
+        results.rare = gen({ itemLevel: 10, rarity: 'rare' });
+        results.unique = gen({ itemLevel: 10, rarity: 'unique' });
+        return {
+            magicAffixes: results.magic?.affixes?.length,
+            magicName: results.magic?.name,
+            rareAffixes: results.rare?.affixes?.length,
+            rareName: results.rare?.name,
+            uniqueName: results.unique?.name,
+            uniqueIsUnique: results.unique?.rarity === 'unique'
+        };
+    });
+    check('magic item generates with 1-2 affixes',
+        itemGen.magicAffixes >= 1 && itemGen.magicAffixes <= 2,
+        `"${itemGen.magicName}" (${itemGen.magicAffixes} affixes)`);
+    check('rare item generates with 2-6 affixes',
+        itemGen.rareAffixes >= 2 && itemGen.rareAffixes <= 6,
+        `"${itemGen.rareName}" (${itemGen.rareAffixes} affixes)`);
+    check('unique item generates', itemGen.uniqueIsUnique, `"${itemGen.uniqueName}"`);
+
+    // Kill a monster with guaranteed loot and pick everything up
+    const dropTest = await page.evaluate(() => {
+        const game = window.game;
+        const pid = game.state.playerCharacterId;
+        const pt = game.getComponent(pid, 'transform');
+        const eid = game.getService('createEntityFromPrefab')({
+            prefab: 'unit', type: '0_skeleton', collection: 'units',
+            team: game.getEnums().team.right,
+            componentOverrides: { transform: { position: { x: pt.position.x + 60, y: pt.position.y, z: pt.position.z } } }
+        });
+        game.addComponent(eid, 'neutralMonster', {
+            lootTable: 'boss', lootChance: 1, guaranteedLoot: true, monsterLevel: 5
+        });
+        game.getService('applyDamage')(pid, eid, 99999, 0, { isMelee: true, weaponRange: 99999 });
+        return { eid };
+    });
+    await waitSimTime(page, 1.5);
+
+    const lootState = await page.evaluate(() => {
+        const game = window.game;
+        const lootIds = game.getEntitiesWith('loot', 'lootVisual');
+        const labels = document.querySelectorAll('.arpg-loot-label').length;
+        // Pick up everything
+        let pickedUp = 0;
+        for (const id of lootIds) {
+            if (game.getService('pickupGroundItem')(id)) pickedUp++;
+        }
+        const pid = game.state.playerCharacterId;
+        const inv = game.getComponent(pid, 'inventory');
+        return { dropped: lootIds.length, labels, pickedUp, invItems: inv.items.length, gold: game.getService('getGold')() };
+    });
+    check('boss kill drops loot', lootState.dropped >= 2, `${lootState.dropped} drops, ${lootState.labels} labels`);
+    check('loot pickup works', lootState.pickedUp >= 2,
+        `${lootState.pickedUp} picked up, ${lootState.invItems} in bag, ${lootState.gold} gold`);
+
+    // Give a specific weapon and equip it; verify combat.damage changes
+    const equipTest = await page.evaluate(() => {
+        const game = window.game;
+        const pid = game.state.playerCharacterId;
+        const item = game.getService('generateItem')({ itemLevel: 3, rarity: 'magic', baseId: 'handAxe' });
+        game.getService('giveItemToPlayer')(item);
+        const combatBefore = { ...game.getComponent(pid, 'combat') };
+        const res = game.getService('equipItem')(item.uid);
+        const combatAfter = game.getComponent(pid, 'combat');
+        const eq = game.getComponent(pid, 'arpgEquipment');
+        return {
+            res,
+            equipped: eq.slots.mainHand?.name,
+            dmgBefore: combatBefore.damage,
+            dmgAfter: combatAfter.damage
+        };
+    });
+    check('equipping a weapon works', equipTest.res?.success === true,
+        `"${equipTest.equipped}" dmg ${equipTest.dmgBefore} -> ${equipTest.dmgAfter}`);
+
+    // Socket a skill gem into an item with a socket, verify granted ability
+    const gemTest = await page.evaluate(() => {
+        const game = window.game;
+        const pid = game.state.playerCharacterId;
+        const its = game.itemSystem;
+        // Craft a chest with a guaranteed socket + a fireball gem
+        const chest = its.generateItem({ itemLevel: 3, rarity: 'normal', baseId: 'leatherArmor' });
+        chest.sockets = [null, null];
+        its.giveItemToPlayer(chest);
+        const gem = its.generateGem(1);
+        gem.gemId = 'gemFireball';
+        gem.gem = { type: 'skill', ability: 'FireBallAbility', level: 1, damageModifiers: [], stats: {} };
+        its.giveItemToPlayer(gem);
+        const eqRes = its.equipItem(chest.uid);
+        const socketRes = its.socketGem(gem.uid, chest.uid);
+        const abilities = game.abilitySystem.getEntityAbilities(pid).map(a => a.id);
+        return { eqRes, socketRes, abilities };
+    });
+    check('socketing a skill gem grants its ability',
+        gemTest.socketRes?.success === true && gemTest.abilities.includes('FireBallAbility'),
+        `abilities: ${gemTest.abilities.join(',')}`);
+
+    // Potion pickup + drink
+    const potionTest = await page.evaluate(() => {
+        const game = window.game;
+        const pid = game.state.playerCharacterId;
+        const inv = game.getComponent(pid, 'inventory');
+        inv.beltLife = 2;
+        const health = game.getComponent(pid, 'health');
+        health.current = Math.floor(health.max * 0.4);
+        const before = health.current;
+        const ok = game.getService('drinkPotion')('life');
+        return { ok, before, after: game.getComponent(pid, 'health').current, belt: inv.beltLife };
+    });
+    check('life potion heals', potionTest.ok && potionTest.after > potionTest.before,
+        `${potionTest.before} -> ${potionTest.after}, ${potionTest.belt} left`);
+
+    // Inventory panel opens with I
+    await page.keyboard.press('KeyI');
+    await new Promise(r => setTimeout(r, 700));
+    const invPanel = await page.evaluate(() => {
+        const panel = document.getElementById('arpgPanel_inventory');
+        const body = document.getElementById('arpgInventoryBody');
+        return {
+            visible: panel && !panel.classList.contains('hidden'),
+            slots: body ? body.querySelectorAll('.arpg-eq-slot').length : 0,
+            items: body ? body.querySelectorAll('.arpg-inv-item').length : 0
+        };
+    });
+    check('inventory panel opens (I)', invPanel.visible && invPanel.slots === 10,
+        `${invPanel.slots} equip slots, ${invPanel.items} bag items`);
+    await page.screenshot({ path: 'projects/Ashfall/test_inventory.png' });
+    await page.keyboard.press('KeyI');
+
     // Character panel opens with C
     await page.keyboard.press('KeyC');
     await new Promise(r => setTimeout(r, 800));

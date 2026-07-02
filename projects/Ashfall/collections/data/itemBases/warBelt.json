@@ -1,0 +1,14 @@
+{
+  "title": "War Belt",
+  "slot": "belt",
+  "category": "armor",
+  "armor": 5,
+  "reqStr": 16,
+  "reqLevel": 7,
+  "ilvlMin": 7,
+  "maxSockets": 0,
+  "icon": "🎗️",
+  "w": 2,
+  "h": 1,
+  "fileName": "warBelt"
+}

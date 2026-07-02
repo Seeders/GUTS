@@ -1,0 +1,35 @@
+{
+  "id": "manaRegen",
+  "type": "suffix",
+  "tierNames": [
+    "of Clarity",
+    "of Meditation",
+    "of Transcendence"
+  ],
+  "applicable": [
+    "jewelry",
+    "helmet",
+    "weapon"
+  ],
+  "tiers": [
+    {
+      "ilvl": 1,
+      "min": 1,
+      "max": 2
+    },
+    {
+      "ilvl": 7,
+      "min": 2,
+      "max": 4
+    },
+    {
+      "ilvl": 13,
+      "min": 4,
+      "max": 6
+    }
+  ],
+  "stat": "manaRegen",
+  "damageTags": null,
+  "text": "+{v} Mana per Second",
+  "fileName": "manaRegen"
+}

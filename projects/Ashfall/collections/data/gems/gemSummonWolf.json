@@ -1,0 +1,11 @@
+{
+  "title": "Wolf Gem",
+  "gemType": "skill",
+  "ability": "SummonWolfAbility",
+  "icon": "🐺",
+  "reqLevel": 4,
+  "ilvlMin": 4,
+  "description": "Grants the Summon Wolf skill while socketed",
+  "color": "#2fbf71",
+  "fileName": "gemSummonWolf"
+}

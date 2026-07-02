@@ -1,0 +1,35 @@
+{
+  "id": "critChance",
+  "type": "suffix",
+  "tierNames": [
+    "of Menace",
+    "of Cruelty",
+    "of Ruin"
+  ],
+  "applicable": [
+    "weapon",
+    "gloves",
+    "amulet"
+  ],
+  "tiers": [
+    {
+      "ilvl": 4,
+      "min": 1,
+      "max": 2
+    },
+    {
+      "ilvl": 10,
+      "min": 2,
+      "max": 4
+    },
+    {
+      "ilvl": 16,
+      "min": 4,
+      "max": 6
+    }
+  ],
+  "stat": "criticalChance",
+  "damageTags": null,
+  "text": "+{v}% Critical Strike Chance",
+  "fileName": "critChance"
+}

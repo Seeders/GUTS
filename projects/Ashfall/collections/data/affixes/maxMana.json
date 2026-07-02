@@ -1,0 +1,41 @@
+{
+  "id": "maxMana",
+  "type": "prefix",
+  "tierNames": [
+    "Azure",
+    "Cobalt",
+    "Sapphire",
+    "Cerulean"
+  ],
+  "applicable": [
+    "armor",
+    "jewelry",
+    "weapon"
+  ],
+  "tiers": [
+    {
+      "ilvl": 1,
+      "min": 8,
+      "max": 15
+    },
+    {
+      "ilvl": 5,
+      "min": 15,
+      "max": 25
+    },
+    {
+      "ilvl": 10,
+      "min": 25,
+      "max": 40
+    },
+    {
+      "ilvl": 16,
+      "min": 40,
+      "max": 60
+    }
+  ],
+  "stat": "maxMana",
+  "damageTags": null,
+  "text": "+{v} to Maximum Mana",
+  "fileName": "maxMana"
+}

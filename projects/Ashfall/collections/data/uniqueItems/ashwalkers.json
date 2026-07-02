@@ -1,0 +1,19 @@
+{
+  "title": "Ashwalkers",
+  "base": "boots",
+  "reqLevel": 6,
+  "ilvlMin": 6,
+  "lore": "They leave no prints in the cinders.",
+  "fixedStats": {
+    "moveSpeed": 0.2,
+    "evasion": 12,
+    "fireResistance": 15
+  },
+  "fixedDamageMods": [],
+  "affixTexts": [
+    "20% Increased Movement Speed",
+    "+12 to Evasion",
+    "+15% Fire Resistance"
+  ],
+  "fileName": "ashwalkers"
+}

@@ -1,0 +1,19 @@
+{
+  "title": "Cinderweave",
+  "base": "leatherArmor",
+  "reqLevel": 6,
+  "ilvlMin": 6,
+  "lore": "Woven from cloth that refused to burn.",
+  "fixedStats": {
+    "maxLife": 35,
+    "fireResistance": 25,
+    "armor": 10
+  },
+  "fixedDamageMods": [],
+  "affixTexts": [
+    "+35 to Maximum Life",
+    "+25% Fire Resistance",
+    "+10 to Armor"
+  ],
+  "fileName": "cinderweave"
+}

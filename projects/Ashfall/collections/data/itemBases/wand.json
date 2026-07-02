@@ -1,0 +1,21 @@
+{
+  "title": "Wand",
+  "slot": "mainHand",
+  "category": "weapon",
+  "weaponCategory": "spell",
+  "minDamage": 3,
+  "maxDamage": 6,
+  "attackSpeed": 1.2,
+  "range": 240,
+  "projectile": "fireball",
+  "reqInt": 12,
+  "reqLevel": 1,
+  "ilvlMin": 1,
+  "maxSockets": 1,
+  "icon": "🪄",
+  "model": "woodStaff",
+  "w": 1,
+  "h": 2,
+  "spellDamage": 0.1,
+  "fileName": "wand"
+}

@@ -1,0 +1,13 @@
+{
+  "title": "Sash",
+  "slot": "belt",
+  "category": "armor",
+  "armor": 1,
+  "reqLevel": 1,
+  "ilvlMin": 1,
+  "maxSockets": 0,
+  "icon": "🎗️",
+  "w": 2,
+  "h": 1,
+  "fileName": "sash"
+}

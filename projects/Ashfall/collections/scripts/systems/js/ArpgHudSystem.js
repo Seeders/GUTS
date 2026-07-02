@@ -33,6 +33,8 @@ class ArpgHudSystem extends GUTS.BaseSystem {
             manaFill: document.getElementById('arpgManaFill'),
             manaText: document.getElementById('arpgManaText'),
             gold: document.getElementById('arpgGold'),
+            beltLife: document.getElementById('arpgBeltLife'),
+            beltMana: document.getElementById('arpgBeltMana'),
             zoneName: document.getElementById('arpgZoneName'),
             deathOverlay: document.getElementById('arpgDeathOverlay'),
             levelText: document.getElementById('arpgLevel'),
@@ -99,6 +101,13 @@ class ArpgHudSystem extends GUTS.BaseSystem {
             const deathState = this.game.getComponent(entityId, 'deathState');
             const dead = deathState && deathState.state !== this.enums.deathState.alive;
             this.els.deathOverlay.classList.toggle('hidden', !dead);
+        }
+
+        // Potion belt counters
+        const inv = this.game.getComponent(entityId, 'inventory');
+        if (inv) {
+            if (this.els.beltLife) this.els.beltLife.textContent = `❤️ ${inv.beltLife || 0}`;
+            if (this.els.beltMana) this.els.beltMana.textContent = `💙 ${inv.beltMana || 0}`;
         }
 
         this.updateSkillBar(entityId);

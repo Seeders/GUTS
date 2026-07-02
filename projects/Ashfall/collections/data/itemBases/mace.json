@@ -1,0 +1,19 @@
+{
+  "title": "Mace",
+  "slot": "mainHand",
+  "category": "weapon",
+  "weaponCategory": "melee",
+  "minDamage": 6,
+  "maxDamage": 13,
+  "attackSpeed": 1.0,
+  "range": 11,
+  "reqStr": 12,
+  "reqLevel": 2,
+  "ilvlMin": 1,
+  "maxSockets": 1,
+  "icon": "🔨",
+  "model": "axe1h",
+  "w": 1,
+  "h": 3,
+  "fileName": "mace"
+}

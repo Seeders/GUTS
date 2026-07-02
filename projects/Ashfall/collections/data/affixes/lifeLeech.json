@@ -1,0 +1,35 @@
+{
+  "id": "lifeLeech",
+  "type": "suffix",
+  "tierNames": [
+    "of the Leech",
+    "of the Lamprey",
+    "of the Vampire"
+  ],
+  "applicable": [
+    "weapon",
+    "ring",
+    "amulet"
+  ],
+  "tiers": [
+    {
+      "ilvl": 5,
+      "min": 2,
+      "max": 3
+    },
+    {
+      "ilvl": 11,
+      "min": 3,
+      "max": 5
+    },
+    {
+      "ilvl": 17,
+      "min": 5,
+      "max": 8
+    }
+  ],
+  "stat": "lifeLeech",
+  "damageTags": null,
+  "text": "{v}% Life Leech",
+  "fileName": "lifeLeech"
+}

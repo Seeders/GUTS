@@ -149,6 +149,8 @@
     "ArpgHudSystem",
     "ArpgStatsSystem",
     "SkillTreeSystem",
+    "ItemSystem",
+    "ArpgLootSystem",
     "ArpgUiSystem"
   ],
   "classes": [

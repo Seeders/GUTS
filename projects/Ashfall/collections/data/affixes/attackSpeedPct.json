@@ -1,0 +1,34 @@
+{
+  "id": "attackSpeedPct",
+  "type": "prefix",
+  "tierNames": [
+    "Swift",
+    "Rapid",
+    "Blurring"
+  ],
+  "applicable": [
+    "weapon",
+    "gloves"
+  ],
+  "tiers": [
+    {
+      "ilvl": 4,
+      "min": 5,
+      "max": 8
+    },
+    {
+      "ilvl": 10,
+      "min": 8,
+      "max": 13
+    },
+    {
+      "ilvl": 16,
+      "min": 13,
+      "max": 20
+    }
+  ],
+  "stat": "attackSpeed",
+  "damageTags": null,
+  "text": "{v}% Increased Attack Speed",
+  "fileName": "attackSpeedPct"
+}

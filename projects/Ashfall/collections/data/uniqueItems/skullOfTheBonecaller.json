@@ -1,0 +1,26 @@
+{
+  "title": "Skull of the Bonecaller",
+  "base": "leatherCap",
+  "reqLevel": 7,
+  "ilvlMin": 7,
+  "lore": "The Bonecaller hears the dead whisper still.",
+  "fixedStats": {
+    "maxMana": 30,
+    "intelligence": 8
+  },
+  "fixedDamageMods": [
+    {
+      "type": "increased",
+      "tags": [
+        "spell"
+      ],
+      "value": 0.25
+    }
+  ],
+  "affixTexts": [
+    "+30 to Maximum Mana",
+    "+8 to Intelligence",
+    "25% Increased Spell Damage"
+  ],
+  "fileName": "skullOfTheBonecaller"
+}

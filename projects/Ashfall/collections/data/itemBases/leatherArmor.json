@@ -1,0 +1,14 @@
+{
+  "title": "Leather Armor",
+  "slot": "chest",
+  "category": "armor",
+  "armor": 8,
+  "reqLevel": 1,
+  "ilvlMin": 1,
+  "maxSockets": 2,
+  "icon": "🥋",
+  "model": "tunic",
+  "w": 2,
+  "h": 3,
+  "fileName": "leatherArmor"
+}

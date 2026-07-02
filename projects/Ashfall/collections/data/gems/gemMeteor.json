@@ -1,0 +1,11 @@
+{
+  "title": "Cataclysm Gem",
+  "gemType": "skill",
+  "ability": "MeteorStrikeAbility",
+  "icon": "☄️",
+  "reqLevel": 12,
+  "ilvlMin": 12,
+  "description": "Grants the Meteor Strike skill while socketed",
+  "color": "#2fbf71",
+  "fileName": "gemMeteor"
+}

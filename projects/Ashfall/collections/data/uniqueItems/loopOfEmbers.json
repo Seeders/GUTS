@@ -1,0 +1,24 @@
+{
+  "title": "Loop of Embers",
+  "base": "ring",
+  "reqLevel": 5,
+  "ilvlMin": 5,
+  "lore": "It glows faintly when death is near.",
+  "fixedStats": {
+    "maxLife": 20,
+    "maxMana": 20
+  },
+  "fixedDamageMods": [
+    {
+      "type": "increased",
+      "tags": [],
+      "value": 0.1
+    }
+  ],
+  "affixTexts": [
+    "+20 to Maximum Life",
+    "+20 to Maximum Mana",
+    "10% Increased Damage"
+  ],
+  "fileName": "loopOfEmbers"
+}
