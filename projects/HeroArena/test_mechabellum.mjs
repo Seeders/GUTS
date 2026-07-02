@@ -281,6 +281,29 @@ try {
         squadSelect.allIn && squadSelect.count === squadSelect.members,
         `${squadSelect.count} selected of ${squadSelect.members} members`);
 
+    // Deployment zone: can't cross the centerline buffer or enter the forests
+    const zone = await page.evaluate(() => {
+        const game = window.game;
+        let my = null;
+        for (const eid of game.getEntitiesWith('playerStats')) {
+            const st = game.getComponent(eid, 'playerStats');
+            if (st.playerId === 0) my = st;
+        }
+        my.gold += 10;
+        game.getService('buyUnlockedUnit')(0, '1_di_scout');
+        const idx = my.heroRoster.length - 1;
+        const lead = game.getService('getHeroEntityIds')(0, idx)[0];
+        // Try to park on the ENEMY side and in the FOREST flank
+        game.serverNetworkSystem.handleHeroMoved(
+            { playerId: 0, numericPlayerId: 0, data: { entityId: lead, x: 800, z: -1150 } }, () => {});
+        const pos = { ...game.getComponent(lead, 'transform').position };
+        game.getService('sellUnit')(0, idx);
+        return pos;
+    });
+    check('deployment clamps to own side, off the frontier and forests',
+        zone.x <= -195 && zone.z >= -840,
+        `landed at x ${Math.round(zone.x)}, z ${Math.round(zone.z)}`);
+
     check('a soldier squad spawns 4 members from one purchase',
         squad.ok && squad.members === 4, `${squad.members} members`);
     check('selling a squad removes all members',

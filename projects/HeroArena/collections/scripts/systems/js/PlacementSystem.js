@@ -846,9 +846,62 @@ class PlacementSystem extends GUTS.BaseSystem {
 
     // HeroArena: reposition a hero entity during the prep phase.
     // Authoritative on server; client calls this optimistically and via network sync.
+    // Deployment zone: units stay on their own side, a buffer back from the
+    // centerline (no parking on the frontier), and out of the flanking forests.
+    static DEPLOY_CENTER_BUFFER = 196;   // ~4 tiles of no-man's land each side
+    static DEPLOY_EDGE_MARGIN   = 340;   // ~7 tiles of forest flank each edge
+
+    // Clamp a desired position into the entity's team deployment zone.
+    clampToDeploymentZone(entityId, worldX, worldZ) {
+        if (this.game.state.phase !== this.enums.gamePhase.placement) {
+            return { x: worldX, z: worldZ };
+        }
+        if (!this.game.getComponent(entityId, 'heroRosterInfo')) {
+            return { x: worldX, z: worldZ };
+        }
+        const team = this.game.getComponent(entityId, 'team')?.team;
+        const locs = this.getStartingLocationsFromLevel();
+        if (team == null || !locs || locs[team] == null) return { x: worldX, z: worldZ };
+        const enemyTeam = Object.keys(locs).map(Number).find(t => t !== team);
+        if (enemyTeam == null || locs[enemyTeam] == null) return { x: worldX, z: worldZ };
+
+        const my = this.call.tileToWorld(locs[team].x, locs[team].z);
+        const en = this.call.tileToWorld(locs[enemyTeam].x, locs[enemyTeam].z);
+        const cx = (my.x + en.x) / 2, cz = (my.z + en.z) / 2;
+        const fdx = en.x - my.x, fdz = en.z - my.z;
+        const flen = Math.hypot(fdx, fdz) || 1;
+        const f = { x: fdx / flen, z: fdz / flen };          // toward the enemy
+        const a = { x: -f.z, z: f.x };                       // across the field
+
+        let px = worldX - cx, pz = worldZ - cz;
+        // Own side of the centerline, minus the buffer
+        const depth = px * f.x + pz * f.z;
+        const maxDepth = -PlacementSystem.DEPLOY_CENTER_BUFFER;
+        if (depth > maxDepth) {
+            px += (maxDepth - depth) * f.x;
+            pz += (maxDepth - depth) * f.z;
+        }
+        // Off the forested flanks
+        const halfExtent = (this.call.getPlacementGridSize?.()?.worldHalfExtent)
+            || 1176;
+        const acrossLimit = halfExtent - PlacementSystem.DEPLOY_EDGE_MARGIN;
+        const across = px * a.x + pz * a.z;
+        const clampedAcross = Math.max(-acrossLimit, Math.min(acrossLimit, across));
+        if (clampedAcross !== across) {
+            px += (clampedAcross - across) * a.x;
+            pz += (clampedAcross - across) * a.z;
+        }
+        return { x: cx + px, z: cz + pz };
+    }
+
     moveHero(entityId, worldX, worldZ, rotationY) {
         const transform = this.game.getComponent(entityId, 'transform');
         if (!transform?.position) return { success: false, reason: 'no_transform' };
+
+        // Enforce the deployment zone on every prep-phase reposition (drags,
+        // formation switches, spawns) — server and client share this path.
+        const clamped = this.clampToDeploymentZone(entityId, worldX, worldZ);
+        worldX = clamped.x; worldZ = clamped.z;
 
         const terrainHeight = this.call.getTerrainHeight(worldX, worldZ);
         // Mutate fields individually — the component proxy disallows replacing the whole `position` object
