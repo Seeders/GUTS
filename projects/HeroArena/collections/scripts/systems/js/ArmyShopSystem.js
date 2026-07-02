@@ -21,6 +21,7 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         'buyUnlockedUnit',
         'buyUnitTech',
         'buySquadLevel',
+        'pickReinforcement',
         'getShopStateForPlayer',
         'getEligibleItems',
         'applyArmyUpgrades',
@@ -123,9 +124,144 @@ class ArmyShopSystem extends GUTS.BaseSystem {
             if (!stats) continue;
             stats.rerollCount = 0;
             stats.currentOffers = this._buildOffers(stats);
+            // The round's one random decision: pick 1 of 3 reinforcement cards.
+            this._rollReinforcements(stats);
             this._broadcastShop(stats);
+            this._notifyReinforcement(stats);
         }
+        this._aiAutoPick();
         this._aiAutoBuy();
+    }
+
+    // ─── Reinforcement cards (the round's 1-of-3 pick) ──────────────────────────
+
+    _rollReinforcements(stats) {
+        const round = this.game.state.round || 1;
+        const rng = this.game.rng.strand('shop');
+        const pool = Object.entries(this.collections.reinforcementCards || {})
+            .filter(([, def]) => (def.minRound || 1) <= round)
+            .map(([id, def]) => ({ id, def, weight: def.weight || 1 }));
+
+        const options = [];
+        const remaining = pool.slice();
+        while (options.length < 3 && remaining.length > 0) {
+            const total = remaining.reduce((s, c) => s + c.weight, 0);
+            let r = rng.next() * total;
+            let idx = 0;
+            for (let i = 0; i < remaining.length; i++) {
+                r -= remaining[i].weight;
+                if (r <= 0) { idx = i; break; }
+            }
+            const pick = remaining.splice(idx, 1)[0];
+            options.push({
+                id: pick.id,
+                title: pick.def.title,
+                icon: pick.def.icon || '🎁',
+                description: pick.def.description || ''
+            });
+        }
+        stats.pendingReinforcement = options.length ? { options, picked: false } : null;
+    }
+
+    _notifyReinforcement(stats) {
+        if (!stats.pendingReinforcement) return;
+        const payload = { playerId: stats.playerId, options: stats.pendingReinforcement.options };
+        this.call.broadcastToRoom(null, 'REINFORCEMENT_START', payload);
+        this.game.triggerEvent('onReinforcementStart', payload);
+    }
+
+    pickReinforcement(numericPlayerId, optionIndex) {
+        const stats = this._getStats(numericPlayerId);
+        if (!stats) return { success: false, reason: 'no_player' };
+        if (!this._inPlacement()) return { success: false, reason: 'wrong_phase' };
+        const pending = stats.pendingReinforcement;
+        if (!pending || pending.picked) return { success: false, reason: 'no_pending' };
+        const option = pending.options?.[optionIndex];
+        if (!option) return { success: false, reason: 'bad_option' };
+
+        const def = this.collections.reinforcementCards?.[option.id];
+        if (!def) return { success: false, reason: 'no_card' };
+
+        pending.picked = true;
+        this._applyReinforcement(stats, def);
+        this._broadcastShop(stats);
+        return { success: true, card: option.id, state: this.getShopStateForPlayer(numericPlayerId) };
+    }
+
+    _applyReinforcement(stats, def) {
+        const rng = this.game.rng.strand('shop');
+        switch (def.kind) {
+            case 'gold': {
+                stats.gold = (stats.gold || 0) + (def.amount || 10);
+                break;
+            }
+            case 'freeUnits': {
+                const t1 = this._candidateUnitIds(stats)
+                    .filter(id => ArmyShopSystem.unitTier(id) === 1);
+                for (let i = 0; i < (def.count || 1) && t1.length; i++) {
+                    const unitId = t1[Math.floor(rng.next() * t1.length)];
+                    this._addUnitToArmy(stats, unitId);
+                    if (def.leveled) {
+                        const entry = stats.heroRoster[stats.heroRoster.length - 1];
+                        entry.paidLevels = (entry.paidLevels || 0) + def.leveled;
+                        entry.level = (entry.level || 1) + def.leveled;
+                        this.call.respawnRosterEntry?.(stats.playerId, stats.heroRoster.length - 1);
+                    }
+                }
+                break;
+            }
+            case 'techDiscount': {
+                stats.techDiscount = def.pct || 0.5;
+                break;
+            }
+            case 'freeLevel': {
+                const roster = stats.heroRoster || [];
+                let best = -1, bestLevel = Infinity;
+                for (let i = 0; i < roster.length; i++) {
+                    const level = roster[i]?.level || 1;
+                    if (level < bestLevel) { bestLevel = level; best = i; }
+                }
+                if (best >= 0) {
+                    roster[best].paidLevels = (roster[best].paidLevels || 0) + 1;
+                    roster[best].level = (roster[best].level || 1) + 1;
+                    this.call.respawnRosterEntry?.(stats.playerId, best);
+                }
+                break;
+            }
+            case 'randomUnlock': {
+                // Unlock a random not-yet-unlocked T2 belonging to a fielded T1 line
+                const fielded = new Set((stats.heroRoster || []).map(e => this._resolveSpawnType(e)));
+                const owned = new Set(stats.tierUnlocks || []);
+                const candidates = [];
+                for (const unitId of fielded) {
+                    for (const t of (this.collections.unitTechs?.[unitId]?.techs || [])) {
+                        if (t.unlockUnit && !owned.has(t.unlockUnit)) candidates.push(t.unlockUnit);
+                    }
+                }
+                if (candidates.length) {
+                    const pick = candidates[Math.floor(rng.next() * candidates.length)];
+                    if (!Array.isArray(stats.tierUnlocks)) stats.tierUnlocks = [];
+                    stats.tierUnlocks.push(pick);
+                }
+                break;
+            }
+            case 'skillCharge': {
+                if (!Array.isArray(stats.skillCharges)) stats.skillCharges = [];
+                if (stats.skillCharges.length < 2) stats.skillCharges.push(def.skill);
+                break;
+            }
+        }
+    }
+
+    // AI picks a random reinforcement card (deterministic 'ai' strand).
+    _aiAutoPick() {
+        for (const pid of (this.call.getAIPlayerIds?.() || [])) {
+            const stats = this._getStats(pid);
+            if (!stats?.pendingReinforcement || stats.pendingReinforcement.picked) continue;
+            const n = stats.pendingReinforcement.options.length;
+            const idx = Math.floor(this.game.rng.strand('ai').next() * n);
+            this.pickReinforcement(pid, idx);
+        }
     }
 
     // Buy the offer at `offerIndex`. Consumes that slot.
@@ -268,10 +404,13 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         const ownsType = (stats.heroRoster || []).some(e => this._resolveSpawnType(e) === unitId);
         if (!ownsType) return { success: false, reason: 'no_unit_of_type' };
 
-        const cost = techDef.cost || 10;
+        // Field Manual reinforcement: next tech at a discount (consumed on buy)
+        let cost = techDef.cost || 10;
+        if (stats.techDiscount) cost = Math.max(1, Math.ceil(cost * (1 - stats.techDiscount)));
         if ((stats.gold || 0) < cost) return { success: false, reason: 'insufficient_gold' };
 
         stats.gold -= cost;
+        if (stats.techDiscount) stats.techDiscount = 0;
         stats.unitTechs[unitId] = [...owned, techId];
 
         if (techDef.statModifiers) {
@@ -472,7 +611,12 @@ class ArmyShopSystem extends GUTS.BaseSystem {
             // Per-unit techs owned: { unitId: [techId, ...] } (tech defs come from collections)
             unitTechs: JSON.parse(JSON.stringify(stats.unitTechs || {})),
             // Which unit types the player currently fields (tech gating in the UI)
-            ownedUnitTypes: [...new Set((stats.heroRoster || []).map(e => this._resolveSpawnType(e)))]
+            ownedUnitTypes: [...new Set((stats.heroRoster || []).map(e => this._resolveSpawnType(e)))],
+            // This round's 1-of-3 reinforcement pick (null once picked)
+            pendingReinforcement: stats.pendingReinforcement && !stats.pendingReinforcement.picked
+                ? { options: stats.pendingReinforcement.options } : null,
+            techDiscount: stats.techDiscount || 0,
+            skillCharges: [...(stats.skillCharges || [])]
         };
     }
 

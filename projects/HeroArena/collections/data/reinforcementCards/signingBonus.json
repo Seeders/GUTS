@@ -1,0 +1,10 @@
+{
+ "title": "Signing Bonus",
+ "icon": "\ud83e\ude99",
+ "kind": "gold",
+ "amount": 8,
+ "description": "+8 gold now",
+ "weight": 2,
+ "minRound": 1,
+ "fileName": "signingBonus"
+}

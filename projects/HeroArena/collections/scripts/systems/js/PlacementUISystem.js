@@ -61,6 +61,8 @@ class PlacementUISystem extends GUTS.BaseSystem {
         'submitRerollOffers',
         'submitBuyUnlockedUnit',
         'submitBuyUnitTech',
+        'submitBuySquadLevel',
+        'submitPickReinforcement',
         'submitSellUnit',
         'submitGrantSingleAbility',
         'submitSpecializeChoice',
@@ -396,6 +398,39 @@ class PlacementUISystem extends GUTS.BaseSystem {
             }
         }
         return new Set();
+    }
+
+    // Called by game.triggerEvent('onReinforcementStart', data) at each prep start.
+    // Reuses the (otherwise retired) hero-select overlay as the 1-of-3 card pick.
+    onReinforcementStart(data) {
+        const myId = this.game.clientNetworkManager?.numericPlayerId ?? 0;
+        if (data?.playerId !== myId) return;
+
+        const overlay  = document.getElementById('heroSelectOverlay');
+        const grid     = document.getElementById('heroOptions');
+        const title    = document.getElementById('heroSelectTitle');
+        const subtitle = document.getElementById('heroSelectSubtitle');
+        if (!overlay || !grid) return;
+
+        if (title)    title.textContent = `Reinforcements — Round ${this.game.state.round || 1}`;
+        if (subtitle) subtitle.textContent = 'Choose one';
+
+        grid.innerHTML = '';
+        (data.options || []).forEach((option, index) => {
+            const card = document.createElement('div');
+            card.className = 'arena-option-card';
+            card.innerHTML = `
+                <div class="arena-option-name">${option.icon || '🎁'} ${option.title}</div>
+                <div class="arena-option-desc">${option.description || ''}</div>`;
+            card.addEventListener('click', () => {
+                this.call.submitPickReinforcement(index, (res) => {
+                    this._renderShop(res?.state || res);
+                });
+                overlay.classList.add('hidden');
+            });
+            grid.appendChild(card);
+        });
+        overlay.classList.remove('hidden');
     }
 
     // Called by game.triggerEvent('onHeroSelectStart', data)

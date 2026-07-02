@@ -35,6 +35,7 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
         'submitBuyUnlockedUnit',
         'submitBuyUnitTech',
         'submitBuySquadLevel',
+        'submitPickReinforcement',
         'submitSellUnit',
         'submitGrantSingleAbility',
         'submitSpecializeChoice',
@@ -291,6 +292,14 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
             // HeroArena: leader selection flow
             nm.listen('LEADER_SELECT_START', (data) => {
                 this.game.triggerEvent('onLeaderSelectStart', data);
+            }),
+
+            // Mechabellum loop: round-start 1-of-3 reinforcement pick + resolve report
+            nm.listen('REINFORCEMENT_START', (data) => {
+                this.game.triggerEvent('onReinforcementStart', data);
+            }),
+            nm.listen('ROUND_RESULT', (data) => {
+                this.game.triggerEvent('onRoundResult', data);
             }),
 
             // HeroArena: hero selection flow
@@ -1672,6 +1681,15 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
             eventName: 'BUY_SQUAD_LEVEL',
             responseName: 'BUY_SQUAD_LEVEL_ACK',
             data: { rosterIndex },
+            onSuccess
+        }, () => {});
+    }
+
+    submitPickReinforcement(optionIndex, onSuccess) {
+        this.networkRequest({
+            eventName: 'PICK_REINFORCEMENT',
+            responseName: 'PICK_REINFORCEMENT_ACK',
+            data: { optionIndex },
             onSuccess
         }, () => {});
     }

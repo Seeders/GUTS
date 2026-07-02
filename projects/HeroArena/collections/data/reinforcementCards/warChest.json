@@ -1,0 +1,10 @@
+{
+ "title": "War Chest",
+ "icon": "\ud83d\udcb0",
+ "kind": "gold",
+ "amount": 14,
+ "description": "+14 gold now",
+ "weight": 3,
+ "minRound": 1,
+ "fileName": "warChest"
+}

@@ -55,14 +55,70 @@ try {
     await page.waitForFunction(() =>
         window.game?.state?.phase === window.game?.getEnums?.()?.gamePhase?.placement,
         { timeout: 60000, polling: 300 });
-    const afterLeader = await page.evaluate(() => ({
-        buildingOverlay: !document.getElementById('heroSelectOverlay')?.classList?.contains('hidden'),
-        round: window.game.state.round
-    }));
+    const afterLeader = await page.evaluate(() => {
+        const overlay = document.getElementById('heroSelectOverlay');
+        const shown = overlay && !overlay.classList.contains('hidden');
+        const title = document.getElementById('heroSelectTitle')?.textContent || '';
+        return {
+            // The overlay may legitimately show as the REINFORCEMENT pick —
+            // it must never show as a building select
+            buildingSelect: shown && !title.startsWith('Reinforcements'),
+            round: window.game.state.round
+        };
+    });
     check('leader pick goes straight to prep (no building select)',
-        afterLeader.buildingOverlay === false, `round ${afterLeader.round}`);
+        afterLeader.buildingSelect === false, `round ${afterLeader.round}`);
 
     await waitSim(page, 1);
+
+    // ── Reinforcement pick: 1-of-3 cards at prep start ─────────────────────
+    const reinf = await page.evaluate(() => {
+        const game = window.game;
+        const overlay = document.getElementById('heroSelectOverlay');
+        const cards = document.querySelectorAll('#heroOptions .arena-option-card');
+        let my = null;
+        for (const eid of game.getEntitiesWith('playerStats')) {
+            const s = game.getComponent(eid, 'playerStats');
+            if (s.playerId === 0) my = s;
+        }
+        return {
+            overlayShown: overlay && !overlay.classList.contains('hidden'),
+            cardCount: cards.length,
+            titles: [...cards].map(c => c.textContent.trim().slice(0, 30)),
+            pendingOptions: my?.pendingReinforcement?.options?.length,
+            goldBefore: my?.gold,
+            rosterBefore: my?.heroRoster?.length || 0,
+            pickedId: my?.pendingReinforcement?.options?.[0]?.id
+        };
+    });
+    check('reinforcement pick shows 3 cards at prep start',
+        reinf.overlayShown && reinf.cardCount === 3 && reinf.pendingOptions === 3,
+        reinf.titles.join(' | '));
+
+    const reinfPick = await page.evaluate((info) => {
+        const game = window.game;
+        document.querySelectorAll('#heroOptions .arena-option-card')[0].click();
+        let my = null;
+        for (const eid of game.getEntitiesWith('playerStats')) {
+            const s = game.getComponent(eid, 'playerStats');
+            if (s.playerId === 0) my = s;
+        }
+        const card = game.getCollections().reinforcementCards[info.pickedId];
+        let effectOk = false;
+        if (card.kind === 'gold') effectOk = my.gold === info.goldBefore + card.amount;
+        else if (card.kind === 'freeUnits') effectOk = (my.heroRoster?.length || 0) === info.rosterBefore + card.count;
+        else effectOk = true; // other kinds verified via service below
+        return {
+            picked: my.pendingReinforcement?.picked === true,
+            overlayHidden: document.getElementById('heroSelectOverlay').classList.contains('hidden'),
+            kind: card.kind, effectOk,
+            rePick: game.getService('pickReinforcement')(0, 0)?.reason
+        };
+    }, reinf);
+    check('picking a card applies its effect and consumes the pick',
+        reinfPick.picked && reinfPick.overlayHidden && reinfPick.effectOk &&
+        reinfPick.rePick === 'no_pending',
+        `kind=${reinfPick.kind}, re-pick=${reinfPick.rePick}`);
 
     // ── Prep round 1: commander HP, roster shop, no offers ────────────────
     const prep1 = await page.evaluate(() => {
@@ -89,20 +145,22 @@ try {
     check('all 6 tier-1 units buyable from round 1', prep1.unitCards === 6, `${prep1.unitCards} cards`);
     check('HUD shows commander label', /Commander/.test(prep1.hpLabel || ''), prep1.hpLabel);
 
-    // Buy two units via service and confirm they spawn
+    // Buy two units via service and confirm they spawn (reinforcement cards
+    // may have already granted free squads, so assert on the delta)
     const buy = await page.evaluate(() => {
         const game = window.game;
-        const r1 = game.getService('buyUnlockedUnit')(0, '1_s_barbarian');
-        const r2 = game.getService('buyUnlockedUnit')(0, '1_d_archer');
         let my = null;
         for (const eid of game.getEntitiesWith('playerStats')) {
             const s = game.getComponent(eid, 'playerStats');
             if (s.playerId === 0) my = s;
         }
-        return { ok1: r1?.success, ok2: r2?.success, roster: my?.heroRoster?.length, gold: my?.gold };
+        const before = my.heroRoster?.length || 0;
+        const r1 = game.getService('buyUnlockedUnit')(0, '1_s_barbarian');
+        const r2 = game.getService('buyUnlockedUnit')(0, '1_d_archer');
+        return { ok1: r1?.success, ok2: r2?.success, before, roster: my?.heroRoster?.length, gold: my?.gold };
     });
-    check('buying units works', buy.ok1 && buy.ok2 && buy.roster === 2,
-        `roster ${buy.roster}, ${buy.gold}g left`);
+    check('buying units works', buy.ok1 && buy.ok2 && buy.roster === buy.before + 2,
+        `roster ${buy.before} -> ${buy.roster}, ${buy.gold}g left`);
 
     // New units are draggable: move one and confirm the position changes
     const dragNew = await page.evaluate(() => {
@@ -145,7 +203,7 @@ try {
     check('battle resolves into commander damage', resolve1.myHP < 1000 || resolve1.opHP < 1000,
         `me ${resolve1.myHP}, enemy ${resolve1.opHP}`);
     check('army persists into round 2 with locked positions',
-        resolve1.myRoster === 2 && resolve1.lockedEntries === 2,
+        resolve1.myRoster >= 2 && resolve1.lockedEntries === resolve1.myRoster,
         `${resolve1.myRoster} roster entries, ${resolve1.lockedEntries} locked`);
 
     await waitSim(page, 1);
@@ -206,8 +264,16 @@ try {
         const unlockRes = buyTech(0, '1_s_barbarian', 'bar_berserker');
         const unlocked = game.getService('getShopStateForPlayer')(0).unlocked.map(u => u.id);
 
-        // Tech gating: can't tech a type you don't field
-        const gateRes = buyTech(0, '1_i_apprentice', 'app_focus');
+        // Tech gating: can't tech a type you don't field (free reinforcement
+        // units are random, so find a T1 type we genuinely don't own)
+        const fielded = new Set(my.heroRoster.map(e => e.spawnType));
+        const t1 = ['1_i_apprentice', '1_is_acolyte', '1_di_scout', '1_sd_soldier']
+            .find(id => !fielded.has(id));
+        const gateTechId = {
+            '1_i_apprentice': 'app_focus', '1_is_acolyte': 'aco_armor',
+            '1_di_scout': 'sco_evasion', '1_sd_soldier': 'sol_drill'
+        }[t1];
+        const gateRes = t1 ? buyTech(0, t1, gateTechId) : { reason: 'no_unfielded_type_found' };
 
         return {
             statOk: statRes?.success, hpBefore, hpAfter,
