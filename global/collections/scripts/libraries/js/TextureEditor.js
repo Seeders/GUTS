@@ -345,6 +345,27 @@ class TextureEditor {
             this.resetZoom();
         });
 
+        // Panning (right- or middle-drag anywhere in the canvas area) — the canvas
+        // is CSS-centered, so without this the edges are unreachable when zoomed in.
+        const panSurface = this.canvas.parentElement;
+        if (panSurface) {
+            panSurface.addEventListener('mousedown', (e) => {
+                if (e.button !== 1 && e.button !== 2) return;
+                e.preventDefault();
+                this.isPanning = true;
+                this._panStartX = e.clientX - (this.panX || 0);
+                this._panStartY = e.clientY - (this.panY || 0);
+            });
+            panSurface.addEventListener('contextmenu', (e) => e.preventDefault());
+            document.addEventListener('mousemove', (e) => {
+                if (!this.isPanning) return;
+                this.panX = e.clientX - this._panStartX;
+                this.panY = e.clientY - this._panStartY;
+                this.applyPan();
+            });
+            document.addEventListener('mouseup', () => { this.isPanning = false; });
+        }
+
         // Action buttons
         container.querySelector('#new-btn').addEventListener('click', () => this.newImage());
         container.querySelector('#undo-btn').addEventListener('click', () => this.undo());
@@ -403,8 +424,25 @@ class TextureEditor {
         
         // Update the cursor based on the active tool
         this.canvas.style.cursor = this.getToolCursor();
+
+        // Keep the pan offset applied through size changes
+        this.applyPan();
     }
-    
+
+    /**
+     * Apply the current pan offset. The canvas centers via translate(-50%,-50%)
+     * and the checker via margin:auto — both get the offset on top.
+     */
+    applyPan() {
+        const x = this.panX || 0, y = this.panY || 0;
+        if (this.canvas) {
+            this.canvas.style.transform = `translate(calc(-50% + ${x}px), calc(-50% + ${y}px))`;
+        }
+        if (this.transparencyChecker) {
+            this.transparencyChecker.style.transform = `translate(${x}px, ${y}px)`;
+        }
+    }
+
     setupTransparencyChecker(container) {
         const displayWidth = Math.ceil(this.imageWidth * this.zoomLevel);
         const displayHeight = Math.ceil(this.imageHeight * this.zoomLevel);
@@ -429,8 +467,11 @@ class TextureEditor {
     }
     
     resetZoom() {
-        // Reset zoom level
+        // Reset zoom level and pan
         this.zoomLevel = 1;
+        this.panX = 0;
+        this.panY = 0;
+        this.applyPan();
 
         // Update display
         this.updateZoomDisplay();
