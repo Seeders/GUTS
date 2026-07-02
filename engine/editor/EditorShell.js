@@ -107,6 +107,7 @@ class EditorShell {
       // Scene entity <-> hierarchy <-> inspector sync.
       this.viewport.onSelectionChange = (id, rec) => this._onEntitySelected(id, rec);
       this.viewport.onSceneChange = () => this._renderHierarchy();
+      this.viewport.onTeamsChange = () => { if (this._renderTeamRows) this._renderTeamRows(); };
       const started = this.viewport.start();
       Promise.resolve(started).then((ok) => {
         this._populateLevelSelect();
@@ -276,15 +277,19 @@ class EditorShell {
   _buildTerrainTools() {
     const ov = document.createElement('div');
     ov.className = 'eshell__terrain-tools'; ov.id = 'eshell-terrain-tools';
-    const state = { mode: 'terrain', tool: 'brush', brush: 1, height: 1, terrainId: 0 };
+    const state = { mode: 'terrain', tool: 'brush', brush: 1, height: 1, terrainId: 0, team: null };
     const apply = () => {
       this.viewport.setInteractionMode(state.mode);
       this.viewport.setPaintOptions({ terrainId: state.terrainId, heightLevel: state.height, brushSize: state.brush, tool: state.tool });
     };
     // Show only the controls relevant to the active mode.
     const updateVis = () => {
+      const paint = state.mode === 'terrain' || state.mode === 'height';
+      if (this._ttToolGroup) this._ttToolGroup.style.display = paint ? '' : 'none';
+      if (this._ttBrushGroup) this._ttBrushGroup.style.display = paint ? '' : 'none';
       if (this._ttPaletteGroup) this._ttPaletteGroup.style.display = (state.mode === 'terrain') ? '' : 'none';
       if (this._ttHeightGroup) this._ttHeightGroup.style.display = (state.mode === 'height') ? '' : 'none';
+      if (this._ttTeamsGroup) this._ttTeamsGroup.style.display = (state.mode === 'teams') ? '' : 'none';
     };
 
     const head = document.createElement('div'); head.className = 'eshell__tt-head';
@@ -295,7 +300,7 @@ class EditorShell {
     ov.appendChild(head);
 
     const modeRow = document.createElement('div'); modeRow.className = 'eshell__tt-row';
-    [['Select', 'select'], ['Paint', 'terrain'], ['Height', 'height'], ['Ramp', 'ramp']].forEach(([label, m]) => {
+    [['Select', 'select'], ['Paint', 'terrain'], ['Height', 'height'], ['Ramp', 'ramp'], ['Teams', 'teams']].forEach(([label, m]) => {
       const b = this._miniBtn(label, () => { state.mode = m; modeRow.querySelectorAll('.eshell__btn').forEach(x => x.classList.toggle('eshell__btn--primary', x === b)); apply(); updateVis(); });
       if (m === state.mode) b.classList.add('eshell__btn--primary');
       modeRow.appendChild(b);
@@ -308,14 +313,16 @@ class EditorShell {
       if (t === state.tool) b.classList.add('eshell__btn--primary');
       toolRow.appendChild(b);
     });
-    ov.appendChild(this._ttGroup('Tool', toolRow));
+    this._ttToolGroup = this._ttGroup('Tool', toolRow);
+    ov.appendChild(this._ttToolGroup);
 
     const brushRow = document.createElement('div'); brushRow.className = 'eshell__tt-row';
     const brush = document.createElement('input'); brush.type = 'range'; brush.min = '1'; brush.max = '9'; brush.step = '1'; brush.value = '1'; brush.className = 'eshell__tt-range';
     const brushVal = document.createElement('span'); brushVal.className = 'eshell__row-count'; brushVal.textContent = '1';
     brush.addEventListener('input', () => { state.brush = +brush.value; brushVal.textContent = brush.value; apply(); });
     brushRow.append(brush, brushVal);
-    ov.appendChild(this._ttGroup('Brush size', brushRow));
+    this._ttBrushGroup = this._ttGroup('Brush size', brushRow);
+    ov.appendChild(this._ttBrushGroup);
 
     const hgt = document.createElement('input'); hgt.type = 'number'; hgt.min = '0'; hgt.max = '20'; hgt.value = '1'; hgt.className = 'eshell__insp-input';
     hgt.addEventListener('input', () => { state.height = +hgt.value; apply(); });
@@ -338,6 +345,53 @@ class EditorShell {
     renderPal();
     this._ttPaletteGroup = this._ttGroup('Terrain', pal);
     ov.appendChild(this._ttPaletteGroup);
+
+    // Teams: pick a team, click the terrain to set its start location.
+    // (Teams themselves are the team enum — add/remove them via the Inspector.)
+    const teamsWrap = document.createElement('div');
+    teamsWrap.className = 'eshell__tt-teams';
+    const renderTeams = () => {
+      teamsWrap.innerHTML = '';
+      const teams = (this.viewport && this.viewport.getTeams) ? this.viewport.getTeams() : [];
+      if (!teams.length) { const e = document.createElement('div'); e.className = 'eshell__empty'; e.textContent = 'No team enum in project'; teamsWrap.appendChild(e); return; }
+      teams.forEach(t => {
+        const row = document.createElement('div');
+        row.className = 'eshell__tt-team' + (t.team === state.team ? ' eshell__tt-team--active' : '');
+        const chip = document.createElement('span');
+        chip.className = 'eshell__tt-team-chip';
+        chip.style.background = t.color;
+        const name = document.createElement('span');
+        name.className = 'eshell__tt-team-name';
+        name.textContent = t.team;
+        const loc = document.createElement('span');
+        loc.className = 'eshell__row-count';
+        loc.textContent = t.location ? `${t.location.gridX}, ${t.location.gridZ}` : '—';
+        row.append(chip, name, loc);
+        if (t.location) {
+          const clear = document.createElement('button');
+          clear.className = 'eshell__insp-del';
+          clear.textContent = '×';
+          clear.title = 'Clear start location';
+          clear.addEventListener('click', (e) => { e.stopPropagation(); this.viewport.clearStartLocation(t.team); });
+          row.appendChild(clear);
+        }
+        row.addEventListener('click', () => {
+          state.team = t.team;
+          this.viewport.setActiveTeam(t.team);
+          renderTeams();
+        });
+        teamsWrap.appendChild(row);
+      });
+      const hint = document.createElement('div');
+      hint.className = 'eshell__hint-line';
+      hint.textContent = state.team ? `Click the terrain to set ${state.team}'s start location.` : 'Select a team, then click the terrain.';
+      teamsWrap.appendChild(hint);
+    };
+    renderTeams();
+    this._renderTeamRows = renderTeams;   // survives viewport restarts (rewired in _startViewport)
+    if (this.viewport) this.viewport.onTeamsChange = () => renderTeams();
+    this._ttTeamsGroup = this._ttGroup('Start locations', teamsWrap);
+    ov.appendChild(this._ttTeamsGroup);
 
     updateVis();
     apply();

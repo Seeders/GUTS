@@ -188,6 +188,8 @@ class EditorViewportService {
     this.tileMap = this.terrainDataManager && this.terrainDataManager.tileMap;
     this.interactionMode = 'select';
     this._brushSize = 1; this._paintTool = 'brush'; this._terrainId = 0; this._heightLevel = 1;
+    this._activeTeam = null;
+    this._updateStartMarkers();   // show existing team start locations
 
     // Selection system (highlight + events) — reuse SelectedUnitSystem.
     try {
@@ -534,13 +536,93 @@ class EditorViewportService {
     const cell = this._eventToCell(e);
     if (!cell) return;
     const key = cell.x + ',' + cell.z;
-    const strokeOnce = this._paintTool === 'fill' || this.interactionMode === 'ramp';
+    const strokeOnce = this._paintTool === 'fill' || this.interactionMode === 'ramp' || this.interactionMode === 'teams';
     if (strokeOnce) { if (this._lastCell !== null) return; }
     else if (this._lastCell === key && (this._brushSize || 1) <= 1) return;
     this._lastCell = key;
     if (this.interactionMode === 'terrain') this._paintTerrain(cell);
     else if (this.interactionMode === 'height') this._paintHeight(cell);
     else if (this.interactionMode === 'ramp') this._paintRamp(cell);
+    else if (this.interactionMode === 'teams') this._placeStartLocation(cell);
+  }
+
+  // ---- Team start locations ---------------------------------------------------
+  /** Teams (from the team enum asset) with their current start locations. */
+  getTeams() {
+    const cols = this.app.getCollections() || {};
+    const enumObj = cols.enums && cols.enums.team;
+    const teams = (enumObj && Array.isArray(enumObj.enum)) ? enumObj.enum.slice() : ['left', 'right'];
+    const locs = (this.tileMap && this.tileMap.startingLocations) || [];
+    return teams.map(t => ({ team: t, location: locs.find(l => l.side === t) || null, color: this._teamColorHex(t) }));
+  }
+  setActiveTeam(team) { this._activeTeam = team; }
+  _placeStartLocation(cell) {
+    if (!this._activeTeam || !this.tileMap) return;
+    const locs = this.tileMap.startingLocations = this.tileMap.startingLocations || [];
+    const entry = locs.find(l => l.side === this._activeTeam);
+    if (entry) { entry.gridX = cell.x; entry.gridZ = cell.z; }
+    else locs.push({ side: this._activeTeam, gridX: cell.x, gridZ: cell.z });
+    this._updateStartMarkers();
+    this._scheduleLevelPersist();
+    if (this.onTeamsChange) this.onTeamsChange();
+  }
+  clearStartLocation(team) {
+    const locs = (this.tileMap && this.tileMap.startingLocations) || [];
+    const i = locs.findIndex(l => l.side === team);
+    if (i >= 0) {
+      locs.splice(i, 1);
+      this._updateStartMarkers();
+      this._scheduleLevelPersist();
+      if (this.onTeamsChange) this.onTeamsChange();
+    }
+  }
+  _teamColor(team) {
+    const preset = { left: 0x35e0c8, right: 0xf5a623, hostile: 0xff5c6c, neutral: 0x90a2ba };
+    if (preset[team] != null) return preset[team];
+    let h = 0; for (let i = 0; i < team.length; i++) h = (h * 31 + team.charCodeAt(i)) >>> 0;
+    const c = new window.THREE.Color(); c.setHSL((h % 360) / 360, 0.7, 0.55);
+    return c.getHex();
+  }
+  _teamColorHex(team) { return '#' + this._teamColor(team).toString(16).padStart(6, '0'); }
+
+  /** Flag markers at each team's start location (disc + pole + pennant). */
+  _updateStartMarkers() {
+    const THREE = window.THREE;
+    if (!THREE || !this.worldRenderer || !this.terrainDataManager || !this.tileMap) return;
+    if (!this._startMarkers) {
+      this._startMarkers = new THREE.Group();
+      this._startMarkers.renderOrder = 998;
+      this.worldRenderer.getScene().add(this._startMarkers);
+    }
+    while (this._startMarkers.children.length) {
+      const m = this._startMarkers.children.pop();
+      this._startMarkers.remove(m);
+      m.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
+    }
+    const gs = this.terrainDataManager.gridSize, ts = this.terrainDataManager.terrainSize;
+    (this.tileMap.startingLocations || []).forEach(loc => {
+      const wx = loc.gridX * gs - ts / 2 + gs / 2;
+      const wz = loc.gridZ * gs - ts / 2 + gs / 2;
+      const wy = this.terrainDataManager.getTerrainHeightAtPosition ? this.terrainDataManager.getTerrainHeightAtPosition(wx, wz) : 0;
+      const color = this._teamColor(loc.side);
+      const g = new THREE.Group();
+      const disc = new THREE.Mesh(
+        new THREE.CylinderGeometry(gs * 0.45, gs * 0.45, 2, 24),
+        new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.45, depthTest: false }));
+      disc.position.y = 2;
+      const pole = new THREE.Mesh(
+        new THREE.CylinderGeometry(1.4, 1.4, gs * 1.2, 8),
+        new THREE.MeshBasicMaterial({ color }));
+      pole.position.y = gs * 0.6;
+      const flag = new THREE.Mesh(
+        new THREE.ConeGeometry(gs * 0.2, gs * 0.34, 4),
+        new THREE.MeshBasicMaterial({ color }));
+      flag.rotation.z = Math.PI / 2;
+      flag.position.set(gs * 0.14, gs * 1.05, 0);
+      g.add(disc, pole, flag);
+      g.position.set(wx, wy, wz);
+      this._startMarkers.add(g);
+    });
   }
   _paintTerrain(cell) {
     const id = this._terrainId | 0;
@@ -641,7 +723,8 @@ class EditorViewportService {
     if (!window.THREE || !this.terrainDataManager || this.interactionMode === 'select') { this._clearBrushPreview(); return; }
     const cell = this._eventToCell(e);
     if (!cell) { this._clearBrushPreview(); return; }
-    const tiles = (this.interactionMode === 'ramp') ? [{ x: cell.x, z: cell.z }] : this._brushTiles(cell.x, cell.z);
+    const tiles = (this.interactionMode === 'ramp' || this.interactionMode === 'teams')
+      ? [{ x: cell.x, z: cell.z }] : this._brushTiles(cell.x, cell.z);
     this._ensureBrushPreview(tiles.length);
     if (!this._brushPreview) return;
     const gs = this.terrainDataManager.gridSize, ts = this.terrainDataManager.terrainSize, tdm = this.terrainDataManager;
@@ -1194,6 +1277,13 @@ class EditorViewportService {
       }
     } catch (e) {}
     try { this.clearPreview(); if (this._previewLabel && this._previewLabel.parentElement) this._previewLabel.parentElement.removeChild(this._previewLabel); this._previewLabel = null; } catch (e) {}
+    try {
+      if (this._startMarkers) {
+        if (this._startMarkers.parent) this._startMarkers.parent.remove(this._startMarkers);
+        this._startMarkers.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
+        this._startMarkers = null;
+      }
+    } catch (e) {}
     try { if (this._mini && this._mini.renderer && this._mini.renderer.dispose) this._mini.renderer.dispose(); this._mini = null; } catch (e) {}
     try { if (this.gizmo && this.gizmo.dispose) this.gizmo.dispose(); } catch (e) {}
     this.gizmo = null; this.gizmoHelper = null; this.raycast = null; this.sceneEntities = null; this._selectedEntity = null;
