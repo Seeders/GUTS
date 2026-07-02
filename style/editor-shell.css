@@ -594,6 +594,29 @@
   border-radius: var(--editor-border-radius-sm, 4px);
 }
 
+/* Systems graph additions (reuses the btg node-graph styles) */
+.sg__node { width: 190px; }
+.sg__svcs { display: flex; flex-wrap: wrap; gap: 3px; padding: 0 8px 6px; }
+.sg__svc {
+  font-family: var(--editor-font-mono, monospace); font-size: 8.5px;
+  color: var(--editor-text-secondary, #90a2ba);
+  background: rgba(122, 152, 194, 0.1);
+  border-radius: 3px; padding: 1px 5px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 160px;
+}
+.sg__svc--more { color: var(--editor-primary, #35e0c8); }
+.sg__svc--none { opacity: 0.5; }
+.sg__insp-svc {
+  display: flex; align-items: center; gap: 6px; padding: 2px 6px; margin-bottom: 2px;
+  font-family: var(--editor-font-mono, monospace); font-size: 10.5px;
+  background: var(--editor-bg-dark, #0b121c);
+  border: 1px solid var(--editor-border-color, #22303f);
+  border-radius: var(--editor-border-radius-sm, 4px);
+}
+.sg__insp-svc-name { flex: 1 1 auto; color: var(--editor-text-primary, #e7eef7); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sg__insp-svc--unresolved { border-color: rgba(245, 166, 35, 0.4); }
+.sg__insp-svc--unresolved .eshell__row-count { color: var(--editor-accent-amber, #f5a623); }
+
 /* Hide the legacy chrome when new shell is active. NOTE: #modals stays visible —
    re-hosted editor modules (graphics rotate/move/bake dialogs) inject into it,
    and modals only appear when given the .show class. */

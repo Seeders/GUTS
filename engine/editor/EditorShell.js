@@ -692,6 +692,17 @@ class EditorShell {
     });
   }
 
+  // ---- Sub-editor: Scene systems graph ----------------------------------------
+  _openSystemsGraph(sceneId) {
+    const Graph = window.EditorSystemsGraph || (window.GUTS && window.GUTS.EditorSystemsGraph);
+    if (!Graph) { this._toast('Systems graph editor not in bundle'); return; }
+    this.openTab('sysgraph:' + sceneId, sceneId + ' ⟨systems⟩', (pane, tab) => {
+      const g = new Graph(this, pane, sceneId);
+      g.build();
+      tab.dispose = () => g.dispose();
+    });
+  }
+
   // ---- Sub-editor: Script / markup / style (Monaco) --------------------------
   _openScriptEditor(type, id) {
     const obj = (this._collections()[type] || {})[id];
@@ -1046,6 +1057,9 @@ class EditorShell {
     }
     if (['behaviorTrees', 'sequenceBehaviorTrees', 'behaviorActions', 'behaviorDecorators'].includes(typeId)) {
       bar.appendChild(this._miniBtn('⧉ Behavior Graph', () => this._openBehaviorGraph(typeId, id)));
+    }
+    if (typeId === 'scenes') {
+      bar.appendChild(this._miniBtn('⧉ Systems Graph', () => this._openSystemsGraph(id)));
     }
     const save = this._miniBtn('Save', () => this._saveInspector(typeId, id));
     save.classList.add('eshell__btn--primary');
