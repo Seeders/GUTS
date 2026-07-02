@@ -1070,8 +1070,19 @@ class EditorShell {
     this._renderInspectorEmpty('Select an asset to inspect.');
   }
   _newCollection() {
-    this._modal('New collection', [{ key: 'id', label: 'ID (plural)' }, { key: 'name', label: 'Name' }, { key: 'category', label: 'Category' }],
-      { id: '', name: '', category: '' }, ({ id, name, category }) => {
+    // Category is a dropdown of existing categories (from the objectTypeCategories
+    // collection + any categories in use), plus a "+ New category…" option.
+    const cats = this._categories();
+    const known = new Set([...Object.keys(cats), ...Object.keys(this._categoryGroups())]);
+    const options = [...known].sort().map(k => ({ value: k, label: (cats[k] && cats[k].title) || k }));
+    const initialCat = this.selectedCategory && known.has(this.selectedCategory) ? this.selectedCategory : (options[0] && options[0].value) || '';
+    this._modal('New collection',
+      [
+        { key: 'id', label: 'ID (plural)' },
+        { key: 'name', label: 'Name' },
+        { key: 'category', label: 'Category', options, allowNew: true, newLabel: 'category' }
+      ],
+      { id: '', name: '', category: initialCat }, ({ id, name, category }) => {
         if (!id) return this._toast('ID required');
         const res = this.controller.createType(id, name || id, (name || id).replace(/s$/, ''), category || 'uncategorized');
         if (!res || !res.success) return this._toast((res && res.message) || 'Failed');
@@ -1090,6 +1101,11 @@ class EditorShell {
   }
 
   // Lightweight modal for create/duplicate/collection prompts.
+  /**
+   * Lightweight modal. Fields are text inputs by default; a field with
+   * `options: [{value,label}]` renders a <select>, and `allowNew: true` appends
+   * a "+ New …" option that reveals a text input for a fresh value.
+   */
   _modal(title, fields, initial, onOk) {
     const overlay = document.createElement('div');
     overlay.className = 'eshell__modal-overlay';
@@ -1097,17 +1113,51 @@ class EditorShell {
     box.className = 'eshell__modal';
     const h = document.createElement('div'); h.className = 'eshell__modal-title'; h.textContent = title;
     box.appendChild(h);
-    const inputs = {};
+    const readers = {};
+    let firstFocus = null;
     fields.forEach(f => {
       const wrap = document.createElement('label'); wrap.className = 'eshell__modal-field';
       const lab = document.createElement('span'); lab.textContent = f.label;
-      const inp = document.createElement('input'); inp.value = (initial && initial[f.key]) || '';
-      inputs[f.key] = inp;
-      wrap.append(lab, inp); box.appendChild(wrap);
+      wrap.appendChild(lab);
+      if (Array.isArray(f.options)) {
+        const sel = document.createElement('select');
+        const init = initial && initial[f.key];
+        f.options.forEach(o => {
+          const op = document.createElement('option');
+          op.value = o.value; op.textContent = o.label;
+          if (o.value === init) op.selected = true;
+          sel.appendChild(op);
+        });
+        let newInput = null;
+        if (f.allowNew) {
+          const op = document.createElement('option');
+          op.value = '__new__';
+          op.textContent = '+ New ' + (f.newLabel || f.label.toLowerCase()) + '…';
+          sel.appendChild(op);
+          newInput = document.createElement('input');
+          newInput.placeholder = 'new ' + (f.newLabel || f.label.toLowerCase()) + ' name';
+          newInput.style.display = 'none';
+          newInput.style.marginTop = '5px';
+          sel.addEventListener('change', () => {
+            newInput.style.display = sel.value === '__new__' ? '' : 'none';
+            if (sel.value === '__new__') newInput.focus();
+          });
+        }
+        wrap.appendChild(sel);
+        if (newInput) wrap.appendChild(newInput);
+        readers[f.key] = () => (sel.value === '__new__' && newInput) ? newInput.value.trim() : sel.value;
+        if (!firstFocus) firstFocus = sel;
+      } else {
+        const inp = document.createElement('input'); inp.value = (initial && initial[f.key]) || '';
+        wrap.appendChild(inp);
+        readers[f.key] = () => inp.value.trim();
+        if (!firstFocus) firstFocus = inp;
+      }
+      box.appendChild(wrap);
     });
     const actions = document.createElement('div'); actions.className = 'eshell__modal-actions';
     const ok = this._miniBtn('OK', () => {
-      const vals = {}; Object.keys(inputs).forEach(k => vals[k] = inputs[k].value.trim());
+      const vals = {}; Object.keys(readers).forEach(k => vals[k] = readers[k]());
       overlay.remove(); onOk(vals);
     });
     ok.classList.add('eshell__btn--primary');
@@ -1117,7 +1167,7 @@ class EditorShell {
     overlay.addEventListener('mousedown', (e) => { if (e.target === overlay) overlay.remove(); });
     box.addEventListener('keydown', (e) => { if (e.key === 'Enter') ok.click(); if (e.key === 'Escape') overlay.remove(); });
     this.root.appendChild(overlay);
-    const first = inputs[fields[0].key]; if (first) { first.focus(); first.select(); }
+    if (firstFocus) { firstFocus.focus(); if (firstFocus.select) firstFocus.select(); }
   }
 
   _toast(msg) {

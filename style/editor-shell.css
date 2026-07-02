@@ -278,13 +278,13 @@
 }
 .eshell__modal-field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
 .eshell__modal-field span { font-size: 11px; color: var(--editor-text-muted, #5e708a); font-family: var(--editor-font-mono, monospace); }
-.eshell__modal-field input {
+.eshell__modal-field input, .eshell__modal-field select {
   font-family: var(--editor-font-mono, monospace); font-size: 12px;
   color: var(--editor-text-primary, #e7eef7); background: var(--editor-bg-dark, #0b121c);
   border: 1px solid var(--editor-border-color, #22303f); border-radius: var(--editor-border-radius-sm, 4px);
   padding: 6px 8px;
 }
-.eshell__modal-field input:focus { outline: none; border-color: var(--editor-primary, #35e0c8); }
+.eshell__modal-field input:focus, .eshell__modal-field select:focus { outline: none; border-color: var(--editor-primary, #35e0c8); }
 .eshell__modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px; }
 
 /* ---- Toast ---- */
