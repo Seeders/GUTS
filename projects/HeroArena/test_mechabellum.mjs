@@ -192,6 +192,37 @@ try {
         return { ok: r?.success, members: members.length, sellOk: sellRes?.success,
                  aliveAfterSell: alive.length };
     });
+    // Squad cohesion: moving any member moves the whole formation
+    const cohesion = await page.evaluate(() => {
+        const game = window.game;
+        let my = null;
+        for (const eid of game.getEntitiesWith('playerStats')) {
+            const st = game.getComponent(eid, 'playerStats');
+            if (st.playerId === 0) my = st;
+        }
+        my.gold += 10;
+        game.getService('buyUnlockedUnit')(0, '1_d_archer');
+        const idx = my.heroRoster.length - 1;
+        const members = game.getService('getHeroEntityIds')(0, idx);
+        const before = members.map(id => ({ ...game.getComponent(id, 'transform').position }));
+        const lead = members[0];
+        const target = { x: before[0].x + 120, z: before[0].z + 60 };
+        let ack = null;
+        game.serverNetworkSystem.handleHeroMoved(
+            { playerId: 0, numericPlayerId: 0, data: { entityId: lead, x: target.x, z: target.z } },
+            (r) => { ack = r; });
+        const after = members.map(id => ({ ...game.getComponent(id, 'transform').position }));
+        const deltas = members.map((_, i) => ({
+            dx: after[i].x - before[i].x, dz: after[i].z - before[i].z }));
+        const moved = deltas.filter(d => Math.abs(d.dx - 120) < 40 && Math.abs(d.dz - 60) < 40).length;
+        // clean up: sell the test squad
+        game.getService('sellUnit')(0, idx);
+        return { count: members.length, moved, ackMoves: ack?.moves?.length };
+    });
+    check('moving one member moves the whole squad in formation',
+        cohesion.count === 3 && cohesion.moved === 3 && cohesion.ackMoves === 3,
+        `${cohesion.moved}/${cohesion.count} members moved, ack ${cohesion.ackMoves} moves`);
+
     check('a soldier squad spawns 4 members from one purchase',
         squad.ok && squad.members === 4, `${squad.members} members`);
     check('selling a squad removes all members',

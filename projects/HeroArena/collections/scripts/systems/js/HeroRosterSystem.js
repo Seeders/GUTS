@@ -187,7 +187,8 @@ class HeroRosterSystem extends GUTS.BaseSystem {
             // its members in formation around the saved anchor instead of the
             // default starting location.
             if (rosterEntry.lastPosition && this.game.placementSystem) {
-                const off = HeroRosterSystem._memberOffset(memberIndex, u.squadUnits.length);
+                const def = this.collections.units?.[HeroRosterSystem.resolveSpawnType(rosterEntry)] || {};
+                const off = HeroRosterSystem.memberOffset(memberIndex, def.squadWidth || 1, def.squadHeight || 1);
                 this.game.placementSystem.moveHero(
                     entityId,
                     rosterEntry.lastPosition.x + off.x,
@@ -200,15 +201,17 @@ class HeroRosterSystem extends GUTS.BaseSystem {
         });
     }
 
-    // Tight formation offsets for squad members around their anchor: member 0
-    // on it, the rest ringed at ~30 world units (matches placement cell scale).
-    static _memberOffset(memberIndex, count) {
-        if (count <= 1 || memberIndex === 0) return { x: 0, z: 0 };
-        const ring = [
-            { x: 30, z: 0 }, { x: 0, z: 30 }, { x: -30, z: 0 }, { x: 0, z: -30 },
-            { x: 30, z: 30 }, { x: -30, z: 30 }, { x: 30, z: -30 }, { x: -30, z: -30 }
-        ];
-        return ring[(memberIndex - 1) % ring.length];
+    // Squad members stand in their def's squadWidth x squadHeight grid around
+    // the anchor (30 world units apart), so a squad always LOOKS like a squad.
+    static memberOffset(memberIndex, squadWidth, squadHeight) {
+        const w = Math.max(1, squadWidth | 0), h = Math.max(1, squadHeight | 0);
+        if (w * h <= 1) return { x: 0, z: 0 };
+        const SPACING = 30;
+        const col = memberIndex % w, row = Math.floor(memberIndex / w);
+        return {
+            x: (col - (w - 1) / 2) * SPACING,
+            z: (row - (h - 1) / 2) * SPACING
+        };
     }
 
     // Resolve a roster entry → unit spawnType. entry.spawnType is authoritative

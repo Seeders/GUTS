@@ -725,13 +725,19 @@ class PlacementUISystem extends GUTS.BaseSystem {
         this.dragOffset.z = (t?.position?.z ?? worldPos.z) - worldPos.z;
         this.dragMoved = false;
 
-        // If a hero is grabbed and it's part of a multi-selection, drag the whole group.
+        // Units always move as squads: grabbing any member drags the whole squad,
+        // and a multi-selection drags every selected squad, formations intact.
         // Buildings always drag singly (they have their own move rules).
         this.dragUnits = null;
         if (this.draggedHeroId != null) {
             const group = this._formationUnits();  // selected, alive, own-team, movable (unlocked) heroes
-            if (group.length > 1 && group.includes(heroId)) {
-                this.dragUnits = group.map((id) => {
+            const seeds = (group.length > 1 && group.includes(heroId)) ? group : [heroId];
+            const all = new Set();
+            for (const id of seeds) {
+                for (const mate of this._squadMembers(id)) all.add(mate);
+            }
+            if (all.size > 0) {
+                this.dragUnits = [...all].map((id) => {
                     const p = this.game.getComponent(id, 'transform')?.position;
                     return {
                         id,
@@ -832,6 +838,20 @@ class PlacementUISystem extends GUTS.BaseSystem {
         });
     }
 
+    // All live entities sharing this entity's roster entry (its squadmates,
+    // itself included). Component-scan, so it works on online clients too.
+    _squadMembers(entityId) {
+        const info = this.game.getComponent(entityId, 'heroRosterInfo');
+        if (!info) return [entityId];
+        const out = [];
+        for (const id of (this.game.getEntitiesWith('heroRosterInfo') || [])) {
+            if (this.game.entityAlive?.[id] !== 1) continue;
+            const i = this.game.getComponent(id, 'heroRosterInfo');
+            if (i?.playerId === info.playerId && i.rosterIndex === info.rosterIndex) out.push(id);
+        }
+        return out.length ? out : [entityId];
+    }
+
     // Deployment is permanent once a unit has fought a battle (its roster entry
     // carries lastPosition). Component-based check first — heroRosterInfo and
     // playerStats.heroRoster are replicated, so it works on online clients where
@@ -887,7 +907,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
         const worldPos = this.getWorldPositionFromMouse(event.clientX, event.clientY, false);
         if (!worldPos) return;
 
-        const slots = this._computeFormationPositions(this.formationDrag.start, worldPos, this.formationDrag.units);
+        const slots = this._computeSquadFormationPositions(this.formationDrag.start, worldPos, this.formationDrag.units);
         this.formationDrag.slots = slots;
         // Optimistic local preview: move + face each unit as the line is dragged.
         for (const s of slots) {
@@ -917,6 +937,35 @@ class PlacementUISystem extends GUTS.BaseSystem {
                 console.warn('[PlacementUISystem] formation move submit failed:', err);
             }
         }
+    }
+
+    // Squad-aware formation: group the selected entities by roster entry, lay the
+    // SQUADS out along the drag line, then expand each squad slot into member
+    // positions using its own grid — squads never break apart.
+    _computeSquadFormationPositions(start, end, units) {
+        const groups = new Map();   // "player:index" → [entityIds]
+        for (const id of units) {
+            const info = this.game.getComponent(id, 'heroRosterInfo');
+            const key = info ? `${info.playerId}:${info.rosterIndex}` : `solo:${id}`;
+            if (!groups.has(key)) groups.set(key, []);
+            groups.get(key).push(id);
+        }
+        const reps = [...groups.values()].map(members => members[0]);
+        const squadSlots = this._computeFormationPositions(start, end, reps);
+
+        const slots = [];
+        for (const slot of squadSlots) {
+            const members = this._squadMembers(slot.id).filter(id => units.includes(id));
+            const def = this.game.getUnitTypeDef(this.game.getComponent(slot.id, 'unitType'));
+            const w = def?.squadWidth || 1, h = def?.squadHeight || 1;
+            members.forEach((id, i) => {
+                const off = GUTS.HeroRosterSystem?.memberOffset
+                    ? GUTS.HeroRosterSystem.memberOffset(i, w, h)
+                    : { x: (i % 2) * 30, z: Math.floor(i / 2) * 30 };
+                slots.push({ id, x: slot.x + off.x, z: slot.z + off.z, rotationY: slot.rotationY });
+            });
+        }
+        return slots;
     }
 
     // Build target slots for the selected units given the drag's start/end world points.
