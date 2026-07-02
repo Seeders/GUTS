@@ -48,6 +48,13 @@ class EditorShell {
 
     this._setupSplitters();
     this._setupShortcuts();
+    // Legacy modules dispatch this after mutating the selected object.
+    if (!this._updateCurrentWired) {
+      this._updateCurrentWired = true;
+      document.body.addEventListener('updateCurrentObject', () => {
+        if (this.selectedType && this.selectedObjectId) this._renderInspector(this.selectedType, this.selectedObjectId);
+      });
+    }
     this.renderAssets();
     this._renderInspectorEmpty('Select an asset to inspect.');
     this._renderHierarchyEmpty('No entities yet — drag an asset into the viewport.');
@@ -446,6 +453,8 @@ class EditorShell {
       t.btn.classList.toggle('eshell__tab--active', k === id);
     });
     if (id === 'scene' && this.viewport && this.viewport.onResize) setTimeout(() => this.viewport.onResize(), 0);
+    // Nudge embedded editors (Monaco / GE canvas) to relayout now that the pane is visible.
+    setTimeout(() => { try { window.dispatchEvent(new Event('resize')); document.body.dispatchEvent(new CustomEvent('resizedEditor')); } catch (e) {} }, 0);
   }
   closeTab(id) {
     const t = this._tabs[id];
@@ -454,6 +463,105 @@ class EditorShell {
     t.content.remove(); t.btn.remove();
     delete this._tabs[id];
     if (this._activeTab === id) this.switchTab('scene');
+  }
+
+  // ---- Legacy editor-module hosting (full-featured tools in a center tab) -----
+  // Re-hosts an editorModule (e.g. graphicsModule) exactly as the legacy chrome
+  // did: inject its interface html/css + declared modals, instantiate its
+  // Editor/Module classes once (they self-wire to their hooks), then drive it via
+  // loadHook/saveHook/unloadHook CustomEvents. Preserves all module functionality.
+  _openModuleEditor(moduleId, type, id) {
+    const cols = this._collections();
+    const mod = (cols.editorModules || {})[moduleId];
+    if (!mod) { this._toast(moduleId + ' not found in this project'); return; }
+    const obj = (cols[type] || {})[id];
+    const prop = mod.propertyName;
+    if (!obj || !prop || obj[prop] == null) { this._toast('No ' + (prop || 'data') + ' on this asset'); return; }
+
+    // Select in the model so the module's saveHook updates the right object.
+    this.model.setSelectedType(type); this.model.selectObject(id);
+
+    const tabId = 'module:' + moduleId;
+    const title = `${id} ⟨${prop}⟩`;
+    if (!this._tabs[tabId]) {
+      this.openTab(tabId, title, (pane, tab) => this._buildModulePane(pane, tab, mod));
+    } else {
+      const label = this._tabs[tabId].btn.querySelector('span');
+      if (label) label.textContent = title;
+      this.switchTab(tabId);
+    }
+    // Load the object into the module on the next frame (DOM/instances settled).
+    requestAnimationFrame(() => {
+      try {
+        document.body.dispatchEvent(new CustomEvent(mod.loadHook, {
+          detail: { data: obj[prop], propertyName: prop, objectData: obj, config: mod }
+        }));
+      } catch (e) { console.error('[EditorShell] module loadHook failed:', e); }
+    });
+  }
+
+  _buildModulePane(pane, tab, mod) {
+    pane.classList.add('eshell__module-pane');
+    const cols = this._collections();
+    const iface = (cols.interfaces || {})[mod.interface] || {};
+    if (!iface.html) { this._empty(pane, `Interface '${mod.interface}' not found.`); return; }
+
+    // Interface CSS (once per interface).
+    if (iface.css && !document.getElementById('eshell-ifacecss-' + mod.interface)) {
+      const st = document.createElement('style');
+      st.id = 'eshell-ifacecss-' + mod.interface;
+      st.textContent = iface.css;
+      document.head.appendChild(st);
+    }
+    pane.innerHTML = iface.html;
+
+    // Declared modals -> #modals, legacy structure (#modal-<id> > .modal-content).
+    const modalHost = document.getElementById('modals');
+    (iface.modals || mod.modals || []).forEach(modalId => {
+      if (!modalHost || document.getElementById('modal-' + modalId)) return;
+      const m = (cols.modals || {})[modalId];
+      if (!m || !m.html) { console.warn('[EditorShell] modal not found:', modalId); return; }
+      const modal = document.createElement('div');
+      modal.id = 'modal-' + modalId;
+      modal.className = 'modal';
+      const content = document.createElement('div');
+      content.className = 'modal-content';
+      content.innerHTML = m.html;
+      modal.appendChild(content);
+      modalHost.appendChild(modal);
+    });
+
+    // Instantiate the module's Editor/Module classes once (constructor signature
+    // matches the legacy chrome: (controller, moduleDef, GUTS)).
+    this._moduleInstances = this._moduleInstances || {};
+    const libs = mod.library ? [mod.library]
+      : (mod.libraries || []).filter(l => l.endsWith('Editor') || l.endsWith('Module'));
+    libs.forEach(name => {
+      if (this._moduleInstances[name]) return;
+      const Cls = window.GUTS && window.GUTS[name];
+      if (!Cls) { console.warn('[EditorShell] module library not in bundle:', name); return; }
+      try { this._moduleInstances[name] = new Cls(this.controller, mod, window.GUTS); }
+      catch (e) { console.error('[EditorShell] failed to instantiate', name, e); }
+    });
+
+    // Save wiring: module dispatches saveHook with {propertyName, data}.
+    this._wiredSaveHooks = this._wiredSaveHooks || {};
+    if (mod.saveHook && !this._wiredSaveHooks[mod.saveHook]) {
+      this._wiredSaveHooks[mod.saveHook] = true;
+      document.body.addEventListener(mod.saveHook, (ev) => {
+        const d = ev.detail || {};
+        const prop = d.propertyName || mod.propertyName;
+        if (!prop) return;
+        this.controller.updateObject({ [prop]: d.data });
+        this._persistCurrent();
+        this._toast('Saved ' + prop);
+        if (this.selectedType && this.selectedObjectId) this._renderInspector(this.selectedType, this.selectedObjectId);
+      });
+    }
+
+    tab.dispose = () => {
+      try { if (mod.unloadHook) document.body.dispatchEvent(new CustomEvent(mod.unloadHook, { detail: {} })); } catch (e) {}
+    };
   }
 
   // ---- Sub-editor: Script / markup / style (Monaco) --------------------------
@@ -751,6 +859,9 @@ class EditorShell {
     bar.className = 'eshell__insp-actions';
     if (['script', 'html', 'css', 'testScript'].some(k => typeof obj[k] === 'string')) {
       bar.appendChild(this._miniBtn('⧉ Script Editor', () => this._openScriptEditor(typeId, id)));
+    }
+    if (obj.render && typeof obj.render === 'object') {
+      bar.appendChild(this._miniBtn('⧉ Graphics Editor', () => this._openModuleEditor('graphicsModule', typeId, id)));
     }
     const save = this._miniBtn('Save', () => this._saveInspector(typeId, id));
     save.classList.add('eshell__btn--primary');
