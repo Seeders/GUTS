@@ -20,6 +20,7 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         'rerollOffers',
         'buyUnlockedUnit',
         'buyUnitTech',
+        'buySquadLevel',
         'getShopStateForPlayer',
         'getEligibleItems',
         'applyArmyUpgrades',
@@ -33,6 +34,7 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         'getPlayerEntities',
         'broadcastToRoom',
         'spawnPurchasedUnit',
+        'respawnRosterEntry',
         'addAbilitiesToUnit',
         'townhallLevel',
         'getOwnedBuildingIds',
@@ -302,6 +304,56 @@ class ArmyShopSystem extends GUTS.BaseSystem {
                 techDef.statModifiers
             );
         }
+    }
+
+    // ─── Squad level-ups (grow taller instead of wider) ─────────────────────────
+
+    // Cost to take a squad from its current level to the next: the unit's shop
+    // price times its current level. A leveled squad also deals more commander
+    // damage when it survives (see AutobattlerRoundSystem._survivorDamage).
+    squadLevelCost(entry) {
+        const def = this.collections.units?.[this._resolveSpawnType(entry)] || {};
+        const level = entry.level || 1;
+        return ArmyShopSystem.shopCost(def.value) * level;
+    }
+
+    buySquadLevel(numericPlayerId, rosterIndex) {
+        const stats = this._getStats(numericPlayerId);
+        if (!stats) return { success: false, reason: 'no_player' };
+        if (!this._inPlacement()) return { success: false, reason: 'wrong_phase' };
+        const entry = stats.heroRoster?.[rosterIndex];
+        if (!entry) return { success: false, reason: 'bad_index' };
+
+        const cost = this.squadLevelCost(entry);
+        if ((stats.gold || 0) < cost) return { success: false, reason: 'insufficient_gold' };
+
+        stats.gold -= cost;
+        // Paid levels stack on top of XP levels (HeroExperienceSystem recomputes
+        // entry.level from xp + paidLevels so the two sources never clobber).
+        entry.paidLevels = (entry.paidLevels || 0) + 1;
+        entry.level = (entry.level || 1) + 1;
+
+        // Rebuild the live unit so level scaling + techs + upgrades re-apply
+        // cleanly (position and HP% are preserved by replaceUnit).
+        this.call.respawnRosterEntry?.(numericPlayerId, rosterIndex);
+
+        this._broadcastShop(stats);
+        return { success: true, level: entry.level, state: this.getShopStateForPlayer(numericPlayerId) };
+    }
+
+    // AI: level up the lowest-level squad when affordable (keeps some gold back
+    // for units/techs, so only fires with a comfortable purse).
+    _aiBuyOneLevel(stats, pid) {
+        const roster = stats.heroRoster || [];
+        let best = -1, bestLevel = Infinity;
+        for (let i = 0; i < roster.length; i++) {
+            const level = roster[i]?.level || 1;
+            if (level < bestLevel) { bestLevel = level; best = i; }
+        }
+        if (best < 0) return false;
+        const cost = this.squadLevelCost(roster[best]);
+        if ((stats.gold || 0) < cost + 10) return false;
+        return !!this.buySquadLevel(pid, best)?.success;
     }
 
     // AI: buy the first affordable un-owned tech for any fielded unit type.
@@ -843,6 +895,8 @@ class ArmyShopSystem extends GUTS.BaseSystem {
                 }
                 // Then one affordable unit tech for a fielded type.
                 if (this._aiBuyOneTech(stats, pid)) progress = true;
+                // Then a squad level-up with a comfortable purse.
+                if (this._aiBuyOneLevel(stats, pid)) progress = true;
                 // Then one affordable shop offer with whatever's left.
                 if (buyOneOffer()) progress = true;
             }

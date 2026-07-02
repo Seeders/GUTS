@@ -299,8 +299,9 @@ class PlacementUISystem extends GUTS.BaseSystem {
         // Selection panel (icons + orders of the selected units, attack-move button)
         this.elements.selectionPanel = document.getElementById('selectionPanel');
         this.elements.selectionCards = document.getElementById('selectionCards');
-        this.elements.attackMoveBtn  = document.getElementById('attackMoveBtn');
-        this.elements.clearOrderBtn  = document.getElementById('clearOrderBtn');
+        this.elements.attackMoveBtn  = document.getElementById('attackMoveBtn'); // legacy (orders removed)
+        this.elements.clearOrderBtn  = document.getElementById('clearOrderBtn'); // legacy (orders removed)
+        this.elements.levelUpBtn     = document.getElementById('levelUpBtn');
         this.elements.sellUnitBtn    = document.getElementById('sellUnitBtn');
         this.elements.selectionHint  = document.getElementById('selectionHint');
         this.elements.selectionTitle = document.getElementById('selectionTitle');
@@ -312,6 +313,9 @@ class PlacementUISystem extends GUTS.BaseSystem {
         }
         if (this.elements.clearOrderBtn) {
             this._track(this.elements.clearOrderBtn, 'click', () => this._clearSelectedOrders());
+        }
+        if (this.elements.levelUpBtn) {
+            this._track(this.elements.levelUpBtn, 'click', () => this._levelUpSelectedUnits());
         }
         if (this.elements.sellUnitBtn) {
             this._track(this.elements.sellUnitBtn, 'click', () => this._sellSelectedUnits());
@@ -963,22 +967,56 @@ class PlacementUISystem extends GUTS.BaseSystem {
         const icons = this.collections?.icons || {};
         this.elements.selectionCards.innerHTML = units.map(id => {
             const def = this.game.getUnitTypeDef(this.game.getComponent(id, 'unitType'));
-            const order = this._unitOrderInfo(id);
+            const level = this.game.getComponent(id, 'heroRosterInfo')?.level || 1;
             const imagePath = icons[def?.icon]?.imagePath;
             const img = imagePath
                 ? `<img class="sel-card-img" src="./resources/${imagePath}" alt="">`
                 : `<span class="sel-card-img sel-card-fallback">⚔</span>`;
-            const isAttack = order.type === 'attackMove';
-            return `<div class="sel-card" title="${def?.title || 'Unit'} — ${isAttack ? 'Attack-move ordered' : 'Holding position'}">
-                ${img}<span class="sel-card-badge ${isAttack ? 'order-attack' : 'order-hold'}">${isAttack ? '⚔' : '🛡'}</span>
+            return `<div class="sel-card" title="${def?.title || 'Unit'} — Level ${level}">
+                ${img}<span class="sel-card-badge sel-card-level">L${level}</span>
             </div>`;
         }).join('');
 
-        // Orders can only be issued (or cleared) during prep; same for selling.
+        // Level-ups and selling only during prep. The Level Up button shows the
+        // total cost for the current selection.
         const notPrep = this.game.state.phase !== this.enums.gamePhase.placement;
-        if (this.elements.attackMoveBtn) this.elements.attackMoveBtn.disabled = notPrep;
-        if (this.elements.clearOrderBtn) this.elements.clearOrderBtn.disabled = notPrep;
+        if (this.elements.levelUpBtn) {
+            const cost = this._levelUpCostForSelection(units);
+            this.elements.levelUpBtn.textContent = `⬆ Level Up (${cost}g)`;
+            this.elements.levelUpBtn.disabled = notPrep || cost <= 0 ||
+                (this._shopState?.gold ?? 0) < cost;
+        }
         if (this.elements.sellUnitBtn) this.elements.sellUnitBtn.disabled = notPrep;
+    }
+
+    // Total cost to level every selected own squad once (client-side estimate;
+    // the server recomputes and enforces per purchase).
+    _levelUpCostForSelection(unitIds) {
+        let total = 0;
+        for (const id of unitIds) {
+            const info = this.game.getComponent(id, 'heroRosterInfo');
+            const def = this.game.getUnitTypeDef(this.game.getComponent(id, 'unitType'));
+            if (!info || !def) continue;
+            const unitCost = Math.max(1, Math.ceil((def.value || 0) / 5));
+            total += unitCost * (info.level || 1);
+        }
+        return total;
+    }
+
+    _levelUpSelectedUnits() {
+        if (this.game.state.phase !== this.enums.gamePhase.placement) return;
+        const indices = this._selectedOwnUnits()
+            .map(id => this.game.getComponent(id, 'heroRosterInfo')?.rosterIndex)
+            .filter(i => i != null);
+        for (const rosterIndex of indices) {
+            this.call.submitBuySquadLevel(rosterIndex, (res) => {
+                if (res?.success === false && res?.reason === 'insufficient_gold') {
+                    GUTS.NotificationSystem?.show?.('Not enough gold to level up', 'error');
+                }
+                this._renderShop(res?.state || res);
+                this._refreshSelectionPanel();
+            });
+        }
     }
 
     // Sell every selected own unit for a partial refund (prep only). Resolve each

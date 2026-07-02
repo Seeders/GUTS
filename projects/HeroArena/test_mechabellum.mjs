@@ -243,6 +243,47 @@ try {
     await page.screenshot({ path: 'projects/HeroArena/test_techs.png' });
     await page.evaluate(() => document.getElementById('techTreeCloseBtn')?.click());
 
+    // ── Squad level-ups ────────────────────────────────────────────────────
+    const levelTest = await page.evaluate(() => {
+        const game = window.game;
+        let my = null;
+        for (const eid of game.getEntitiesWith('playerStats')) {
+            const s = game.getComponent(eid, 'playerStats');
+            if (s.playerId === 0) my = s;
+        }
+        my.gold = 200;
+        const barbIdx = my.heroRoster.findIndex(e => e.spawnType === '1_s_barbarian');
+        const entry = my.heroRoster[barbIdx];
+        const levelBefore = entry.level || 1;
+
+        // The live unit's stats before/after (rebuilt on level-up)
+        const findUnit = () => game.getEntitiesWith('heroRosterInfo').find(id => {
+            const info = game.getComponent(id, 'heroRosterInfo');
+            return info?.playerId === 0 && info.rosterIndex === barbIdx;
+        });
+        const hpBefore = game.getComponent(findUnit(), 'health').max;
+        const posBefore = { ...game.getComponent(findUnit(), 'transform').position };
+
+        const res = game.getService('buySquadLevel')(0, barbIdx);
+        const uid = findUnit();
+        const hpAfter = game.getComponent(uid, 'health').max;
+        const posAfter = game.getComponent(uid, 'transform').position;
+        const abilities = game.abilitySystem.getEntityAbilities(uid).map(a => a.id);
+
+        return {
+            ok: res?.success, levelBefore, levelAfter: entry.level,
+            hpBefore, hpAfter,
+            posStable: Math.hypot(posAfter.x - posBefore.x, posAfter.z - posBefore.z) < 5,
+            keepsTechAbility: abilities.includes('RageAbility')
+        };
+    });
+    check('squad level-up raises level and stats',
+        levelTest.ok && levelTest.levelAfter === levelTest.levelBefore + 1 &&
+        levelTest.hpAfter > levelTest.hpBefore,
+        `L${levelTest.levelBefore}->${levelTest.levelAfter}, hp ${levelTest.hpBefore}->${levelTest.hpAfter}`);
+    check('level-up keeps position and teched abilities',
+        levelTest.posStable && levelTest.keepsTechAbility);
+
     await page.screenshot({ path: 'projects/HeroArena/test_mechabellum.png' });
     console.log('screenshot: projects/HeroArena/test_mechabellum.png');
 

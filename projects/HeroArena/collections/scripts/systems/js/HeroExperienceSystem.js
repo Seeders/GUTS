@@ -63,7 +63,10 @@ class HeroExperienceSystem extends GUTS.BaseSystem {
         const entry = stats?.heroRoster?.[info.rosterIndex];
         if (!entry) return;
         entry.xp = (entry.xp || 0) + amount;
-        entry.level = HeroExperienceSystem.levelForXp(entry.xp);
+        // Paid squad level-ups (ArmyShopSystem.buySquadLevel) stack on top of XP
+        // levels — never clobber them when recomputing from xp.
+        entry.level = Math.min(HeroExperienceSystem.MAX_LEVEL,
+            HeroExperienceSystem.levelForXp(entry.xp) + (entry.paidLevels || 0));
         info.level = entry.level;   // keep the live component in sync (abilities/display)
     }
 
@@ -77,7 +80,8 @@ class HeroExperienceSystem extends GUTS.BaseSystem {
     getEntryLevel(entry) {
         if (!entry) return 1;
         if (entry.level != null) return entry.level;
-        return HeroExperienceSystem.levelForXp(entry.xp || 0);
+        return Math.min(HeroExperienceSystem.MAX_LEVEL,
+            HeroExperienceSystem.levelForXp(entry.xp || 0) + (entry.paidLevels || 0));
     }
 
     // Apply per-level stat scaling to a freshly spawned unit. Called by

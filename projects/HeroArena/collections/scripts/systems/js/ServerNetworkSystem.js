@@ -40,6 +40,7 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         'handleRerollOffers',
         'handleBuyUnlockedUnit',
         'handleBuyUnitTech',
+        'handleBuySquadLevel',
         'handleSellUnit',
         'handleGrantSingleAbility',
         'handleSpecializeChoice',
@@ -378,6 +379,7 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         this.game.serverEventManager.subscribe('REROLL_OFFERS',        this.handleRerollOffers.bind(this));
         this.game.serverEventManager.subscribe('BUY_UNLOCKED_UNIT',    this.handleBuyUnlockedUnit.bind(this));
         this.game.serverEventManager.subscribe('BUY_UNIT_TECH',        this.handleBuyUnitTech.bind(this));
+        this.game.serverEventManager.subscribe('BUY_SQUAD_LEVEL',      this.handleBuySquadLevel.bind(this));
         this.game.serverEventManager.subscribe('SELL_UNIT',            this.handleSellUnit.bind(this));
         this.game.serverEventManager.subscribe('GRANT_SINGLE_ABILITY', this.handleGrantSingleAbility.bind(this));
         this.game.serverEventManager.subscribe('SPECIALIZE_CHOICE',    this.handleSpecializeChoice.bind(this));
@@ -1318,6 +1320,15 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         const result = this.call.buyUnitTech(numericPlayerId, d.unitId, d.techId);
         this.syncEntitiesToClients(playerId, numericPlayerId);   // stat techs mutate live units
         return this.respond(playerId, 'BUY_UNIT_TECH_ACK', result ?? { success: false }, callback);
+    }
+
+    handleBuySquadLevel(eventData, callback) {
+        const { playerId } = eventData;
+        const numericPlayerId = eventData.numericPlayerId ?? eventData.playerId;
+        const d = eventData.data || eventData;
+        const result = this.call.buySquadLevel(numericPlayerId, d.rosterIndex);
+        this.syncEntitiesToClients(playerId, numericPlayerId);   // unit rebuilt with new level
+        return this.respond(playerId, 'BUY_SQUAD_LEVEL_ACK', result ?? { success: false }, callback);
     }
 
     handleSellUnit(eventData, callback) {
