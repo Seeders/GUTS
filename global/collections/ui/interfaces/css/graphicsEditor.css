@@ -104,7 +104,7 @@
   color: var(--editor-text-muted, #5e708a); opacity: 0.8;
   margin-top: 6px;
 }
-.ge__equip-add {
+.ge__equip-divider {
   margin-top: 10px; padding-top: 10px;
   border-top: 1px dashed var(--editor-border-color, #22303f);
 }

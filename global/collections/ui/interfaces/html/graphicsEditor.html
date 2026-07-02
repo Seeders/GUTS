@@ -40,36 +40,63 @@
       </div>
 
       <div class="ge__section ge__section--grow">
-        <div class="ge__eyebrow">
+        <div class="ge__eyebrow"><span>Equipment</span></div>
+        <div class="ge__form-row">
+          <label class="ge__label">Item</label>
+          <select id="equipment-item-selector" class="ge__select">
+            <option value="">Select Item...</option>
+          </select>
+        </div>
+        <div class="ge__form-row">
+          <label class="ge__label">Slot</label>
+          <select id="equipment-slot-selector" class="ge__select">
+            <option value="">Select Slot...</option>
+            <option value="mainHand">Main Hand</option>
+            <option value="offHand">Off Hand</option>
+            <option value="head">Head</option>
+            <option value="chest">Chest</option>
+            <option value="back">Back</option>
+            <option value="legs">Legs</option>
+            <option value="feet">Feet</option>
+          </select>
+        </div>
+        <button id="equipment-add-btn" class="ge__btn ge__btn--primary ge__btn--block">+ Equip</button>
+
+        <div class="ge__eyebrow ge__eyebrow--sub ge__equip-divider">
           <span>Equipped</span>
           <span class="ge__eyebrow-actions">
             <button id="equipment-remove-btn" class="ge__btn ge__btn--mini ge__btn--quiet" title="Remove selected equipment">−</button>
           </span>
         </div>
         <div id="equipment-list" class="ge__list"></div>
-        <div class="ge__equip-add">
-          <div class="ge__eyebrow ge__eyebrow--sub"><span>Equip an item</span></div>
+        <div class="ge__hint">Select an equipped item to adjust its attachment below.</div>
+
+        <div id="equipment-inspector" class="ge__equip-divider">
+          <div class="ge__eyebrow ge__eyebrow--sub"><span>Attachment</span></div>
           <div class="ge__form-row">
-            <label class="ge__label">Item</label>
-            <select id="equipment-item-selector" class="ge__select">
-              <option value="">Select Item...</option>
+            <label class="ge__label">Bone</label>
+            <select id="equipment-bone-selector" class="ge__select">
+              <option value="">Auto-detect</option>
             </select>
           </div>
           <div class="ge__form-row">
-            <label class="ge__label">Slot</label>
-            <select id="equipment-slot-selector" class="ge__select">
-              <option value="">Select Slot...</option>
-              <option value="mainHand">Main Hand</option>
-              <option value="offHand">Off Hand</option>
-              <option value="head">Head</option>
-              <option value="chest">Chest</option>
-              <option value="back">Back</option>
-              <option value="legs">Legs</option>
-              <option value="feet">Feet</option>
-            </select>
+            <label class="ge__label">Offset</label>
+            <div class="ge__triplet">
+              <input type="number" id="equipment-offset-x" class="ge__input" step="0.1" value="0" title="X">
+              <input type="number" id="equipment-offset-y" class="ge__input" step="0.1" value="0" title="Y">
+              <input type="number" id="equipment-offset-z" class="ge__input" step="0.1" value="0" title="Z">
+            </div>
           </div>
-          <button id="equipment-add-btn" class="ge__btn ge__btn--primary ge__btn--block">+ Equip</button>
-          <div class="ge__hint">Select an equipped item above, then fine-tune its bone and offsets in the Attachment panel →</div>
+          <div class="ge__form-row">
+            <label class="ge__label">Rotation°</label>
+            <div class="ge__triplet">
+              <input type="number" id="equipment-rotation-x" class="ge__input" step="1" value="0" title="X">
+              <input type="number" id="equipment-rotation-y" class="ge__input" step="1" value="0" title="Y">
+              <input type="number" id="equipment-rotation-z" class="ge__input" step="1" value="0" title="Z">
+            </div>
+          </div>
+          <div class="ge__eyebrow ge__eyebrow--sub"><span>Item</span></div>
+          <div id="equipment-property-list"></div>
         </div>
       </div>
     </div>
@@ -86,38 +113,11 @@
       </div>
     </div>
 
-    <!-- Right: inspector + attachment -->
+    <!-- Right: shape inspector -->
     <div class="ge__right">
       <div class="ge__section ge__section--grow">
         <div class="ge__eyebrow"><span>Inspector</span></div>
         <div id="inspector"></div>
-      </div>
-      <div id="equipment-inspector" class="ge__section">
-        <div class="ge__eyebrow"><span>Attachment</span></div>
-        <div class="ge__form-row">
-          <label class="ge__label">Bone</label>
-          <select id="equipment-bone-selector" class="ge__select">
-            <option value="">Auto-detect</option>
-          </select>
-        </div>
-        <div class="ge__form-row">
-          <label class="ge__label">Offset</label>
-          <div class="ge__triplet">
-            <input type="number" id="equipment-offset-x" class="ge__input" step="0.1" value="0" title="X">
-            <input type="number" id="equipment-offset-y" class="ge__input" step="0.1" value="0" title="Y">
-            <input type="number" id="equipment-offset-z" class="ge__input" step="0.1" value="0" title="Z">
-          </div>
-        </div>
-        <div class="ge__form-row">
-          <label class="ge__label">Rotation°</label>
-          <div class="ge__triplet">
-            <input type="number" id="equipment-rotation-x" class="ge__input" step="1" value="0" title="X">
-            <input type="number" id="equipment-rotation-y" class="ge__input" step="1" value="0" title="Y">
-            <input type="number" id="equipment-rotation-z" class="ge__input" step="1" value="0" title="Z">
-          </div>
-        </div>
-        <div class="ge__eyebrow"><span>Item</span></div>
-        <div id="equipment-property-list"></div>
       </div>
       <div id="json-editor" style="display: none;">
         <textarea id="json-content"></textarea>
