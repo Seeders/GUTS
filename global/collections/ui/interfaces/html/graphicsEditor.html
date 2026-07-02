@@ -1,159 +1,119 @@
-<div id="graphics-editor-container" class="editor-module">
-   <div id="graphics-sidebar" class="editor-module__sidebar editor-module__sidebar--left">
+<div id="graphics-editor-container" class="ge">
 
-      <!-- Standard Graphics Editor Toolbar -->
-      <div id="toolbar" class="editor-module__toolbar">
-         <div id="graphics-toolbar" class="editor-module__toolbar-group editor-module__flex-col editor-module__gap-sm">
-            <div class="editor-module__flex editor-module__gap-sm">
-               <button id="add-animation" class="editor-module__btn editor-module__btn--secondary editor-module__btn--small" title="Add Animation">+A</button>
-               <button id="delete-animation" class="editor-module__btn editor-module__btn--danger editor-module__btn--small" title="Delete Animation">-A</button>
-            </div>
-            <div class="editor-module__flex editor-module__gap-sm">
-               <button id="add-frame" class="editor-module__btn editor-module__btn--secondary editor-module__btn--small" title="Add Frame">+F</button>
-               <button id="delete-frame" class="editor-module__btn editor-module__btn--danger editor-module__btn--small" title="Delete Frame">-F</button>
-            </div>
-            <div class="editor-module__flex editor-module__gap-sm">
-               <button id="create-group" class="editor-module__btn editor-module__btn--secondary editor-module__btn--small" title="Create Group">+G</button>
-               <button id="delete-group" class="editor-module__btn editor-module__btn--danger editor-module__btn--small" title="Delete Group">-G</button>
-            </div>
-            <div class="editor-module__flex editor-module__gap-sm">
-               <button id="add-shape" class="editor-module__btn editor-module__btn--secondary editor-module__btn--small" title="Add Shape">+S</button>
-               <button id="delete-shape" class="editor-module__btn editor-module__btn--danger editor-module__btn--small" title="Delete Shape">-S</button>
-            </div>
-         </div>
-         <div id="graphics-toolbar-right" class="editor-module__toolbar-group">
-            <div class="editor-module__flex editor-module__gap-sm">
-               <button id="preview-animation" class="editor-module__btn editor-module__btn--primary editor-module__btn--small" title="Preview Animation">▶</button>
-               <button id="generate-isometric" class="editor-module__btn editor-module__btn--primary editor-module__btn--small" title="Generate Isometric Sprites">Iso</button>
-            </div>
-         </div>
+  <!-- ===== Top toolbar ===== -->
+  <div class="ge__toolbar">
+    <div class="ge__tool-group">
+      <span class="ge__tool-label">Model</span>
+      <button id="add-shape" class="ge__btn" title="Add shape (duplicates selection)">+ Shape</button>
+      <button id="delete-shape" class="ge__btn ge__btn--quiet" title="Delete selected shape">−</button>
+      <button id="create-group" class="ge__btn" title="Create group">+ Group</button>
+      <button id="delete-group" class="ge__btn ge__btn--quiet" title="Delete selected group (must be empty)">−</button>
+    </div>
+    <span class="ge__sep"></span>
+    <div class="ge__tool-group">
+      <span class="ge__tool-label">Animation</span>
+      <button id="add-animation" class="ge__btn" title="Add animation">+ Anim</button>
+      <button id="delete-animation" class="ge__btn ge__btn--quiet" title="Delete animation">−</button>
+      <button id="add-frame" class="ge__btn" title="Add frame (duplicates current)">+ Frame</button>
+      <button id="delete-frame" class="ge__btn ge__btn--quiet" title="Delete frame">−</button>
+      <button id="preview-animation" class="ge__btn" title="Toggle animation preview">▶ Preview</button>
+    </div>
+    <span class="ge__spacer"></span>
+    <button id="generate-isometric" class="ge__btn ge__btn--primary" title="Bake isometric sprite sheets from this model">⬒ Bake Sprites</button>
+  </div>
 
-         <!-- Equipment Toolbar -->
-         <div id="equipment-toolbar" class="editor-module__toolbar-group">
-            <div class="editor-module__flex editor-module__gap-sm">
-               <button id="equipment-add-btn" class="editor-module__btn editor-module__btn--secondary editor-module__btn--small" title="Add Equipment">+E</button>
-               <button id="equipment-remove-btn" class="editor-module__btn editor-module__btn--danger editor-module__btn--small" title="Remove Equipment">-E</button>
-               <button id="equipment-reset-btn" class="editor-module__btn editor-module__btn--primary editor-module__btn--small" title="Reset Position">↻</button>
-            </div>
-            <div class="editor-module__flex editor-module__gap-sm">
-               <button id="equipment-mode-toggle" class="editor-module__btn editor-module__btn--primary editor-module__btn--small" title="Toggle Equipment Mode">⚔</button>
-               <button id="equipment-save-btn" class="editor-module__btn editor-module__btn--primary editor-module__btn--small" title="Save Equipment">💾</button>
-            </div>
-         </div>
+  <!-- ===== Main: structure | canvas | inspector ===== -->
+  <div class="ge__main">
+
+    <!-- Left: timeline + structure + equipment -->
+    <div class="ge__left">
+      <div class="ge__section">
+        <div class="ge__eyebrow">Timeline</div>
+        <div id="frame-list" class="ge__list"></div>
       </div>
-
-      <!-- Standard Graphics Editor Lists -->
-      <div id="graphics-lists" class="editor-module__scroll-y">
-         <div id="frame-list" class="editor-module__list"></div>
-         <div id="group-list" class="editor-module__list"></div>
-         <div id="shape-list" class="editor-module__list"></div>
+      <div class="ge__section">
+        <div class="ge__eyebrow">Groups</div>
+        <div id="group-list" class="ge__list"></div>
       </div>
-
-      <!-- Equipment Controls -->
-      <div id="equipment-controls">
-
-         <!-- Add Equipment Section -->
-         <div class="editor-module__panel">
-            <h4 class="editor-module__panel-title">Add Equipment</h4>
-            <div class="editor-module__form-row">
-               <label class="editor-module__label">Item:</label>
-               <select id="equipment-item-selector" class="editor-module__select">
-                  <option value="">Select Item...</option>
-               </select>
-            </div>
-            <div class="editor-module__form-row">
-               <label class="editor-module__label">Slot:</label>
-               <select id="equipment-slot-selector" class="editor-module__select">
-                  <option value="">Select Slot...</option>
-                  <option value="mainHand">Main Hand</option>
-                  <option value="offHand">Off Hand</option>
-                  <option value="head">Head</option>
-                  <option value="chest">Chest</option>
-                  <option value="back">Back</option>
-                  <option value="legs">Legs</option>
-                  <option value="feet">Feet</option>
-               </select>
-            </div>
-         </div>
-
-         <!-- Equipment List -->
-         <div class="editor-module__panel">
-            <h4 class="editor-module__panel-title">Equipment List</h4>
-            <div id="equipment-list" class="graphics-editor__equipment-list editor-module__scroll-y">
-               <div class="graphics-editor__no-equipment">No equipment loaded</div>
-            </div>
-         </div>
-
+      <div class="ge__section ge__section--grow">
+        <div class="ge__eyebrow">Shapes</div>
+        <div id="shape-list" class="ge__list ge__list--grow"></div>
       </div>
-   </div>
-
-   <!-- Canvas Container -->
-   <div id="canvas-container" class="editor-module__canvas-area editor-module__grid-background">
-      <canvas id="graphics-editor-canvas" class="editor-module__canvas"></canvas>
-      <div class="editor-module__info">
-         <div>Shapes: <span id="shape-count">0</span></div>
-         <div>Selected: <span id="selected-shape">None</span></div>
-         <div id="equipment-info">Equipment: <span id="equipment-count">0</span></div>
-         <div id="selected-equipment-info">Selected: <span id="selected-equipment">None</span></div>
-         <div><small>Controls: Left-click to select, Drag to rotate, Right-drag to pan, Scroll to zoom</small></div>
+      <div class="ge__section">
+        <div class="ge__eyebrow">Equipment</div>
+        <div class="ge__form-row">
+          <select id="equipment-item-selector" class="ge__select">
+            <option value="">Select Item...</option>
+          </select>
+        </div>
+        <div class="ge__form-row">
+          <select id="equipment-slot-selector" class="ge__select">
+            <option value="">Select Slot...</option>
+            <option value="mainHand">Main Hand</option>
+            <option value="offHand">Off Hand</option>
+            <option value="head">Head</option>
+            <option value="chest">Chest</option>
+            <option value="back">Back</option>
+            <option value="legs">Legs</option>
+            <option value="feet">Feet</option>
+          </select>
+        </div>
+        <div class="ge__row">
+          <button id="equipment-add-btn" class="ge__btn">+ Equip</button>
+          <button id="equipment-remove-btn" class="ge__btn ge__btn--quiet">Remove</button>
+        </div>
+        <div id="equipment-list" class="ge__list"></div>
       </div>
-   </div>
+    </div>
 
-   <!-- Right Sidebar -->
-   <div id="graphics-rightbar" class="editor-module__sidebar editor-module__sidebar--right">
-
-      <!-- Standard Inspector -->
-      <div id="inspector" class="editor-module__scroll-y"></div>
-
-      <!-- Equipment Inspector -->
-      <div id="equipment-inspector">
-         <div class="editor-module__panel">
-            <h4 class="editor-module__panel-title">Equipment Attachment</h4>
-
-            <div class="editor-module__form-row">
-               <label class="editor-module__label">Bone:</label>
-               <select id="equipment-bone-selector" class="editor-module__select">
-                  <option value="">Auto-detect</option>
-               </select>
-            </div>
-
-            <h5 class="editor-module__section-title">Position Offset</h5>
-            <div class="editor-module__form-row editor-module__form-row--compact">
-               <label class="editor-module__label editor-module__label--compact">X:</label>
-               <input type="number" id="equipment-offset-x" class="editor-module__input" step="0.01" value="0">
-               <label class="editor-module__label editor-module__label--compact">Y:</label>
-               <input type="number" id="equipment-offset-y" class="editor-module__input" step="0.01" value="0">
-               <label class="editor-module__label editor-module__label--compact">Z:</label>
-               <input type="number" id="equipment-offset-z" class="editor-module__input" step="0.01" value="0">
-            </div>
-
-            <h5 class="editor-module__section-title">Rotation (degrees)</h5>
-            <div class="editor-module__form-row editor-module__form-row--compact">
-               <label class="editor-module__label editor-module__label--compact">X:</label>
-               <input type="number" id="equipment-rotation-x" class="editor-module__input" step="1" value="0">
-               <label class="editor-module__label editor-module__label--compact">Y:</label>
-               <input type="number" id="equipment-rotation-y" class="editor-module__input" step="1" value="0">
-               <label class="editor-module__label editor-module__label--compact">Z:</label>
-               <input type="number" id="equipment-rotation-z" class="editor-module__input" step="1" value="0">
-            </div>
-
-            <div class="editor-module__message editor-module__message--warning">
-               Select equipment to adjust positioning. Changes apply in real-time.
-            </div>
-         </div>
-
-         <!-- Equipment Properties -->
-         <div class="editor-module__panel">
-            <h4 class="editor-module__panel-title">Equipment Properties</h4>
-            <div id="equipment-property-list">
-               <div class="graphics-editor__no-equipment">Select equipment to view properties</div>
-            </div>
-         </div>
+    <!-- Center: 3D canvas + status bar -->
+    <div class="ge__center">
+      <canvas id="graphics-editor-canvas"></canvas>
+      <div class="ge__status">
+        <span class="ge__status-item">Shapes <b id="shape-count">0</b></span>
+        <span class="ge__status-item">Equipment <b id="equipment-count">0</b></span>
+        <span class="ge__status-item"><b id="selected-equipment">None</b></span>
+        <span class="ge__spacer"></span>
+        <span class="ge__status-hint">click select · drag orbit · right-drag pan · scroll zoom</span>
       </div>
+    </div>
 
-      <!-- JSON Editor -->
+    <!-- Right: inspector + attachment -->
+    <div class="ge__right">
+      <div class="ge__section ge__section--grow">
+        <div class="ge__eyebrow">Inspector</div>
+        <div id="inspector"></div>
+      </div>
+      <div id="equipment-inspector" class="ge__section">
+        <div class="ge__eyebrow">Attachment</div>
+        <div class="ge__form-row">
+          <label class="ge__label">Bone</label>
+          <select id="equipment-bone-selector" class="ge__select">
+            <option value="">Auto-detect</option>
+          </select>
+        </div>
+        <div class="ge__form-row">
+          <label class="ge__label">Offset</label>
+          <div class="ge__triplet">
+            <input type="number" id="equipment-offset-x" class="ge__input" step="0.1" value="0" title="X">
+            <input type="number" id="equipment-offset-y" class="ge__input" step="0.1" value="0" title="Y">
+            <input type="number" id="equipment-offset-z" class="ge__input" step="0.1" value="0" title="Z">
+          </div>
+        </div>
+        <div class="ge__form-row">
+          <label class="ge__label">Rotation°</label>
+          <div class="ge__triplet">
+            <input type="number" id="equipment-rotation-x" class="ge__input" step="1" value="0" title="X">
+            <input type="number" id="equipment-rotation-y" class="ge__input" step="1" value="0" title="Y">
+            <input type="number" id="equipment-rotation-z" class="ge__input" step="1" value="0" title="Z">
+          </div>
+        </div>
+        <div class="ge__eyebrow">Item</div>
+        <div id="equipment-property-list"></div>
+      </div>
       <div id="json-editor" style="display: none;">
-        <textarea id="json-content" class="editor-module__textarea editor-module__input" placeholder="Edit JSON here..."></textarea>
+        <textarea id="json-content"></textarea>
       </div>
-   </div>
+    </div>
+  </div>
 </div>
