@@ -36,14 +36,14 @@
       }
     }
   },
-  "speed": 700,
+  "speed": 600,
   "title": "Arrow",
   "attackSound": "",
   "hitSound": "",
   "homing": true,
   "homingStrength": 0.8,
-  "ballistic": false,
-  "sticksInGround": false,
+  "ballistic": true,
+  "sticksInGround": true,
   "stickDuration": 3,
   "spriteAnimationSet": "arrow"
 }
