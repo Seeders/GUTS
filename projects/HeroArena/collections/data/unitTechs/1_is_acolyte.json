@@ -4,28 +4,28 @@
   {
    "id": "aco_heal",
    "title": "Mending Prayer",
-   "cost": 14,
+   "cost": 12,
    "description": "Unlocks Heal",
    "unlockAbility": "HealAbility"
   },
   {
    "id": "aco_consecrate",
    "title": "Consecration",
-   "cost": 14,
+   "cost": 15,
    "description": "Unlocks Consecration: holy ground burns foes",
    "unlockAbility": "ConsecrationAbility"
   },
   {
    "id": "aco_smite",
    "title": "Smite",
-   "cost": 14,
+   "cost": 13,
    "description": "Unlocks Smite: unresistable holy strike",
    "unlockAbility": "SmiteAbility"
   },
   {
    "id": "aco_devotion",
    "title": "Devotion",
-   "cost": 14,
+   "cost": 12,
    "description": "+40% max HP",
    "statModifiers": {
     "maxHP": {

@@ -4,28 +4,28 @@
   {
    "id": "bar_rage",
    "title": "Battle Rage",
-   "cost": 14,
+   "cost": 12,
    "description": "Unlocks Rage: fury that boosts damage",
    "unlockAbility": "RageAbility"
   },
   {
    "id": "bar_leap",
    "title": "Leap Slam",
-   "cost": 14,
+   "cost": 20,
    "description": "Unlocks Leap Slam: jump into the fray",
    "unlockAbility": "LeapSlamAbility"
   },
   {
    "id": "bar_warcry",
    "title": "War Cry",
-   "cost": 14,
+   "cost": 13,
    "description": "Unlocks Battle Cry: rally nearby allies",
    "unlockAbility": "BattleCryAbility"
   },
   {
    "id": "bar_juggernaut",
    "title": "Juggernaut",
-   "cost": 14,
+   "cost": 12,
    "description": "+50% max HP",
    "statModifiers": {
     "maxHP": {

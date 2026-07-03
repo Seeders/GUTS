@@ -1,0 +1,254 @@
+{
+  "title": "Balance Weights",
+  "description": "What each game mechanic is WORTH. balance_audit.mjs prices every unit and tech from these numbers \u2014 tune a weight here, re-run the audit with --apply, and everything using that mechanic re-balances.",
+  "unitPower": {
+    "goldPowerTarget": 13,
+    "comment_goldPowerTarget": "target sqrt(DPS x EHP) per gold of squad price; the audit scales unit stats toward price x this",
+    "rangePer100": 0.1,
+    "comment_range": "+10% DPS value per 100 range beyond melee \u2014 reach hits first and kites",
+    "splashOnHit": 0.45,
+    "comment_splash": "+45% DPS value for reliable AoE projectiles (fireball users)",
+    "elementBypassArmor": 0.1,
+    "comment_elem": "fire/cold/lightning ignore flat armor (resists are rare)",
+    "elementUnresistable": 0.16,
+    "comment_unres": "holy/shadow/poison ignore ALL mitigation",
+    "antiAir": 0.08,
+    "comment_aa": "can shoot flyers \u2014 coverage tax every army must pay",
+    "flying": 0.3,
+    "comment_fly": "+30% EHP value \u2014 immune to every melee unit in the game",
+    "armorRefHit": 20,
+    "comment_armor": "flat armor valued against a reference incoming hit of this size",
+    "evasionPer100": 0.6,
+    "comment_evasion": "evasion points to EHP% (60% value at 100 evasion)",
+    "swarmSplashVulnPerMember": 0.035,
+    "comment_swarm": "-3.5% EHP value per extra member \u2014 swarms die to splash",
+    "speedPer100": 0.2,
+    "comment_speed": "mobility multiplier per 100 speed above/below 45 \u2014 engage control"
+  },
+  "techPricing": {
+    "tierBase": {
+      "1": 6,
+      "2": 8,
+      "3": 10,
+      "4": 12
+    },
+    "comment_tier": "base gold by unit tier \u2014 added to the summed mechanic points",
+    "tagPoints": {
+      "aoe": 9,
+      "cc": 7,
+      "summon": 11,
+      "sustain": 6,
+      "teamBuff": 7,
+      "debuff": 6,
+      "mobility": 5,
+      "shield": 7,
+      "execute": 7,
+      "antiAir": 7,
+      "onDeath": 7,
+      "weaponBuff": 7,
+      "control": 14,
+      "revive": 12,
+      "statMajor": 6,
+      "statRange": 8
+    },
+    "comment_tags": "gold value of each mechanic a tech grants; tech cost = tierBase + sum(tags)"
+  },
+  "abilityTags": {
+    "RageAbility": [
+      "statMajor"
+    ],
+    "LeapSlamAbility": [
+      "mobility",
+      "aoe"
+    ],
+    "BattleCryAbility": [
+      "teamBuff"
+    ],
+    "ShieldWallAbility": [
+      "shield"
+    ],
+    "PhalanxFormationAbility": [
+      "teamBuff",
+      "shield"
+    ],
+    "TauntAbility": [
+      "cc"
+    ],
+    "HealAbility": [
+      "sustain"
+    ],
+    "ConsecrationAbility": [
+      "aoe"
+    ],
+    "SmiteAbility": [
+      "execute"
+    ],
+    "MultiShotAbility": [
+      "aoe"
+    ],
+    "AimedShotAbility": [
+      "execute"
+    ],
+    "PiercingShotAbility": [
+      "aoe"
+    ],
+    "SprintAbility": [
+      "mobility"
+    ],
+    "SmokeBombAbility": [
+      "mobility",
+      "debuff"
+    ],
+    "CripplingShotAbility": [
+      "cc"
+    ],
+    "BlinkAbility": [
+      "mobility"
+    ],
+    "IceShardAbility": [
+      "cc"
+    ],
+    "ChainLightningAbility": [
+      "aoe"
+    ],
+    "BloodlustAbility": [
+      "sustain",
+      "statMajor"
+    ],
+    "ChargeAbility": [
+      "mobility",
+      "cc"
+    ],
+    "RetaliateAbility": [
+      "statMajor"
+    ],
+    "ArenaPresenceAbility": [
+      "teamBuff"
+    ],
+    "ResurrectionAbility": [
+      "revive"
+    ],
+    "CurseAbility": [
+      "debuff"
+    ],
+    "DrainLifeAbility": [
+      "sustain"
+    ],
+    "CorruptingAuraAbility": [
+      "aoe",
+      "teamBuff"
+    ],
+    "BashAbility": [
+      "cc"
+    ],
+    "RapidFireAbility": [
+      "statMajor"
+    ],
+    "EntangleAbility": [
+      "cc"
+    ],
+    "BearTrapAbility": [
+      "cc"
+    ],
+    "SummonWolfAbility": [
+      "summon"
+    ],
+    "NaturesGraspAbility": [
+      "cc",
+      "aoe"
+    ],
+    "BackstabAbility": [
+      "execute"
+    ],
+    "ShadowStrikeAbility": [
+      "execute",
+      "mobility"
+    ],
+    "MirrorImagesAbility": [
+      "summon",
+      "debuff"
+    ],
+    "PoisonCoatAbility": [
+      "weaponBuff"
+    ],
+    "DisruptionBombAbility": [
+      "aoe",
+      "cc"
+    ],
+    "ExplosiveTrapAbility": [
+      "aoe"
+    ],
+    "LightningBoltAbility": [
+      "execute"
+    ],
+    "FireStormAbility": [
+      "aoe",
+      "aoe"
+    ],
+    "EnchantWeaponAbility": [
+      "weaponBuff"
+    ],
+    "FrostNovaAbility": [
+      "aoe",
+      "cc"
+    ],
+    "PolymorphAbility": [
+      "cc",
+      "debuff"
+    ],
+    "RaiseDeadAbility": [
+      "summon"
+    ],
+    "MindControlAbility": [
+      "control"
+    ],
+    "IronSkinAbility": [
+      "shield"
+    ],
+    "BurningAuraAbility": [
+      "aoe"
+    ],
+    "FreezingAuraAbility": [
+      "aoe",
+      "cc"
+    ],
+    "ThornsAuraAbility": [
+      "statMajor"
+    ],
+    "RegenerationAbility": [
+      "sustain"
+    ],
+    "MagicShieldAbility": [
+      "shield"
+    ],
+    "WindShieldAbility": [
+      "shield"
+    ]
+  },
+  "mechanicTags": {
+    "grantAntiAir": [
+      "antiAir"
+    ],
+    "grantBuff": [
+      "weaponBuff"
+    ],
+    "onDeathExplode": [
+      "onDeath",
+      "aoe"
+    ],
+    "onDeathReassemble": [
+      "onDeath",
+      "revive"
+    ]
+  },
+  "statModTags": {
+    "comment": "stat-only techs priced by which stat they shift",
+    "range": [
+      "statRange"
+    ],
+    "default": [
+      "statMajor"
+    ]
+  },
+  "fileName": "weights"
+}

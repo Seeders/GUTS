@@ -5,14 +5,14 @@
   {
    "id": "sk_poison",
    "title": "Venomous Claws",
-   "cost": 14,
+   "cost": 13,
    "description": "Skeleton hits poison their victims",
    "grantBuff": "poisoned_weapon"
   },
   {
    "id": "sk_explode",
    "title": "Bone Blast",
-   "cost": 14,
+   "cost": 22,
    "description": "Skeletons explode on death, burning everything nearby",
    "onDeathExplode": {
     "damage": 45,
@@ -22,7 +22,7 @@
   {
    "id": "sk_reassemble",
    "title": "Reassemble",
-   "cost": 14,
+   "cost": 25,
    "description": "Each skeleton rebuilds itself once per battle",
    "onDeathReassemble": true
   }

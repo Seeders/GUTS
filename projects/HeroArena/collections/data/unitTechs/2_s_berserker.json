@@ -4,21 +4,21 @@
   {
    "id": "ber_bloodlust",
    "title": "Bloodlust",
-   "cost": 18,
+   "cost": 20,
    "description": "Unlocks Bloodlust: kills feed frenzy",
    "unlockAbility": "BloodlustAbility"
   },
   {
    "id": "ber_charge",
    "title": "Reckless Charge",
-   "cost": 18,
+   "cost": 20,
    "description": "Unlocks Charge: crash into the enemy line",
    "unlockAbility": "ChargeAbility"
   },
   {
    "id": "ber_frenzy",
    "title": "Frenzy",
-   "cost": 18,
+   "cost": 14,
    "description": "+35% attack speed",
    "statModifiers": {
     "attackSpeed": {

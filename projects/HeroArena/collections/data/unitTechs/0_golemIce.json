@@ -4,21 +4,21 @@
   {
    "id": "gic_aura",
    "title": "Freezing Aura",
-   "cost": 21,
+   "cost": 26,
    "description": "Unlocks Freezing Aura: chill nearby enemies",
    "unlockAbility": "FreezingAuraAbility"
   },
   {
    "id": "gic_nova",
    "title": "Frost Nova",
-   "cost": 21,
+   "cost": 26,
    "description": "Unlocks Frost Nova",
    "unlockAbility": "FrostNovaAbility"
   },
   {
    "id": "gic_glacial",
    "title": "Glacial Mass",
-   "cost": 21,
+   "cost": 16,
    "description": "+40% max HP",
    "statModifiers": {
     "maxHP": {

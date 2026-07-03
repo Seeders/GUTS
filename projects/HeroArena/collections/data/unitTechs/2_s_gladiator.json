@@ -4,21 +4,21 @@
   {
    "id": "gla_retaliate",
    "title": "Retaliation",
-   "cost": 18,
+   "cost": 14,
    "description": "Unlocks Retaliate: counter every blow",
    "unlockAbility": "RetaliateAbility"
   },
   {
    "id": "gla_taunt",
    "title": "Crowd Favorite",
-   "cost": 18,
+   "cost": 15,
    "description": "Unlocks Taunt: demand attention",
    "unlockAbility": "TauntAbility"
   },
   {
    "id": "gla_champion",
    "title": "Champion",
-   "cost": 18,
+   "cost": 14,
    "description": "+40% max HP",
    "statModifiers": {
     "maxHP": {

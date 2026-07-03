@@ -4,21 +4,21 @@
   {
    "id": "gfi_aura",
    "title": "Burning Aura",
-   "cost": 21,
+   "cost": 19,
    "description": "Unlocks Burning Aura: scorch everything close",
    "unlockAbility": "BurningAuraAbility"
   },
   {
    "id": "gfi_inferno",
    "title": "Inferno",
-   "cost": 21,
+   "cost": 16,
    "description": "Unlocks Inferno: eruption of flame",
    "unlockAbility": "InfernoAbility"
   },
   {
    "id": "gfi_core",
    "title": "Molten Core",
-   "cost": 21,
+   "cost": 16,
    "description": "+30% damage",
    "statModifiers": {
     "damage": {

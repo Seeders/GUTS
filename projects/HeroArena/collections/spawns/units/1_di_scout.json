@@ -9,7 +9,7 @@
   "value": 35,
   "hp": 60,
   "speed": 75,
-  "damage": 15,
+  "damage": 14,
   "attackSpeed": 1.4,
   "range": 170,
   "projectile": "poisonDagger",

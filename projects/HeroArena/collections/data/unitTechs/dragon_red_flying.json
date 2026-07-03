@@ -4,21 +4,21 @@
   {
    "id": "drf_storm",
    "title": "Fire Storm",
-   "cost": 24,
+   "cost": 30,
    "description": "Unlocks Fire Storm from above",
    "unlockAbility": "FireStormAbility"
   },
   {
    "id": "drf_aura",
    "title": "Burning Wake",
-   "cost": 24,
+   "cost": 21,
    "description": "Unlocks Burning Aura: the air ignites",
    "unlockAbility": "BurningAuraAbility"
   },
   {
    "id": "drf_scales",
    "title": "Ancient Scales",
-   "cost": 24,
+   "cost": 18,
    "description": "+30% max HP",
    "statModifiers": {
     "maxHP": {

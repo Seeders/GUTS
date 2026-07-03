@@ -4,21 +4,21 @@
   {
    "id": "bea_wolf",
    "title": "Wolf Pack",
-   "cost": 18,
+   "cost": 19,
    "description": "Unlocks Summon Wolf: fights beside you",
    "unlockAbility": "SummonWolfAbility"
   },
   {
    "id": "bea_grasp",
    "title": "Nature's Grasp",
-   "cost": 18,
+   "cost": 24,
    "description": "Unlocks Nature's Grasp: vines seize foes",
    "unlockAbility": "NaturesGraspAbility"
   },
   {
    "id": "bea_alpha",
    "title": "Alpha Bond",
-   "cost": 18,
+   "cost": 14,
    "description": "+30% damage",
    "statModifiers": {
     "damage": {

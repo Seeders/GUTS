@@ -4,28 +4,28 @@
   {
    "id": "sol_shieldwall",
    "title": "Shield Wall",
-   "cost": 14,
+   "cost": 13,
    "description": "Unlocks Shield Wall: brace against damage",
    "unlockAbility": "ShieldWallAbility"
   },
   {
    "id": "sol_phalanx",
    "title": "Phalanx Drill",
-   "cost": 14,
+   "cost": 20,
    "description": "Unlocks Phalanx Formation with nearby soldiers",
    "unlockAbility": "PhalanxFormationAbility"
   },
   {
    "id": "sol_taunt",
    "title": "Provoke",
-   "cost": 14,
+   "cost": 13,
    "description": "Unlocks Taunt: force enemies onto the line",
    "unlockAbility": "TauntAbility"
   },
   {
    "id": "sol_pikes",
    "title": "Skyward Pikes",
-   "cost": 14,
+   "cost": 13,
    "description": "Soldiers can strike flying units",
    "grantAntiAir": true
   }

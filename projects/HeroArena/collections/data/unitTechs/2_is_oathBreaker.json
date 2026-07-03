@@ -4,21 +4,21 @@
   {
    "id": "oat_curse",
    "title": "Dark Oath",
-   "cost": 18,
+   "cost": 14,
    "description": "Unlocks Curse: weaken and doom enemies",
    "unlockAbility": "CurseAbility"
   },
   {
    "id": "oat_drain",
    "title": "Drain Life",
-   "cost": 18,
+   "cost": 14,
    "description": "Unlocks Drain Life: steal HP",
    "unlockAbility": "DrainLifeAbility"
   },
   {
    "id": "oat_corrupt",
    "title": "Corrupting Aura",
-   "cost": 18,
+   "cost": 24,
    "description": "Unlocks Corrupting Aura",
    "unlockAbility": "CorruptingAuraAbility"
   }

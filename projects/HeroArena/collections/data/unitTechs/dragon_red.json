@@ -4,21 +4,21 @@
   {
    "id": "dra_inferno",
    "title": "Inferno",
-   "cost": 24,
+   "cost": 18,
    "description": "Unlocks Inferno: eruption of dragonfire",
    "unlockAbility": "InfernoAbility"
   },
   {
    "id": "dra_storm",
    "title": "Fire Storm",
-   "cost": 24,
+   "cost": 30,
    "description": "Unlocks Fire Storm: the sky burns",
    "unlockAbility": "FireStormAbility"
   },
   {
    "id": "dra_hoardlust",
    "title": "Hoardlust",
-   "cost": 24,
+   "cost": 18,
    "description": "+30% damage",
    "statModifiers": {
     "damage": {

@@ -4,21 +4,21 @@
   {
    "id": "enc_enchant",
    "title": "Enchant Weapon",
-   "cost": 18,
+   "cost": 15,
    "description": "Unlocks Enchant Weapon: empower an ally's blade",
    "unlockAbility": "EnchantWeaponAbility"
   },
   {
    "id": "enc_nova",
    "title": "Frost Nova",
-   "cost": 18,
+   "cost": 24,
    "description": "Unlocks Frost Nova: freeze everything nearby",
    "unlockAbility": "FrostNovaAbility"
   },
   {
    "id": "enc_mindcontrol",
    "title": "Dominate Mind",
-   "cost": 24,
+   "cost": 22,
    "description": "Unlocks Mind Control: seize an enemy unit for your side",
    "unlockAbility": "MindControlAbility"
   }

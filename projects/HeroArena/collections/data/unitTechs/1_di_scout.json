@@ -4,28 +4,28 @@
   {
    "id": "sco_sprint",
    "title": "Sprint",
-   "cost": 14,
+   "cost": 11,
    "description": "Unlocks Sprint: burst of speed",
    "unlockAbility": "SprintAbility"
   },
   {
    "id": "sco_smoke",
    "title": "Smoke Bomb",
-   "cost": 14,
+   "cost": 17,
    "description": "Unlocks Smoke Bomb: vanish from combat",
    "unlockAbility": "SmokeBombAbility"
   },
   {
    "id": "sco_cripple",
    "title": "Crippling Shot",
-   "cost": 14,
+   "cost": 13,
    "description": "Unlocks Crippling Shot: slow fleeing prey",
    "unlockAbility": "CripplingShotAbility"
   },
   {
    "id": "sco_venom",
    "title": "Concentrated Venom",
-   "cost": 14,
+   "cost": 12,
    "description": "+35% damage (poison ignores armor)",
    "statModifiers": {
     "damage": {

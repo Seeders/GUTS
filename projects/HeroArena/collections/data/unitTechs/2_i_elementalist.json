@@ -4,21 +4,21 @@
   {
    "id": "ele_chain",
    "title": "Chain Lightning",
-   "cost": 18,
+   "cost": 17,
    "description": "Unlocks Chain Lightning",
    "unlockAbility": "ChainLightningAbility"
   },
   {
    "id": "ele_bolt",
    "title": "Thunderbolt",
-   "cost": 18,
+   "cost": 15,
    "description": "Unlocks Lightning Bolt: single-target blast",
    "unlockAbility": "LightningBoltAbility"
   },
   {
    "id": "ele_storm",
    "title": "Fire Storm",
-   "cost": 24,
+   "cost": 26,
    "description": "Unlocks Fire Storm: rain destruction",
    "unlockAbility": "FireStormAbility"
   }

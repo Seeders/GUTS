@@ -4,21 +4,21 @@
   {
    "id": "cro_piercing",
    "title": "Piercing Bolt",
-   "cost": 18,
+   "cost": 17,
    "description": "Unlocks Piercing Shot: punch through lines",
    "unlockAbility": "PiercingShotAbility"
   },
   {
    "id": "cro_rapid",
    "title": "Rapid Reload",
-   "cost": 18,
+   "cost": 14,
    "description": "Unlocks Rapid Fire: empty the quiver",
    "unlockAbility": "RapidFireAbility"
   },
   {
    "id": "cro_siege",
    "title": "Siege Bolts",
-   "cost": 18,
+   "cost": 16,
    "description": "+60 attack range",
    "statModifiers": {
     "range": {

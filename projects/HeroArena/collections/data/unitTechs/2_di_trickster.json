@@ -4,21 +4,21 @@
   {
    "id": "tri_mirror",
    "title": "Mirror Images",
-   "cost": 18,
+   "cost": 25,
    "description": "Unlocks Mirror Images: confusing duplicates",
    "unlockAbility": "MirrorImagesAbility"
   },
   {
    "id": "tri_smoke",
    "title": "Vanishing Act",
-   "cost": 18,
+   "cost": 19,
    "description": "Unlocks Smoke Bomb",
    "unlockAbility": "SmokeBombAbility"
   },
   {
    "id": "tri_poison",
    "title": "Poison Coat",
-   "cost": 18,
+   "cost": 15,
    "description": "Unlocks Poison Coat: envenomed blades",
    "unlockAbility": "PoisonCoatAbility"
   }

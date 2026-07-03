@@ -4,21 +4,21 @@
   {
    "id": "gob_disrupt",
    "title": "Disruption Bomb",
-   "cost": 18,
+   "cost": 24,
    "description": "Unlocks Disruption Bomb: silences a whole area",
    "unlockAbility": "DisruptionBombAbility"
   },
   {
    "id": "gob_explosive",
    "title": "Explosive Cache",
-   "cost": 18,
+   "cost": 17,
    "description": "Unlocks Explosive Trap placement",
    "unlockAbility": "ExplosiveTrapAbility"
   },
   {
    "id": "gob_payload",
    "title": "Bigger Payloads",
-   "cost": 18,
+   "cost": 14,
    "description": "+40% damage",
    "statModifiers": {
     "damage": {
