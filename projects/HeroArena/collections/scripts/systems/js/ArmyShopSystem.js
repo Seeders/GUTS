@@ -45,7 +45,8 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         'upgradeTownHall',
         'placeBuildingAuto',
         'getAIPlayerIds',
-        'removeRosterEntry'
+        'removeRosterEntry',
+        'getLeaderDef'
     ];
 
     static OFFER_COUNT = 5;
@@ -77,6 +78,16 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         if (/^1_/.test(id)) return 1;
         if (/^2_/.test(id)) return 2;
         return null;
+    }
+
+    // Tech escalation (Mechabellum): every tech bought on a unit raises that
+    // unit's OTHER techs by +200 supply (14g), hard-capped at +1000 (70g).
+    static TECH_ESCALATION_STEP = 14;
+    static TECH_ESCALATION_CAP  = 70;
+
+    static techEscalation(ownedCount) {
+        return Math.min(ArmyShopSystem.TECH_ESCALATION_CAP,
+            ArmyShopSystem.TECH_ESCALATION_STEP * (ownedCount || 0));
     }
 
     // Mechabellum pricing at our ~14.3-supply-per-gold scale.
@@ -133,6 +144,7 @@ class ArmyShopSystem extends GUTS.BaseSystem {
             const stats = this.game.getComponent(entityId, 'playerStats');
             if (!stats) continue;
             stats.rerollCount = 0;
+            this._applyLeaderRoundPerks(stats);
             stats.currentOffers = this._buildOffers(stats);
             // The round's one random decision: pick 1 of 3 reinforcement cards.
             this._rollReinforcements(stats);
@@ -141,6 +153,39 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         }
         this._aiAutoPick();
         this._aiAutoBuy();
+    }
+
+    // ─── Leader round perks (Mechabellum starting specialists) ──────────────────
+
+    // Free specialist units: Marksman Specialist's L3 Crossbowman (round 1),
+    // Golem Specialist's L2 Stone Golem (round 4). Granted once, tracked on
+    // stats.leaderPerks; the unit is a normal roster squad from then on.
+    _applyLeaderRoundPerks(stats) {
+        const def = this.call.getLeaderDef?.(stats.leaderId);
+        if (!def) return;
+        const round = this.game.state.round || 1;
+        if (!stats.leaderPerks) stats.leaderPerks = {};
+
+        const grants = [];
+        if (def.id === 'sniper' && round >= 1 && !stats.leaderPerks.sniper) {
+            stats.leaderPerks.sniper = true;
+            grants.push({ unitId: '2_sd_crossbowman', level: 3 });
+        }
+        if (def.id === 'golem' && round >= 4 && !stats.leaderPerks.golem) {
+            stats.leaderPerks.golem = true;
+            grants.push({ unitId: '0_golemStone', level: 2 });
+        }
+        for (const g of grants) {
+            if (!Array.isArray(stats.tierUnlocks)) stats.tierUnlocks = [];
+            if (!stats.tierUnlocks.includes(g.unitId)) stats.tierUnlocks.push(g.unitId);
+            this._addUnitToArmy(stats, g.unitId);
+            const entry = stats.heroRoster[stats.heroRoster.length - 1];
+            if (entry && g.level > 1) {
+                entry.paidLevels = g.level - 1;
+                entry.level = g.level;
+                this.call.respawnRosterEntry?.(stats.playerId, stats.heroRoster.length - 1);
+            }
+        }
     }
 
     // ─── Reinforcement cards (the round's 1-of-3 pick) ──────────────────────────
@@ -411,8 +456,9 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         const ownsType = (stats.heroRoster || []).some(e => this._resolveSpawnType(e) === unitId);
         if (!ownsType) return { success: false, reason: 'no_unit_of_type' };
 
-        // Field Manual reinforcement: next tech at a discount (consumed on buy)
-        let cost = techDef.cost || 10;
+        // Mechabellum escalation: prior techs on this unit inflate the price...
+        let cost = (techDef.cost || 10) + ArmyShopSystem.techEscalation(owned.length);
+        // ...then Field Manual reinforcement: next tech at a discount (consumed on buy)
         if (stats.techDiscount) cost = Math.max(1, Math.ceil(cost * (1 - stats.techDiscount)));
         if ((stats.gold || 0) < cost) return { success: false, reason: 'insufficient_gold' };
 
@@ -534,7 +580,9 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         const tier = ArmyShopSystem.unitTier(unitId);
         if (!tier || tier === 1) return { success: false, reason: 'not_unlockable' };
         if ((stats.tierUnlocks || []).includes(unitId)) return { success: false, reason: 'already_unlocked' };
-        const cost = ArmyShopSystem.TIER_UNLOCK_COST[tier] || 0;
+        let cost = ArmyShopSystem.TIER_UNLOCK_COST[tier] || 0;
+        // Giant Specialist: heavies and giants unlock for free
+        if (tier >= 3 && this.call.getLeaderDef?.(stats.leaderId)?.id === 'giant') cost = 0;
         if ((stats.gold || 0) < cost) return { success: false, reason: 'insufficient_gold' };
         stats.gold -= cost;
         if (!Array.isArray(stats.tierUnlocks)) stats.tierUnlocks = [];

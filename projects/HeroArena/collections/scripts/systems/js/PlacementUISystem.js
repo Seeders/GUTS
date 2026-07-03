@@ -1721,6 +1721,10 @@ class PlacementUISystem extends GUTS.BaseSystem {
         const s = this._shopState || {};
         const owned = new Set(s.unitTechs?.[unitId] || []);
         const gold = s.gold ?? 0;
+        // Mechabellum escalation: owned techs inflate the rest (+14g each, cap +70)
+        const escalation = Math.min(70, 14 * owned.size);
+        const discount = s.techDiscount || 0;
+        const priceOf = (t) => Math.max(1, Math.ceil(((t.cost || 10) + escalation) * (1 - discount)));
 
         if (title) title.textContent = `${unitDef.title || unitId} — Technologies`;
         const subtitle = document.querySelector('#techTreeOverlay .arena-overlay-subtitle');
@@ -1728,7 +1732,8 @@ class PlacementUISystem extends GUTS.BaseSystem {
 
         body.innerHTML = `<div class="unit-tech-list">` + techs.map(t => {
             const isOwned = owned.has(t.id);
-            const affordable = gold >= (t.cost || 0);
+            const price = priceOf(t);
+            const affordable = gold >= price;
             const kind = t.unlockAbility ? 'Ability' : (t.unlockUnit ? 'Unlock' : 'Upgrade');
             const cls = `unit-tech-row ${isOwned ? 'owned' : (affordable ? 'buyable' : 'unaffordable')}`;
             return `<div class="${cls}" data-tech-id="${t.id}">
@@ -1737,7 +1742,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
                     <span class="unit-tech-title">${t.title}</span>
                     <span class="unit-tech-desc">${t.description || ''}</span>
                 </span>
-                <span class="unit-tech-cost">${isOwned ? '✔ Owned' : `${t.cost}g`}</span>
+                <span class="unit-tech-cost">${isOwned ? '✔ Owned' : `${price}g`}</span>
             </div>`;
         }).join('') + `</div>`;
 
