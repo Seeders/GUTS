@@ -16,11 +16,11 @@
    "unlockAbility": "FrostNovaAbility"
   },
   {
-   "id": "enc_polymorph",
-   "title": "Polymorph",
+   "id": "enc_mindcontrol",
+   "title": "Dominate Mind",
    "cost": 24,
-   "description": "Unlocks Polymorph: turn a threat into a sheep",
-   "unlockAbility": "PolymorphAbility"
+   "description": "Unlocks Mind Control: seize an enemy unit for your side",
+   "unlockAbility": "MindControlAbility"
   }
  ],
  "fileName": "2_i_enchanter"
