@@ -72,7 +72,7 @@ class UnitOrderSystem extends GUTS.BaseSystem {
                 const unitTypeComp = this.game.getComponent(unitId, 'unitType');
                 const unitTypeDef = this.game.getUnitTypeDef( unitTypeComp);
                 const unitName = unitTypeDef?.id || unitId;
-                console.log(`[UnitOrderSystem] applySquadTargetPosition entity=${unitId} (${unitName}) placementId=${placementId} isHiding=${!!meta?.isHiding} isMoveOrder=${!!meta?.isMoveOrder} wasHiding=${playerOrder.isHiding}`);
+                // console.log(`[UnitOrderSystem] applySquadTargetPosition entity=${unitId} (${unitName}) placementId=${placementId} isHiding=${!!meta?.isHiding} isMoveOrder=${!!meta?.isMoveOrder} wasHiding=${playerOrder.isHiding}`);
 
                 // Update playerOrder values
                 playerOrder.targetPositionX = targetPosition.x || 0;
@@ -94,7 +94,7 @@ class UnitOrderSystem extends GUTS.BaseSystem {
                     // DEBUG: Log path clear for archer units
                     if (unitName?.includes('archer')) {
                         const existingPath = this.call.getEntityPath( unitId);
-                        console.log(`[UnitOrderSystem] ARCHER ${unitId} CLEARING path (had ${existingPath ? existingPath.length + ' waypoints' : 'no path'})`);
+                        // console.log(`[UnitOrderSystem] ARCHER ${unitId} CLEARING path (had ${existingPath ? existingPath.length + ' waypoints' : 'no path'})`);
                     }
                     this.call.clearEntityPath( unitId);
                 }
@@ -104,7 +104,7 @@ class UnitOrderSystem extends GUTS.BaseSystem {
                 if (pathfinding) {
                     // DEBUG: Log pathfinding reset for archer units
                     if (unitName?.includes('archer')) {
-                        console.log(`[UnitOrderSystem] ARCHER ${unitId} resetting pathfinding state (lastPathRequest was ${pathfinding.lastPathRequest})`);
+                        // console.log(`[UnitOrderSystem] ARCHER ${unitId} resetting pathfinding state (lastPathRequest was ${pathfinding.lastPathRequest})`);
                     }
                     pathfinding.lastPathRequest = 0;
                     pathfinding.pathIndex = 0;
