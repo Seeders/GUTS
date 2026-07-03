@@ -325,23 +325,20 @@ class HeroRosterSystem extends GUTS.BaseSystem {
     snapshotHeroPositions() {
         if (!this.game.isServer && !this.game.state?.isLocalGame) return;
 
-        // A squad's saved position is its members' CENTROID — the anchor its
-        // members respawn in formation around every following round.
-        const acc = new Map();   // "playerId:rosterIndex" → {x, z, n, playerId, rosterIndex}
+        // A squad's saved anchor is its FIRST member's position — member 0 has
+        // offset (0,0), so next round's respawn reproduces the exact layout on
+        // the same grid cells. (A centroid lands on cell BOUNDARIES for even
+        // member counts, drifting units off their selection squares.)
+        const seen = new Set();
         for (const { entityId, playerId, rosterIndex } of this.battleHeroEntities) {
+            const key = `${playerId}:${rosterIndex}`;
+            if (seen.has(key)) continue;
             const pos = this.game.getComponent(entityId, 'transform')?.position;
             if (!pos) continue;
-            const key = `${playerId}:${rosterIndex}`;
-            const a = acc.get(key) || { x: 0, z: 0, n: 0, playerId, rosterIndex };
-            a.x += pos.x; a.z += pos.z; a.n++;
-            acc.set(key, a);
-        }
-
-        for (const a of acc.values()) {
-            const stats = this._statsByPlayerId(a.playerId);
-            const entry = stats?.heroRoster?.[a.rosterIndex];
-            if (!entry || a.n === 0) continue;
-            entry.lastPosition = { x: a.x / a.n, z: a.z / a.n };
+            seen.add(key);
+            const stats = this._statsByPlayerId(playerId);
+            const entry = stats?.heroRoster?.[rosterIndex];
+            if (entry) entry.lastPosition = { x: pos.x, z: pos.z };
         }
     }
 
