@@ -1885,6 +1885,34 @@ class PlacementUISystem extends GUTS.BaseSystem {
         if (tip) tip.style.display = 'none';
     }
 
+    // "Deploys 1/2  [+slot 7g]" header — Mechabellum recruitment allowance.
+    _renderDeploySlots(s) {
+        let bar = document.getElementById('deploySlotsBar');
+        if (!bar) {
+            const host = this.elements.unlockedUnitsCards?.parentElement;
+            if (!host) return;
+            bar = document.createElement('div');
+            bar.id = 'deploySlotsBar';
+            bar.style.cssText = 'display:flex; align-items:center; gap:8px; padding:2px 4px 6px; font-size:0.8rem; color:#e8d9a0;';
+            host.insertBefore(bar, this.elements.unlockedUnitsCards);
+            bar.addEventListener('click', (e) => {
+                if (e.target.id !== 'buyDeploySlotBtn') return;
+                this.call.submitBuyDeploySlot((res) => {
+                    if (res?.success === false && res?.reason === 'insufficient_gold') {
+                        GUTS.NotificationSystem?.show?.('Not enough gold', 'error');
+                    }
+                    this._renderShop(res?.state || res);
+                });
+            });
+        }
+        const used = s.deploysUsed ?? 0;
+        const slots = s.deploySlots ?? 2;
+        bar.innerHTML = `<span title="New squads you can recruit from the menu this round (free card units don't count)">🎖 Deploys ${used}/${slots}</span>
+            <button id="buyDeploySlotBtn" style="padding:1px 8px; font-size:0.72rem; background:rgba(216,180,90,0.15);
+                border:1px solid rgba(216,180,90,0.5); border-radius:3px; color:#e8d9a0; cursor:pointer;"
+                title="Extra recruitment: +1 deploy slot this round">+1 slot (${s.nextSlotCost ?? 7}g)</button>`;
+    }
+
     _onUnlockedUnitClick(event) {
         // Tech button opens the unit's technology panel instead of buying
         const techBtn = event.target.closest('[data-tech-unit]');
