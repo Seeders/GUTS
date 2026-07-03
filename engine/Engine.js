@@ -90,12 +90,16 @@ class Engine extends BaseEngine {
 
         // Process ticks at fixed rate, limit per frame to catch up gradually
         // This prevents lag spikes while maintaining sync
-        const maxTicksPerFrame = 3;
+        // Battle fast-forward: game.state.battleSpeed multiplies how many fixed
+        // ticks are consumed per real second (sim dt stays fixed — deterministic).
+        const speed = this.gameInstance?.state?.battleSpeed || 1;
+        const tickInterval = this.tickRate / speed;
+        const maxTicksPerFrame = 3 * speed;
         let ticksProcessed = 0;
 
-        while (this.accumulator >= this.tickRate && ticksProcessed < maxTicksPerFrame) {
+        while (this.accumulator >= tickInterval && ticksProcessed < maxTicksPerFrame) {
             await this.tick();
-            this.accumulator -= this.tickRate;
+            this.accumulator -= tickInterval;
             ticksProcessed++;
         }
 
