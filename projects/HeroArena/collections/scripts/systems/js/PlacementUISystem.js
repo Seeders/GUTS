@@ -1246,6 +1246,81 @@ class PlacementUISystem extends GUTS.BaseSystem {
         if (this.elements.sellUnitBtn) this.elements.sellUnitBtn.disabled = notPrep;
     }
 
+    // Full squad detail: portrait, level + XP bar, live stats (tech/level
+    // bonuses included, read from the live entity), tags, owned techs.
+    _renderSquadDetail(unitIds) {
+        const squads = this._selectedSquads();
+        if (!squads.length) return '';
+        const hx = this.game.heroExperienceSystem;
+        const s = this._shopState || {};
+
+        const one = (sq) => {
+            const lead = sq.members[0];
+            const unitTypeComp = this.game.getComponent(lead, 'unitType');
+            const def = this.game.getUnitTypeDef(unitTypeComp) || {};
+            const unitId = def.id || '';
+            const info = this.game.getComponent(lead, 'heroRosterInfo');
+            const entry = this._rosterEntryForInfo(info);
+            const level = info?.level || 1;
+            const combat = this.game.getComponent(lead, 'combat');
+            const health = this.game.getComponent(lead, 'health');
+            const alive = sq.members.filter(id => this.game.entityAlive?.[id] === 1).length;
+
+            const xp = entry?.xp || 0;
+            const xpMax = hx?.xpToNextLevel?.(entry) || 1;
+            const xpPct = Math.min(100, Math.round(xp / xpMax * 100));
+            const ready = entry && hx?.isLevelReady?.(entry);
+            const maxLevel = hx?.constructor?.MAX_LEVEL || 9;
+
+            const tags = this._unitTags(def, unitId);
+            const techsAll = this.collections.unitTechs?.[unitId]?.techs || [];
+            const owned = new Set(
+                (s.unitTechs?.[unitId]) || (this._myStats()?.unitTechs?.[unitId]) || []);
+            const ownedTechs = techsAll.filter(t => owned.has(t.id));
+
+            const dps = Math.round((combat?.damage || 0) * (combat?.attackSpeed || 1) * alive);
+            const stats = [
+                ['HP', `${Math.round(health?.current ?? 0)}/${Math.round(health?.max ?? def.hp ?? 0)}`],
+                ['Damage', `${Math.round(combat?.damage ?? def.damage ?? 0)} @ ${(combat?.attackSpeed ?? def.attackSpeed ?? 1).toFixed(1)}/s`],
+                ['Squad DPS', dps],
+                ['Range', (combat?.range ?? def.range ?? 1) > 30 ? Math.round(combat.range) : 'Melee'],
+                ['Armor', Math.round(combat?.armor ?? def.armor ?? 0)],
+                ['Members', `${alive}/${sq.members.length}`]
+            ];
+
+            return `<div class="sq-detail">
+                <div class="sq-head">
+                    ${this._iconImg(def, 'sq-img')}
+                    <div class="sq-title">
+                        <div class="sq-name">${def.title || unitId} <span class="sq-level">Lv ${level}${level >= maxLevel ? ' MAX' : ''}</span></div>
+                        <div class="sq-tags">${tags.map(t => `<span class="ut-tag">${t}</span>`).join('')}</div>
+                    </div>
+                </div>
+                ${level < maxLevel ? `<div class="sq-xp" title="Combat XP — full bar allows promotion">
+                    <div class="sq-xp-fill ${ready ? 'sq-xp-ready' : ''}" style="width:${xpPct}%"></div>
+                    <span class="sq-xp-label">${ready ? '★ PROMOTION READY' : `XP ${xpPct}%`}</span>
+                </div>` : ''}
+                <div class="sq-stats">${stats.map(([k, v]) =>
+                    `<span class="ut-k">${k}</span><span class="ut-v">${v}</span>`).join('')}</div>
+                ${ownedTechs.length ? `<div class="sq-techs">${ownedTechs.map(t =>
+                    `<div class="ut-tech owned">✔ ${t.title}</div>`).join('')}</div>`
+                    : '<div class="sq-notechs">No technologies purchased</div>'}
+            </div>`;
+        };
+
+        if (squads.length === 1) return one(squads[0]);
+        return `<div class="sq-multi">${squads.length} squads selected</div>` + one(squads[0]);
+    }
+
+    _myStats() {
+        const myId = this.game.clientNetworkManager?.numericPlayerId ?? 0;
+        for (const eid of (this.call.getPlayerEntities?.() || [])) {
+            const st = this.game.getComponent(eid, 'playerStats');
+            if (st?.playerId === myId) return st;
+        }
+        return null;
+    }
+
     // Total cost to level every selected own squad once (client-side estimate
     // using the same rules as the server: cost × level, halved when the squad's
     // XP bar is full, hard cap at max level).
@@ -1681,71 +1756,133 @@ class PlacementUISystem extends GUTS.BaseSystem {
         this.updateHUD?.();
     }
 
+    // ─── Unit dock (Mechabellum-style recruit bar) ──────────────────────────────
+
+    _iconImg(def, cls) {
+        const imagePath = this.collections?.icons?.[def?.icon]?.imagePath;
+        return imagePath
+            ? `<img class="${cls}" src="./resources/${imagePath}" alt="">`
+            : `<span class="${cls} ud-fallback">⚔</span>`;
+    }
+
+    // Role/trait tags derived from the unit's numbers — the "what does it do".
+    _unitTags(def, id) {
+        const tags = [];
+        const shop = GUTS.ArmyShopSystem;
+        const members = (def.squadWidth || 1) * (def.squadHeight || 1);
+        if (def.isFlying) tags.push('Flying');
+        if ((def.range || 1) >= 260) tags.push('Artillery');
+        else if ((def.range || 1) > 30) tags.push('Ranged');
+        else tags.push('Melee');
+        if (members >= 4) tags.push('Swarm');
+        if ((def.armor || 0) >= 10) tags.push('Armored');
+        if ((def.speed || 45) >= 60) tags.push('Fast');
+        if (def.canTargetAir && !def.isFlying) tags.push('Anti-Air');
+        if (def.projectile === 'fireball') tags.push('Splash');
+        if ((def.damage || 0) >= 90) tags.push('Alpha');
+        const elem = def.element;
+        if (elem === 'poison' || elem === 'holy' || elem === 'shadow') tags.push('Unresistable');
+        else if (elem && elem !== 'physical') tags.push(elem[0].toUpperCase() + elem.slice(1));
+        return tags;
+    }
+
+    _statRows(def) {
+        const members = (def.squadWidth || 1) * (def.squadHeight || 1);
+        const dps = Math.round((def.damage || 0) * (def.attackSpeed || 1) * members);
+        return [
+            ['Members', members],
+            ['HP', `${def.hp || 0}${members > 1 ? ` ×${members}` : ''}`],
+            ['Damage', `${def.damage || 0} @ ${def.attackSpeed || 1}/s`],
+            ['Squad DPS', dps],
+            ['Range', (def.range || 1) > 30 ? def.range : 'Melee'],
+            ['Armor', def.armor || 0],
+            ['Speed', def.speed || 45]
+        ];
+    }
+
     _renderUnlockedUnits(s) {
         if (!this.elements.unlockedUnitsCards) return;
         this._renderDeploySlots(s);
-        const unlocked = s.unlocked || [];
+        this._dockState = s;
         const fielded = new Set(s.ownedUnitTypes || []);
-        this.elements.unlockedUnitsCards.innerHTML = unlocked.map(u => {
-            const affordable = (s.gold ?? 0) >= u.cost;
+
+        const card = (u, locked) => {
+            const def = this.collections.units?.[u.id] || {};
             const techs = this.collections.unitTechs?.[u.id]?.techs || [];
-            const ownedCount = (s.unitTechs?.[u.id] || []).length;
-            // Tech button shows once the player fields the type (you tech what you field)
-            const techBtn = techs.length && fielded.has(u.id)
-                ? `<button class="unit-tech-btn" data-tech-unit="${u.id}"
-                       title="Technologies (${ownedCount}/${techs.length})">⚙ ${ownedCount}/${techs.length}</button>`
-                : '';
-            return `<div class="unlocked-unit-card ${affordable ? '' : 'unaffordable'}" data-unit-id="${u.id}">
-                <span class="unlocked-unit-name">${u.title}</span>
-                <span class="unlocked-unit-cost">${u.cost}g</span>
-                ${techBtn}
+            const ownedTechs = (s.unitTechs?.[u.id] || []).length;
+            const affordable = (s.gold ?? 0) >= (locked ? u.unlockCost : u.cost);
+            const tier = GUTS.ArmyShopSystem.unitTier(u.id) || 1;
+            const pips = techs.length && fielded.has(u.id)
+                ? `<span class="ud-pips">${'●'.repeat(ownedTechs)}${'○'.repeat(Math.max(0, techs.length - ownedTechs))}</span>` : '';
+            const techBtn = techs.length && fielded.has(u.id) && !locked
+                ? `<button class="ud-tech" data-tech-unit="${u.id}" title="Technologies">⚙</button>` : '';
+            return `<div class="ud-card tier-${tier} ${locked ? 'ud-locked' : ''} ${affordable ? '' : 'ud-poor'}"
+                data-${locked ? 'locked-id' : 'unit-id'}="${u.id}" data-hover-id="${u.id}">
+                ${this._iconImg(def, 'ud-img')}
+                ${locked ? '<span class="ud-lock">🔒</span>' : ''}
+                <span class="ud-price">${locked ? `${u.unlockCost}g` : `${u.cost}g`}</span>
+                ${pips}${techBtn}
             </div>`;
-        }).join('') + (s.locked || []).map(u => {
-            const affordable = (s.gold ?? 0) >= u.unlockCost;
-            return `<div class="unlocked-unit-card locked-unit-card ${affordable ? '' : 'unaffordable'}"
-                data-locked-id="${u.id}"
-                title="Tier ${u.tier} — unlock once for ${u.unlockCost}g, then buy squads for ${u.cost}g">
-                <span class="unlocked-unit-name">🔒 ${u.title}</span>
-                <span class="unlocked-unit-cost">T${u.tier} · ${u.unlockCost}g</span>
-            </div>`;
-        }).join('');
-    }
+        };
 
-    _onShopOfferClick(event) {
-        const card = event.target.closest('[data-offer-index]');
-        if (!card) return;
-        const idx = parseInt(card.dataset.offerIndex, 10);
-        const offer = this._shopState?.offers?.[idx];
-        if (!offer || offer.consumed) return;
-        this.call.submitBuyOffer(idx, (res) => this._handleBuyResult(res));
-    }
+        this.elements.unlockedUnitsCards.innerHTML =
+            (s.unlocked || []).map(u => card(u, false)).join('')
+            + (s.locked || []).map(u => card(u, true)).join('');
 
-    // "Deploys 1/2  [+slot 7g]" header — Mechabellum recruitment allowance.
-    _renderDeploySlots(s) {
-        let bar = document.getElementById('deploySlotsBar');
-        if (!bar) {
-            const host = this.elements.unlockedUnitsCards?.parentElement;
-            if (!host) return;
-            bar = document.createElement('div');
-            bar.id = 'deploySlotsBar';
-            bar.style.cssText = 'display:flex; align-items:center; gap:8px; padding:2px 4px 6px; font-size:0.8rem; color:#e8d9a0;';
-            host.insertBefore(bar, this.elements.unlockedUnitsCards);
-            bar.addEventListener('click', (e) => {
-                if (e.target.id !== 'buyDeploySlotBtn') return;
-                this.call.submitBuyDeploySlot((res) => {
-                    if (res?.success === false && res?.reason === 'insufficient_gold') {
-                        GUTS.NotificationSystem?.show?.('Not enough gold', 'error');
-                    }
-                    this._renderShop(res?.state || res);
-                });
+        if (!this._dockHoverWired) {
+            this._dockHoverWired = true;
+            const cards = this.elements.unlockedUnitsCards;
+            cards.addEventListener('mouseover', (e) => {
+                const el = e.target.closest('[data-hover-id]');
+                if (el) this._showUnitTooltip(el.dataset.hoverId, el);
             });
+            cards.addEventListener('mouseleave', () => this._hideUnitTooltip());
         }
-        const used = s.deploysUsed ?? 0;
-        const slots = s.deploySlots ?? 2;
-        bar.innerHTML = `<span title="New squads you can recruit from the menu this round (free card units don't count)">🎖 Deploys ${used}/${slots}</span>
-            <button id="buyDeploySlotBtn" style="padding:1px 8px; font-size:0.72rem; background:rgba(216,180,90,0.15);
-                border:1px solid rgba(216,180,90,0.5); border-radius:3px; color:#e8d9a0; cursor:pointer;"
-                title="Extra recruitment: +1 deploy slot this round">+1 slot (${s.nextSlotCost ?? 7}g)</button>`;
+    }
+
+    _ensureTooltip() {
+        let tip = document.getElementById('unitTooltip');
+        if (!tip) {
+            tip = document.createElement('div');
+            tip.id = 'unitTooltip';
+            document.body.appendChild(tip);
+        }
+        return tip;
+    }
+
+    _showUnitTooltip(unitId, anchorEl) {
+        const s = this._dockState || {};
+        const def = this.collections.units?.[unitId] || {};
+        const tip = this._ensureTooltip();
+        const tags = this._unitTags(def, unitId);
+        const techs = this.collections.unitTechs?.[unitId]?.techs || [];
+        const owned = new Set(s.unitTechs?.[unitId] || []);
+        const tier = GUTS.ArmyShopSystem.unitTier(unitId) || 1;
+        const locked = (s.locked || []).find(l => l.id === unitId);
+
+        tip.innerHTML = `
+            <div class="ut-head">
+                ${this._iconImg(def, 'ut-img')}
+                <div>
+                    <div class="ut-name">${def.title || unitId}</div>
+                    <div class="ut-sub">Tier ${tier}${locked ? ` — 🔒 unlock ${locked.unlockCost}g` : ''}</div>
+                    <div class="ut-tags">${tags.map(t => `<span class="ut-tag">${t}</span>`).join('')}</div>
+                </div>
+            </div>
+            <div class="ut-stats">${this._statRows(def).map(([k, v]) =>
+                `<span class="ut-k">${k}</span><span class="ut-v">${v}</span>`).join('')}</div>
+            ${techs.length ? `<div class="ut-techs">${techs.map(t =>
+                `<div class="ut-tech ${owned.has(t.id) ? 'owned' : ''}">${owned.has(t.id) ? '✔' : '○'} ${t.title} <span class="ut-tech-d">${t.description || ''}</span></div>`).join('')}</div>` : ''}
+            <div class="ut-hint">${locked ? 'Click to unlock' : 'Click to recruit'}</div>`;
+        const r = anchorEl.getBoundingClientRect();
+        tip.style.display = 'block';
+        tip.style.left = Math.max(8, Math.min(window.innerWidth - 328, r.left - 60)) + 'px';
+        tip.style.bottom = (window.innerHeight - r.top + 10) + 'px';
+    }
+
+    _hideUnitTooltip() {
+        const tip = document.getElementById('unitTooltip');
+        if (tip) tip.style.display = 'none';
     }
 
     _onUnlockedUnitClick(event) {
