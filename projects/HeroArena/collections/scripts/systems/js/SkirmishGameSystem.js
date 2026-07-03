@@ -251,63 +251,11 @@ class SkirmishGameSystem extends GUTS.BaseSystem {
     // ==================== VICTORY CONDITIONS ====================
 
     /**
-     * Called when battle ends - check victory condition for skirmish mode
-     * A team loses when all their buildings are destroyed
+     * Legacy building-loss victory removed: command buildings are Mechabellum
+     * towers now — they respawn every round and losing them only breaks morale.
+     * The match ends solely on commander HP (AutobattlerRoundSystem._checkGameOver).
      */
     onBattleEnd() {
-        // Get all alive buildings grouped by team
-        const buildingsByTeam = {};
-        buildingsByTeam[this.enums.team.left] = [];
-        buildingsByTeam[this.enums.team.right] = [];
-
-        const buildingEntities = this.game.getEntitiesWith('unitType', 'team', 'health');
-        for (const entityId of buildingEntities) {
-            const unitTypeComp = this.game.getComponent(entityId, 'unitType');
-            const unitType = this.game.getUnitTypeDef( unitTypeComp);
-            if (!unitType || unitType.collection !== 'buildings') continue;
-
-            const health = this.game.getComponent(entityId, 'health');
-            if (!health || health.current <= 0) continue;
-
-            const deathState = this.game.getComponent(entityId, 'deathState');
-            if (deathState && deathState.state >= this.enums.deathState.dying) continue;
-
-            const team = this.game.getComponent(entityId, 'team');
-            if (team && buildingsByTeam[team.team] !== undefined) {
-                buildingsByTeam[team.team].push(entityId);
-            }
-        }
-
-        // Check if any team has no buildings left
-        let losingTeam = null;
-        if (buildingsByTeam[this.enums.team.left].length === 0 && buildingsByTeam[this.enums.team.right].length > 0) {
-            losingTeam = this.enums.team.left;
-        } else if (buildingsByTeam[this.enums.team.right].length === 0 && buildingsByTeam[this.enums.team.left].length > 0) {
-            losingTeam = this.enums.team.right;
-        }
-
-        if (losingTeam !== null) {
-            // Find the winner (player on the opposite team)
-            const playerEntities = this.call.getPlayerEntities();
-            for (const entityId of playerEntities) {
-                const stats = this.game.getComponent(entityId, 'playerStats');
-                if (stats && stats.team !== losingTeam) {
-                    const result = {
-                        winner: stats.playerId,
-                        reason: 'buildings_destroyed',
-                        finalStats: this.getPlayerStatsForBroadcast(),
-                        totalRounds: this.game.state.round
-                    };
-
-                    // Broadcast game end and end game
-                    this.call.broadcastGameEnd( result);
-                    this.game.endGame(result);
-                    return;
-                }
-            }
-        }
-
-        // No victory yet - game continues to next round
     }
 
     /**
