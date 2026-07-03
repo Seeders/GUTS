@@ -157,5 +157,6 @@
   "icon": "dragon",
   "visionRange": 280,
   "projectile": "fireball",
-  "canTargetAir": true
+  "canTargetAir": true,
+  "flyHeight": 130
 }

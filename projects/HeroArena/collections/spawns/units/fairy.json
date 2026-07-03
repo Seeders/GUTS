@@ -162,5 +162,6 @@
   "requiresUnits": [],
   "requiresBuildings": [],
   "isFlying": true,
-  "canTargetAir": true
+  "canTargetAir": true,
+  "flyHeight": 80
 }

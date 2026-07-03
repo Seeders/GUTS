@@ -925,10 +925,14 @@ class PlacementSystem extends GUTS.BaseSystem {
         worldX = clamped.x; worldZ = clamped.z;
 
         const terrainHeight = this.call.getTerrainHeight(worldX, worldZ);
+        // Flying units sit flyHeight above the terrain even during prep
+        // (the movement sim only hovers them once battle runs).
+        const def = this.game.getUnitTypeDef(this.game.getComponent(entityId, 'unitType'));
+        const hover = def?.isFlying ? (def.flyHeight || 80) : 0;
         // Mutate fields individually — the component proxy disallows replacing the whole `position` object
         transform.position.x = worldX;
         transform.position.z = worldZ;
-        transform.position.y = terrainHeight != null ? terrainHeight : transform.position.y;
+        transform.position.y = terrainHeight != null ? terrainHeight + hover : transform.position.y;
         // Optional facing (used by formation placement); left untouched for plain moves.
         if (rotationY != null && transform.rotation) transform.rotation.y = rotationY;
         return { success: true, position: transform.position, rotationY: transform.rotation?.y };
