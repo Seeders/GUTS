@@ -1,0 +1,42 @@
+{
+ "unit": "dragon_red_flying",
+ "fileName": "dragon_red_flying",
+ "techs": [
+  {
+   "id": "dra_inferno",
+   "title": "Inferno",
+   "cost": 24,
+   "description": "Unlocks Inferno: eruption of dragonfire",
+   "unlockAbility": "InfernoAbility"
+  },
+  {
+   "id": "dra_storm",
+   "title": "Fire Storm",
+   "cost": 30,
+   "description": "Unlocks Fire Storm from above",
+   "unlockAbility": "FireStormAbility"
+  },
+  {
+   "id": "dra_hoardlust",
+   "title": "Hoardlust",
+   "cost": 18,
+   "description": "+30% damage",
+   "statModifiers": {
+    "damage": {
+     "pct": 0.3
+    }
+   }
+  },
+  {
+   "id": "drf_scales",
+   "title": "Ancient Scales",
+   "cost": 18,
+   "description": "+30% max HP",
+   "statModifiers": {
+    "maxHP": {
+     "pct": 0.3
+    }
+   }
+  }
+ ]
+}

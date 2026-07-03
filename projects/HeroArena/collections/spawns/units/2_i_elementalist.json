@@ -6,21 +6,19 @@
   "weaponType": "staff",
   "size": 25,
   "height": 50,
-  "value": 120,
-  "hp": 160,
+  "value": 70,
+  "hp": 340,
   "speed": 50,
-  "damage": 22,
+  "damage": 53,
   "attackSpeed": 0.8,
-  "range": 160,
+  "range": 180,
   "projectile": "fireball",
   "element": "lightning",
-  "armor": 2,
+  "armor": 0,
   "fireResistance": 0.4,
   "coldResistance": 0,
   "lightningResistance": 0.2,
-  "abilities": [
-    "ChainLightningAbility"
-  ],
+  "abilities": [],
   "render": {
     "animations": {
       "idle": [
@@ -181,5 +179,7 @@
   "placementGridHeight": 1,
   "requiresUnits": [],
   "requiresBuildings": [],
-  "spriteAnimationSet": "elementalist2i"
+  "spriteAnimationSet": "elementalist2i",
+  "visionRange": 280,
+  "canTargetAir": true
 }

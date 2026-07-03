@@ -1,0 +1,10 @@
+{
+ "title": "Field Manual",
+ "icon": "\ud83d\udcd6",
+ "kind": "techDiscount",
+ "pct": 0.5,
+ "description": "Your next technology costs half",
+ "weight": 3,
+ "minRound": 2,
+ "fileName": "fieldManual"
+}

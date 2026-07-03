@@ -1,0 +1,31 @@
+{
+ "unit": "2_s_gladiator",
+ "techs": [
+  {
+   "id": "gla_retaliate",
+   "title": "Retaliation",
+   "cost": 14,
+   "description": "Unlocks Retaliate: counter every blow",
+   "unlockAbility": "RetaliateAbility"
+  },
+  {
+   "id": "gla_taunt",
+   "title": "Crowd Favorite",
+   "cost": 15,
+   "description": "Unlocks Taunt: demand attention",
+   "unlockAbility": "TauntAbility"
+  },
+  {
+   "id": "gla_champion",
+   "title": "Champion",
+   "cost": 14,
+   "description": "+40% max HP",
+   "statModifiers": {
+    "maxHP": {
+     "pct": 0.4
+    }
+   }
+  }
+ ],
+ "fileName": "2_s_gladiator"
+}

@@ -42,5 +42,5 @@
   "attackSound": "plasma",
   "hitSound": "plasma",
   "homing": true,
-  "homingStrength": 0.3
+  "homingStrength": 0.8
 }

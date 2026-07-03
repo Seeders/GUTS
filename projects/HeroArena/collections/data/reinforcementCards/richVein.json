@@ -1,0 +1,10 @@
+{
+ "title": "Rich Vein",
+ "icon": "\u26cf\ufe0f",
+ "kind": "gold",
+ "amount": 26,
+ "description": "+26 gold now",
+ "weight": 2,
+ "minRound": 4,
+ "fileName": "richVein"
+}

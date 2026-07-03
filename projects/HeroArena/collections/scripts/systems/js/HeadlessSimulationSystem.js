@@ -111,40 +111,29 @@ class HeadlessSimulationSystem extends GUTS.BaseSystem {
             this._simulationComplete = true;
             this.game.state.gameOver = true;
 
-            // Determine winner from remaining buildings if not already set
+            // Determine winner by COMMANDER HP (the Mechabellum-era win
+            // condition) if AutobattlerRoundSystem didn't already set one.
             if (!this.game.state.winner) {
                 const reverseEnums = this.game.getReverseEnums();
-                const leftBuildings = this._countTeamBuildings(this.enums.team.left);
-                const rightBuildings = this._countTeamBuildings(this.enums.team.right);
-
-                if (leftBuildings > rightBuildings) {
+                const left = this._commanderHP(this.enums.team.left);
+                const right = this._commanderHP(this.enums.team.right);
+                if (left > right) {
                     this.game.state.winner = reverseEnums.team?.[this.enums.team.left] || 'left';
-                } else if (rightBuildings > leftBuildings) {
+                } else if (right > left) {
                     this.game.state.winner = reverseEnums.team?.[this.enums.team.right] || 'right';
                 } else {
-                    // Buildings are equal (both 0 or tied) - fall back to surviving combat units
-                    const leftUnits = this._countSurvivingCombatUnits(this.enums.team.left);
-                    const rightUnits = this._countSurvivingCombatUnits(this.enums.team.right);
-
-                    if (leftUnits > rightUnits) {
-                        this.game.state.winner = reverseEnums.team?.[this.enums.team.left] || 'left';
-                    } else if (rightUnits > leftUnits) {
-                        this.game.state.winner = reverseEnums.team?.[this.enums.team.right] || 'right';
-                    } else {
-                        // True draw - both buildings and units are equal
-                        this.game.state.winner = 'draw';
-                    }
+                    this.game.state.winner = 'draw';
                 }
             }
             return true;
         }
 
-        // Round cap: judge the unfinished match by remaining Town Hall health —
-        // the HeroArena win condition — not the legacy TBW team-health pool.
+        // Round cap: judge the unfinished match by remaining COMMANDER HP —
+        // the Mechabellum-era win condition.
         if (this._maxRounds > 0 && this.game.state.round >= this._maxRounds) {
             const reverseEnums = this.game.getReverseEnums();
-            const leftTH = this._townHallHealth(this.enums.team.left);
-            const rightTH = this._townHallHealth(this.enums.team.right);
+            const leftTH = this._commanderHP(this.enums.team.left);
+            const rightTH = this._commanderHP(this.enums.team.right);
 
             this.game.state.gameOver = true;
             if (leftTH > rightTH) {
@@ -162,6 +151,14 @@ class HeadlessSimulationSystem extends GUTS.BaseSystem {
     }
 
     // Remaining Town Hall (any tier) health for a team, 0 if destroyed.
+    _commanderHP(team) {
+        for (const eid of (this.game.getEntitiesWith('playerStats') || [])) {
+            const stats = this.game.getComponent(eid, 'playerStats');
+            if (stats?.team === team) return stats.commanderHP ?? 0;
+        }
+        return 0;
+    }
+
     _townHallHealth(team) {
         const thTiers = this.game.buildingSystem?.constructor?.TOWNHALL_LEVEL
             || { townHall: 1, keep: 2, castle: 3 };

@@ -7,9 +7,9 @@
   "size": 25,
   "height": 50,
   "value": 35,
-  "hp": 130,
+  "hp": 80,
   "speed": 55,
-  "damage": 18,
+  "damage": 15,
   "attackSpeed": 0.8,
   "range": 180,
   "projectile": "fireball",
@@ -168,15 +168,16 @@
     "2_i_enchanter",
     "2_i_necromancer"
   ],
-  "squadWidth": 1,
+  "squadWidth": 2,
   "squadHeight": 1,
-  "placementGridWidth": 1,
+  "placementGridWidth": 2,
   "placementGridHeight": 1,
   "abilities": [],
   "icon": "unit_apprentice",
-  "visionRange": 500,
+  "visionRange": 280,
   "supplyCost": 2,
   "spriteAnimationSet": "apprentice",
   "requiresUnits": [],
-  "requiresBuildings": []
+  "requiresBuildings": [],
+  "canTargetAir": true
 }

@@ -6,13 +6,13 @@
   "weaponType": "sword",
   "size": 25,
   "height": 50,
-  "value": 120,
-  "hp": 280,
+  "value": 70,
+  "hp": 195,
   "speed": 40,
-  "damage": 24,
-  "attackSpeed": 1,
-  "element": "fire",
-  "armor": 10,
+  "damage": 12,
+  "attackSpeed": 1.0,
+  "element": "physical",
+  "armor": 16,
   "fireResistance": 0.6,
   "coldResistance": 0.1,
   "lightningResistance": 0.2,
@@ -137,14 +137,13 @@
     ]
   },
   "buyable": false,
-  "squadWidth": 1,
+  "squadWidth": 3,
   "squadHeight": 1,
-  "placementGridWidth": 1,
+  "placementGridWidth": 3,
   "placementGridHeight": 1,
-  "abilities": [
-    "PhalanxFormationAbility"
-  ],
+  "abilities": [],
   "requiresUnits": [],
   "requiresBuildings": [],
-  "spriteAnimationSet": "hoplite2sd"
+  "spriteAnimationSet": "hoplite2sd",
+  "visionRange": 250
 }

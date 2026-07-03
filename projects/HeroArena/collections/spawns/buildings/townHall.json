@@ -10,7 +10,7 @@
   "height": 100,
   "size": 48,
   "icon": "building_townHall",
-  "hp": 2500,
+  "hp": 300,
   "visionRange": 200,
   "supplyProvided": 10,
   "spriteScale": 128,
@@ -53,5 +53,6 @@
   "spriteAnimationSet": "townhall",
   "requiresUnits": [],
   "requiresBuildings": [],
-  "buyable": false
+  "buyable": false,
+  "armor": 0
 }

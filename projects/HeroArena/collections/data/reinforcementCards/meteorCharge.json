@@ -1,0 +1,10 @@
+{
+ "title": "Meteor Strike",
+ "icon": "\u2604\ufe0f",
+ "kind": "skillCharge",
+ "skill": "meteor",
+ "description": "A single-use Meteor Strike to cast during battle",
+ "weight": 2,
+ "minRound": 3,
+ "fileName": "meteorCharge"
+}

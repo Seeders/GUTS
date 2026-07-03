@@ -6,13 +6,13 @@
   "weaponType": "sword",
   "size": 25,
   "height": 50,
-  "value": 95,
-  "hp": 240,
+  "value": 70,
+  "hp": 250,
   "speed": 45,
-  "damage": 18,
+  "damage": 20,
   "attackSpeed": 1.1,
   "element": "physical",
-  "armor": 6,
+  "armor": 10,
   "fireResistance": 0.05,
   "coldResistance": 0.05,
   "lightningResistance": 0.05,
@@ -140,14 +140,13 @@
     ]
   },
   "buyable": false,
-  "squadWidth": 1,
+  "squadWidth": 2,
   "squadHeight": 1,
-  "placementGridWidth": 1,
+  "placementGridWidth": 2,
   "placementGridHeight": 1,
-  "abilities": [
-    "ArenaPresenceAbility"
-  ],
+  "abilities": [],
   "requiresUnits": [],
   "requiresBuildings": [],
-  "spriteAnimationSet": "gladiator2s"
+  "spriteAnimationSet": "gladiator2s",
+  "visionRange": 250
 }

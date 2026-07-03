@@ -1,0 +1,9 @@
+{
+ "title": "Drill Sergeant",
+ "icon": "\ud83c\udf96\ufe0f",
+ "kind": "freeLevel",
+ "description": "Your lowest-level squad gains a free level",
+ "weight": 3,
+ "minRound": 2,
+ "fileName": "drillSergeant"
+}

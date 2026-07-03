@@ -6,10 +6,10 @@
   "weaponType": "dagger",
   "size": 25,
   "height": 50,
-  "value": 120,
-  "hp": 180,
-  "speed": 75,
-  "damage": 28,
+  "value": 70,
+  "hp": 165,
+  "speed": 80,
+  "damage": 21,
   "attackSpeed": 1.8,
   "element": "poison",
   "armor": 2,
@@ -151,14 +151,13 @@
     ]
   },
   "buyable": false,
-  "squadWidth": 1,
+  "squadWidth": 2,
   "squadHeight": 1,
-  "placementGridWidth": 1,
+  "placementGridWidth": 2,
   "placementGridHeight": 1,
-  "abilities": [
-    "MirrorImagesAbility"
-  ],
+  "abilities": [],
   "requiresUnits": [],
   "requiresBuildings": [],
-  "spriteAnimationSet": "trickster2di"
+  "spriteAnimationSet": "trickster2di",
+  "visionRange": 250
 }

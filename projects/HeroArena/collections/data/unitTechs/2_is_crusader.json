@@ -1,0 +1,31 @@
+{
+ "unit": "2_is_crusader",
+ "techs": [
+  {
+   "id": "cru_shieldwall",
+   "title": "Bulwark",
+   "cost": 15,
+   "description": "Unlocks Shield Wall",
+   "unlockAbility": "ShieldWallAbility"
+  },
+  {
+   "id": "cru_consecrate",
+   "title": "Consecrated Ground",
+   "cost": 17,
+   "description": "Unlocks Consecration",
+   "unlockAbility": "ConsecrationAbility"
+  },
+  {
+   "id": "cru_aegis",
+   "title": "Aegis",
+   "cost": 14,
+   "description": "+8 armor",
+   "statModifiers": {
+    "armor": {
+     "add": 8
+    }
+   }
+  }
+ ],
+ "fileName": "2_is_crusader"
+}

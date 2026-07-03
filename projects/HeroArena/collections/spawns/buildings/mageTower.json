@@ -64,10 +64,11 @@
   "anchored": true,
   "size": 50,
   "icon": "building_mageTower",
-  "hp": 1500,
+  "hp": 220,
   "spriteAnimationSet": "magetower",
   "requiresUnits": [],
   "requiresBuildings": [],
   "buyable": true,
-  "archetype": "int"
+  "archetype": "int",
+  "armor": 0
 }

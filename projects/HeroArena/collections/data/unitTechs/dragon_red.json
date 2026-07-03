@@ -1,0 +1,38 @@
+{
+ "unit": "dragon_red",
+ "fileName": "dragon_red",
+ "techs": [
+  {
+   "id": "dra_wings",
+   "title": "Take Flight",
+   "cost": 21,
+   "description": "The dragon takes to the skies \u2014 becomes a flying unit, untouchable by melee",
+   "transformUnit": "dragon_red_flying"
+  },
+  {
+   "id": "dra_inferno",
+   "title": "Inferno",
+   "cost": 24,
+   "description": "Unlocks Inferno: eruption of dragonfire",
+   "unlockAbility": "InfernoAbility"
+  },
+  {
+   "id": "dra_storm",
+   "title": "Fire Storm",
+   "cost": 30,
+   "description": "Unlocks Fire Storm: the sky burns",
+   "unlockAbility": "FireStormAbility"
+  },
+  {
+   "id": "dra_hoardlust",
+   "title": "Hoardlust",
+   "cost": 18,
+   "description": "+30% damage",
+   "statModifiers": {
+    "damage": {
+     "pct": 0.3
+    }
+   }
+  }
+ ]
+}

@@ -42,6 +42,7 @@ class PlacementSystem extends GUTS.BaseSystem {
         'calculateUnitPositions',
         'getSquadCells',
         'getTerrainHeight',
+        'getTerrainTypeAtPosition',
         'createPlacement',
         'reserveGridCells',
         'buildGoldMine',
@@ -846,15 +847,92 @@ class PlacementSystem extends GUTS.BaseSystem {
 
     // HeroArena: reposition a hero entity during the prep phase.
     // Authoritative on server; client calls this optimistically and via network sync.
+    // Deployment zone: units stay on their own side, a buffer back from the
+    // centerline (no parking on the frontier), and out of the flanking forests.
+    static DEPLOY_CENTER_BUFFER = 196;   // ~4 tiles of no-man's land each side
+    static DEPLOY_EDGE_MARGIN   = 340;   // ~7 tiles of forest flank each edge
+
+    // Clamp a desired position into the entity's team deployment zone.
+    clampToDeploymentZone(entityId, worldX, worldZ) {
+        if (this.game.state.phase !== this.enums.gamePhase.placement) {
+            return { x: worldX, z: worldZ };
+        }
+        if (!this.game.getComponent(entityId, 'heroRosterInfo')) {
+            return { x: worldX, z: worldZ };
+        }
+        // Mechabellum flanking: FOREST tiles are placeable anywhere on the map,
+        // including the enemy side — the treeline is the infiltration route.
+        if (this._terrainNameAt(worldX, worldZ) === 'forest') {
+            return { x: worldX, z: worldZ };
+        }
+
+        const team = this.game.getComponent(entityId, 'team')?.team;
+        const locs = this.getStartingLocationsFromLevel();
+        if (team == null || !locs || locs[team] == null) return { x: worldX, z: worldZ };
+        const enemyTeam = Object.keys(locs).map(Number).find(t => t !== team);
+        if (enemyTeam == null || locs[enemyTeam] == null) return { x: worldX, z: worldZ };
+
+        const my = this.call.tileToWorld(locs[team].x, locs[team].z);
+        const en = this.call.tileToWorld(locs[enemyTeam].x, locs[enemyTeam].z);
+        const cx = (my.x + en.x) / 2, cz = (my.z + en.z) / 2;
+        const fdx = en.x - my.x, fdz = en.z - my.z;
+        const flen = Math.hypot(fdx, fdz) || 1;
+        const f = { x: fdx / flen, z: fdz / flen };          // toward the enemy
+        const a = { x: -f.z, z: f.x };                       // across the field
+
+        let px = worldX - cx, pz = worldZ - cz;
+        // Own side of the centerline, minus the buffer
+        const depth = px * f.x + pz * f.z;
+        const maxDepth = -PlacementSystem.DEPLOY_CENTER_BUFFER;
+        if (depth > maxDepth) {
+            px += (maxDepth - depth) * f.x;
+            pz += (maxDepth - depth) * f.z;
+        }
+        // Off the forested flanks
+        const halfExtent = (this.call.getPlacementGridSize?.()?.worldHalfExtent)
+            || 1176;
+        const acrossLimit = halfExtent - PlacementSystem.DEPLOY_EDGE_MARGIN;
+        const across = px * a.x + pz * a.z;
+        const clampedAcross = Math.max(-acrossLimit, Math.min(acrossLimit, across));
+        if (clampedAcross !== across) {
+            px += (clampedAcross - across) * a.x;
+            pz += (clampedAcross - across) * a.z;
+        }
+        return { x: cx + px, z: cz + pz };
+    }
+
+    // Terrain type NAME at a world position. getTerrainTypeAtPosition returns a
+    // numeric index into the level's tileMap.terrainTypes list — resolve it.
+    _terrainNameAt(worldX, worldZ) {
+        const idx = this.call.getTerrainTypeAtPosition?.(worldX, worldZ);
+        if (idx == null) return null;
+        if (typeof idx === 'string') return idx;
+        const terrainEntities = this.game.getEntitiesWith('terrain');
+        if (!terrainEntities.length) return null;
+        const levelIndex = this.game.getComponent(terrainEntities[0], 'terrain')?.level;
+        const levelKey = this.reverseEnums.levels?.[levelIndex];
+        const types = this.collections.levels?.[levelKey]?.tileMap?.terrainTypes;
+        return types?.[idx] ?? null;
+    }
+
     moveHero(entityId, worldX, worldZ, rotationY) {
         const transform = this.game.getComponent(entityId, 'transform');
         if (!transform?.position) return { success: false, reason: 'no_transform' };
 
+        // Enforce the deployment zone on every prep-phase reposition (drags,
+        // formation switches, spawns) — server and client share this path.
+        const clamped = this.clampToDeploymentZone(entityId, worldX, worldZ);
+        worldX = clamped.x; worldZ = clamped.z;
+
         const terrainHeight = this.call.getTerrainHeight(worldX, worldZ);
+        // Flying units sit flyHeight above the terrain even during prep
+        // (the movement sim only hovers them once battle runs).
+        const def = this.game.getUnitTypeDef(this.game.getComponent(entityId, 'unitType'));
+        const hover = def?.isFlying ? (def.flyHeight || 80) : 0;
         // Mutate fields individually — the component proxy disallows replacing the whole `position` object
         transform.position.x = worldX;
         transform.position.z = worldZ;
-        transform.position.y = terrainHeight != null ? terrainHeight : transform.position.y;
+        transform.position.y = terrainHeight != null ? terrainHeight + hover : transform.position.y;
         // Optional facing (used by formation placement); left untouched for plain moves.
         if (rotationY != null && transform.rotation) transform.rotation.y = rotationY;
         return { success: true, position: transform.position, rotationY: transform.rotation?.y };

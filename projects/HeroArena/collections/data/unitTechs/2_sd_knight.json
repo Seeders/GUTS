@@ -1,0 +1,31 @@
+{
+ "unit": "2_sd_knight",
+ "techs": [
+  {
+   "id": "kni_charge",
+   "title": "Cavalry Charge",
+   "cost": 20,
+   "description": "Unlocks Charge: lance into the line",
+   "unlockAbility": "ChargeAbility"
+  },
+  {
+   "id": "kni_bash",
+   "title": "Shield Bash",
+   "cost": 15,
+   "description": "Unlocks Bash: stun the target",
+   "unlockAbility": "BashAbility"
+  },
+  {
+   "id": "kni_barding",
+   "title": "Full Barding",
+   "cost": 14,
+   "description": "+8 armor",
+   "statModifiers": {
+    "armor": {
+     "add": 8
+    }
+   }
+  }
+ ],
+ "fileName": "2_sd_knight"
+}

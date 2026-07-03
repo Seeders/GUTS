@@ -1,0 +1,31 @@
+{
+ "unit": "2_s_warlord",
+ "techs": [
+  {
+   "id": "war_cry",
+   "title": "Command Shout",
+   "cost": 15,
+   "description": "Unlocks Battle Cry: rally the army",
+   "unlockAbility": "BattleCryAbility"
+  },
+  {
+   "id": "war_presence",
+   "title": "Arena Presence",
+   "cost": 15,
+   "description": "Unlocks Arena Presence: aura of dominance",
+   "unlockAbility": "ArenaPresenceAbility"
+  },
+  {
+   "id": "war_conqueror",
+   "title": "Conqueror",
+   "cost": 14,
+   "description": "+30% damage",
+   "statModifiers": {
+    "damage": {
+     "pct": 0.3
+    }
+   }
+  }
+ ],
+ "fileName": "2_s_warlord"
+}

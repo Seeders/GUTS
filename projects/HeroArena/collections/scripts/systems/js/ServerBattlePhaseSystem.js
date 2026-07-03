@@ -19,7 +19,10 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
         this.game.serverBattlePhaseSystem = this;
 
         // Battle configuration
-        this.battleDuration = 30; // 30 seconds max
+        // Mechabellum battle phase: 60-90s cap; fights usually resolve by wipe
+        // well before it. If the timer expires with both armies standing, BOTH
+        // commanders take the enemy survivors' damage (checkForBattleEnd).
+        this.battleDuration = 75;
         // When one army is wiped, the survivors siege the enemy buildings. Extend
         // the round if needed so they always get at least this long to do it.
         this.siegeWindow = 20;
@@ -98,39 +101,25 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
 
         const now = this.game.state.now || 0;
 
-        // A destroyed Town Hall decides the round (and the game — resolveRound's
-        // _checkGameOver sees the culled record and ends the match).
-        const thLoser = this._getDestroyedTownHallTeam();
-        if (thLoser !== undefined) {
-            const winner = thLoser === this.enums.team.left ? this.enums.team.right : this.enums.team.left;
-            this.endBattle(winner, 'townhall_destroyed');
-            return;
-        }
-
         const winner = this._getHeroWinner();
 
-        // Both armies wiped → draw, nothing left to siege with.
+        // Both armies wiped → draw.
         if (winner === null) {
             this.endBattle(null, 'draw');
             return;
         }
 
-        // One army standing: the round does NOT end — the survivors march on the
-        // enemy buildings. Guarantee them at least `siegeWindow` seconds.
-        if (winner !== undefined && this._siegeDeadline == null) {
-            this._siegeDeadline = Math.max(
-                this.battleStartTime + this.battleDuration,
-                now + this.siegeWindow
-            );
-            // Publish the extension for the HUD countdown (local mode shares
-            // game.state directly; online clients get the broadcast).
-            this.game.state.battleEndsAt = this._siegeDeadline;
-            this.call.broadcastToRoom(null, 'BATTLE_DEADLINE', { endsAt: this._siegeDeadline });
+        // One army standing → the round ends immediately; the survivors' value
+        // is dealt to the enemy commander in resolveRound (no siege phase —
+        // there are no buildings to siege under commander-HP scoring).
+        if (winner !== undefined) {
+            this.endBattle(winner, 'army_wiped');
+            return;
         }
 
-        const deadline = this._siegeDeadline ?? (this.battleStartTime + this.battleDuration);
-        if (now >= deadline) {
-            this.endBattle(winner ?? null, 'timeout');
+        // Both sides still fighting: the 30s cap ends it — both take survivor damage.
+        if (now >= this.battleStartTime + this.battleDuration) {
+            this.endBattle(null, 'timeout');
         }
     }
 

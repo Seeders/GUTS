@@ -1,0 +1,27 @@
+{
+ "unit": "fairy",
+ "techs": [
+  {
+   "id": "fai_shield",
+   "title": "Magic Shield",
+   "cost": 15,
+   "description": "Unlocks Magic Shield: absorb a burst of damage",
+   "unlockAbility": "MagicShieldAbility"
+  },
+  {
+   "id": "fai_wind",
+   "title": "Wind Shield",
+   "cost": 15,
+   "description": "Unlocks Wind Shield: deflect projectiles",
+   "unlockAbility": "WindShieldAbility"
+  },
+  {
+   "id": "fai_polymorph",
+   "title": "Fey Mischief",
+   "cost": 21,
+   "description": "Unlocks Polymorph: turn a threat into a sheep",
+   "unlockAbility": "PolymorphAbility"
+  }
+ ],
+ "fileName": "fairy"
+}

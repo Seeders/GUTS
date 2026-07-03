@@ -6,13 +6,13 @@
   "weaponType": "sword",
   "size": 35,
   "height": 50,
-  "value": 110,
+  "value": 70,
   "hp": 240,
-  "speed": 25,
-  "damage": 20,
+  "speed": 35,
+  "damage": 24,
   "attackSpeed": 0.9,
   "element": "physical",
-  "armor": 8,
+  "armor": 12,
   "fireResistance": 0.15,
   "coldResistance": 0.15,
   "lightningResistance": 0.1,
@@ -138,14 +138,13 @@
     ]
   },
   "buyable": false,
-  "squadWidth": 1,
+  "squadWidth": 2,
   "squadHeight": 1,
-  "placementGridWidth": 1,
+  "placementGridWidth": 2,
   "placementGridHeight": 1,
-  "abilities": [
-    "BattleCryAbility"
-  ],
+  "abilities": [],
   "requiresUnits": [],
   "requiresBuildings": [],
-  "spriteAnimationSet": "warlord2s"
+  "spriteAnimationSet": "warlord2s",
+  "visionRange": 250
 }

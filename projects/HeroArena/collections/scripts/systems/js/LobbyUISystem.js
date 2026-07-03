@@ -449,6 +449,11 @@ class LobbyUISystem extends GUTS.BaseSystem {
             levelSelect.appendChild(option);
         }
 
+        // Battleplain (the open symmetric field) is the redesign's default map.
+        if (levels.battleplain?.published) {
+            levelSelect.value = 'battleplain';
+        }
+
         onChange(levelSelect.value);
         levelSelect.addEventListener('change', (e) => {
             onChange(e.target.value);

@@ -549,7 +549,27 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
         const placement = this.game.getComponent(entityId, "placement");
         return placement?.placementId || null;
     }
+    // Squads select as one: expand the current selection to every live member
+    // of each selected unit's roster squad.
+    _expandSelectionToSquads() {
+        const add = [];
+        for (const id of this.selectedUnitIds) {
+            const info = this.game.getComponent(id, 'heroRosterInfo');
+            if (!info) continue;
+            for (const other of (this.game.getEntitiesWith('heroRosterInfo') || [])) {
+                if (other === id || this.selectedUnitIds.has(other)) continue;
+                if (this.game.entityAlive?.[other] !== 1) continue;
+                const oi = this.game.getComponent(other, 'heroRosterInfo');
+                if (oi?.playerId === info.playerId && oi.rosterIndex === info.rosterIndex) {
+                    add.push(other);
+                }
+            }
+        }
+        for (const id of add) this.selectedUnitIds.add(id);
+    }
+
     updateMultipleSquadSelection() {
+        this._expandSelectionToSquads();
         this.currentSelectedIndex = 0;
         const unitId = Array.from(this.selectedUnitIds)[this.currentSelectedIndex];
 
@@ -578,18 +598,26 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
             const { entityId, additive } = result.data;
 
             if (additive) {
-                // Toggle selection
+                // Toggle the whole SQUAD in or out of the selection
                 if (this.selectedUnitIds.has(entityId)) {
-                    this.selectedUnitIds.delete(entityId);
+                    const info = this.game.getComponent(entityId, 'heroRosterInfo');
+                    for (const id of [...this.selectedUnitIds]) {
+                        const oi = this.game.getComponent(id, 'heroRosterInfo');
+                        if (id === entityId ||
+                            (info && oi?.playerId === info.playerId && oi.rosterIndex === info.rosterIndex)) {
+                            this.selectedUnitIds.delete(id);
+                        }
+                    }
                 } else {
                     this.selectedUnitIds.add(entityId);
                 }
-                this.updateMultipleSquadSelection();
+                if (this.selectedUnitIds.size > 0) this.updateMultipleSquadSelection();
+                else this.deselectAll();
             } else {
-                // Replace selection
+                // Replace selection with the clicked unit's whole squad
                 this.deselectAll();
                 this.selectedUnitIds.add(entityId);
-                this.selectEntityDirectly(entityId);
+                this.updateMultipleSquadSelection();
             }
         } else if (result.action === 'select_multiple') {
             const { entityIds, additive } = result.data;
@@ -813,6 +841,7 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
         
         // Update all active selection circles
         this.updateSelectionCircles();
+        this.updatePromotionIndicators();
         
         // Clean up circles for units that no longer exist or are deselected
         this.cleanupRemovedCircles();
@@ -1069,15 +1098,28 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
         const pos = transform?.position;
         if (!pos) return;
 
-        // Determine radius based on unit type
-        const radius = this.getUnitRadius(entityId);
-
-        // Create ring geometry (donut shape)
-        const geometry = new THREE.RingGeometry(
-            radius - this.CIRCLE_THICKNESS / 2,
-            radius + this.CIRCLE_THICKNESS / 2,
-            this.CIRCLE_SEGMENTS
-        );
+        // Square outline the size of a deployment grid cell (24.5u half-tiles)
+        // so every squad member shows the exact cell it occupies.
+        const CELL = 24.5;
+        const half = CELL / 2 - 1;
+        const t = this.CIRCLE_THICKNESS;
+        const geometry = new THREE.ShapeGeometry((() => {
+            const shape = new THREE.Shape();
+            shape.moveTo(-half, -half);
+            shape.lineTo(half, -half);
+            shape.lineTo(half, half);
+            shape.lineTo(-half, half);
+            shape.closePath();
+            const hole = new THREE.Path();
+            const ih = half - t;
+            hole.moveTo(-ih, -ih);
+            hole.lineTo(ih, -ih);
+            hole.lineTo(ih, ih);
+            hole.lineTo(-ih, ih);
+            hole.closePath();
+            shape.holes.push(hole);
+            return shape;
+        })());
 
         // Create material
         const material = new THREE.MeshBasicMaterial({
@@ -1105,13 +1147,100 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
             group: group,
             geometry: geometry,
             material: material,
-            radius: radius,
             lastPosition: { x: pos.x, y: pos.y, z: pos.z },
             baseOpacity: 0.8
         });
         
     }
     
+    // ─── Promotion indicators ("this squad can level up") ──────────────────────
+    // A gold ⬆ floats over one member of every OWN squad whose XP bar is full,
+    // during prep — visible without selecting anything.
+
+    _promotionSpriteTexture() {
+        if (this._promoTexture) return this._promoTexture;
+        const c = document.createElement('canvas');
+        c.width = 64; c.height = 64;
+        const ctx = c.getContext('2d');
+        ctx.beginPath();
+        ctx.arc(32, 32, 28, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(20, 24, 34, 0.85)';
+        ctx.fill();
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = '#f0c860';
+        ctx.stroke();
+        ctx.fillStyle = '#f0c860';
+        ctx.font = 'bold 38px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('⬆', 32, 35);
+        this._promoTexture = new THREE.CanvasTexture(c);
+        return this._promoTexture;
+    }
+
+    updatePromotionIndicators() {
+        if (!this._promoSprites) this._promoSprites = new Map();   // rosterIndex → sprite
+        const scene = this.call.getWorldScene();
+        const enums = this.game.getEnums();
+        const inPrep = this.game.state.phase === enums.gamePhase.placement;
+        const hx = this.game.heroExperienceSystem;
+        const wanted = new Map();   // key → position
+
+        if (inPrep && scene && hx) {
+            const myId = this.game.clientNetworkManager?.numericPlayerId ?? 0;
+            let stats = null;
+            for (const eid of this.game.getEntitiesWith('playerStats')) {
+                const st = this.game.getComponent(eid, 'playerStats');
+                if (st?.playerId === myId) { stats = st; break; }
+            }
+            if (stats) {
+                // Accumulate the CENTROID of each ready squad's members so the
+                // badge floats over the formation's center, not one member.
+                const acc = new Map();   // rosterIndex → {x, y, z, n}
+                for (const eid of this.game.getEntitiesWith('heroRosterInfo')) {
+                    if (this.game.entityAlive?.[eid] !== 1) continue;
+                    const info = this.game.getComponent(eid, 'heroRosterInfo');
+                    if (info?.playerId !== myId) continue;
+                    const entry = stats.heroRoster?.[info.rosterIndex];
+                    if (!entry || !hx.isLevelReady?.(entry)) continue;
+                    const pos = this.game.getComponent(eid, 'transform')?.position;
+                    if (!pos) continue;
+                    const a = acc.get(info.rosterIndex) || { x: 0, y: 0, z: 0, n: 0 };
+                    a.x += pos.x; a.y += pos.y; a.z += pos.z; a.n++;
+                    acc.set(info.rosterIndex, a);
+                }
+                for (const [idx, a] of acc) {
+                    wanted.set(idx, { x: a.x / a.n, y: a.y / a.n, z: a.z / a.n });
+                }
+            }
+        }
+
+        // Reconcile sprites with the wanted set.
+        for (const [key, sprite] of this._promoSprites) {
+            if (!wanted.has(key)) {
+                sprite.parent?.remove(sprite);
+                this._promoSprites.delete(key);
+            }
+        }
+        for (const [key, pos] of wanted) {
+            let sprite = this._promoSprites.get(key);
+            if (!sprite) {
+                sprite = new THREE.Sprite(new THREE.SpriteMaterial({
+                    map: this._promotionSpriteTexture(),
+                    transparent: true,
+                    depthTest: false
+                }));
+                sprite.scale.set(26, 26, 1);
+                sprite.renderOrder = 9999;
+                scene.add(sprite);
+                this._promoSprites.set(key, sprite);
+            }
+            // Gentle bob so it reads as "actionable".
+            const bob = Math.sin((this.game.state.now || 0) * 3 + key) * 3;
+            sprite.position.set(pos.x, pos.y + 105 + bob, pos.z);
+        }
+    }
+
     updateSelectionCircles() {
         for (const [entityId, circleData] of this.selectionCircles) {
             // Check if entity still exists
@@ -1122,8 +1251,12 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
                 continue;
             }
 
-            // Update position
-            circleData.group.position.set(pos.x, pos.y + this.CIRCLE_OFFSET_Y, pos.z);
+            // Update position — snapped to the deployment cell the unit occupies,
+            // so the square reads as GRID placement rather than a unit decal.
+            const CELL = 24.5;
+            const cx = Math.floor(pos.x / CELL) * CELL + CELL / 2;
+            const cz = Math.floor(pos.z / CELL) * CELL + CELL / 2;
+            circleData.group.position.set(cx, pos.y + this.CIRCLE_OFFSET_Y, cz);
         }
     }
     

@@ -3,6 +3,8 @@
   "schema": {
     "playerId": null,
     "rosterIndex": null,
-    "level": 1
+    "level": 1,
+    "canTargetAir": 0,
+    "reassembled": 0
   }
 }

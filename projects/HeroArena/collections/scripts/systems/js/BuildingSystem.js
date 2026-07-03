@@ -22,6 +22,7 @@ class BuildingSystem extends GUTS.BaseSystem {
         'moveBuilding',
         'cancelPendingBuilding',
         'autoSpawnTownHalls',
+        'spawnCommandBuildings',
         'autoSpawnStartingSentries',
         'cullDestroyedBuildings',
         'getOwnedBuildingIds',
@@ -33,6 +34,8 @@ class BuildingSystem extends GUTS.BaseSystem {
 
     static serviceDependencies = [
         'getPlayerEntities',
+        'getLeaderDef',
+        'broadcastToRoom',
         'getStartingLocationsFromLevel',
         'spawnSquad',
         'moveHero',
@@ -58,6 +61,109 @@ class BuildingSystem extends GUTS.BaseSystem {
     // ─── Lifecycle hooks (called by AutobattlerRoundSystem) ──────────────────────
 
     // Create a Town Hall per player at their starting location, once, at game start.
+    // Which production building a leader commands (Mechabellum-style tech tower).
+    static PRODUCTION_BY_ARCHETYPE = {
+        str: 'barracks', int: 'mageTower', dex: 'fletchersHall'
+    };
+
+    productionBuildingFor(stats) {
+        const leader = this.call.getLeaderDef?.(stats.leaderId);
+        return BuildingSystem.PRODUCTION_BY_ARCHETYPE[leader?.archetype] || 'barracks';
+    }
+
+    // Each side fields TWO command buildings, spaced evenly across its half:
+    // the Town Hall on one flank, the leader's production building on the
+    // other. Both hold global upgrade trees; losing one mid-battle breaks the
+    // army's morale. Called every prep — respawns any building that died last
+    // battle (fresh HP), Mechabellum-tower style.
+    spawnCommandBuildings() {
+        if (!this._auth()) return;
+        for (const entityId of this.call.getPlayerEntities()) {
+            const stats = this.game.getComponent(entityId, 'playerStats');
+            if (!stats) continue;
+            if (!Array.isArray(stats.buildings)) stats.buildings = [];
+
+            const loc = this._startLoc(stats.team);
+            if (!loc) continue;
+            const my = this.call.tileToWorld(loc.x, loc.z);
+
+            // Enemy direction → across axis, so flank spots work on any map.
+            const locs = this.call.getStartingLocationsFromLevel();
+            const enemyTeam = Object.keys(locs || {}).map(Number).find(t => t !== stats.team);
+            const en = enemyTeam != null ? this.call.tileToWorld(locs[enemyTeam].x, locs[enemyTeam].z) : { x: -my.x, z: -my.z };
+            const fdx = en.x - my.x, fdz = en.z - my.z;
+            const flen = Math.hypot(fdx, fdz) || 1;
+            const a = { x: -fdz / flen, z: fdx / flen };   // across the field
+            const FLANK = 400;
+
+            const wanted = [
+                { buildingId: 'townHall', x: my.x + a.x * FLANK, z: my.z + a.z * FLANK },
+                { buildingId: this.productionBuildingFor(stats), x: my.x - a.x * FLANK, z: my.z - a.z * FLANK }
+            ];
+            for (const w of wanted) {
+                const rec = (stats.buildings || []).find(b => b.buildingId === w.buildingId);
+                const live = rec && this._findBuildingEntity(stats.playerId, rec.placementId);
+                if (live != null && this.game.entityAlive?.[live] === 1) {
+                    // Mechabellum: surviving towers heal to full between rounds
+                    const hp = this.game.getComponent(live, 'health');
+                    if (hp) hp.current = hp.max;
+                    continue;
+                }
+                if (rec) stats.buildings = stats.buildings.filter(b => b !== rec);
+                this._createBuilding(w.buildingId, stats, w.x, w.z, 0);
+            }
+        }
+    }
+
+    // A command building fell mid-battle: Mechabellum tower rules — the whole
+    // army hits for 10%, moves at half speed, and takes double damage for 9s;
+    // losing the second building EXTENDS the window by another 9s.
+    static MORALE_DEBUFF_DURATION = 9;
+
+    onDestroyBuilding(destroyedEntityId) {
+        if (!this._auth()) return;
+        if (this.game.state.phase !== this.enums.gamePhase.battle) return;
+        const owner = this.game.getComponent(destroyedEntityId, 'buildingOwner');
+        if (!owner) return;
+        // Only the two command buildings break morale (not sentries/mines).
+        const bid = owner.buildingId;
+        if (!BuildingSystem.TOWNHALL_LEVEL[bid]
+            && !Object.values(BuildingSystem.PRODUCTION_BY_ARCHETYPE).includes(bid)) return;
+
+        const buffType = this.enums.buffTypes?.moraleBroken;
+        if (buffType == null) return;
+        const now = this.game.state.now;
+        const dur = BuildingSystem.MORALE_DEBUFF_DURATION;
+
+        for (const id of this.game.getEntitiesWith('heroRosterInfo')) {
+            if (this.game.entityAlive?.[id] !== 1) continue;
+            const info = this.game.getComponent(id, 'heroRosterInfo');
+            if (info?.playerId !== owner.playerId) continue;
+            const existing = this.game.getComponent(id, 'buff');
+            if (existing && existing.buffType === buffType) {
+                // Second building: durations ADD (Mechabellum), effects don't stack
+                existing.endTime = Math.max(existing.endTime, now) + dur;
+            } else {
+                this.game.addComponent(id, 'buff', {
+                    buffType, endTime: now + dur, appliedTime: now, stacks: 1
+                });
+            }
+            const cleanup = () => {
+                const b = this.game.getComponent(id, 'buff');
+                if (!b || b.buffType !== buffType) return;
+                if (this.game.state.now >= b.endTime) {
+                    this.game.removeComponent(id, 'buff');
+                } else {
+                    // Extended by a second building loss — check again at the new end
+                    this.game.schedulingSystem?.scheduleAction(cleanup,
+                        b.endTime - this.game.state.now, id);
+                }
+            };
+            this.game.schedulingSystem?.scheduleAction(cleanup, dur, id);
+        }
+        this.call.broadcastToRoom?.(null, 'MORALE_BROKEN', { playerId: owner.playerId, buildingId: bid });
+    }
+
     autoSpawnTownHalls() {
         if (!this._auth()) return;
         for (const entityId of this.call.getPlayerEntities()) {

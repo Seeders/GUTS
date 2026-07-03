@@ -1,0 +1,10 @@
+{
+ "title": "Frost Nova",
+ "icon": "\u2744\ufe0f",
+ "kind": "skillCharge",
+ "skill": "frostNova",
+ "description": "A single-use Frost Nova to cast during battle",
+ "weight": 2,
+ "minRound": 3,
+ "fileName": "novaCharge"
+}

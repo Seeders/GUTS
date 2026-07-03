@@ -153,6 +153,7 @@ class ProjectileSystem extends GUTS.BaseSystem {
             weaponRange: trajectory.weaponRange || sourceCombat.range,
             element: projectileElement,
             splashRadius: projectileData.splashRadius || 80,
+            splashOnHit: projectileData.splashOnHit || false,
             sticksInGround: projectileData.sticksInGround || false,
             stickDuration: projectileData.stickDuration || 3,
             isStuck: false,
@@ -461,7 +462,8 @@ class ProjectileSystem extends GUTS.BaseSystem {
 
         if (targetPos) {
             // Update last known position
-            homing.lastKnownPosition = { x: targetPos.x, y: targetPos.y, z: targetPos.z };
+            // Mutate fields individually — the component proxy disallows replacing nested objects
+            homing.lastKnownPosition.x = targetPos.x; homing.lastKnownPosition.y = targetPos.y; homing.lastKnownPosition.z = targetPos.z;
             
             // For ballistic projectiles, we adjust the trajectory mid-flight
             // Calculate time elapsed since launch
@@ -517,7 +519,8 @@ class ProjectileSystem extends GUTS.BaseSystem {
 
         if (targetPos) {
             // Update last known position
-            homing.lastKnownPosition = { x: targetPos.x, y: targetPos.y, z: targetPos.z };
+            // Mutate fields individually — the component proxy disallows replacing nested objects
+            homing.lastKnownPosition.x = targetPos.x; homing.lastKnownPosition.y = targetPos.y; homing.lastKnownPosition.z = targetPos.z;
             
             // Calculate direction to target
             const dx = targetPos.x - pos.x;
@@ -711,7 +714,7 @@ class ProjectileSystem extends GUTS.BaseSystem {
         if (homing) {
             homing.targetId = originalSource;
             if (sourcePos) {
-                homing.lastKnownPosition = { x: sourcePos.x, y: sourcePos.y, z: sourcePos.z };
+                homing.lastKnownPosition.x = sourcePos.x; homing.lastKnownPosition.y = sourcePos.y; homing.lastKnownPosition.z = sourcePos.z;
             }
         }
 
@@ -795,6 +798,24 @@ class ProjectileSystem extends GUTS.BaseSystem {
             element: reverseEnums.element?.[element] || element,
             targetHealthBefore: targetHealth ? `${targetHealth.current}/${targetHealth.max}` : 'unknown'
         });
+
+        // Splash weapons (opt-in via projectile def `splashOnHit`) detonate on the
+        // target instead of single-target damage — the direct-hit counterpart of
+        // the ballistic ground explosion, so anti-swarm units splash reliably.
+        if (projectile.splashOnHit && projectile.splashRadius > 0) {
+            const targetTransform = this.game.getComponent(targetId, 'transform');
+            const burstPos = targetTransform?.position || _targetPos;
+            this.createGroundExplosion?.(projectileId, burstPos, projectile,
+                burstPos?.y ?? 0);
+            this.call.applySplashDamage(projectile.source, burstPos, damage, element,
+                projectile.splashRadius, {
+                    isProjectile: true,
+                    projectileId: projectileId,
+                    allowFriendlyFire: false
+                });
+            this.destroyProjectile(projectileId);
+            return;
+        }
 
         // Apply damage on both client and server for sync
         this.call.applyDamage( projectile.source, targetId, damage, element, {

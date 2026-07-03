@@ -6,21 +6,19 @@
   "weaponType": "staff",
   "size": 25,
   "height": 50,
-  "value": 130,
-  "hp": 160,
+  "value": 70,
+  "hp": 385,
   "speed": 50,
-  "damage": 18,
+  "damage": 48,
   "attackSpeed": 0.8,
-  "range": 160,
+  "range": 170,
   "projectile": "fireball",
   "element": "cold",
-  "armor": 2,
+  "armor": 0,
   "fireResistance": 0.4,
   "coldResistance": 0,
   "lightningResistance": 0.2,
-  "abilities": [
-    "MindControlAbility"
-  ],
+  "abilities": [],
   "render": {
     "animations": {
       "idle": [
@@ -151,5 +149,7 @@
   "placementGridHeight": 1,
   "requiresUnits": [],
   "requiresBuildings": [],
-  "spriteAnimationSet": "enchanter2i"
+  "spriteAnimationSet": "enchanter2i",
+  "visionRange": 270,
+  "canTargetAir": true
 }

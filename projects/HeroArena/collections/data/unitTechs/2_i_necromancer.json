@@ -1,0 +1,27 @@
+{
+ "unit": "2_i_necromancer",
+ "techs": [
+  {
+   "id": "nec_raise",
+   "title": "Raise Dead",
+   "cost": 19,
+   "description": "Unlocks Raise Dead: skeletons rise from nearby corpses",
+   "unlockAbility": "RaiseDeadAbility"
+  },
+  {
+   "id": "nec_curse",
+   "title": "Withering Curse",
+   "cost": 14,
+   "description": "Unlocks Curse",
+   "unlockAbility": "CurseAbility"
+  },
+  {
+   "id": "nec_drain",
+   "title": "Drain Life",
+   "cost": 14,
+   "description": "Unlocks Drain Life",
+   "unlockAbility": "DrainLifeAbility"
+  }
+ ],
+ "fileName": "2_i_necromancer"
+}

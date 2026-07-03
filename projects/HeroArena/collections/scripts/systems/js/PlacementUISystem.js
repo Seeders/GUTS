@@ -60,6 +60,14 @@ class PlacementUISystem extends GUTS.BaseSystem {
         'submitBuyOffer',
         'submitRerollOffers',
         'submitBuyUnlockedUnit',
+        'submitBuyUnitTech',
+        'submitBuySquadLevel',
+        'submitBuyTierUnlock',
+        'submitBuyDeploySlot',
+        'submitSetSquadFormation',
+        'submitBuyUpgradeNode',
+        'submitPickReinforcement',
+        'submitCastCommanderSkill',
         'submitSellUnit',
         'submitGrantSingleAbility',
         'submitSpecializeChoice',
@@ -298,8 +306,10 @@ class PlacementUISystem extends GUTS.BaseSystem {
         // Selection panel (icons + orders of the selected units, attack-move button)
         this.elements.selectionPanel = document.getElementById('selectionPanel');
         this.elements.selectionCards = document.getElementById('selectionCards');
-        this.elements.attackMoveBtn  = document.getElementById('attackMoveBtn');
-        this.elements.clearOrderBtn  = document.getElementById('clearOrderBtn');
+        this.elements.attackMoveBtn  = document.getElementById('attackMoveBtn'); // legacy (orders removed)
+        this.elements.clearOrderBtn  = document.getElementById('clearOrderBtn'); // legacy (orders removed)
+        this.elements.formationBtn   = document.getElementById('formationBtn');
+        this.elements.levelUpBtn     = document.getElementById('levelUpBtn');
         this.elements.sellUnitBtn    = document.getElementById('sellUnitBtn');
         this.elements.selectionHint  = document.getElementById('selectionHint');
         this.elements.selectionTitle = document.getElementById('selectionTitle');
@@ -311,6 +321,12 @@ class PlacementUISystem extends GUTS.BaseSystem {
         }
         if (this.elements.clearOrderBtn) {
             this._track(this.elements.clearOrderBtn, 'click', () => this._clearSelectedOrders());
+        }
+        if (this.elements.formationBtn) {
+            this._track(this.elements.formationBtn, 'click', () => this._cycleSquadFormation());
+        }
+        if (this.elements.levelUpBtn) {
+            this._track(this.elements.levelUpBtn, 'click', () => this._levelUpSelectedUnits());
         }
         if (this.elements.sellUnitBtn) {
             this._track(this.elements.sellUnitBtn, 'click', () => this._sellSelectedUnits());
@@ -393,6 +409,160 @@ class PlacementUISystem extends GUTS.BaseSystem {
         return new Set();
     }
 
+    // Round resolution feedback: how much commander damage each side took.
+    onRoundResult(data) {
+        const myId = this.game.clientNetworkManager?.numericPlayerId ?? 0;
+        const mine = (data?.report || []).find(r => r.playerId === myId);
+        const theirs = (data?.report || []).find(r => r.playerId !== myId);
+        if (!mine || !theirs) return;
+        const parts = [];
+        if (theirs.damage > 0) parts.push(`Your survivors dealt ${theirs.damage} commander damage`);
+        if (mine.damage > 0) parts.push(`you took ${mine.damage}`);
+        if (parts.length === 0) parts.push('Both armies fell — no commander damage');
+        GUTS.NotificationSystem?.show?.(
+            `Round ${data.round}: ${parts.join(', ')}.`,
+            mine.damage > theirs.damage ? 'error' : 'success', 6000);
+    }
+
+    // ─── Commander skills (battle actives) ───────────────────────────────────
+
+    // Called from updateHUD each tick: show banked skill charges during battle.
+    _refreshCommanderSkillBar() {
+        const bar = document.getElementById('commanderSkillBar');
+        if (!bar) return;
+
+        const inBattle = this.game.state.phase === this.enums.gamePhase.battle;
+        const myId = this.game.clientNetworkManager?.numericPlayerId ?? 0;
+        let charges = [];
+        for (const eid of this.game.getEntitiesWith('playerStats')) {
+            const s = this.game.getComponent(eid, 'playerStats');
+            if (s?.playerId === myId) { charges = s.skillCharges || []; break; }
+        }
+
+        if (!inBattle || charges.length === 0) {
+            bar.classList.add('hidden');
+            if (!inBattle) this._skillTargeting = null;
+            return;
+        }
+        bar.classList.remove('hidden');
+
+        const html = charges.map((skillId, i) => {
+            const def = this.collections.commanderSkills?.[skillId] || {};
+            const targeting = this._skillTargeting === skillId ? 'targeting' : '';
+            return `<button class="commander-skill-btn ${targeting}" data-skill="${skillId}"
+                title="${def.title || skillId} — ${def.description || ''} (click, then click the battlefield)">
+                ${def.icon || '✴️'}</button>`;
+        }).join('');
+        if (bar._lastHtml !== html) {
+            bar.innerHTML = html;
+            bar._lastHtml = html;
+        }
+
+        if (!bar._wired) {
+            bar._wired = true;
+            bar.addEventListener('click', (e) => {
+                const btn = e.target.closest('[data-skill]');
+                if (!btn) return;
+                this._skillTargeting = this._skillTargeting === btn.dataset.skill ? null : btn.dataset.skill;
+                bar._lastHtml = null; // re-render targeting outline
+                document.body.style.cursor = this._skillTargeting ? 'crosshair' : 'default';
+            });
+            // Ground click casts while targeting (capture so battle clicks reach us)
+            this._track(document, 'mousedown', (e) => {
+                if (!this._skillTargeting || e.button !== 0) return;
+                if (e.target !== this.canvas) return;
+                const worldPos = this.getWorldPositionFromMouse(e.clientX, e.clientY, false);
+                if (!worldPos) return;
+                const skillId = this._skillTargeting;
+                this._skillTargeting = null;
+                document.body.style.cursor = 'default';
+                bar._lastHtml = null;
+                this.call.submitCastCommanderSkill(skillId, worldPos.x, worldPos.z, (res) => {
+                    if (res?.success === false && res?.reason) {
+                        GUTS.NotificationSystem?.show?.(`Skill failed: ${res.reason}`, 'error');
+                    }
+                });
+                e.stopPropagation();
+            });
+            this._track(document, 'keydown', (e) => {
+                if (e.key === 'Escape' && this._skillTargeting) {
+                    this._skillTargeting = null;
+                    document.body.style.cursor = 'default';
+                    bar._lastHtml = null;
+                }
+            });
+        }
+    }
+
+    // ─── Battle fast-forward (local games) ──────────────────────────────────────
+
+    _ensureSpeedButton() {
+        if (this._speedBtn || !this.game.state?.isLocalGame) return;
+        const btn = document.createElement('button');
+        btn.id = 'battleSpeedBtn';
+        btn.style.cssText = `position:fixed; top:12px; right:200px; z-index:1500;
+            padding:6px 16px; background:rgba(20,26,38,0.9); border:1px solid #d8b45a;
+            color:#e8d9a0; border-radius:6px; cursor:pointer; font-size:1rem; display:none;`;
+        btn.addEventListener('click', () => {
+            const cur = this.game.state.battleSpeed || 1;
+            this.game.state.battleSpeed = cur >= 4 ? 1 : cur * 2;
+            this._updateSpeedButton();
+        });
+        document.body.appendChild(btn);
+        this._speedBtn = btn;
+        this._updateSpeedButton();
+    }
+
+    _updateSpeedButton() {
+        if (!this._speedBtn) return;
+        this._speedBtn.textContent = `⏩ ${this.game.state.battleSpeed || 1}×`;
+    }
+
+    onBattleStart() {
+        this._ensureSpeedButton();
+        if (this._speedBtn) this._speedBtn.style.display = 'block';
+        this._updateSpeedButton();
+    }
+
+    onRoundResult() {
+        // Speed always resets at the end of the round.
+        this.game.state.battleSpeed = 1;
+        if (this._speedBtn) this._speedBtn.style.display = 'none';
+    }
+
+    // Called by game.triggerEvent('onReinforcementStart', data) at each prep start.
+    // Reuses the (otherwise retired) hero-select overlay as the 1-of-3 card pick.
+    onReinforcementStart(data) {
+        const myId = this.game.clientNetworkManager?.numericPlayerId ?? 0;
+        if (data?.playerId !== myId) return;
+
+        const overlay  = document.getElementById('heroSelectOverlay');
+        const grid     = document.getElementById('heroOptions');
+        const title    = document.getElementById('heroSelectTitle');
+        const subtitle = document.getElementById('heroSelectSubtitle');
+        if (!overlay || !grid) return;
+
+        if (title)    title.textContent = `Reinforcements — Round ${this.game.state.round || 1}`;
+        if (subtitle) subtitle.textContent = 'Choose one';
+
+        grid.innerHTML = '';
+        (data.options || []).forEach((option, index) => {
+            const card = document.createElement('div');
+            card.className = 'arena-option-card';
+            card.innerHTML = `
+                <div class="arena-option-name">${option.icon || '🎁'} ${option.title}</div>
+                <div class="arena-option-desc">${option.description || ''}</div>`;
+            card.addEventListener('click', () => {
+                this.call.submitPickReinforcement(index, (res) => {
+                    this._renderShop(res?.state || res);
+                });
+                overlay.classList.add('hidden');
+            });
+            grid.appendChild(card);
+        });
+        overlay.classList.remove('hidden');
+    }
+
     // Called by game.triggerEvent('onHeroSelectStart', data)
     onHeroSelectStart(data) {
         const overlay  = document.getElementById('heroSelectOverlay');
@@ -462,6 +632,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
     }
 
     updateHUD() {
+        this._refreshCommanderSkillBar();
         // Find local player's playerStats and opponent's
         const myPlayerId = this.game.clientNetworkManager?.numericPlayerId ?? 0;
         const playerEntities = this.game.getEntitiesWith('playerStats');
@@ -478,15 +649,17 @@ class PlacementUISystem extends GUTS.BaseSystem {
             this.elements.goldDisplay.textContent = myStats.gold ?? 0;
         }
 
-        // The HUD health bars show each side's TOWN HALL — destroying the enemy's
-        // wins the game. Bars only update when a townhall entity is present
-        // client-side (it may not be synced yet in the first prep).
-        const myTeam = this.call.getActivePlayerTeam?.();
-        if (myTeam != null) {
-            const enemyTeam = myTeam === this.enums.team.left ? this.enums.team.right : this.enums.team.left;
-            this._renderTownHallBar(this._findTownHallHealth(myTeam),
+        // The HUD health bars show each side's COMMANDER HP — surviving enemy
+        // units chip it down after every battle; 0 loses the match.
+        const COMMANDER_HP_MAX = this.game.autobattlerRoundSystem?.constructor?.COMMANDER_HP || 1000;
+        if (myStats) {
+            this._renderTownHallBar(
+                { current: myStats.commanderHP ?? COMMANDER_HP_MAX, max: COMMANDER_HP_MAX },
                 this.elements.playerHPBar, this.elements.playerHPValue);
-            this._renderTownHallBar(this._findTownHallHealth(enemyTeam),
+        }
+        if (opStats) {
+            this._renderTownHallBar(
+                { current: opStats.commanderHP ?? COMMANDER_HP_MAX, max: COMMANDER_HP_MAX },
                 this.elements.opponentHPBar, this.elements.opponentHPValue);
         }
 
@@ -582,6 +755,11 @@ class PlacementUISystem extends GUTS.BaseSystem {
         } else {
             // Must be a hero entity (heroRosterInfo is added by HeroRosterSystem)
             if (!this.game.getComponent(heroId, 'heroRosterInfo')) return;
+            // Deployment is permanent: units that have fought hold their positions.
+            if (this._isDeploymentLocked(heroId)) {
+                GUTS.NotificationSystem?.show?.('Deployment locked — veterans hold their positions', 'info');
+                return;
+            }
             this.draggedHeroId = heroId;
         }
 
@@ -590,13 +768,19 @@ class PlacementUISystem extends GUTS.BaseSystem {
         this.dragOffset.z = (t?.position?.z ?? worldPos.z) - worldPos.z;
         this.dragMoved = false;
 
-        // If a hero is grabbed and it's part of a multi-selection, drag the whole group.
+        // Units always move as squads: grabbing any member drags the whole squad,
+        // and a multi-selection drags every selected squad, formations intact.
         // Buildings always drag singly (they have their own move rules).
         this.dragUnits = null;
         if (this.draggedHeroId != null) {
-            const group = this._formationUnits();  // selected, alive, own-team, movable heroes
-            if (group.length > 1 && group.includes(heroId)) {
-                this.dragUnits = group.map((id) => {
+            const group = this._formationUnits();  // selected, alive, own-team, movable (unlocked) heroes
+            const seeds = (group.length > 1 && group.includes(heroId)) ? group : [heroId];
+            const all = new Set();
+            for (const id of seeds) {
+                for (const mate of this._squadMembers(id)) all.add(mate);
+            }
+            if (all.size > 0) {
+                this.dragUnits = [...all].map((id) => {
                     const p = this.game.getComponent(id, 'transform')?.position;
                     return {
                         id,
@@ -625,13 +809,22 @@ class PlacementUISystem extends GUTS.BaseSystem {
         const worldPos = this.getWorldPositionFromMouse(event.clientX, event.clientY, false);
         if (!worldPos) return;
 
+        // Mechabellum grid: snap the DRAGGED unit's landing cell (24.5u half-
+        // tiles); the group shifts by the same adjustment so formations hold.
+        const CELL = 24.5;
+        const rawX = worldPos.x + this.dragOffset.x;
+        const rawZ = worldPos.z + this.dragOffset.z;
+        const snapAdjX = (Math.floor(rawX / CELL) * CELL + CELL / 2) - rawX;
+        const snapAdjZ = (Math.floor(rawZ / CELL) * CELL + CELL / 2) - rawZ;
+
         // Optimistic local update so the entity (or group) follows the cursor immediately
         if (this.dragUnits) {
             for (const u of this.dragUnits) {
-                this.game.placementSystem?.moveHero(u.id, worldPos.x + u.offX, worldPos.z + u.offZ);
+                this.game.placementSystem?.moveHero(u.id,
+                    worldPos.x + u.offX + snapAdjX, worldPos.z + u.offZ + snapAdjZ);
             }
         } else {
-            this.game.placementSystem?.moveHero(draggedId, worldPos.x + this.dragOffset.x, worldPos.z + this.dragOffset.z);
+            this.game.placementSystem?.moveHero(draggedId, rawX + snapAdjX, rawZ + snapAdjZ);
         }
         this.dragMoved = true;
     }
@@ -682,6 +875,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
     // drag clamps to a square. Units face perpendicular to the line, toward the enemy.
 
     // Selected, alive, own-team, non-building hero/army units (the movable ones).
+    // Excludes deployment-locked veterans — only units bought this prep can move.
     _formationUnits() {
         if (this.game.state.phase !== this.enums.gamePhase.placement) return [];
         const ids = this.game.selectedUnitSystem?.getSelectedUnits?.() || [];
@@ -691,8 +885,41 @@ class PlacementUISystem extends GUTS.BaseSystem {
             const team = this.game.getComponent(id, 'team');
             if (!team || team.team !== myTeam) return false;
             if (this.game.getComponent(id, 'buildingOwner')) return false;
-            return !!this.game.getComponent(id, 'heroRosterInfo');
+            if (!this.game.getComponent(id, 'heroRosterInfo')) return false;
+            return !this._isDeploymentLocked(id);
         });
+    }
+
+    // All live entities sharing this entity's roster entry (its squadmates,
+    // itself included). Component-scan, so it works on online clients too.
+    _squadMembers(entityId) {
+        const info = this.game.getComponent(entityId, 'heroRosterInfo');
+        if (!info) return [entityId];
+        const out = [];
+        for (const id of (this.game.getEntitiesWith('heroRosterInfo') || [])) {
+            if (this.game.entityAlive?.[id] !== 1) continue;
+            const i = this.game.getComponent(id, 'heroRosterInfo');
+            if (i?.playerId === info.playerId && i.rosterIndex === info.rosterIndex) out.push(id);
+        }
+        return out.length ? out : [entityId];
+    }
+
+    // Deployment is permanent once a unit has fought a battle (its roster entry
+    // carries lastPosition). Component-based check first — heroRosterInfo and
+    // playerStats.heroRoster are replicated, so it works on online clients where
+    // HeroRosterSystem's server-side entity map is empty. Server remains
+    // authoritative regardless (handleHeroMoved rejects locked moves).
+    _isDeploymentLocked(entityId) {
+        const info = this.game.getComponent(entityId, 'heroRosterInfo');
+        if (info) {
+            for (const eid of (this.call.getPlayerEntities?.() || [])) {
+                const stats = this.game.getComponent(eid, 'playerStats');
+                if (stats?.playerId === info.playerId) {
+                    return !!stats.heroRoster?.[info.rosterIndex]?.lastPosition;
+                }
+            }
+        }
+        return !!this.game.heroRosterSystem?.isUnitLocked?.(entityId);
     }
 
     // Disable/restore the free-fly camera's right-drag mouse-look. While units are
@@ -732,7 +959,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
         const worldPos = this.getWorldPositionFromMouse(event.clientX, event.clientY, false);
         if (!worldPos) return;
 
-        const slots = this._computeFormationPositions(this.formationDrag.start, worldPos, this.formationDrag.units);
+        const slots = this._computeSquadFormationPositions(this.formationDrag.start, worldPos, this.formationDrag.units);
         this.formationDrag.slots = slots;
         // Optimistic local preview: move + face each unit as the line is dragged.
         for (const s of slots) {
@@ -762,6 +989,47 @@ class PlacementUISystem extends GUTS.BaseSystem {
                 console.warn('[PlacementUISystem] formation move submit failed:', err);
             }
         }
+    }
+
+    // Squad-aware formation: group the selected entities by roster entry, lay the
+    // SQUADS out along the drag line, then expand each squad slot into member
+    // positions using its own grid — squads never break apart.
+    _computeSquadFormationPositions(start, end, units) {
+        const groups = new Map();   // "player:index" → [entityIds]
+        for (const id of units) {
+            const info = this.game.getComponent(id, 'heroRosterInfo');
+            const key = info ? `${info.playerId}:${info.rosterIndex}` : `solo:${id}`;
+            if (!groups.has(key)) groups.set(key, []);
+            groups.get(key).push(id);
+        }
+        const reps = [...groups.values()].map(members => members[0]);
+        const squadSlots = this._computeFormationPositions(start, end, reps);
+
+        // Orient member grids to the drag line: width runs along the line
+        // (shoulder to shoulder), depth runs perpendicular.
+        const ldx = end.x - start.x, ldz = end.z - start.z;
+        const llen = Math.hypot(ldx, ldz);
+        const basis = llen > 8
+            ? { across: { x: ldx / llen, z: ldz / llen },
+                forward: { x: -ldz / llen, z: ldx / llen } }
+            : null;
+
+        const slots = [];
+        for (const slot of squadSlots) {
+            const members = this._squadMembers(slot.id).filter(id => units.includes(id));
+            const info = this.game.getComponent(slot.id, 'heroRosterInfo');
+            const entry = info ? this._rosterEntryForInfo(info) : null;
+            const def = this.game.getUnitTypeDef(this.game.getComponent(slot.id, 'unitType'));
+            const w = entry?.formation?.w || def?.squadWidth || 1;
+            const h = entry?.formation?.h || def?.squadHeight || 1;
+            members.forEach((id, i) => {
+                const off = GUTS.HeroRosterSystem?.memberOffset
+                    ? GUTS.HeroRosterSystem.memberOffset(i, w, h, basis)
+                    : { x: (i % 2) * 30, z: Math.floor(i / 2) * 30 };
+                slots.push({ id, x: slot.x + off.x, z: slot.z + off.z, rotationY: slot.rotationY });
+            });
+        }
+        return slots;
     }
 
     // Build target slots for the selected units given the drag's start/end world points.
@@ -932,25 +1200,257 @@ class PlacementUISystem extends GUTS.BaseSystem {
         }
         panel.classList.remove('hidden');
 
-        const icons = this.collections?.icons || {};
-        this.elements.selectionCards.innerHTML = units.map(id => {
-            const def = this.game.getUnitTypeDef(this.game.getComponent(id, 'unitType'));
-            const order = this._unitOrderInfo(id);
-            const imagePath = icons[def?.icon]?.imagePath;
-            const img = imagePath
-                ? `<img class="sel-card-img" src="./resources/${imagePath}" alt="">`
-                : `<span class="sel-card-img sel-card-fallback">⚔</span>`;
-            const isAttack = order.type === 'attackMove';
-            return `<div class="sel-card" title="${def?.title || 'Unit'} — ${isAttack ? 'Attack-move ordered' : 'Holding position'}">
-                ${img}<span class="sel-card-badge ${isAttack ? 'order-attack' : 'order-hold'}">${isAttack ? '⚔' : '🛡'}</span>
-            </div>`;
-        }).join('');
+        this._wireSelectionTechButton();
+        this.elements.selectionCards.innerHTML = this._renderSquadDetail(units);
 
-        // Orders can only be issued (or cleared) during prep; same for selling.
+        // Formation button: shows the first selected multi-member squad's current
+        // shape; hidden when nothing selected has squadmates.
+        if (this.elements.formationBtn) {
+            const squads = this._selectedSquads().filter(sq => sq.members.length > 1 && !sq.locked);
+            if (squads.length === 0) {
+                this.elements.formationBtn.style.display = 'none';
+            } else {
+                this.elements.formationBtn.style.display = '';
+                const f = squads[0].formation;
+                const preset = PlacementUISystem.formationPresets(squads[0].members.length)
+                    .find(p => p.w === f.w && p.h === f.h);
+                this.elements.formationBtn.textContent =
+                    `⬦ ${preset?.name || 'Formation'} ${f.w}×${f.h}`;
+                this.elements.formationBtn.disabled =
+                    this.game.state.phase !== this.enums.gamePhase.placement;
+            }
+        }
+
+        // Level-ups and selling only during prep. The Level Up button shows the
+        // total cost for the current selection (half price for squads whose
+        // combat-XP bar is full — flagged with ★).
         const notPrep = this.game.state.phase !== this.enums.gamePhase.placement;
-        if (this.elements.attackMoveBtn) this.elements.attackMoveBtn.disabled = notPrep;
-        if (this.elements.clearOrderBtn) this.elements.clearOrderBtn.disabled = notPrep;
+        if (this.elements.levelUpBtn) {
+            const { cost, ready, allMaxed } = this._levelUpCostForSelection(units);
+            this.elements.levelUpBtn.textContent = allMaxed
+                ? '⬆ Max Level'
+                : ready ? `⬆ Promote (${cost}g ★)` : '⬆ Promote (XP not full)';
+            this.elements.levelUpBtn.disabled = notPrep || allMaxed || !ready ||
+                cost <= 0 || (this._shopState?.gold ?? 0) < cost;
+        }
         if (this.elements.sellUnitBtn) this.elements.sellUnitBtn.disabled = notPrep;
+    }
+
+    // Full squad detail: portrait, level + XP bar, live stats (tech/level
+    // bonuses included, read from the live entity), tags, owned techs.
+    _renderSquadDetail(unitIds) {
+        const squads = this._selectedSquads();
+        if (!squads.length) return '';
+        const hx = this.game.heroExperienceSystem;
+        const s = this._shopState || {};
+
+        const one = (sq) => {
+            const lead = sq.members[0];
+            const unitTypeComp = this.game.getComponent(lead, 'unitType');
+            const def = this.game.getUnitTypeDef(unitTypeComp) || {};
+            const unitId = def.id || '';
+            const info = this.game.getComponent(lead, 'heroRosterInfo');
+            const entry = this._rosterEntryForInfo(info);
+            const level = info?.level || 1;
+            const combat = this.game.getComponent(lead, 'combat');
+            const health = this.game.getComponent(lead, 'health');
+            const alive = sq.members.filter(id => this.game.entityAlive?.[id] === 1).length;
+
+            const xp = entry?.xp || 0;
+            const xpMax = hx?.xpToNextLevel?.(entry) || 1;
+            const xpPct = Math.min(100, Math.round(xp / xpMax * 100));
+            const ready = entry && hx?.isLevelReady?.(entry);
+            const maxLevel = hx?.constructor?.MAX_LEVEL || 9;
+
+            const tags = this._unitTags(def, unitId);
+            const techsAll = this.collections.unitTechs?.[unitId]?.techs || [];
+            const owned = new Set(
+                (s.unitTechs?.[unitId]) || (this._myStats()?.unitTechs?.[unitId]) || []);
+            const ownedTechs = techsAll.filter(t => owned.has(t.id));
+
+            const dps = Math.round((combat?.damage || 0) * (combat?.attackSpeed || 1) * alive);
+            const stats = [
+                ['HP', `${Math.round(health?.current ?? 0)}/${Math.round(health?.max ?? def.hp ?? 0)}`],
+                ['Damage', `${Math.round(combat?.damage ?? def.damage ?? 0)} @ ${(combat?.attackSpeed ?? def.attackSpeed ?? 1).toFixed(1)}/s`],
+                ['Squad DPS', dps],
+                ['Range', (combat?.range ?? def.range ?? 1) > 30 ? Math.round(combat.range) : 'Melee'],
+                ['Armor', Math.round(combat?.armor ?? def.armor ?? 0)],
+                ['Members', `${alive}/${sq.members.length}`]
+            ];
+
+            return `<div class="sq-detail">
+                <div class="sq-head">
+                    ${this._iconImg(def, 'sq-img')}
+                    <div class="sq-title">
+                        <div class="sq-name">${def.title || unitId} <span class="sq-level">Lv ${level}${level >= maxLevel ? ' MAX' : ''}</span></div>
+                        <div class="sq-tags">${tags.map(t => `<span class="ut-tag">${t}</span>`).join('')}</div>
+                    </div>
+                </div>
+                ${level < maxLevel ? `<div class="sq-xp" title="Combat XP — full bar allows promotion">
+                    <div class="sq-xp-fill ${ready ? 'sq-xp-ready' : ''}" style="width:${xpPct}%"></div>
+                    <span class="sq-xp-label">${ready ? '★ PROMOTION READY' : `XP ${xpPct}%`}</span>
+                </div>` : ''}
+                <div class="sq-stats">${stats.map(([k, v]) =>
+                    `<span class="ut-k">${k}</span><span class="ut-v">${v}</span>`).join('')}</div>
+                ${techsAll.length ? `<div class="sq-techlist">
+                    <div class="sq-techlist-head">⚙ Technologies ${ownedTechs.length}/${techsAll.length}</div>
+                    ${techsAll.map(t => {
+                        const isOwned = owned.has(t.id);
+                        const escalation = Math.min(70, 14 * owned.size);
+                        const discount = s.techDiscount || 0;
+                        const price = Math.max(1, Math.ceil(((t.cost || 10) + escalation) * (1 - discount)));
+                        const affordable = (s.gold ?? 0) >= price;
+                        const cls = isOwned ? 'owned' : affordable ? 'buyable' : 'poor';
+                        const action = isOwned
+                            ? '<span class="sq-tech-owned">✔ OWNED</span>'
+                            : affordable
+                                ? `<button class="sq-tech-buy" data-buy-tech="${t.id}" data-tech-unit-id="${unitId}">BUY ${price}g</button>`
+                                : `<span class="sq-tech-cant">${price}g</span>`;
+                        return `<div class="sq-techrow ${cls}" title="${t.description || ''}">
+                            <span class="sq-techrow-name">${t.title}</span>
+                            <span class="sq-techrow-desc">${t.description || ''}</span>
+                            ${action}
+                        </div>`;
+                    }).join('')}
+                </div>` : ''}
+            </div>`;
+        };
+
+        if (squads.length === 1) return one(squads[0]);
+        return `<div class="sq-multi">${squads.length} squads selected</div>` + one(squads[0]);
+    }
+
+    _wireSelectionTechButton() {
+        if (this._selTechWired || !this.elements.selectionCards) return;
+        this._selTechWired = true;
+        this.elements.selectionCards.addEventListener('click', (e) => {
+            const row = e.target.closest('button[data-buy-tech]');
+            if (!row) return;
+            this.call.submitBuyUnitTech(row.dataset.techUnitId, row.dataset.buyTech, (res) => {
+                if (res?.success === false && res?.reason) {
+                    GUTS.NotificationSystem?.show?.(`Cannot buy: ${res.reason}`, 'error');
+                }
+                this._renderShop(res?.state || res);
+                this._refreshSelectionPanel();
+            });
+        });
+    }
+
+    _myStats() {
+        const myId = this.game.clientNetworkManager?.numericPlayerId ?? 0;
+        for (const eid of (this.call.getPlayerEntities?.() || [])) {
+            const st = this.game.getComponent(eid, 'playerStats');
+            if (st?.playerId === myId) return st;
+        }
+        return null;
+    }
+
+    // Total cost to level every selected own squad once (client-side estimate
+    // using the same rules as the server: cost × level, halved when the squad's
+    // XP bar is full, hard cap at max level).
+    _levelUpCostForSelection(unitIds) {
+        const hx = this.game.heroExperienceSystem;
+        const maxLevel = hx?.constructor?.MAX_LEVEL || 9;
+        let total = 0, ready = false, leveable = 0;
+        const seenEntries = new Set();
+        for (const id of unitIds) {
+            const info = this.game.getComponent(id, 'heroRosterInfo');
+            const def = this.game.getUnitTypeDef(this.game.getComponent(id, 'unitType'));
+            if (!info || !def) continue;
+            // A squad is N entities sharing one roster entry — price it once
+            const entryKey = `${info.playerId}:${info.rosterIndex}`;
+            if (seenEntries.has(entryKey)) continue;
+            seenEntries.add(entryKey);
+            const entry = this._rosterEntryForInfo(info);
+            const level = info.level || 1;
+            if (level >= maxLevel) continue;
+            leveable++;
+            // Mechabellum: only squads with a FULL XP bar can be promoted.
+            const isReady = entry && hx?.isLevelReady?.(entry);
+            if (!isReady) continue;
+            ready = true;
+            // Mechabellum: flat 50% of the unit's base recruitment price
+            const base = Math.max(1, Math.ceil((def.value || 0) / 5));
+            total += Math.max(1, Math.ceil(base / 2));
+        }
+        return { cost: total, ready, allMaxed: unitIds.length > 0 && leveable === 0 };
+    }
+
+    // Selected squads (deduped by roster entry): members, current formation, lock.
+    _selectedSquads() {
+        const groups = new Map();
+        for (const id of this._selectedOwnUnits()) {
+            const info = this.game.getComponent(id, 'heroRosterInfo');
+            if (!info) continue;
+            const key = `${info.playerId}:${info.rosterIndex}`;
+            if (!groups.has(key)) groups.set(key, { info, members: [] });
+            groups.get(key).members.push(id);
+        }
+        return [...groups.values()].map(g => {
+            const entry = this._rosterEntryForInfo(g.info);
+            const def = this.game.getUnitTypeDef(this.game.getComponent(g.members[0], 'unitType'));
+            return {
+                rosterIndex: g.info.rosterIndex,
+                members: g.members,
+                locked: !!entry?.lastPosition,
+                formation: entry?.formation
+                    || { w: def?.squadWidth || 1, h: def?.squadHeight || 1 }
+            };
+        });
+    }
+
+    // Formation presets for a squad of n members. Width x depth: Line is the
+    // default (everyone shoulder to shoulder facing the enemy).
+    static formationPresets(n) {
+        if (n >= 4) return [
+            { w: 4, h: 1, name: 'Line' }, { w: 2, h: 2, name: 'Block' }, { w: 1, h: 4, name: 'Column' }];
+        if (n === 3) return [
+            { w: 3, h: 1, name: 'Line' }, { w: 1, h: 3, name: 'Column' }];
+        if (n === 2) return [
+            { w: 2, h: 1, name: 'Line' }, { w: 1, h: 2, name: 'Column' }];
+        return [{ w: 1, h: 1, name: 'Solo' }];
+    }
+
+    // Cycle every selected squad to its next formation preset.
+    _cycleSquadFormation() {
+        if (this.game.state.phase !== this.enums.gamePhase.placement) return;
+        for (const sq of this._selectedSquads()) {
+            if (sq.members.length <= 1 || sq.locked) continue;
+            const presets = PlacementUISystem.formationPresets(sq.members.length);
+            const cur = presets.findIndex(p => p.w === sq.formation.w && p.h === sq.formation.h);
+            const { w, h } = presets[(cur + 1) % presets.length];
+            this.call.submitSetSquadFormation(sq.rosterIndex, w, h, (res) => {
+                if (res?.success === false && res?.reason) {
+                    GUTS.NotificationSystem?.show?.(`Formation: ${res.reason}`, 'error');
+                }
+                this._refreshSelectionPanel();
+            });
+        }
+        this._refreshSelectionPanel();
+    }
+
+    _rosterEntryForInfo(info) {
+        for (const eid of (this.call.getPlayerEntities?.() || [])) {
+            const s = this.game.getComponent(eid, 'playerStats');
+            if (s?.playerId === info.playerId) return s.heroRoster?.[info.rosterIndex] || null;
+        }
+        return null;
+    }
+
+    _levelUpSelectedUnits() {
+        if (this.game.state.phase !== this.enums.gamePhase.placement) return;
+        const indices = [...new Set(this._selectedOwnUnits()
+            .map(id => this.game.getComponent(id, 'heroRosterInfo')?.rosterIndex)
+            .filter(i => i != null))];
+        for (const rosterIndex of indices) {
+            this.call.submitBuySquadLevel(rosterIndex, (res) => {
+                if (res?.success === false && res?.reason === 'insufficient_gold') {
+                    GUTS.NotificationSystem?.show?.('Not enough gold to level up', 'error');
+                }
+                this._renderShop(res?.state || res);
+                this._refreshSelectionPanel();
+            });
+        }
     }
 
     // Sell every selected own unit for a partial refund (prep only). Resolve each
@@ -958,9 +1458,9 @@ class PlacementUISystem extends GUTS.BaseSystem {
     // the server's roster splice never invalidates a not-yet-sold lower index.
     _sellSelectedUnits() {
         if (this.game.state.phase !== this.enums.gamePhase.placement) return;
-        const indices = this._selectedOwnUnits()
+        const indices = [...new Set(this._selectedOwnUnits()
             .map(id => this.game.getComponent(id, 'heroRosterInfo')?.rosterIndex)
-            .filter(i => i != null)
+            .filter(i => i != null))]
             .sort((a, b) => b - a);
         if (indices.length === 0) return;
         for (const rosterIndex of indices) {
@@ -1022,10 +1522,10 @@ class PlacementUISystem extends GUTS.BaseSystem {
                     ? `<img class="tt-node-img" src="./resources/${imagePath}" alt="">`
                     : `<span class="tt-node-img tt-node-fallback">★</span>`;
                 const badge = state === 'owned' ? '✔ Owned'
-                    : state === 'available' ? 'In shop pool' : '🔒 Locked';
+                    : state === 'available' ? '🛒 Buy' : '🔒 Locked';
                 const edge = i > 0 ? `<div class="tt-edge tt-edge-${state}"></div>` : '';
                 return `${edge}
-                    <div class="tt-node tt-${state}">
+                    <div class="tt-node tt-${state}" ${state === 'available' ? `data-upgrade-id="${node.upgrade}"` : ''}>
                         ${img}
                         <div class="tt-node-body">
                             <div class="tt-node-name">${def.title || node.upgrade}</div>
@@ -1045,6 +1545,23 @@ class PlacementUISystem extends GUTS.BaseSystem {
                 ${nodes}
             </div>`;
         }).join('');
+
+        // Buy on click (Mechabellum tower tech): available nodes are live buttons.
+        if (!container._upgradeWired) {
+            container._upgradeWired = true;
+            container.addEventListener('click', (e) => {
+                const nodeEl = e.target.closest('[data-upgrade-id]');
+                if (!nodeEl) return;
+                this.call.submitBuyUpgradeNode(nodeEl.dataset.upgradeId, (res) => {
+                    if (res?.success === false && res?.reason === 'insufficient_gold') {
+                        GUTS.NotificationSystem?.show?.('Not enough gold', 'error');
+                    }
+                    this._renderShop(res?.state || res);
+                    const tree = this.collections?.upgradeTrees?.[this._selectedBuildingId];
+                    if (tree) this._renderUpgradeTree(tree);
+                });
+            });
+        }
     }
 
     // Cancel the selected squads' orders: they hold position (and the cleared
@@ -1249,39 +1766,266 @@ class PlacementUISystem extends GUTS.BaseSystem {
             }).join('');
         }
         if (this.elements.shopRerollBtn) {
-            const cost = s.rerollCost ?? 0;
-            this.elements.shopRerollBtn.textContent = `Reroll (${cost}g)`;
-            this.elements.shopRerollBtn.disabled = (s.gold ?? 0) < cost;
+            // Mechabellum redesign: no random offers, so nothing to reroll. The
+            // button stays hidden until the reinforcement-card pick replaces this
+            // panel entirely (phase 5).
+            this.elements.shopRerollBtn.classList.add('hidden');
+        }
+        // Hide the whole offers region when the offer list is empty (always,
+        // during the transition) so the shop panel reads as the unit roster.
+        if (this.elements.shopPanel) {
+            this.elements.shopPanel.classList.toggle('hidden', offers.length === 0);
         }
         this._renderUnlockedUnits(s);
         this.updateHUD?.();
     }
 
-    _renderUnlockedUnits(s) {
-        if (!this.elements.unlockedUnitsCards) return;
-        const unlocked = s.unlocked || [];
-        this.elements.unlockedUnitsCards.innerHTML = unlocked.map(u => {
-            const affordable = (s.gold ?? 0) >= u.cost;
-            return `<div class="unlocked-unit-card ${affordable ? '' : 'unaffordable'}" data-unit-id="${u.id}">
-                <span class="unlocked-unit-name">${u.title}</span>
-                <span class="unlocked-unit-cost">${u.cost}g</span>
-            </div>`;
-        }).join('');
+    // ─── Unit dock (Mechabellum-style recruit bar) ──────────────────────────────
+
+    _iconImg(def, cls) {
+        const imagePath = this.collections?.icons?.[def?.icon]?.imagePath;
+        return imagePath
+            ? `<img class="${cls}" src="./resources/${imagePath}" alt="">`
+            : `<span class="${cls} ud-fallback">⚔</span>`;
     }
 
-    _onShopOfferClick(event) {
-        const card = event.target.closest('[data-offer-index]');
-        if (!card) return;
-        const idx = parseInt(card.dataset.offerIndex, 10);
-        const offer = this._shopState?.offers?.[idx];
-        if (!offer || offer.consumed) return;
-        this.call.submitBuyOffer(idx, (res) => this._handleBuyResult(res));
+    // Role/trait tags derived from the unit's numbers — the "what does it do".
+    _unitTags(def, id) {
+        const tags = [];
+        const shop = GUTS.ArmyShopSystem;
+        const members = (def.squadWidth || 1) * (def.squadHeight || 1);
+        if (def.isFlying) tags.push('Flying');
+        if ((def.range || 1) >= 260) tags.push('Artillery');
+        else if ((def.range || 1) > 30) tags.push('Ranged');
+        else tags.push('Melee');
+        if (members >= 4) tags.push('Swarm');
+        if ((def.armor || 0) >= 10) tags.push('Armored');
+        if ((def.speed || 45) >= 60) tags.push('Fast');
+        if (def.canTargetAir && !def.isFlying) tags.push('Anti-Air');
+        if (def.projectile === 'fireball') tags.push('Splash');
+        if ((def.damage || 0) >= 90) tags.push('Alpha');
+        const elem = def.element;
+        if (elem === 'poison' || elem === 'holy' || elem === 'shadow') tags.push('Unresistable');
+        else if (elem && elem !== 'physical') tags.push(elem[0].toUpperCase() + elem.slice(1));
+        return tags;
+    }
+
+    _statRows(def) {
+        const members = (def.squadWidth || 1) * (def.squadHeight || 1);
+        const dps = Math.round((def.damage || 0) * (def.attackSpeed || 1) * members);
+        return [
+            ['Members', members],
+            ['HP', `${def.hp || 0}${members > 1 ? ` ×${members}` : ''}`],
+            ['Damage', `${def.damage || 0} @ ${def.attackSpeed || 1}/s`],
+            ['Squad DPS', dps],
+            ['Range', (def.range || 1) > 30 ? def.range : 'Melee'],
+            ['Armor', def.armor || 0],
+            ['Speed', def.speed || 45]
+        ];
+    }
+
+    _renderUnlockedUnits(s) {
+        if (!this.elements.unlockedUnitsCards) return;
+        this._renderDeploySlots(s);
+        this._dockState = s;
+        const fielded = new Set(s.ownedUnitTypes || []);
+
+        const card = (u, locked) => {
+            const def = this.collections.units?.[u.id] || {};
+            const techs = this.collections.unitTechs?.[u.id]?.techs || [];
+            const ownedTechs = (s.unitTechs?.[u.id] || []).length;
+            const affordable = (s.gold ?? 0) >= (locked ? u.unlockCost : u.cost);
+            const tier = GUTS.ArmyShopSystem.unitTier(u.id) || 1;
+            const pips = techs.length && fielded.has(u.id)
+                ? `<span class="ud-pips">${'●'.repeat(ownedTechs)}${'○'.repeat(Math.max(0, techs.length - ownedTechs))}</span>` : '';
+            const techBtn = '';
+            return `<div class="ud-card tier-${tier} ${locked ? 'ud-locked' : ''} ${affordable ? '' : 'ud-poor'}"
+                data-${locked ? 'locked-id' : 'unit-id'}="${u.id}" data-hover-id="${u.id}">
+                ${this._iconImg(def, 'ud-img')}
+                ${locked ? '<span class="ud-lock">🔒</span>' : ''}
+                <span class="ud-price">${locked ? `${u.unlockCost}g` : `${u.cost}g`}</span>
+                ${pips}${techBtn}
+            </div>`;
+        };
+
+        this.elements.unlockedUnitsCards.innerHTML =
+            (s.unlocked || []).map(u => card(u, false)).join('')
+            + (s.locked || []).map(u => card(u, true)).join('');
+
+        if (!this._dockHoverWired) {
+            this._dockHoverWired = true;
+            const cards = this.elements.unlockedUnitsCards;
+            cards.addEventListener('mouseover', (e) => {
+                const el = e.target.closest('[data-hover-id]');
+                if (el) this._showUnitTooltip(el.dataset.hoverId, el);
+            });
+            cards.addEventListener('mouseleave', () => this._hideUnitTooltip());
+        }
+    }
+
+    _ensureTooltip() {
+        let tip = document.getElementById('unitTooltip');
+        if (!tip) {
+            tip = document.createElement('div');
+            tip.id = 'unitTooltip';
+            document.body.appendChild(tip);
+        }
+        return tip;
+    }
+
+    _showUnitTooltip(unitId, anchorEl) {
+        const s = this._dockState || {};
+        const def = this.collections.units?.[unitId] || {};
+        const tip = this._ensureTooltip();
+        const tags = this._unitTags(def, unitId);
+        const techs = this.collections.unitTechs?.[unitId]?.techs || [];
+        const owned = new Set(s.unitTechs?.[unitId] || []);
+        const tier = GUTS.ArmyShopSystem.unitTier(unitId) || 1;
+        const locked = (s.locked || []).find(l => l.id === unitId);
+
+        tip.innerHTML = `
+            <div class="ut-head">
+                ${this._iconImg(def, 'ut-img')}
+                <div>
+                    <div class="ut-name">${def.title || unitId}</div>
+                    <div class="ut-sub">Tier ${tier}${locked ? ` — 🔒 unlock ${locked.unlockCost}g` : ''}</div>
+                    <div class="ut-tags">${tags.map(t => `<span class="ut-tag">${t}</span>`).join('')}</div>
+                </div>
+            </div>
+            <div class="ut-stats">${this._statRows(def).map(([k, v]) =>
+                `<span class="ut-k">${k}</span><span class="ut-v">${v}</span>`).join('')}</div>
+            ${techs.length ? `<div class="ut-techs">${techs.map(t =>
+                `<div class="ut-tech ${owned.has(t.id) ? 'owned' : ''}">${owned.has(t.id) ? '✔' : '○'} ${t.title} <span class="ut-tech-d">${t.description || ''}</span></div>`).join('')}</div>` : ''}
+            <div class="ut-hint">${locked ? 'Click to unlock' : 'Click to recruit'}</div>`;
+        const r = anchorEl.getBoundingClientRect();
+        tip.style.display = 'block';
+        tip.style.left = Math.max(8, Math.min(window.innerWidth - 328, r.left - 60)) + 'px';
+        tip.style.bottom = (window.innerHeight - r.top + 10) + 'px';
+    }
+
+    _hideUnitTooltip() {
+        const tip = document.getElementById('unitTooltip');
+        if (tip) tip.style.display = 'none';
+    }
+
+    // "Deploys 1/2  [+slot 7g]" header — Mechabellum recruitment allowance.
+    _renderDeploySlots(s) {
+        let bar = document.getElementById('deploySlotsBar');
+        if (!bar) {
+            const host = this.elements.unlockedUnitsCards?.parentElement;
+            if (!host) return;
+            bar = document.createElement('div');
+            bar.id = 'deploySlotsBar';
+            bar.style.cssText = 'display:flex; align-items:center; gap:8px; padding:2px 4px 6px; font-size:0.8rem; color:#e8d9a0;';
+            host.insertBefore(bar, this.elements.unlockedUnitsCards);
+            bar.addEventListener('click', (e) => {
+                if (e.target.id !== 'buyDeploySlotBtn') return;
+                this.call.submitBuyDeploySlot((res) => {
+                    if (res?.success === false && res?.reason === 'insufficient_gold') {
+                        GUTS.NotificationSystem?.show?.('Not enough gold', 'error');
+                    }
+                    this._renderShop(res?.state || res);
+                });
+            });
+        }
+        const used = s.deploysUsed ?? 0;
+        const slots = s.deploySlots ?? 2;
+        bar.innerHTML = `<span title="New squads you can recruit from the menu this round (free card units don't count)">🎖 Deploys ${used}/${slots}</span>
+            <button id="buyDeploySlotBtn" style="padding:1px 8px; font-size:0.72rem; background:rgba(216,180,90,0.15);
+                border:1px solid rgba(216,180,90,0.5); border-radius:3px; color:#e8d9a0; cursor:pointer;"
+                title="Extra recruitment: +1 deploy slot this round">+1 slot (${s.nextSlotCost ?? 7}g)</button>`;
     }
 
     _onUnlockedUnitClick(event) {
+        // Tech button opens the unit's technology panel instead of buying
+        const techBtn = event.target.closest('[data-tech-unit]');
+        if (techBtn) {
+            this._openUnitTechPanel(techBtn.dataset.techUnit);
+            return;
+        }
+        // Locked card: one-time tier unlock (Mechabellum: T2 4g / T3 7g / T4 14g)
+        const lockCard = event.target.closest('[data-locked-id]');
+        if (lockCard) {
+            this.call.submitBuyTierUnlock(lockCard.dataset.lockedId, (res) => {
+                if (res?.success === false && res?.reason === 'insufficient_gold') {
+                    GUTS.NotificationSystem?.show?.('Not enough gold to unlock', 'error');
+                }
+                this._renderShop(res?.state || res);
+            });
+            return;
+        }
         const card = event.target.closest('[data-unit-id]');
         if (!card) return;
         this.call.submitBuyUnlockedUnit(card.dataset.unitId, (res) => this._renderShop(res?.state || res));
+    }
+
+    // ─── Unit technology panel (Mechabellum-style, reuses the tech-tree overlay) ──
+
+    _openUnitTechPanel(unitId) {
+        this._techPanelUnitId = unitId;
+        this._renderUnitTechPanel();
+        document.getElementById('techTreeOverlay')?.classList.remove('hidden');
+        const closeBtn = document.getElementById('techTreeCloseBtn');
+        if (closeBtn && !closeBtn._techWired) {
+            closeBtn._techWired = true;
+            closeBtn.addEventListener('click', () => {
+                document.getElementById('techTreeOverlay')?.classList.add('hidden');
+                this._techPanelUnitId = null;
+            });
+        }
+    }
+
+    _renderUnitTechPanel() {
+        const unitId = this._techPanelUnitId;
+        if (!unitId) return;
+        const title = document.getElementById('techTreeTitle');
+        const body  = document.getElementById('techTreeBranches');
+        if (!body) return;
+
+        const unitDef = this.collections.units?.[unitId] || {};
+        const techs = this.collections.unitTechs?.[unitId]?.techs || [];
+        const s = this._shopState || {};
+        const owned = new Set(s.unitTechs?.[unitId] || []);
+        const gold = s.gold ?? 0;
+        // Mechabellum escalation: owned techs inflate the rest (+14g each, cap +70)
+        const escalation = Math.min(70, 14 * owned.size);
+        const discount = s.techDiscount || 0;
+        const priceOf = (t) => Math.max(1, Math.ceil(((t.cost || 10) + escalation) * (1 - discount)));
+
+        if (title) title.textContent = `${unitDef.title || unitId} — Technologies`;
+        const subtitle = document.querySelector('#techTreeOverlay .arena-overlay-subtitle');
+        if (subtitle) subtitle.textContent = 'Technologies apply to every unit of this type, now and in future rounds.';
+
+        body.innerHTML = `<div class="unit-tech-list">` + techs.map(t => {
+            const isOwned = owned.has(t.id);
+            const price = priceOf(t);
+            const affordable = gold >= price;
+            const kind = t.unlockAbility ? 'Ability' : (t.unlockUnit ? 'Unlock' : 'Upgrade');
+            const cls = `unit-tech-row ${isOwned ? 'owned' : (affordable ? 'buyable' : 'unaffordable')}`;
+            return `<div class="${cls}" data-tech-id="${t.id}">
+                <span class="unit-tech-kind">${kind}</span>
+                <span class="unit-tech-info">
+                    <span class="unit-tech-title">${t.title}</span>
+                    <span class="unit-tech-desc">${t.description || ''}</span>
+                </span>
+                <span class="unit-tech-cost">${isOwned ? '✔ Owned' : `${price}g`}</span>
+            </div>`;
+        }).join('') + `</div>`;
+
+        if (!body._techWired) {
+            body._techWired = true;
+            body.addEventListener('click', (e) => {
+                const row = e.target.closest('[data-tech-id]');
+                if (!row || row.classList.contains('owned') || !this._techPanelUnitId) return;
+                this.call.submitBuyUnitTech(this._techPanelUnitId, row.dataset.techId, (res) => {
+                    if (res?.success === false && res?.reason) {
+                        GUTS.NotificationSystem?.show?.(`Cannot buy: ${res.reason}`, 'error');
+                    }
+                    this._renderShop(res?.state || res);
+                    this._renderUnitTechPanel();
+                });
+            });
+        }
     }
 
     _handleBuyResult(res) {

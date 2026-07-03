@@ -1,0 +1,38 @@
+{
+ "unit": "1_d_archer",
+ "techs": [
+  {
+   "id": "arc_multishot",
+   "title": "Multi-Shot",
+   "cost": 15,
+   "description": "Unlocks Multi-Shot: volley several arrows",
+   "unlockAbility": "MultiShotAbility"
+  },
+  {
+   "id": "arc_aimed",
+   "title": "Aimed Shot",
+   "cost": 13,
+   "description": "Unlocks Aimed Shot: slow, huge single hit",
+   "unlockAbility": "AimedShotAbility"
+  },
+  {
+   "id": "arc_piercing",
+   "title": "Piercing Shot",
+   "cost": 15,
+   "description": "Unlocks Piercing Shot: bolts punch through lines",
+   "unlockAbility": "PiercingShotAbility"
+  },
+  {
+   "id": "arc_longbows",
+   "title": "Longbows",
+   "cost": 14,
+   "description": "+50 attack range",
+   "statModifiers": {
+    "range": {
+     "add": 50
+    }
+   }
+  }
+ ],
+ "fileName": "1_d_archer"
+}

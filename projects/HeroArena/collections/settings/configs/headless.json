@@ -70,7 +70,10 @@
     "LootDropSystem",
     "AutobattlerEconomySystem",
     "BuffEffectsSystem",
-    "GoldMineCaptureSystem"
+    "GoldMineCaptureSystem",
+    "CommanderSkillSystem",
+    "CampaignRunSystem",
+    "CampaignMapUISystem"
   ],
   "classes": [
     {

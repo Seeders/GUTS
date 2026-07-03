@@ -1,0 +1,31 @@
+{
+ "unit": "2_d_ranger",
+ "techs": [
+  {
+   "id": "ran_multishot",
+   "title": "Split Volley",
+   "cost": 17,
+   "description": "Unlocks Multi-Shot",
+   "unlockAbility": "MultiShotAbility"
+  },
+  {
+   "id": "ran_aimed",
+   "title": "Deadeye",
+   "cost": 15,
+   "description": "Unlocks Aimed Shot",
+   "unlockAbility": "AimedShotAbility"
+  },
+  {
+   "id": "ran_hawkeye",
+   "title": "Hawkeye",
+   "cost": 16,
+   "description": "+50 attack range",
+   "statModifiers": {
+    "range": {
+     "add": 50
+    }
+   }
+  }
+ ],
+ "fileName": "2_d_ranger"
+}

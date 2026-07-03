@@ -8,7 +8,7 @@
         <!-- HUD: top bar -->
         <div id="arenaHUD">
             <div id="playerHPSection" class="hud-hp-section">
-                <span class="hud-label">🏰 Your Town Hall</span>
+                <span class="hud-label">⚔ Your Commander</span>
                 <div class="hud-hp-bar-wrap">
                     <div class="hud-hp-bar" id="playerHPBar" style="width:100%"></div>
                     <span class="hud-hp-text" id="playerHPValue">–</span>
@@ -21,7 +21,7 @@
                 <div class="hud-gold">💰 <span id="playerGold">0</span></div>
             </div>
             <div id="opponentHPSection" class="hud-hp-section hud-hp-right">
-                <span class="hud-label">Enemy Town Hall 🏰</span>
+                <span class="hud-label">Enemy Commander ⚔</span>
                 <div class="hud-hp-bar-wrap">
                     <div class="hud-hp-bar hud-hp-enemy" id="opponentHPBar" style="width:100%"></div>
                     <span class="hud-hp-text" id="opponentHPValue">–</span>
@@ -65,8 +65,8 @@
                 <div class="panel-title" id="selectionTitle">Selection</div>
                 <div id="selectionCards" class="selection-cards"></div>
                 <div id="selectionActions" class="selection-actions">
-                    <button id="attackMoveBtn" title="Order the selected units to move to a point, attacking enemies seen on the way">⚔ Attack Move</button>
-                    <button id="clearOrderBtn" title="Cancel the selected units' orders — they will hold position">✖ Clear</button>
+                    <button id="formationBtn" title="Cycle the selected squad's formation (rows vs columns)">⬦ Formation</button>
+                    <button id="levelUpBtn" title="Level up the selected squad(s) — stats scale with each level">⬆ Level Up</button>
                     <button id="sellUnitBtn" title="Sell the selected unit(s) for a partial gold refund">💰 Sell</button>
                 </div>
                 <div id="buildingActions" class="selection-actions hidden">
@@ -79,6 +79,9 @@
                 <div id="unlockedUnitsCards" class="unlocked-units-cards"></div>
             </div>
         </div>
+
+        <!-- Commander skills (single-use, battle only) -->
+        <div id="commanderSkillBar" class="hidden"></div>
 
         <!-- Camera controls -->
         <div id="cameraControls">

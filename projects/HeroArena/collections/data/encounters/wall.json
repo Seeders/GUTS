@@ -1,0 +1,14 @@
+{
+ "kind": "template",
+ "title": "Iron Wall",
+ "minDepth": 4,
+ "formation": "line",
+ "weights": {
+  "2_sd_hoplite": 3,
+  "2_is_crusader": 2,
+  "2_sd_knight": 2,
+  "2_is_paladin": 1,
+  "0_golemStone": 1
+ },
+ "fileName": "wall"
+}

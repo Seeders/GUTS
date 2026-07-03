@@ -6,11 +6,11 @@
   "weaponType": "none",
   "size": 25,
   "height": 50,
-  "value": 140,
-  "hp": 150,
+  "value": 70,
+  "hp": 280,
   "speed": 55,
-  "damage": 30,
-  "attackSpeed": 1,
+  "damage": 60,
+  "attackSpeed": 0.9,
   "element": "fire",
   "armor": 1,
   "fireResistance": 0.75,
@@ -103,12 +103,12 @@
   "squadHeight": 1,
   "placementGridWidth": 1,
   "placementGridHeight": 1,
-  "abilities": [
-    "MeteorStrikeAbility"
-  ],
-  "range": 100,
+  "abilities": [],
+  "range": 140,
   "projectile": "fireball",
   "requiresUnits": [],
   "requiresBuildings": [],
-  "spriteAnimationSet": "goblinbomber2di"
+  "spriteAnimationSet": "goblinbomber2di",
+  "visionRange": 250,
+  "canTargetAir": true
 }

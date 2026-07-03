@@ -1,0 +1,27 @@
+{
+ "unit": "4_ancientTreant",
+ "techs": [
+  {
+   "id": "tre_entangle",
+   "title": "Strangling Roots",
+   "cost": 19,
+   "description": "Unlocks Entangle: roots seize the enemy",
+   "unlockAbility": "EntangleAbility"
+  },
+  {
+   "id": "tre_thorns",
+   "title": "Thorned Bark",
+   "cost": 18,
+   "description": "Unlocks Thorns Aura: attackers bleed",
+   "unlockAbility": "ThornsAuraAbility"
+  },
+  {
+   "id": "tre_regrow",
+   "title": "Regrowth",
+   "cost": 18,
+   "description": "Unlocks Regeneration: living wood reknits",
+   "unlockAbility": "RegenerationAbility"
+  }
+ ],
+ "fileName": "4_ancientTreant"
+}

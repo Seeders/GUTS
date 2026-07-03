@@ -1,0 +1,27 @@
+{
+ "unit": "2_is_paladin",
+ "techs": [
+  {
+   "id": "pal_smite",
+   "title": "Righteous Smite",
+   "cost": 15,
+   "description": "Unlocks Smite",
+   "unlockAbility": "SmiteAbility"
+  },
+  {
+   "id": "pal_heal",
+   "title": "Lay on Hands",
+   "cost": 14,
+   "description": "Unlocks Heal",
+   "unlockAbility": "HealAbility"
+  },
+  {
+   "id": "pal_resurrect",
+   "title": "Resurrection",
+   "cost": 20,
+   "description": "Unlocks Resurrection: raise a fallen ally",
+   "unlockAbility": "ResurrectionAbility"
+  }
+ ],
+ "fileName": "2_is_paladin"
+}

@@ -33,6 +33,15 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
         'submitBuyOffer',
         'submitRerollOffers',
         'submitBuyUnlockedUnit',
+        'submitBuyUnitTech',
+        'submitBuySquadLevel',
+        'submitBuyTierUnlock',
+        'submitSetSquadFormation',
+        'submitBuyUpgradeNode',
+        'submitPickReinforcement',
+        'submitEnterCampaignNode',
+        'submitBuyDeploySlot',
+        'submitCastCommanderSkill',
         'submitSellUnit',
         'submitGrantSingleAbility',
         'submitSpecializeChoice',
@@ -291,6 +300,21 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
                 this.game.triggerEvent('onLeaderSelectStart', data);
             }),
 
+            // Mechabellum loop: round-start 1-of-3 reinforcement pick + resolve report
+            nm.listen('CAMPAIGN_MAP_SHOW', (data) => {
+                this.game.triggerEvent('onCampaignMapShow', data);
+            }),
+            nm.listen('REINFORCEMENT_START', (data) => {
+                this.game.triggerEvent('onReinforcementStart', data);
+            }),
+            nm.listen('ROUND_RESULT', (data) => {
+                this.game.triggerEvent('onRoundResult', data);
+            }),
+            nm.listen('COMMANDER_SKILL_CAST', (data) => {
+                // Opponent's cast: play the visual locally
+                this.game.commanderSkillSystem?.onCommanderSkillCastRemote?.(data);
+            }),
+
             // HeroArena: hero selection flow
             nm.listen('HERO_SELECT_START', (data) => {
                 this.handleHeroSelectStart(data);
@@ -307,9 +331,13 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
                 this.game.triggerEvent('onPlacementPhaseStart');
             }),
             nm.listen('HERO_MOVED', (data) => {
-                // Apply server-authoritative move to local transform
-                if (data?.entityId != null) {
-                    this.game.placementSystem?.moveHero(data.entityId, data.x, data.z, data.rotationY);
+                // Apply server-authoritative move(s) to local transforms. Squads
+                // send a `moves` array (whole formation); fall back to the single
+                // legacy shape.
+                const moves = Array.isArray(data?.moves) ? data.moves
+                    : (data?.entityId != null ? [data] : []);
+                for (const m of moves) {
+                    this.game.placementSystem?.moveHero(m.entityId, m.x, m.z, m.rotationY);
                 }
             }),
             nm.listen('BUILDING_MOVED', (data) => {
@@ -1652,6 +1680,87 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
             eventName: 'BUY_UNLOCKED_UNIT',
             responseName: 'BUY_UNLOCKED_UNIT_ACK',
             data: { unitTypeId },
+            onSuccess
+        }, () => {});
+    }
+
+    submitBuyUnitTech(unitId, techId, onSuccess) {
+        this.networkRequest({
+            eventName: 'BUY_UNIT_TECH',
+            responseName: 'BUY_UNIT_TECH_ACK',
+            data: { unitId, techId },
+            onSuccess
+        }, () => {});
+    }
+
+    submitBuySquadLevel(rosterIndex, onSuccess) {
+        this.networkRequest({
+            eventName: 'BUY_SQUAD_LEVEL',
+            responseName: 'BUY_SQUAD_LEVEL_ACK',
+            data: { rosterIndex },
+            onSuccess
+        }, () => {});
+    }
+
+    submitBuyTierUnlock(unitId, onSuccess) {
+        this.networkRequest({
+            eventName: 'BUY_TIER_UNLOCK',
+            responseName: 'BUY_TIER_UNLOCK_ACK',
+            data: { unitId },
+            onSuccess
+        }, () => {});
+    }
+
+    submitBuyUpgradeNode(upgradeId, onSuccess) {
+        this.networkRequest({
+            eventName: 'BUY_UPGRADE_NODE',
+            responseName: 'BUY_UPGRADE_NODE_ACK',
+            data: { upgradeId },
+            onSuccess
+        }, () => {});
+    }
+
+    submitSetSquadFormation(rosterIndex, w, h, onSuccess) {
+        this.networkRequest({
+            eventName: 'SET_SQUAD_FORMATION',
+            responseName: 'SET_SQUAD_FORMATION_ACK',
+            data: { rosterIndex, w, h },
+            onSuccess
+        }, () => {});
+    }
+
+    submitBuyDeploySlot(onSuccess) {
+        this.networkRequest({
+            eventName: 'BUY_DEPLOY_SLOT',
+            responseName: 'BUY_DEPLOY_SLOT_ACK',
+            data: {},
+            onSuccess
+        }, () => {});
+    }
+
+    submitEnterCampaignNode(nodeId, onSuccess) {
+        this.networkRequest({
+            eventName: 'ENTER_CAMPAIGN_NODE',
+            responseName: 'ENTER_CAMPAIGN_NODE_ACK',
+            data: { nodeId },
+            onSuccess
+        }, () => {});
+    }
+
+    submitPickReinforcement(optionIndex, onSuccess) {
+        this.networkRequest({
+            eventName: 'PICK_REINFORCEMENT',
+            responseName: 'PICK_REINFORCEMENT_ACK',
+            data: { optionIndex },
+            onSuccess
+        }, () => {});
+    }
+
+    submitCastCommanderSkill(skillId, x, z, onSuccess) {
+        this.networkRequest({
+            eventName: 'CAST_COMMANDER_SKILL',
+            responseName: 'CAST_COMMANDER_SKILL_ACK',
+            data: { skillId, x, z },
             onSuccess
         }, () => {});
     }

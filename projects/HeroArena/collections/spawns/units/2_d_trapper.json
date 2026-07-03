@@ -6,14 +6,14 @@
   "weaponType": "bow",
   "size": 25,
   "height": 50,
-  "value": 95,
-  "hp": 170,
+  "value": 70,
+  "hp": 180,
   "speed": 55,
-  "damage": 20,
+  "damage": 21,
   "attackSpeed": 1.2,
   "range": 200,
   "projectile": "arrow",
-  "element": "physical",
+  "element": "poison",
   "fireResistance": 0.5,
   "coldResistance": 0.5,
   "lightningResistance": 0.5,
@@ -142,15 +142,15 @@
     ]
   },
   "buyable": false,
-  "squadWidth": 1,
+  "squadWidth": 2,
   "squadHeight": 1,
-  "placementGridWidth": 1,
+  "placementGridWidth": 2,
   "placementGridHeight": 1,
-  "abilities": [
-    "ExplosiveTrapAbility"
-  ],
+  "abilities": [],
   "actionSet": "trapper_actions",
   "requiresUnits": [],
   "requiresBuildings": [],
-  "spriteAnimationSet": "trapper2d"
+  "spriteAnimationSet": "trapper2d",
+  "visionRange": 300,
+  "canTargetAir": true
 }

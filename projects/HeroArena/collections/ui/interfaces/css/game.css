@@ -253,7 +253,7 @@
 }
 #unlockedUnitsPanel.hidden { display: none; }
 
-#selectionPanel { width: 216px; padding: 13px; }
+#selectionPanel { width: 404px; padding: 13px; }
 #selectionPanel.hidden { display: none; }
 
 .selection-cards {
@@ -327,7 +327,7 @@
 .selection-hint { margin-top: 9px; font-size: 12px; color: var(--sk-bone-dim); line-height: 1.45; }
 .selection-hint.hidden { display: none; }
 
-.unlocked-units-cards { display: flex; flex-direction: column; gap: 6px; overflow-x: hidden; overflow-y: auto; }
+.unlocked-units-cards { display: grid; grid-template-columns: repeat(8, 44px); gap: 5px; overflow: visible; }
 .unlocked-unit-card {
     display: flex;
     justify-content: space-between;
@@ -934,3 +934,214 @@
     .game-chat-message { animation: none !important; }
     * { transition-duration: 0.01ms !important; }
 }
+
+/* ── Unit technologies (Mechabellum-style tech panel) ────────────── */
+.unit-tech-btn {
+    margin-left: auto;
+    padding: 1px 7px;
+    font-size: 0.68rem;
+    background: rgba(120, 160, 255, 0.12);
+    border: 1px solid rgba(120, 160, 255, 0.45);
+    border-radius: 3px;
+    color: #9db9ff;
+    cursor: pointer;
+    flex: 0 0 auto;
+}
+.unit-tech-btn:hover { background: rgba(120, 160, 255, 0.3); color: #fff; }
+
+.unit-tech-list { display: flex; flex-direction: column; gap: 6px; max-height: 55vh; overflow-y: auto; }
+
+.unit-tech-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 6px;
+    background: rgba(0, 0, 0, 0.3);
+}
+.unit-tech-row.buyable { cursor: pointer; }
+.unit-tech-row.buyable:hover { border-color: #9db9ff; background: rgba(120, 160, 255, 0.1); }
+.unit-tech-row.owned { border-color: rgba(120, 255, 160, 0.4); opacity: 0.85; }
+.unit-tech-row.unaffordable { opacity: 0.45; }
+
+.unit-tech-kind {
+    flex: 0 0 64px;
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #9db9ff;
+}
+.unit-tech-info { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+.unit-tech-title { font-weight: bold; font-size: 0.85rem; }
+.unit-tech-desc { font-size: 0.72rem; opacity: 0.75; }
+.unit-tech-cost { flex: 0 0 auto; color: #ffd97a; font-size: 0.8rem; }
+.unit-tech-row.owned .unit-tech-cost { color: #7dff9e; }
+
+
+/* ── Commander skills (battle actives) ───────────────────── */
+#commanderSkillBar {
+    position: absolute;
+    bottom: 90px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 8px;
+    z-index: 30;
+}
+.commander-skill-btn {
+    width: 58px;
+    height: 58px;
+    font-size: 1.6rem;
+    border-radius: 8px;
+    border: 2px solid rgba(255, 200, 100, 0.55);
+    background: rgba(20, 14, 8, 0.9);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 14px rgba(0,0,0,.6);
+}
+.commander-skill-btn:hover { border-color: #ffd97a; transform: translateY(-2px); }
+.commander-skill-btn.targeting { outline: 2px solid #ff6a4a; }
+
+/* ── Locked units (tier unlocks) ─────────────────────────── */
+.locked-unit-card {
+    opacity: 0.72;
+    border-style: dashed !important;
+}
+.locked-unit-card:hover { opacity: 1; border-color: #ffd97a !important; }
+
+/* ── Unit dock (Mechabellum recruit bar) ─────────────────────────────── */
+#unlockedUnitsPanel { max-height: none; overflow: visible; width: 404px; }
+
+.ud-card {
+    position: relative; width: 44px; height: 44px; border-radius: 6px;
+    background: #10151f; border: 2px solid #3a4152; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 0.08s, border-color 0.08s;
+}
+.ud-card:hover { transform: translateY(-3px); border-color: #d8b45a; z-index: 5; }
+.ud-card.tier-2 { border-color: #4a7a9a; }
+.ud-card.tier-3 { border-color: #7a5aa0; }
+.ud-card.tier-4 { border-color: #b0803a; }
+.ud-card.ud-locked { opacity: 0.55; border-style: dashed; }
+.ud-card.ud-poor { filter: grayscale(0.7); }
+.ud-img { width: 34px; height: 34px; object-fit: contain; pointer-events: none; }
+.ud-fallback { font-size: 1.6rem; }
+.ud-lock { position: absolute; top: 2px; left: 3px; font-size: 0.7rem; }
+.ud-price {
+    position: absolute; bottom: -1px; right: -1px; font-size: 0.62rem; font-weight: bold;
+    background: rgba(10,12,18,0.92); color: #ffd97a; padding: 0 4px; border-radius: 4px 0 4px 0;
+}
+.ud-pips {
+    position: absolute; top: -1px; left: 2px; right: 16px; font-size: 0.45rem;
+    color: #7dff9e; letter-spacing: 1px; line-height: 0.8; pointer-events: none;
+}
+.ud-tech {
+    position: absolute; top: -1px; right: -1px; font-size: 0.62rem; line-height: 1;
+    background: rgba(120,160,255,0.25); border: 1px solid rgba(120,160,255,0.6);
+    border-radius: 0 4px 0 4px; color: #cfe0ff; cursor: pointer; padding: 1px 3px;
+}
+.ud-tech:hover { background: rgba(120,160,255,0.5); }
+
+/* ── Unit tooltip ────────────────────────────────────────────────────── */
+#unitTooltip {
+    display: none; position: fixed; z-index: 3200; width: 320px;
+    background: rgba(13,17,26,0.97); border: 1px solid #d8b45a; border-radius: 8px;
+    padding: 10px 12px; color: #e8e2d0; font-size: 0.8rem; pointer-events: none;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.6);
+}
+.ut-head { display: flex; gap: 10px; align-items: flex-start; margin-bottom: 6px; }
+.ut-img { width: 52px; height: 52px; object-fit: contain; }
+.ut-name { font-weight: bold; font-size: 0.95rem; }
+.ut-sub { opacity: 0.7; font-size: 0.72rem; margin: 1px 0 4px; }
+.ut-tags, .sq-tags { display: flex; flex-wrap: wrap; gap: 3px; }
+.ut-tag {
+    font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.5px;
+    background: rgba(216,180,90,0.14); border: 1px solid rgba(216,180,90,0.45);
+    color: #e8d9a0; border-radius: 3px; padding: 0 4px;
+}
+.ut-stats, .sq-stats {
+    display: grid; grid-template-columns: auto 1fr auto 1fr; gap: 1px 8px;
+    background: rgba(255,255,255,0.04); border-radius: 5px; padding: 5px 8px; margin: 6px 0;
+}
+.ut-k { opacity: 0.65; font-size: 0.7rem; }
+.ut-v { font-size: 0.74rem; text-align: right; color: #fff; }
+.ut-techs { border-top: 1px solid rgba(255,255,255,0.1); padding-top: 5px; }
+.ut-tech { font-size: 0.7rem; opacity: 0.65; line-height: 1.35; }
+.ut-tech.owned { opacity: 1; color: #9fdcA8; }
+.ut-tech-d { opacity: 0.6; }
+.ut-hint { margin-top: 6px; font-size: 0.65rem; opacity: 0.55; text-align: center; }
+
+/* ── Squad detail (selection panel) ──────────────────────────────────── */
+.sq-detail { min-width: 0; }
+.sq-head { display: flex; gap: 10px; align-items: center; margin-bottom: 5px; }
+.sq-img { width: 48px; height: 48px; object-fit: contain; }
+.sq-name { font-weight: bold; font-size: 0.95rem; }
+.sq-level { color: #ffd97a; font-size: 0.8rem; margin-left: 4px; }
+.sq-xp {
+    position: relative; height: 15px; background: #10151f; border: 1px solid #3a4152;
+    border-radius: 4px; overflow: hidden; margin: 5px 0;
+}
+.sq-xp-fill { height: 100%; background: #4a7a9a; transition: width 0.3s; }
+.sq-xp-fill.sq-xp-ready { background: #d8b45a; animation: sqReadyPulse 1.2s infinite; }
+@keyframes sqReadyPulse { 0%,100% { filter: brightness(1); } 50% { filter: brightness(1.35); } }
+.sq-xp-label {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    font-size: 0.62rem; letter-spacing: 0.5px; color: #fff; text-shadow: 0 1px 2px #000;
+}
+.sq-techs { margin-top: 4px; }
+.sq-notechs { margin-top: 4px; font-size: 0.68rem; opacity: 0.5; font-style: italic; }
+.sq-multi { font-size: 0.72rem; color: #ffd97a; margin-bottom: 4px; }
+
+.sq-tech-btn {
+    width: 100%; margin-top: 7px; padding: 6px 0; font-size: 0.8rem;
+    background: rgba(120,160,255,0.12); border: 1px solid rgba(120,160,255,0.5);
+    border-radius: 5px; color: #cfe0ff; cursor: pointer; letter-spacing: 0.5px;
+}
+.sq-tech-btn:hover { background: rgba(120,160,255,0.3); color: #fff; }
+
+/* Inline tech list on the squad inspector */
+.sq-techlist { margin-top: 7px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 5px; }
+.sq-techlist-head { font-size: 0.7rem; letter-spacing: 1px; opacity: 0.7; margin-bottom: 3px; text-transform: uppercase; }
+.sq-techrow {
+    display: grid; grid-template-columns: auto 1fr auto; gap: 6px; align-items: baseline;
+    padding: 3px 6px; border-radius: 4px; font-size: 0.74rem; line-height: 1.25;
+}
+.sq-techrow.owned { color: #9fdcA8; }
+.sq-techrow.buyable { cursor: pointer; }
+.sq-techrow.buyable:hover { background: rgba(120,160,255,0.15); }
+.sq-techrow.poor { opacity: 0.45; }
+.sq-techrow-desc { opacity: 0.6; font-size: 0.66rem; }
+.sq-techrow-price { color: #ffd97a; font-size: 0.7rem; white-space: nowrap; }
+.sq-techrow.owned .sq-techrow-price { color: #7dff9e; }
+
+/* Squad action buttons (Formation / Promote / Sell) */
+.selection-actions { display: flex; gap: 6px; }
+.selection-actions button {
+    flex: 1; padding: 7px 4px; font-size: 0.76rem; letter-spacing: 0.3px;
+    background: linear-gradient(180deg, #1c2433, #141a26);
+    border: 1px solid #3f4a60; border-radius: 6px; color: #e8e2d0;
+    cursor: pointer; transition: border-color 0.1s, background 0.1s;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.selection-actions button:hover:not(:disabled) {
+    border-color: #d8b45a; background: linear-gradient(180deg, #26304200, #1a2232);
+    background-color: #202a3c; color: #fff;
+}
+.selection-actions button:disabled { opacity: 0.4; cursor: default; }
+#levelUpBtn:not(:disabled) { border-color: rgba(216,180,90,0.7); color: #ffe9b0; }
+#sellUnitBtn:hover:not(:disabled) { border-color: #a05a5a; }
+
+/* Explicit buy affordance on tech rows */
+.sq-techrow.buyable { cursor: default; }
+.sq-techrow.buyable:hover { background: rgba(255,255,255,0.04); }
+.sq-tech-buy {
+    padding: 3px 10px; font-size: 0.66rem; font-weight: bold; letter-spacing: 0.5px;
+    background: linear-gradient(180deg, #3d5a2e, #2c4222); border: 1px solid #6a9a4a;
+    border-radius: 4px; color: #dfffc8; cursor: pointer; white-space: nowrap;
+}
+.sq-tech-buy:hover { background: linear-gradient(180deg, #4c7038, #37522a); border-color: #8fca66; color: #fff; }
+.sq-tech-owned { font-size: 0.62rem; color: #7dff9e; letter-spacing: 0.5px; white-space: nowrap; }
+.sq-tech-cant { font-size: 0.7rem; color: #8a8578; white-space: nowrap; }

@@ -6,13 +6,13 @@
   "weaponType": "sword",
   "size": 35,
   "height": 50,
-  "value": 110,
-  "hp": 240,
-  "speed": 25,
+  "value": 70,
+  "hp": 260,
+  "speed": 50,
   "damage": 20,
   "attackSpeed": 0.9,
   "element": "physical",
-  "armor": 8,
+  "armor": 14,
   "fireResistance": 0.15,
   "coldResistance": 0.15,
   "lightningResistance": 0.1,
@@ -138,14 +138,13 @@
     ]
   },
   "buyable": false,
-  "squadWidth": 1,
+  "squadWidth": 2,
   "squadHeight": 1,
-  "placementGridWidth": 1,
+  "placementGridWidth": 2,
   "placementGridHeight": 1,
-  "abilities": [
-    "ChargeAbility"
-  ],
+  "abilities": [],
   "requiresUnits": [],
   "requiresBuildings": [],
-  "spriteAnimationSet": "knight2sd"
+  "spriteAnimationSet": "knight2sd",
+  "visionRange": 250
 }

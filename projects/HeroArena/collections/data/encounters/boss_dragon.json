@@ -1,0 +1,45 @@
+{
+ "kind": "boss",
+ "title": "The Red Terror",
+ "minDepth": 12,
+ "final": true,
+ "squads": [
+  {
+   "unit": "dragon_red_flying",
+   "level": 3,
+   "row": 1,
+   "col": 0
+  },
+  {
+   "unit": "0_golemFire",
+   "level": 2,
+   "row": 0,
+   "col": -1
+  },
+  {
+   "unit": "0_golemFire",
+   "level": 2,
+   "row": 0,
+   "col": 1
+  },
+  {
+   "unit": "2_sd_crossbowman",
+   "level": 3,
+   "row": 1,
+   "col": -2
+  },
+  {
+   "unit": "2_sd_crossbowman",
+   "level": 3,
+   "row": 1,
+   "col": 2
+  },
+  {
+   "unit": "0_skeleton",
+   "level": 2,
+   "row": 0,
+   "col": 0
+  }
+ ],
+ "fileName": "boss_dragon"
+}

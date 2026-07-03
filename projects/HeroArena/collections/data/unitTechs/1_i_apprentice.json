@@ -1,0 +1,38 @@
+{
+ "unit": "1_i_apprentice",
+ "techs": [
+  {
+   "id": "app_blink",
+   "title": "Blink",
+   "cost": 11,
+   "description": "Unlocks Blink: teleport out of danger",
+   "unlockAbility": "BlinkAbility"
+  },
+  {
+   "id": "app_iceshard",
+   "title": "Ice Shard",
+   "cost": 13,
+   "description": "Unlocks Ice Shard: chilling projectile",
+   "unlockAbility": "IceShardAbility"
+  },
+  {
+   "id": "app_chain",
+   "title": "Chain Lightning",
+   "cost": 15,
+   "description": "Unlocks Chain Lightning: arcs between foes",
+   "unlockAbility": "ChainLightningAbility"
+  },
+  {
+   "id": "app_focus",
+   "title": "Arcane Focus",
+   "cost": 12,
+   "description": "+35% damage",
+   "statModifiers": {
+    "damage": {
+     "pct": 0.35
+    }
+   }
+  }
+ ],
+ "fileName": "1_i_apprentice"
+}

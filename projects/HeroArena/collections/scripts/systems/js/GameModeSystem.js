@@ -37,14 +37,14 @@ class GameModeSystem extends GUTS.BaseSystem {
                 title: 'Campaign',
                 icon: '🗺️',
                 interfaceId: 'campaignSelect',
-                description: 'Conquer the Atlas and build your legend',
-                difficulty: 'Progressive',
+                description: 'The March: a run of 12 battles — grow your army, keep your commander alive',
+                difficulty: 'Roguelike',
                 difficultyClass: 'campaign',
                 isMultiplayer: false,
                 maxPlayers: 1,
-                startingGold: 100,
+                startingGold: 0,
                 onStart: (mode) => {
-                    this.call.showCampaignSelect();
+                    this.startCampaignRun();
                 }
             },
             skirmish: {
@@ -231,6 +231,56 @@ class GameModeSystem extends GUTS.BaseSystem {
 
         // Transition to the online lobby scene where chat and games list are prominent
         this.game.switchScene('onlineLobby');
+    }
+
+    // Spire March: New Run / Continue chooser, then into the skirmish scene in
+    // campaign mode. The enemy's leader is pinned to 'supply' so specialist
+    // perks (free sniper/golem units) never contaminate authored encounters.
+    startCampaignRun() {
+        let saved = null;
+        try {
+            const raw = localStorage.getItem('heroarena_run_v1');
+            saved = raw ? JSON.parse(raw) : null;
+        } catch (_) {}
+
+        const launch = (resume) => {
+            const config = {
+                isSkirmish: true,
+                campaignMode: true,
+                selectedLevel: (resume?.level) || 'battleplain',
+                selectedTeam: 'left',
+                startingGold: 0,
+                leaders: { 1: 'supply' },
+                campaignResume: resume || null
+            };
+            this.game.state.gameMode = {
+                id: 'campaign', title: 'Campaign', isMultiplayer: false, maxPlayers: 1
+            };
+            this.game.switchScene('skirmish', config);
+        };
+
+        if (!saved) { launch(null); return; }
+
+        // Minimal programmatic chooser (same pattern as showMultiplayerConnect).
+        const overlay = document.createElement('div');
+        overlay.style.cssText = 'position:fixed;inset:0;z-index:3000;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.75);';
+        overlay.innerHTML = `
+            <div style="background:#161b28;border:1px solid #444;border-radius:10px;padding:28px 34px;text-align:center;color:#e8e2d0;">
+                <h2 style="margin:0 0 6px;">Campaign</h2>
+                <p style="opacity:0.8;margin:0 0 18px;">A run is in progress — node ${(saved.depth || 0) + 1} of 12, ❤️ ${saved.commanderHP}.</p>
+                <div style="display:flex;gap:14px;justify-content:center;">
+                    <button id="campContinue" style="padding:10px 22px;background:#2d5a2d;border:1px solid #4a4;color:#dfd;border-radius:6px;cursor:pointer;font-size:1rem;">▶ Continue Run</button>
+                    <button id="campNew" style="padding:10px 22px;background:#5a2d2d;border:1px solid #a44;color:#fdd;border-radius:6px;cursor:pointer;font-size:1rem;">🗑 New Run</button>
+                    <button id="campCancel" style="padding:10px 22px;background:#333;border:1px solid #555;color:#ccc;border-radius:6px;cursor:pointer;font-size:1rem;">Cancel</button>
+                </div>
+            </div>`;
+        document.body.appendChild(overlay);
+        overlay.querySelector('#campContinue').addEventListener('click', () => { overlay.remove(); launch(saved); });
+        overlay.querySelector('#campNew').addEventListener('click', () => {
+            try { localStorage.removeItem('heroarena_run_v1'); } catch (_) {}
+            overlay.remove(); launch(null);
+        });
+        overlay.querySelector('#campCancel').addEventListener('click', () => overlay.remove());
     }
 
     selectMode(modeId) {

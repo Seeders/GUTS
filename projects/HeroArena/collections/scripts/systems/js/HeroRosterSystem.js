@@ -12,9 +12,12 @@ class HeroRosterSystem extends GUTS.BaseSystem {
         'removeRosterEntry',
         'despawnBattleHeroes',
         'getHeroEntityId',
+        'getHeroEntityIds',
         'getRosterEntryForEntity',
         'snapshotHeroPositions',
-        'reapplyStandingOrders'
+        'reapplyStandingOrders',
+        'isUnitLocked',
+        'setSquadFormation'
     ];
 
     static serviceDependencies = [
@@ -25,7 +28,9 @@ class HeroRosterSystem extends GUTS.BaseSystem {
         'applyArmyAbilities',
         'applyLeaderBonuses',
         'applyLevelScaling',
-        'applySquadTargetPosition'
+        'applySquadTargetPosition',
+        'getStartingLocationsFromLevel',
+        'tileToWorld'
     ];
 
     static CLASS_SPAWN_MAP = {
@@ -95,17 +100,21 @@ class HeroRosterSystem extends GUTS.BaseSystem {
     // render instance is properly swapped (removeInstance + createPlacement, same
     // entity id) and position/HP% are preserved; then re-applies hero tagging/bonuses
     // since replaceUnit rebuilds the entity from the new unit definition.
-    respawnRosterEntry(numericPlayerId, rosterIndex) {
+    respawnRosterEntry(numericPlayerId, rosterIndex, animationType = null) {
         const stats = this._statsByPlayerId(numericPlayerId);
         const entry = stats?.heroRoster?.[rosterIndex];
         if (!entry) return { success: false, reason: 'no_entry' };
         const newSpawnType = HeroRosterSystem.resolveSpawnType(entry);
         if (!newSpawnType) return { success: false, reason: 'no_spawn_type' };
 
-        const liveId = this.getHeroEntityId(numericPlayerId, rosterIndex);
-        if (liveId != null && this.game.hasService?.('replaceUnit')) {
-            const newId = this.call.replaceUnit(liveId, newSpawnType);
-            if (newId != null) {
+        const liveIds = this.getHeroEntityIds(numericPlayerId, rosterIndex);
+        if (liveIds.length > 0 && this.game.hasService?.('replaceUnit')) {
+            let ok = 0;
+            for (const liveId of liveIds) {
+                const newId = this.call.replaceUnit(liveId, newSpawnType,
+                    animationType ? { animationType } : undefined);
+                if (newId == null) continue;
+                ok++;
                 const level = entry.level || this._calcLevel(entry.roundsPlayed || 0);
                 this._tagHeroEntity(newId, numericPlayerId, rosterIndex, level);
                 // replaceUnit reuses the same id, so the battle-hero mapping still holds;
@@ -114,8 +123,8 @@ class HeroRosterSystem extends GUTS.BaseSystem {
                     this.battleHeroEntities.push({ entityId: newId, playerId: numericPlayerId, rosterIndex });
                     this._entityToRoster.set(newId, { playerId: numericPlayerId, rosterIndex });
                 }
-                return { success: true };
             }
+            if (ok > 0) return { success: true };
         }
         // Not on the field (or replaceUnit unavailable) → spawn a fresh copy.
         return this.spawnPurchasedUnit(numericPlayerId, rosterIndex);
@@ -174,23 +183,127 @@ class HeroRosterSystem extends GUTS.BaseSystem {
         // fall back to the legacy rounds-survived curve for entries without XP yet.
         const level       = rosterEntry.level || this._calcLevel(rosterEntry.roundsPlayed || 0);
 
-        u.squadUnits.forEach(entityId => {
+        const def = this.collections.units?.[HeroRosterSystem.resolveSpawnType(rosterEntry)] || {};
+        const fw = rosterEntry.formation?.w || def.squadWidth || 1;
+        const fh = rosterEntry.formation?.h || def.squadHeight || 1;
+        const basis = this.formationBasis(stats.team);
+
+        // Anchor: saved battle position for veterans, the fresh spawn's own
+        // centroid for new buys (either way, members form up around it facing
+        // the enemy — never the world-aligned single file spawnSquad produces).
+        let anchor = rosterEntry.lastPosition;
+        if (!anchor) {
+            let cx = 0, cz = 0, n = 0;
+            for (const id of u.squadUnits) {
+                const p = this.game.getComponent(id, 'transform')?.position;
+                if (!p) continue;
+                cx += p.x; cz += p.z; n++;
+            }
+            if (n > 0) anchor = { x: cx / n, z: cz / n };
+        }
+        // Snap the anchor to a deployment cell center — member offsets are
+        // whole cells, so every spawned unit lands exactly on the grid and
+        // its selection square is centered.
+        if (anchor) {
+            const CELL = 24.5;
+            anchor = {
+                x: Math.floor(anchor.x / CELL) * CELL + CELL / 2,
+                z: Math.floor(anchor.z / CELL) * CELL + CELL / 2
+            };
+        }
+
+        u.squadUnits.forEach((entityId, memberIndex) => {
             // Tag with roster info + apply autobattler vision, level scaling, upgrades, abilities.
             this._tagHeroEntity(entityId, stats.playerId, rosterIndex, level);
 
-            // If the player positioned this hero last round (via drag), respawn
-            // them at the saved spot instead of the default starting location.
-            if (rosterEntry.lastPosition && this.game.placementSystem) {
+            if (anchor && this.game.placementSystem) {
+                const off = HeroRosterSystem.memberOffset(memberIndex, fw, fh, basis);
                 this.game.placementSystem.moveHero(
-                    entityId,
-                    rosterEntry.lastPosition.x,
-                    rosterEntry.lastPosition.z
-                );
+                    entityId, anchor.x + off.x, anchor.z + off.z);
             }
 
             this.battleHeroEntities.push({ entityId, playerId: stats.playerId, rosterIndex });
             this._entityToRoster.set(entityId, { playerId: stats.playerId, rosterIndex });
         });
+    }
+
+    // Rearrange a squad's live members into a w x h grid around their current
+    // centroid, and persist the choice on the roster entry so every future
+    // respawn keeps it. Prep-phase only; locked (fought) squads hold formation.
+    setSquadFormation(numericPlayerId, rosterIndex, w, h) {
+        if (this.game.state.phase !== this.enums.gamePhase.placement) {
+            return { success: false, reason: 'wrong_phase' };
+        }
+        const stats = this._statsByPlayerId(numericPlayerId);
+        const entry = stats?.heroRoster?.[rosterIndex];
+        if (!entry) return { success: false, reason: 'no_entry' };
+        if (entry.lastPosition) return { success: false, reason: 'deployment_locked' };
+
+        const members = this.getHeroEntityIds(numericPlayerId, rosterIndex);
+        if (members.length === 0) return { success: false, reason: 'not_on_field' };
+        const W = Math.max(1, w | 0), H = Math.max(1, h | 0);
+        if (W * H < members.length) return { success: false, reason: 'formation_too_small' };
+
+        entry.formation = { w: W, h: H };
+
+        // Reposition around the current centroid, SNAPPED to a cell center —
+        // offsets are whole cells, so every member lands exactly on the grid.
+        const CELL = 24.5;
+        let cx = 0, cz = 0;
+        for (const id of members) {
+            const p = this.game.getComponent(id, 'transform')?.position;
+            cx += p?.x || 0; cz += p?.z || 0;
+        }
+        cx /= members.length; cz /= members.length;
+        cx = Math.floor(cx / CELL) * CELL + CELL / 2;
+        cz = Math.floor(cz / CELL) * CELL + CELL / 2;
+
+        const basis = this.formationBasis(stats.team);
+        const moves = [];
+        members.forEach((id, i) => {
+            const off = HeroRosterSystem.memberOffset(i, W, H, basis);
+            this.game.placementSystem?.moveHero(id, cx + off.x, cz + off.z);
+            moves.push({ entityId: id, x: cx + off.x, z: cz + off.z });
+        });
+        return { success: true, formation: { w: W, h: H }, moves };
+    }
+
+    // Squad members stand in a width x depth grid around the anchor (30 world
+    // units apart). WIDTH runs across the battlefield (shoulder to shoulder,
+    // facing the enemy) and DEPTH runs toward the enemy — pass the team's
+    // formation basis to orient it; defaults to world axes (across = z).
+    static memberOffset(memberIndex, squadWidth, squadHeight, basis = null) {
+        const w = Math.max(1, squadWidth | 0), h = Math.max(1, squadHeight | 0);
+        if (w * h <= 1) return { x: 0, z: 0 };
+        const SPACING = 24.5;   // one deployment cell — members sit on adjacent cells
+        const col = memberIndex % w, row = Math.floor(memberIndex / w);
+        // INTEGER cell steps (even widths must not straddle half-cells: every
+        // member has to land on a grid cell center for the markers to line up)
+        const ax = (col - Math.floor((w - 1) / 2)) * SPACING;   // across the line
+        const az = (row - Math.floor((h - 1) / 2)) * SPACING;   // toward the enemy
+        const b = basis || { across: { x: 0, z: 1 }, forward: { x: 1, z: 0 } };
+        return {
+            x: b.across.x * ax + b.forward.x * az,
+            z: b.across.z * ax + b.forward.z * az
+        };
+    }
+
+    // Formation basis for a team: forward points at the enemy start, across is
+    // its perpendicular — squads line up shoulder to shoulder facing the enemy.
+    formationBasis(team) {
+        const locs = this.call.getStartingLocationsFromLevel?.();
+        if (locs && locs[team] != null) {
+            const enemyTeam = Object.keys(locs).map(Number).find(t => t !== team);
+            if (enemyTeam != null && locs[enemyTeam] != null) {
+                const my = this.call.tileToWorld(locs[team].x, locs[team].z);
+                const en = this.call.tileToWorld(locs[enemyTeam].x, locs[enemyTeam].z);
+                const dx = en.x - my.x, dz = en.z - my.z;
+                const len = Math.hypot(dx, dz) || 1;
+                const f = { x: dx / len, z: dz / len };
+                return { across: { x: -f.z, z: f.x }, forward: f };
+            }
+        }
+        return { across: { x: 0, z: 1 }, forward: { x: 1, z: 0 } };
     }
 
     // Resolve a roster entry → unit spawnType. entry.spawnType is authoritative
@@ -211,29 +324,21 @@ class HeroRosterSystem extends GUTS.BaseSystem {
     // their next-round spawn uses that position instead of the team default.
     snapshotHeroPositions() {
         if (!this.game.isServer && !this.game.state?.isLocalGame) return;
-        const playerEntities = this.call.getPlayerEntities();
 
+        // A squad's saved anchor is its FIRST member's position — member 0 has
+        // offset (0,0), so next round's respawn reproduces the exact layout on
+        // the same grid cells. (A centroid lands on cell BOUNDARIES for even
+        // member counts, drifting units off their selection squares.)
+        const seen = new Set();
         for (const { entityId, playerId, rosterIndex } of this.battleHeroEntities) {
-            const transform = this.game.getComponent(entityId, 'transform');
-            const pos = transform?.position;
+            const key = `${playerId}:${rosterIndex}`;
+            if (seen.has(key)) continue;
+            const pos = this.game.getComponent(entityId, 'transform')?.position;
             if (!pos) continue;
-
-            for (const peid of playerEntities) {
-                const stats = this.game.getComponent(peid, 'playerStats');
-                if (stats && stats.playerId === playerId) {
-                    const entry = stats.heroRoster?.[rosterIndex];
-                    if (entry) {
-                        entry.lastPosition = { x: pos.x, z: pos.z };
-                        // Standing order: persists round to round (re-applied to
-                        // the respawn) until the player changes or clears it.
-                        const po = this.game.getComponent(entityId, 'playerOrder');
-                        entry.standingOrder = (po?.enabled && po.isMoveOrder)
-                            ? { x: po.targetPositionX, z: po.targetPositionZ }
-                            : null;
-                    }
-                    break;
-                }
-            }
+            seen.add(key);
+            const stats = this._statsByPlayerId(playerId);
+            const entry = stats?.heroRoster?.[rosterIndex];
+            if (entry) entry.lastPosition = { x: pos.x, z: pos.z };
         }
     }
 
@@ -269,7 +374,8 @@ class HeroRosterSystem extends GUTS.BaseSystem {
         }
     }
 
-    // Returns the current entityId for a player's hero at the given roster index.
+    // Returns the current entityId for a player's hero at the given roster index
+    // (first squad member for multi-member squads).
     getHeroEntityId(playerId, rosterIndex) {
         for (const entry of this.battleHeroEntities) {
             if (entry.playerId === playerId && entry.rosterIndex === rosterIndex) {
@@ -279,9 +385,33 @@ class HeroRosterSystem extends GUTS.BaseSystem {
         return null;
     }
 
+    // All live member entityIds of a roster entry (a squad is 1..N entities).
+    getHeroEntityIds(playerId, rosterIndex) {
+        const ids = [];
+        for (const entry of this.battleHeroEntities) {
+            if (entry.playerId === playerId && entry.rosterIndex === rosterIndex) {
+                ids.push(entry.entityId);
+            }
+        }
+        return ids;
+    }
+
     // Returns { playerId, rosterIndex } for an entity, or null if not a battle hero.
     getRosterEntryForEntity(entityId) {
         return this._entityToRoster.get(entityId) || null;
+    }
+
+    // Deployment is permanent: a unit that has fought a battle (its roster entry
+    // carries a snapshotted lastPosition) can no longer be repositioned or sold.
+    // Units bought this prep have no lastPosition yet and are freely placeable.
+    isUnitLocked(entityId) {
+        // Campaign: every node is a fresh field — nothing is ever locked.
+        if (this.game.campaignRunSystem?.isCampaignMode?.()) return false;
+        const ref = this._entityToRoster.get(entityId);
+        if (!ref) return false;
+        const stats = this._statsByPlayerId(ref.playerId);
+        const entry = stats?.heroRoster?.[ref.rosterIndex];
+        return !!entry?.lastPosition;
     }
 
     // Remove a roster entry (used by ArmyShopSystem.sellUnit): splice it out, despawn
@@ -295,9 +425,8 @@ class HeroRosterSystem extends GUTS.BaseSystem {
             return { success: false, reason: 'bad_index' };
         }
 
-        // Despawn the live unit for this entry, if it's on the field.
-        const liveId = this.getHeroEntityId(numericPlayerId, rosterIndex);
-        if (liveId != null) {
+        // Despawn every live squad member for this entry, if on the field.
+        for (const liveId of this.getHeroEntityIds(numericPlayerId, rosterIndex)) {
             try { this.game.destroyEntity(liveId); } catch (_) {}
         }
 

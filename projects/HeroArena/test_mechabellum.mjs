@@ -1,0 +1,658 @@
+// E2E for the Mechabellum-style HeroArena loop (local skirmish vs AI).
+// Usage: node projects/HeroArena/test_mechabellum.mjs   (server on :3000)
+import puppeteer from 'puppeteer';
+
+const results = [];
+const errors = [];
+function check(name, ok, detail = '') {
+    results.push({ name, ok });
+    console.log(`${ok ? 'PASS' : 'FAIL'}  ${name}${detail ? ' — ' + detail : ''}`);
+}
+
+async function waitSim(page, simSeconds, maxWallMs = 120000) {
+    const start = await page.evaluate(() => window.game.state.now);
+    await page.waitForFunction((s, d) => window.game.state.now >= s + d,
+        { timeout: maxWallMs, polling: 250 }, start, simSeconds);
+}
+
+const browser = await puppeteer.launch({
+    headless: 'new',
+    args: ['--window-size=1280,800', '--enable-gpu', '--use-angle=default']
+});
+
+try {
+    const page = await browser.newPage();
+    await page.setViewport({ width: 1280, height: 800 });
+    page.on('pageerror', err => errors.push('PAGEERROR: ' + err.message));
+    page.on('console', msg => { if (msg.type() === 'error') errors.push(msg.text()); });
+
+    await page.goto('http://localhost:3000/index.html', { waitUntil: 'networkidle2', timeout: 60000 });
+    await page.waitForSelector('#mainMenu_PlayGameBtn', { timeout: 60000 });
+    await page.click('#mainMenu_PlayGameBtn');
+    await page.waitForSelector('[data-mode="skirmish"]', { timeout: 15000 });
+    await page.click('[data-mode="skirmish"]');
+    await page.waitForSelector('#skirmishStartBtn', { timeout: 15000 });
+
+    const levelDefault = await page.$eval('#skirmishLevelSelect', el => el.value);
+    check('battleplain is the default map', levelDefault === 'battleplain', levelDefault);
+
+    await page.click('#skirmishStartBtn');
+
+    // ── Leader select, then straight to prep (no building pick) ────────────
+    await page.waitForFunction(() =>
+        document.querySelector('#leaderSelectOverlay:not(.hidden) #leaderOptions')?.children?.length > 0,
+        { timeout: 120000, polling: 400 });
+    check('leader select appears', true);
+
+    // Wait for the scene load (terrain painting) to fully finish — the loading
+    // overlay eats pointer input until then, exactly as it does for a player.
+    await page.waitForFunction(() => !document.querySelector('#sceneLoadingOverlay.visible'),
+        { timeout: 180000, polling: 500 });
+    await page.evaluate(() => {
+        document.querySelector('#leaderOptions').children[0].click();
+    });
+
+    await page.waitForFunction(() =>
+        window.game?.state?.phase === window.game?.getEnums?.()?.gamePhase?.placement,
+        { timeout: 60000, polling: 300 });
+    const afterLeader = await page.evaluate(() => {
+        const overlay = document.getElementById('heroSelectOverlay');
+        const shown = overlay && !overlay.classList.contains('hidden');
+        const title = document.getElementById('heroSelectTitle')?.textContent || '';
+        return {
+            // The overlay may legitimately show as the REINFORCEMENT pick —
+            // it must never show as a building select
+            buildingSelect: shown && !title.startsWith('Reinforcements'),
+            round: window.game.state.round
+        };
+    });
+    check('leader pick goes straight to prep (no building select)',
+        afterLeader.buildingSelect === false, `round ${afterLeader.round}`);
+
+    await waitSim(page, 1);
+
+    // ── Reinforcement pick: 1-of-3 cards at prep start ─────────────────────
+    const reinf = await page.evaluate(() => {
+        const game = window.game;
+        const overlay = document.getElementById('heroSelectOverlay');
+        const cards = document.querySelectorAll('#heroOptions .arena-option-card');
+        let my = null;
+        for (const eid of game.getEntitiesWith('playerStats')) {
+            const s = game.getComponent(eid, 'playerStats');
+            if (s.playerId === 0) my = s;
+        }
+        return {
+            overlayShown: overlay && !overlay.classList.contains('hidden'),
+            cardCount: cards.length,
+            titles: [...cards].map(c => c.textContent.trim().slice(0, 30)),
+            pendingOptions: my?.pendingReinforcement?.options?.length,
+            goldBefore: my?.gold,
+            rosterBefore: my?.heroRoster?.length || 0,
+            pickedId: my?.pendingReinforcement?.options?.[0]?.id
+        };
+    });
+    check('reinforcement pick shows 3 cards at prep start',
+        reinf.overlayShown && reinf.cardCount === 3 && reinf.pendingOptions === 3,
+        reinf.titles.join(' | '));
+
+    const reinfPick = await page.evaluate((info) => {
+        const game = window.game;
+        document.querySelectorAll('#heroOptions .arena-option-card')[0].click();
+        let my = null;
+        for (const eid of game.getEntitiesWith('playerStats')) {
+            const s = game.getComponent(eid, 'playerStats');
+            if (s.playerId === 0) my = s;
+        }
+        const card = game.getCollections().reinforcementCards[info.pickedId];
+        let effectOk = false;
+        if (card.kind === 'gold') effectOk = my.gold === info.goldBefore + card.amount;
+        else if (card.kind === 'freeUnits') effectOk = (my.heroRoster?.length || 0) === info.rosterBefore + card.count;
+        else effectOk = true; // other kinds verified via service below
+        return {
+            picked: my.pendingReinforcement?.picked === true,
+            overlayHidden: document.getElementById('heroSelectOverlay').classList.contains('hidden'),
+            kind: card.kind, effectOk,
+            rePick: game.getService('pickReinforcement')(0, 0)?.reason
+        };
+    }, reinf);
+    check('picking a card applies its effect and consumes the pick',
+        reinfPick.picked && reinfPick.overlayHidden && reinfPick.effectOk &&
+        reinfPick.rePick === 'no_pending',
+        `kind=${reinfPick.kind}, re-pick=${reinfPick.rePick}`);
+
+    // ── Prep round 1: commander HP, roster shop, no offers ────────────────
+    const prep1 = await page.evaluate(() => {
+        const game = window.game;
+        let my = null, op = null;
+        for (const eid of game.getEntitiesWith('playerStats')) {
+            const s = game.getComponent(eid, 'playerStats');
+            if (s.playerId === 0) my = s; else op = s;
+        }
+        return {
+            myHP: my?.commanderHP, opHP: op?.commanderHP, gold: my?.gold,
+            offers: (my?.currentOffers || []).length,
+            shopPanelHidden: document.getElementById('shopPanel')?.classList?.contains('hidden'),
+            unitCards: document.querySelectorAll('#unlockedUnitsCards [data-unit-id]').length,
+            hpLabel: document.querySelector('#playerHPSection .hud-label')?.textContent,
+            townHalls: game.getEntitiesWith('buildingOwner').length,
+            mines: game.getEntitiesWith('goldMine').length
+        };
+    });
+    check('commander HP initialized at 210 for both', prep1.myHP === 210 && prep1.opHP === 210);
+    check('no buildings or mines on the field', prep1.townHalls === 0 && prep1.mines === 0,
+        `buildings ${prep1.townHalls}, mines ${prep1.mines}`);
+    check('random offers gone, shop panel hidden', prep1.offers === 0 && prep1.shopPanelHidden === true);
+    check('all 6 tier-1 units buyable from round 1', prep1.unitCards === 6, `${prep1.unitCards} cards`);
+    check('HUD shows commander label', /Commander/.test(prep1.hpLabel || ''), prep1.hpLabel);
+
+    // Buy two units via service and confirm they spawn (reinforcement cards
+    // may have already granted free squads, so assert on the delta)
+    const buy = await page.evaluate(() => {
+        const game = window.game;
+        let my = null;
+        for (const eid of game.getEntitiesWith('playerStats')) {
+            const s = game.getComponent(eid, 'playerStats');
+            if (s.playerId === 0) my = s;
+        }
+        const before = my.heroRoster?.length || 0;
+        const r1 = game.getService('buyUnlockedUnit')(0, '1_s_barbarian');
+        const r2 = game.getService('buyUnlockedUnit')(0, '1_d_archer');
+        return { ok1: r1?.success, ok2: r2?.success, before, roster: my?.heroRoster?.length, gold: my?.gold };
+    });
+    check('buying units works', buy.ok1 && buy.ok2 && buy.roster === buy.before + 2,
+        `roster ${buy.before} -> ${buy.roster}, ${buy.gold}g left`);
+
+    // New units are draggable: move one and confirm the position changes
+    const dragNew = await page.evaluate(() => {
+        const game = window.game;
+        const mine = game.getEntitiesWith('heroRosterInfo').filter(id =>
+            game.getComponent(id, 'heroRosterInfo')?.playerId === 0);
+        const uid = mine[0];
+        const before = { ...game.getComponent(uid, 'transform').position };
+        const res = game.placementSystem.moveHero(uid, before.x + 100, before.z + 60);
+        const after = game.getComponent(uid, 'transform').position;
+        const locked = game.heroRosterSystem.isUnitLocked(uid);
+        return { moved: Math.hypot(after.x - before.x, after.z - before.z) > 50, locked, res: res?.success };
+    });
+    // Squads: one purchase = N member entities sharing a roster entry
+    const squad = await page.evaluate(() => {
+        const game = window.game;
+        let my = null;
+        for (const eid of game.getEntitiesWith('playerStats')) {
+            const st = game.getComponent(eid, 'playerStats');
+            if (st.playerId === 0) my = st;
+        }
+        my.gold += 20;
+        const r = game.getService('buyUnlockedUnit')(0, '1_sd_soldier');
+        const idx = my.heroRoster.length - 1;
+        const members = game.getService('getHeroEntityIds')(0, idx);
+        const sellRes = game.getService('sellUnit')(0, idx);
+        const after = game.getService('getHeroEntityIds')(0, idx0 => idx0);
+        const alive = members.filter(id => game.entityAlive?.[id] === 1);
+        return { ok: r?.success, members: members.length, sellOk: sellRes?.success,
+                 aliveAfterSell: alive.length };
+    });
+    // Squad cohesion: moving any member moves the whole formation
+    const cohesion = await page.evaluate(() => {
+        const game = window.game;
+        let my = null;
+        for (const eid of game.getEntitiesWith('playerStats')) {
+            const st = game.getComponent(eid, 'playerStats');
+            if (st.playerId === 0) my = st;
+        }
+        my.gold += 10;
+        game.getService('buyUnlockedUnit')(0, '1_d_archer');
+        const idx = my.heroRoster.length - 1;
+        const members = game.getService('getHeroEntityIds')(0, idx);
+        const before = members.map(id => ({ ...game.getComponent(id, 'transform').position }));
+        const lead = members[0];
+        const target = { x: before[0].x + 120, z: before[0].z + 60 };
+        let ack = null;
+        game.serverNetworkSystem.handleHeroMoved(
+            { playerId: 0, numericPlayerId: 0, data: { entityId: lead, x: target.x, z: target.z } },
+            (r) => { ack = r; });
+        const after = members.map(id => ({ ...game.getComponent(id, 'transform').position }));
+        const deltas = members.map((_, i) => ({
+            dx: after[i].x - before[i].x, dz: after[i].z - before[i].z }));
+        const moved = deltas.filter(d => Math.abs(d.dx - 120) < 40 && Math.abs(d.dz - 60) < 40).length;
+        // clean up: sell the test squad
+        game.getService('sellUnit')(0, idx);
+        return { count: members.length, moved, ackMoves: ack?.moves?.length };
+    });
+    check('moving one member moves the whole squad in formation',
+        cohesion.count === 3 && cohesion.moved === 3 && cohesion.ackMoves === 3,
+        `${cohesion.moved}/${cohesion.count} members moved, ack ${cohesion.ackMoves} moves`);
+
+    // Formation switch: 3x1 archers -> 1x3 column, persisted on the entry
+    const formation = await page.evaluate(() => {
+        const game = window.game;
+        let my = null;
+        for (const eid of game.getEntitiesWith('playerStats')) {
+            const st = game.getComponent(eid, 'playerStats');
+            if (st.playerId === 0) my = st;
+        }
+        my.gold += 10;
+        game.getService('buyUnlockedUnit')(0, '1_d_archer');
+        const idx = my.heroRoster.length - 1;
+        const members = game.getService('getHeroEntityIds')(0, idx);
+        const spread = () => {
+            const xs = members.map(id => game.getComponent(id, 'transform').position.x);
+            const zs = members.map(id => game.getComponent(id, 'transform').position.z);
+            return { x: Math.max(...xs) - Math.min(...xs), z: Math.max(...zs) - Math.min(...zs) };
+        };
+        // Player 0 is the LEFT team on battleplain: the enemy lies along +x, so a
+        // shoulder-to-shoulder line spreads along z and a column spreads along x.
+        const lineSpread = spread();
+        const res = game.getService('setSquadFormation')(0, idx, 1, 3);
+        const columnSpread = spread();
+        const saved = my.heroRoster[idx].formation;
+        game.getService('sellUnit')(0, idx);
+        return { ok: res?.success, lineSpread, columnSpread, saved };
+    });
+    check('squads default to a shoulder-to-shoulder line facing the enemy',
+        formation.lineSpread.z >= 55 && formation.lineSpread.x < 25,
+        `line: x ${Math.round(formation.lineSpread.x)}, z ${Math.round(formation.lineSpread.z)}`);
+    check('formation switch turns the line into a column and persists',
+        formation.ok && formation.columnSpread.x >= 55 && formation.columnSpread.z < 25 &&
+        formation.saved?.w === 1 && formation.saved?.h === 3,
+        `column: x ${Math.round(formation.columnSpread.x)}, z ${Math.round(formation.columnSpread.z)}`);
+
+    // Squad-wide selection: clicking one member selects the whole squad
+    const squadSelect = await page.evaluate(() => {
+        const game = window.game;
+        let my = null;
+        for (const eid of game.getEntitiesWith('playerStats')) {
+            const st = game.getComponent(eid, 'playerStats');
+            if (st.playerId === 0) my = st;
+        }
+        my.gold += 10;
+        game.getService('buyUnlockedUnit')(0, '1_d_archer');
+        const idx = my.heroRoster.length - 1;
+        const members = game.getService('getHeroEntityIds')(0, idx);
+        const sel = game.selectedUnitSystem;
+        sel.onInputResult({ action: 'select_entity', data: { entityId: members[0], additive: false } });
+        const selected = sel.getSelectedUnits();
+        const allIn = members.every(id => selected.includes(id));
+        sel.deselectAll();
+        game.getService('sellUnit')(0, idx);
+        return { allIn, count: selected.length, members: members.length };
+    });
+    check('selecting one member selects the whole squad',
+        squadSelect.allIn && squadSelect.count === squadSelect.members,
+        `${squadSelect.count} selected of ${squadSelect.members} members`);
+
+    // Deployment zone: can't cross the centerline buffer or enter the forests
+    const zone = await page.evaluate(() => {
+        const game = window.game;
+        let my = null;
+        for (const eid of game.getEntitiesWith('playerStats')) {
+            const st = game.getComponent(eid, 'playerStats');
+            if (st.playerId === 0) my = st;
+        }
+        my.gold += 10;
+        game.getService('buyUnlockedUnit')(0, '1_di_scout');
+        const idx = my.heroRoster.length - 1;
+        const lead = game.getService('getHeroEntityIds')(0, idx)[0];
+        // Try to park on the ENEMY side and in the FOREST flank
+        game.serverNetworkSystem.handleHeroMoved(
+            { playerId: 0, numericPlayerId: 0, data: { entityId: lead, x: 800, z: -1150 } }, () => {});
+        const pos = { ...game.getComponent(lead, 'transform').position };
+        game.getService('sellUnit')(0, idx);
+        return pos;
+    });
+    check('deployment clamps to own side, off the frontier and forests',
+        zone.x <= -195 && zone.z >= -840,
+        `landed at x ${Math.round(zone.x)}, z ${Math.round(zone.z)}`);
+
+    check('a soldier squad spawns 4 members from one purchase',
+        squad.ok && squad.members === 4, `${squad.members} members`);
+    check('selling a squad removes all members',
+        squad.sellOk && squad.aliveAfterSell === 0, `${squad.aliveAfterSell} left alive`);
+
+    check('fresh units are placeable (not locked)', dragNew.moved && dragNew.locked === false);
+
+    // ── Battle round 1 ─────────────────────────────────────────────────────
+    await page.click('#placementReadyBtn');
+    await page.waitForFunction(() =>
+        window.game.state.phase === window.game.getEnums().gamePhase.battle,
+        { timeout: 30000, polling: 300 });
+    check('battle starts on ready', true);
+
+    // Wait for round 2 prep (battle resolves + intermission)
+    await page.waitForFunction(() =>
+        window.game.state.round === 2 &&
+        window.game.state.phase === window.game.getEnums().gamePhase.placement,
+        { timeout: 180000, polling: 500 });
+
+    const resolve1 = await page.evaluate(() => {
+        const game = window.game;
+        let my = null, op = null;
+        for (const eid of game.getEntitiesWith('playerStats')) {
+            const s = game.getComponent(eid, 'playerStats');
+            if (s.playerId === 0) my = s; else op = s;
+        }
+        return { myHP: my?.commanderHP, opHP: op?.commanderHP,
+                 myRoster: my?.heroRoster?.length,
+                 lockedEntries: (my?.heroRoster || []).filter(e => e.lastPosition).length };
+    });
+    check('battle resolves into commander damage', resolve1.myHP < 210 || resolve1.opHP < 210,
+        `me ${resolve1.myHP}, enemy ${resolve1.opHP}`);
+    check('army persists into round 2 with locked positions',
+        resolve1.myRoster >= 2 && resolve1.lockedEntries === resolve1.myRoster,
+        `${resolve1.myRoster} roster entries, ${resolve1.lockedEntries} locked`);
+
+    // Mechabellum XP: killers fill their XP bar from kill value, but a full bar
+    // NEVER auto-levels — it earns a half-price promotion. Stage deterministic kills.
+    const combatXp = await page.evaluate(() => {
+        const game = window.game;
+        let my = null;
+        for (const eid of game.getEntitiesWith('playerStats')) {
+            const s = game.getComponent(eid, 'playerStats');
+            if (s.playerId === 0) my = s;
+        }
+        const myUnit = game.getEntitiesWith('heroRosterInfo').find(id =>
+            game.getComponent(id, 'heroRosterInfo')?.playerId === 0);
+        const info = game.getComponent(myUnit, 'heroRosterInfo');
+        const entry = my.heroRoster[info.rosterIndex];
+        const levelBefore = entry.level || 1;
+        const hx = game.heroExperienceSystem;
+        const threshold = hx.xpToNextLevel(entry);
+
+        // Kill enemy units with lastAttacker credited to our unit until the bar fills
+        const spawn = game.getService('createEntityFromPrefab');
+        const apply = game.getService('applyDamage');
+        const pt = game.getComponent(myUnit, 'transform');
+        let kills = 0;
+        for (let i = 0; i < 12 && !hx.isLevelReady(entry); i++) {
+            const eid = spawn({
+                prefab: 'unit', type: '1_s_barbarian', collection: 'units',
+                team: game.getEnums().team.right,
+                componentOverrides: { transform: { position: { x: pt.position.x + 60, y: 0, z: pt.position.z } } }
+            });
+            game.addComponent(eid, 'heroRosterInfo', { playerId: 1, rosterIndex: 90 + i, level: 1 });
+            const cs = game.getComponent(eid, 'combatState');
+            if (cs) cs.lastAttacker = myUnit;
+            apply(myUnit, eid, 99999, 0, { isMelee: true, weaponRange: 999999 });
+            kills++;
+        }
+
+        const levelAfterKills = entry.level || 1;
+        const ready = hx.isLevelReady(entry);
+        const shop = game.armyShopSystem;
+        const discounted = shop.squadLevelCost(entry);
+        const fullPrice = Math.max(1, Math.ceil((game.getCollections().units[entry.spawnType].value || 0) / 5)) * levelAfterKills;
+
+        my.gold = 100;
+        const buyRes = game.getService('buySquadLevel')(0, info.rosterIndex);
+
+        return {
+            kills, threshold, xpAfterKills: entry.xp,
+            levelBefore, levelAfterKills, ready,
+            discounted, fullPrice,
+            buyOk: buyRes?.success, levelAfterBuy: entry.level
+        };
+    });
+    check('kills fill the XP bar but never auto-level',
+        combatXp.levelAfterKills === combatXp.levelBefore && combatXp.ready === true,
+        `${combatXp.kills} kills → bar full (${Math.round(combatXp.xpAfterKills)}/${combatXp.threshold}), still L${combatXp.levelAfterKills}`);
+    check('full XP bar halves the promotion price, purchase levels the squad',
+        combatXp.discounted === Math.ceil(combatXp.fullPrice / 2) &&
+        combatXp.buyOk === true && combatXp.levelAfterBuy === combatXp.levelBefore + 1,
+        `price ${combatXp.fullPrice}g → ${combatXp.discounted}g★, L${combatXp.levelAfterKills} → L${combatXp.levelAfterBuy}`);
+
+    // Max level: a squad at the cap cannot be leveled further
+    const maxCap = await page.evaluate(() => {
+        const game = window.game;
+        let my = null;
+        for (const eid of game.getEntitiesWith('playerStats')) {
+            const s = game.getComponent(eid, 'playerStats');
+            if (s.playerId === 0) my = s;
+        }
+        my.gold = 5000;
+        const idx = my.heroRoster.length - 1;
+        let last = null;
+        for (let i = 0; i < 15; i++) {
+            last = game.getService('buySquadLevel')(0, idx);
+            if (!last?.success) break;
+        }
+        return { level: my.heroRoster[idx].level, reason: last?.reason };
+    });
+    check('levels cap at max level 9 (Mechabellum cap)', maxCap.level === 9 && maxCap.reason === 'max_level',
+        `capped at L${maxCap.level} (${maxCap.reason})`);
+
+    await waitSim(page, 1);
+
+    // ── Round 2: veterans are locked ───────────────────────────────────────
+    const lockTest = await page.evaluate(() => {
+        const game = window.game;
+        const mine = game.getEntitiesWith('heroRosterInfo').filter(id =>
+            game.getComponent(id, 'heroRosterInfo')?.playerId === 0);
+        const uid = mine[0];
+        const locked = game.heroRosterSystem.isUnitLocked(uid);
+        const uiLocked = game.placementUISystem._isDeploymentLocked(uid);
+        // Server-side move gate (call the authoritative handler directly)
+        const before = { ...game.getComponent(uid, 'transform').position };
+        let serverResult = null;
+        game.serverNetworkSystem?.handleHeroMoved?.(
+            { playerId: 0, numericPlayerId: 0,
+              data: { entityId: uid, x: before.x + 200, z: before.z + 200 } },
+            (res) => { serverResult = res; });
+        const sell = game.getService('sellUnit')(0, 0);
+        return { locked, uiLocked, serverResult, sellReason: sell?.reason, sellOk: sell?.success };
+    });
+    check('veterans are deployment-locked', lockTest.locked === true && lockTest.uiLocked === true);
+    check('server rejects moving a locked veteran',
+        lockTest.serverResult?.success === false && lockTest.serverResult?.reason === 'deployment_locked',
+        JSON.stringify(lockTest.serverResult));
+    check('selling a fought unit is blocked',
+        lockTest.sellOk === false && lockTest.sellReason === 'deployment_locked', lockTest.sellReason);
+
+    // ── Unit techs ─────────────────────────────────────────────────────────
+    const techTest = await page.evaluate(() => {
+        const game = window.game;
+        let my = null;
+        for (const eid of game.getEntitiesWith('playerStats')) {
+            const s = game.getComponent(eid, 'playerStats');
+            if (s.playerId === 0) my = s;
+        }
+        my.gold = 500; // test budget
+
+        const buyTech = game.getService('buyUnitTech');
+
+        // Barbarian unit on the field (bought in round 1)
+        const barb = game.getEntitiesWith('heroRosterInfo').find(id => {
+            const info = game.getComponent(id, 'heroRosterInfo');
+            if (info?.playerId !== 0) return false;
+            const entry = my.heroRoster[info.rosterIndex];
+            return entry?.spawnType === '1_s_barbarian';
+        });
+        const hpBefore = game.getComponent(barb, 'health').max;
+        const abilitiesBefore = game.abilitySystem.getEntityAbilities(barb).map(a => a.id);
+
+        const statRes = buyTech(0, '1_s_barbarian', 'bar_plating');
+        const hpAfter = game.getComponent(barb, 'health').max;
+
+        const abilityRes = buyTech(0, '1_s_barbarian', 'bar_rage');
+        const abilitiesAfter = game.abilitySystem.getEntityAbilities(barb).map(a => a.id);
+
+        // Tier unlock is a direct shop purchase now (Mechabellum: T2=4g, T4=14g)
+        const lockedBefore = game.getService('getShopStateForPlayer')(0).locked.map(u => u.id);
+        const unlockRes = game.getService('buyTierUnlock')(0, '2_s_berserker');
+        const t4Res = game.getService('buyTierUnlock')(0, 'dragon_red');
+        const state = game.getService('getShopStateForPlayer')(0);
+        const unlocked = state.unlocked.map(u => u.id);
+        const berserkerPrice = state.unlocked.find(u => u.id === '2_s_berserker')?.cost;
+
+        // Tech gating: can't tech a type you don't field (free reinforcement
+        // units are random, so find a T1 type we genuinely don't own)
+        const fielded = new Set(my.heroRoster.map(e => e.spawnType));
+        const t1 = ['1_i_apprentice', '1_is_acolyte', '1_di_scout', '1_sd_soldier']
+            .find(id => !fielded.has(id));
+        const gateTechId = {
+            '1_i_apprentice': 'app_focus', '1_is_acolyte': 'aco_armor',
+            '1_di_scout': 'sco_evasion', '1_sd_soldier': 'sol_drill'
+        }[t1];
+        const gateRes = t1 ? buyTech(0, t1, gateTechId) : { reason: 'no_unfielded_type_found' };
+
+        return {
+            statOk: statRes?.success, hpBefore, hpAfter,
+            abilityOk: abilityRes?.success, abilitiesBefore, abilitiesAfter,
+            unlockOk: unlockRes?.success, t4Ok: t4Res?.success,
+            hadLockedList: lockedBefore.includes('2_s_berserker') && lockedBefore.includes('dragon_red'),
+            hasBerserker: unlocked.includes('2_s_berserker'),
+            hasDragon: unlocked.includes('dragon_red'),
+            berserkerPrice,
+            gateReason: gateRes?.reason
+        };
+    });
+    check('stat tech boosts live units', techTest.statOk && techTest.hpAfter > techTest.hpBefore,
+        `hp ${techTest.hpBefore} -> ${techTest.hpAfter}`);
+    check('abilities require investment (none before tech)', techTest.abilitiesBefore.length === 0,
+        `before: [${techTest.abilitiesBefore.join(',')}]`);
+    check('ability tech activates the ability', techTest.abilityOk && techTest.abilitiesAfter.includes('RageAbility'),
+        `after: [${techTest.abilitiesAfter.join(',')}]`);
+    check('tier unlocks: shop lists locked units, unlocking T2 and T4 works',
+        techTest.hadLockedList && techTest.unlockOk && techTest.t4Ok &&
+        techTest.hasBerserker && techTest.hasDragon,
+        `berserker+dragon unlocked`);
+    check('unit prices use Mechabellum tiers (T2 = 14g)', techTest.berserkerPrice === 14,
+        `berserker ${techTest.berserkerPrice}g`);
+    check('cannot tech an unfielded type', techTest.gateReason === 'no_unit_of_type', techTest.gateReason);
+
+    // Tech panel UI: ⚙ button on fielded unit card opens the panel
+    const uiTest = await page.evaluate(() => {
+        const btn = document.querySelector('[data-tech-unit="1_s_barbarian"]');
+        if (btn) btn.click();
+        const overlay = document.getElementById('techTreeOverlay');
+        return {
+            btnExists: !!btn,
+            panelOpen: overlay && !overlay.classList.contains('hidden'),
+            rows: document.querySelectorAll('.unit-tech-row').length,
+            ownedRows: document.querySelectorAll('.unit-tech-row.owned').length
+        };
+    });
+    check('tech panel opens from unit card with full tech list',
+        uiTest.btnExists && uiTest.panelOpen && uiTest.rows === 4 && uiTest.ownedRows === 2,
+        `${uiTest.rows} techs, ${uiTest.ownedRows} owned`);
+    await page.screenshot({ path: 'projects/HeroArena/test_techs.png' });
+    await page.evaluate(() => document.getElementById('techTreeCloseBtn')?.click());
+
+    // ── Squad level-ups ────────────────────────────────────────────────────
+    const levelTest = await page.evaluate(() => {
+        const game = window.game;
+        let my = null;
+        for (const eid of game.getEntitiesWith('playerStats')) {
+            const s = game.getComponent(eid, 'playerStats');
+            if (s.playerId === 0) my = s;
+        }
+        my.gold = 200;
+        const barbIdx = my.heroRoster.findIndex(e => e.spawnType === '1_s_barbarian');
+        const entry = my.heroRoster[barbIdx];
+        const levelBefore = entry.level || 1;
+
+        // The live unit's stats before/after (rebuilt on level-up)
+        const findUnit = () => game.getEntitiesWith('heroRosterInfo').find(id => {
+            const info = game.getComponent(id, 'heroRosterInfo');
+            return info?.playerId === 0 && info.rosterIndex === barbIdx;
+        });
+        const hpBefore = game.getComponent(findUnit(), 'health').max;
+        const posBefore = { ...game.getComponent(findUnit(), 'transform').position };
+
+        const res = game.getService('buySquadLevel')(0, barbIdx);
+        const uid = findUnit();
+        const hpAfter = game.getComponent(uid, 'health').max;
+        const posAfter = game.getComponent(uid, 'transform').position;
+        const abilities = game.abilitySystem.getEntityAbilities(uid).map(a => a.id);
+
+        return {
+            ok: res?.success, levelBefore, levelAfter: entry.level,
+            hpBefore, hpAfter,
+            posStable: Math.hypot(posAfter.x - posBefore.x, posAfter.z - posBefore.z) < 5,
+            keepsTechAbility: abilities.includes('RageAbility')
+        };
+    });
+    check('squad level-up raises level and stats',
+        levelTest.ok && levelTest.levelAfter === levelTest.levelBefore + 1 &&
+        levelTest.hpAfter > levelTest.hpBefore,
+        `L${levelTest.levelBefore}->${levelTest.levelAfter}, hp ${levelTest.hpBefore}->${levelTest.hpAfter}`);
+    check('level-up keeps position and teched abilities',
+        levelTest.posStable && levelTest.keepsTechAbility);
+
+    // ── Commander skills: charge -> battle -> cast at enemies ─────────────
+    await page.evaluate(() => {
+        const game = window.game;
+        let my = null;
+        for (const eid of game.getEntitiesWith('playerStats')) {
+            const s = game.getComponent(eid, 'playerStats');
+            if (s.playerId === 0) my = s;
+        }
+        my.skillCharges = ['meteor'];
+        my.gold = 100;
+        // Pick this round's reinforcement if pending (so ready isn't gated oddly)
+        if (my.pendingReinforcement && !my.pendingReinforcement.picked) {
+            game.getService('pickReinforcement')(0, 0);
+        }
+    });
+    await page.evaluate(() => document.getElementById('placementReadyBtn').click());
+    await page.waitForFunction(() =>
+        window.game.state.phase === window.game.getEnums().gamePhase.battle,
+        { timeout: 60000, polling: 300 });
+    await waitSim(page, 1);
+
+    const skillTest = await page.evaluate(() => {
+        const game = window.game;
+        // Aim at the centroid of living enemies
+        const enemies = game.getEntitiesWith('heroRosterInfo', 'health', 'transform').filter(id => {
+            const info = game.getComponent(id, 'heroRosterInfo');
+            const h = game.getComponent(id, 'health');
+            return info?.playerId === 1 && h.current > 0;
+        });
+        if (!enemies.length) return { noEnemies: true };
+        let cx = 0, cz = 0;
+        for (const id of enemies) {
+            const p = game.getComponent(id, 'transform').position;
+            cx += p.x; cz += p.z;
+        }
+        cx /= enemies.length; cz /= enemies.length;
+        const hpBefore = enemies.reduce((s, id) => s + game.getComponent(id, 'health').current, 0);
+
+        const res = game.getService('castCommanderSkill')(0, 'meteor', cx, cz);
+        const hpAfter = enemies.reduce((s, id) =>
+            s + (game.getComponent(id, 'health')?.current || 0), 0);
+
+        let my = null;
+        for (const eid of game.getEntitiesWith('playerStats')) {
+            const s = game.getComponent(eid, 'playerStats');
+            if (s.playerId === 0) my = s;
+        }
+        const again = game.getService('castCommanderSkill')(0, 'meteor', cx, cz);
+        return {
+            ok: res?.success, hpBefore, hpAfter,
+            chargesLeft: (my.skillCharges || []).length,
+            secondCast: again?.reason
+        };
+    });
+    check('commander skill damages enemies at target point',
+        skillTest.ok && skillTest.hpAfter < skillTest.hpBefore,
+        `enemy hp ${Math.round(skillTest.hpBefore)} -> ${Math.round(skillTest.hpAfter)}`);
+    check('skill charge is single-use',
+        skillTest.chargesLeft === 0 && skillTest.secondCast === 'no_charge',
+        `charges left ${skillTest.chargesLeft}, recast: ${skillTest.secondCast}`);
+
+    await page.screenshot({ path: 'projects/HeroArena/test_mechabellum.png' });
+    console.log('screenshot: projects/HeroArena/test_mechabellum.png');
+
+} catch (e) {
+    check('test run completed', false, e.message);
+} finally {
+    await browser.close();
+}
+
+const failed = results.filter(r => !r.ok);
+const relevant = errors.filter(e => !e.includes('favicon') && !e.includes('404'));
+console.log(`\n${results.length - failed.length}/${results.length} checks passed`);
+if (relevant.length) {
+    console.log('Console errors (first 10):');
+    relevant.slice(0, 10).forEach(e => console.log('  ', e.slice(0, 250)));
+}
+process.exit(failed.length ? 1 : 0);

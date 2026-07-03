@@ -2,7 +2,10 @@
   "name": "Barbarian vs Archer",
   "description": "Melee STR hero against ranged DEX hero. Full HeroArena loop: leader/hero select, per-round income + shop auto-buy, attack-move at the enemy Town Hall, win by destroying it.",
   "seed": 42,
-  "level": "forest",
-  "heroes": ["barbarian", "archer"],
+  "level": "battleplain",
+  "heroes": [
+    "barbarian",
+    "archer"
+  ],
   "maxRounds": 20
 }

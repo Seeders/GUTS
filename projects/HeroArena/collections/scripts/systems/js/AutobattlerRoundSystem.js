@@ -1,4 +1,13 @@
-// Drives the HeroArena round loop: heroSelect → placement → battle → resolve → repeat.
+// Drives the HeroArena round loop (Mechabellum-style):
+//   leaderSelect → prep (buy + place) → battle → resolve → prep → ...
+//
+// Scoring: each player has Commander HP. After every battle, each side takes
+// damage equal to the total value of the ENEMY's surviving units. First
+// commander at 0 HP loses. Deployment is permanent: once a unit has fought a
+// battle it respawns at its saved position every round and can no longer be
+// repositioned or sold. Battles are fully automatic — every squad attack-moves
+// on the enemy base at battle start (no player orders).
+//
 // Server is authoritative; clients receive phase change broadcasts via ClientNetworkSystem.
 class AutobattlerRoundSystem extends GUTS.BaseSystem {
 
@@ -19,6 +28,12 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
         'spawnHeroesForRound',
         'despawnBattleHeroes',
         'grantRoundIncome',
+        'spawnCommandBuildings',
+        'applySplashDamage',
+        'createUnit',
+        'applyLevelScaling',
+        'applyArmyUpgrades',
+        'applyArmyAbilities',
         'selectLeader',
         'generateOffersForRound',
         'processSpecializations',
@@ -41,22 +56,19 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
         'placeBuildingAuto'
     ];
 
-    // AI battle-order heuristics (skirmish/headless only — online has no AI).
-    static MINE_MIN_ARMY = 4;    // need at least this many units before sparing a mine detachment
-    static MINE_FRACTION = 0.4;  // ~this share of the army peels off to contest one mine
+    // Commander HP: each surviving enemy unit deals its shop value x level as
+    // damage after every battle. First commander at 0 loses. Sized like the
+    // Mechabellum HQ (~15 rounds of base income) for ~10-14 round matches.
+    static COMMANDER_HP = 210;
 
-    // AI prep-phase formation (units form up ahead of their Town Hall, facing the enemy).
+    // AI prep-phase formation for NEWLY BOUGHT units (veterans hold their spots).
     static FORM_SPACING = 48;        // gap between units along a row
     static FORM_ROW_SPACING = 48;    // gap between rows
-    static FORM_FORWARD_OFFSET = 200; // round-1 distance the front row sits ahead of base
-    static FORM_ADVANCE_PER_ROUND = 220; // extra forward distance added each round (presses the attack)
-    static FORM_MAX_ADVANCE_FRAC = 0.45; // never form up past this fraction of the way to the enemy (stay on our half)
+    static FORM_FORWARD_OFFSET = 260; // distance the formation anchor sits ahead of base
 
-    // Attribute buildings offered as the starting pick (and the round-MILESTONE_ROUND
-    // bonus pick). Each grants its archetype, which gates what the shop offers.
+    // Legacy building-pick constants (building select removed from the loop; kept
+    // because ServerNetworkSystem still routes CONFIRM_HERO_SELECT here).
     static ATTRIBUTE_BUILDINGS = ['barracks', 'fletchersHall', 'mageTower'];
-    // Round on which a one-time bonus "choose another building" select fires.
-    static MILESTONE_ROUND = 5;
 
     // Hero class options (legacy — kept for reference; selection now picks a building)
     static HERO_CLASSES = [
@@ -68,17 +80,11 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
         { id: 'scout',      label: 'Scout',      archetype: 'INT/DEX', spawnType: '1_di_scout'     }
     ];
 
-    // Display labels for the leader-select UI. The mechanical effects live in
-    // LeaderSystem.LEADERS (stat bonuses) and AutobattlerEconomySystem (gold leaders);
-    // keep these descriptions in sync with those.
-    static LEADERS = [
-        { id: 'commander',  label: 'The Commander',  bonus: '+10% HP to STR heroes' },
-        { id: 'alchemist',  label: 'The Alchemist',  bonus: '+5 gold each round' },
-        { id: 'warlord',    label: 'The Warlord',    bonus: '+1 gold per win streak each round' },
-        { id: 'scholar',    label: 'The Scholar',    bonus: '+15% damage to INT heroes' },
-        { id: 'ranger',     label: 'The Ranger',     bonus: '+15% damage to DEX heroes' },
-        { id: 'trickster',  label: 'The Trickster',  bonus: '+10 evasion to DEX heroes' }
-    ];
+    // Leader options come straight from LeaderSystem.LEADERS (the Mechabellum
+    // starting specialists) — single source of truth for labels AND effects.
+    static get LEADERS() {
+        return GUTS.LeaderSystem?.LEADERS || [];
+    }
 
     constructor(game) {
         super(game);
@@ -157,7 +163,19 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
         this.call.selectLeader(numericPlayerId, leaderId);
 
         if (Object.keys(this.pendingLeaderSelections).length >= 2) {
-            this.startHeroSelect(false);
+            // Initialize commander HP for both players, then straight to prep
+            // (the building pick is gone — units gate on tier unlocks instead).
+            for (const entityId of this.call.getPlayerEntities()) {
+                const stats = this.game.getComponent(entityId, 'playerStats');
+                if (stats) stats.commanderHP = AutobattlerRoundSystem.COMMANDER_HP;
+            }
+            // Campaign: the run system owns the flow from here (map screen,
+            // node entry, resume) — no immediate prep.
+            if (this.game.campaignRunSystem?.isCampaignMode?.()) {
+                this.game.campaignRunSystem.onLeadersReady();
+            } else {
+                this.startPrep();
+            }
         }
         return { success: true };
     }
@@ -250,41 +268,19 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
         if (!this.game.isServer && !this.game.state?.isLocalGame) return;
         this.call.grantRoundIncome();
         this.game.state.phase = this.enums.gamePhase.placement;
-        // Buildings: ensure each player has a Town Hall (round 1 only — the game ends
-        // the moment a Town Hall is destroyed, so this never re-creates one). Buildings
-        // keep their battle damage across rounds: no healing, no respawning.
-        this.call.autoSpawnTownHalls?.();
-        // Place each player's chosen starting/milestone building (free) — needs the Town
-        // Hall to exist (above) and runs before the shop offers roll (below) so the
-        // archetype is already owned when units are gated.
-        this._placePendingStartingBuildings();
-        // Starting sentries (ramp guard + forward outpost) — round 1 only, one-and-done.
-        this.call.autoSpawnStartingSentries?.();
-        // Neutral gold veins (dragon-guarded) in the free corners — clear the dragon
-        // and hold a vein to auto-build a gold mine that pays income each round.
-        this.call.autoSpawnGoldMines?.();
+        // Command buildings: Town Hall + the leader's production building, one
+        // per flank. Respawns any that fell last battle (fresh HP each round).
+        this.call.spawnCommandBuildings?.();
+        // Respawn the persistent army: every purchased squad returns at its saved
+        // battle position (deployment is permanent — Mechabellum-style).
         this.call.spawnHeroesForRound();
-        // Standing orders persist round to round: re-apply each hero's saved
-        // order (snapshotted at last battle start) to its respawned unit, and
-        // mirror to online clients through the squad-targets broadcast.
-        const standing = this.call.reapplyStandingOrders?.();
-        if (standing?.placementIds?.length && !this.game.state.isLocalGame) {
-            this.call.broadcastToRoom(null, 'OPPONENT_SQUAD_TARGETS_SET', {
-                placementIds: standing.placementIds,
-                targetPositions: standing.targetPositions,
-                meta: { isMoveOrder: true },
-                issuedTime: this.game.state.now
-            });
-        }
-        // Roll this round's shop offers (after the army has spawned so a buy can
+        // Roll this round's shop state (after the army has spawned so a buy can
         // spawn the new unit incrementally without double-spawning the roster).
         this.call.generateOffersForRound();
-        // Prompt/auto-resolve any tier-1 units that reached the specialization level.
-        this.call.processSpecializations();
-        // AI players form their army up into a facing formation ahead of their Town
-        // Hall (after buys/specializations so the whole army is included). Runs before
-        // the sync so clients receive the arranged positions.
-        this._repositionAIArmies();
+        // AI players form up their NEWLY BOUGHT units ahead of their base
+        // (veterans hold their saved positions). Runs before the sync so clients
+        // receive the arranged positions.
+        if (!this.game.campaignRunSystem?.isCampaignMode?.()) this._repositionAIArmies();
         // Replicate the freshly-spawned army to clients (multiplayer) so they render
         // and can position units this prep. No-op in local.
         this.call.syncEntitiesToClients?.();
@@ -309,17 +305,9 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
 
     // ─── Server-side: round resolution ─────────────────────────────────────────
 
-    // Called by AutobattlerBattlePhaseSystem after battle ends with survivor data.
+    // Called by ServerBattlePhaseSystem after battle ends with survivor data.
     resolveRound(survivingUnitsByTeam) {
         if (!this.game.isServer && !this.game.state?.isLocalGame) return;
-
-        // Permanently remove buildings destroyed this battle (they do not respawn) and drop
-        // any upgrades they were providing. Surviving buildings are healed next startPrep.
-        this.call.cullDestroyedBuildings?.();
-
-        // Gold mine captures: most living units in range of a mine right now
-        // (before heroes despawn) captures it for this round → gold bonus.
-        this.call.resolveGoldMineCaptures?.();
 
         const leftSurvivors = survivingUnitsByTeam[this.enums.team.left] || [];
         const rightSurvivors = survivingUnitsByTeam[this.enums.team.right] || [];
@@ -331,99 +319,305 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
             winningTeam = this.enums.team.right;
         }
 
-        // Update win/loss streaks (leader bonuses key off these). Rounds carry no
-        // abstract player damage — the only way to win is destroying the Town Hall.
+        // Commander damage: each side takes the total VALUE of the enemy's
+        // survivors (a timeout hurts both; a wipe hurts only the loser).
+        const damageToTeam = {};
+        damageToTeam[this.enums.team.left] = this._survivorDamage(rightSurvivors);
+        damageToTeam[this.enums.team.right] = this._survivorDamage(leftSurvivors);
+
+        // Campaign: only the PLAYER's run HP matters — the enemy shell's
+        // commander is meaningless and must never decide anything.
+        const campaign = this.game.campaignRunSystem?.isCampaignMode?.();
+        if (campaign) {
+            const enemyStats = (() => {
+                for (const eid of this.call.getPlayerEntities()) {
+                    const st = this.game.getComponent(eid, 'playerStats');
+                    if (st && st.playerId !== 0) return st;
+                }
+                return null;
+            })();
+            if (enemyStats) damageToTeam[enemyStats.team] = 0;
+        }
+
+        const hpReport = [];
+        for (const entityId of this.call.getPlayerEntities()) {
+            const stats = this.game.getComponent(entityId, 'playerStats');
+            if (!stats) continue;
+            const dmg = damageToTeam[stats.team] || 0;
+            stats.commanderHP = Math.max(0,
+                (stats.commanderHP ?? AutobattlerRoundSystem.COMMANDER_HP) - dmg);
+            hpReport.push({ playerId: stats.playerId, team: stats.team,
+                damage: dmg, commanderHP: stats.commanderHP });
+        }
+
+        const roundResult = { round: this.game.state.round, winningTeam, report: hpReport };
+        this.call.broadcastToRoom(null, 'ROUND_RESULT', roundResult);
+        this.game.triggerEvent('onRoundResult', roundResult);
+
+        if (campaign) {
+            // Campaign node resolution: hand the result to the run system
+            // (map return / reward / replay / run end). Skip streaks, the
+            // dual-commander game-over check, and the skirmish round loop.
+            this.call.despawnBattleHeroes();
+            const playerTeam = (() => {
+                for (const eid of this.call.getPlayerEntities()) {
+                    const st = this.game.getComponent(eid, 'playerStats');
+                    if (st && st.playerId === 0) return st.team;
+                }
+                return this.enums.team.left;
+            })();
+            this.game.campaignRunSystem.onNodeResolved(winningTeam === playerTeam);
+            return;
+        }
+
+        // Update win/loss streaks (leader bonuses key off these).
         this._updateStreaks(winningTeam);
 
-        // Check game over
+        // Check game over (a commander at 0 HP)
         if (this._checkGameOver()) return;
 
-        // Despawn this round's hero entities before next round
+        // Despawn this round's entities before next round
         this.call.despawnBattleHeroes();
 
         // Advance round counter
         this.game.state.round += 1;
-
-        // One-time milestone: a free "choose another building" pick (skipped if everyone
-        // already owns all three). Otherwise army growth comes from the shop each prep.
-        if (this.game.state.round === AutobattlerRoundSystem.MILESTONE_ROUND
-            && this._anyPlayerCanPickBuilding()) {
-            this.startHeroSelect(true); // → confirm → _advanceToPrep → startPrep
-        } else {
-            this.startPrep();
-        }
+        this.startPrep();
     }
 
-    // With finite vision (fog of war), units only advance under an attack-move
-    // order. AI players never place orders themselves, so at each battle start
-    // give every AI army a single attack-move at its enemy's Town Hall.
-    // Online matches have no AI players and are unaffected.
+    // Total commander damage dealt by a list of surviving units: each unit's
+    // shop value × its level — matching the stat scaling, where a rank-N squad
+    // is N× as powerful (and N× as expensive) as a fresh one.
+    _survivorDamage(survivorIds) {
+        let total = 0;
+        for (const eid of survivorIds) {
+            const unitTypeComp = this.game.getComponent(eid, 'unitType');
+            const def = this.game.getUnitTypeDef?.(unitTypeComp);
+            const squadPrice = Math.max(1, Math.ceil((def?.value || 25) / 5)); // shop-cost scale
+            const members = Math.max(1, (def?.squadWidth || 1) * (def?.squadHeight || 1));
+            const level = this.game.getComponent(eid, 'heroRosterInfo')?.level || 1;
+            total += (squadPrice / members) * level;   // each member carries its share
+        }
+        return Math.round(total);
+    }
+
+    // Battles are fully automatic (no player orders): at battle start EVERY
+    // squad on BOTH teams gets a single attack-move at the enemy's base. Units
+    // engage whatever they meet on the way; tactics live in deployment.
     onBattleStart() {
-        for (const pid of this.getAIPlayerIds()) {
-            const aiTeam = this._teamOf(pid);
-            if (aiTeam == null) continue;
-            this._issueAIBattleOrders(aiTeam);
+        const teams = [this.enums.team.left, this.enums.team.right];
+        for (const team of teams) {
+            this._issueBattleOrders(team);
+        }
+        this._nextRetargetAt = (this.game.state.now || 0) + AutobattlerRoundSystem.RETARGET_INTERVAL;
+    }
+
+    // Mechabellum target flow: the MARCH objective is always a structure —
+    // each squad advances on its nearest living enemy building (then the
+    // base when none stand), fighting whatever units enter vision along the
+    // way (the order tree yields to combat). When a building falls, squads
+    // roll on to the next nearest one instead of idling at the rubble.
+    static RETARGET_INTERVAL = 2;
+
+    update() {
+        if (!this.game.isServer && !this.game.state?.isLocalGame) return;
+        if (this.game.state.phase !== this.enums.gamePhase.battle) return;
+        const now = this.game.state.now || 0;
+        if (now < (this._nextRetargetAt || 0)) return;
+        this._nextRetargetAt = now + AutobattlerRoundSystem.RETARGET_INTERVAL;
+
+        for (const team of [this.enums.team.left, this.enums.team.right]) {
+            // March on buildings while any stand; once both are rubble, hunt
+            // down the nearest enemy units to finish the round.
+            let targets = this._livingEnemyBuildingPositions(team);
+            if (targets.length === 0) targets = this._livingEnemyUnitPositions(team);
+            if (targets.length === 0) continue;
+            for (const s of this._movableSquadsForTeam(team)) {
+                const anchor = s.pos;
+                let best = null, bestD = Infinity;
+                for (const t of targets) {
+                    const d = (t.x - anchor.x) ** 2 + (t.z - anchor.z) ** 2;
+                    if (d < bestD) { bestD = d; best = t; }
+                }
+                if (best) {
+                    this.call.applySquadTargetPosition(s.placementId,
+                        { x: best.x, z: best.z }, { isMoveOrder: true }, now);
+                }
+            }
         }
     }
 
-    // Fair, non-cheating battle orders for one AI army. The main force attacks the
-    // enemy Town Hall; once the army can spare a detachment, the squads nearest a
-    // gold-vein objective peel off to contest it: kill the guardian dragon, hold a
-    // cleared vein (→ its mine auto-builds), or destroy an enemy-owned mine.
-    // Concentrates on a single (nearest) objective and always leaves at least one
-    // squad attacking. Uses only player-available info (own positions, objective +
-    // Town Hall locations) and is deterministic (sorted with tie-breaks, no random).
-    _issueAIBattleOrders(aiTeam) {
-        const now = this.game.state.now;
-        const enemyTH = this._enemyBasePos(aiTeam);
-        const squads = this._movableSquadsForTeam(aiTeam);
-        if (squads.length === 0) return;
+    // On-death unit-tech mechanics (Mechabellum-style). Rules:
+    //   - Reassemble (once): first death rebuilds the skeleton at its corpse
+    //     (the corpse is consumed by the rebuild — no explode, no raise).
+    //   - Bone Blast: fires on a REAL death only (i.e. when no reassemble is
+    //     available/left), and the blast leaves NO corpse behind.
+    //   - Necromancer-raised skeletons obey the same rules via their owning
+    //     player's techs; the reassembled/raised copies are per-battle summons.
+    onUnitKilled(entityId) {
+        if (!this.game.isServer && !this.game.state?.isLocalGame) return;
+        if (this.game.state.phase !== this.enums.gamePhase.battle) return;
 
-        const totalUnits = squads.reduce((n, s) => n + s.count, 0);
+        const def = this.game.getUnitTypeDef(this.game.getComponent(entityId, 'unitType'));
+        if (!def?.id) return;
+        const team = this.game.getComponent(entityId, 'team')?.team;
+        if (team == null) return;
+        const stats = this._statsByTeam(team);
+        if (!stats) return;
+        const ownedTechs = stats.unitTechs?.[def.id];
+        if (!ownedTechs?.length) return;
+        const techs = (this.collections.unitTechs?.[def.id]?.techs || [])
+            .filter(t => ownedTechs.includes(t.id));
+        const pos = this.game.getComponent(entityId, 'transform')?.position;
+        if (!pos) return;
 
-        // Choose a vein objective to contest (the one nearest the army's centroid),
-        // but only when the army is large enough to split without giving up the main
-        // fight. Skips veins we already hold a mine on (nothing to contest there).
-        let mineTarget = null;
-        const mines = this.call.getContestableObjectives?.(aiTeam) || [];
-        if (mines.length > 0 && squads.length >= 2 &&
-            totalUnits >= AutobattlerRoundSystem.MINE_MIN_ARMY) {
-            const cx = squads.reduce((a, s) => a + s.pos.x, 0) / squads.length;
-            const cz = squads.reduce((a, s) => a + s.pos.z, 0) / squads.length;
-            mineTarget = this._nearestMine(mines, cx, cz);
-        }
+        const info = this.game.getComponent(entityId, 'heroRosterInfo');
+        const summoned = this.game.getComponent(entityId, 'summoned');
+        const alreadyReassembled = !!(info?.reassembled || summoned?.reassembled);
 
-        // No mine worth contesting (or no Town Hall found): send everyone at the
-        // best available objective.
-        if (!mineTarget || !enemyTH) {
-            const fallback = enemyTH || (mineTarget ? { x: mineTarget.x, z: mineTarget.z } : null);
-            if (!fallback) return;
-            for (const s of squads) {
-                this.call.applySquadTargetPosition(s.placementId, fallback, { isMoveOrder: true }, now);
-            }
+        const reassembleTech = techs.find(t => t.onDeathReassemble);
+        const explodeTech = techs.find(t => t.onDeathExplode);
+        const at = { x: pos.x, y: pos.y, z: pos.z };
+
+        if (reassembleTech && !alreadyReassembled) {
+            // First death: rebuild — corpse is consumed by the rebuild.
+            const level = info?.level || 1;
+            const rosterIndex = info?.rosterIndex;
+            this.game.schedulingSystem?.scheduleAction(() => {
+                if (this.game.state.phase !== this.enums.gamePhase.battle) return;
+                this._removeCorpse(entityId);
+                this._reassembleUnit(stats, rosterIndex, def.id, level, at);
+            }, 2.5, entityId);
             return;
         }
 
-        // Peel the squads closest to the mine until ~MINE_FRACTION of the army is
-        // committed, always keeping at least one squad on the attack.
-        const quota = Math.max(1, Math.round(totalUnits * AutobattlerRoundSystem.MINE_FRACTION));
-        const byMine = [...squads].sort((a, b) =>
-            (this._dist2(a.pos, mineTarget) - this._dist2(b.pos, mineTarget)) ||
-            (a.placementId - b.placementId));
-        const mineSquads = new Set();
-        let committed = 0;
-        for (const s of byMine) {
-            if (committed >= quota) break;
-            if (mineSquads.size >= squads.length - 1) break; // keep ≥1 attacker
-            mineSquads.add(s.placementId);
-            committed += s.count;
+        if (explodeTech) {
+            // Real death: detonate, and the blast leaves no corpse.
+            this.call.applySplashDamage(entityId, at,
+                explodeTech.onDeathExplode.damage || 45,
+                this.enums.element.fire,
+                explodeTech.onDeathExplode.radius || 70,
+                { allowFriendlyFire: false });
+            this.game.schedulingSystem?.scheduleAction(() => {
+                this._removeCorpse(entityId);
+            }, 2, entityId);
         }
+    }
 
-        for (const s of squads) {
-            const target = mineSquads.has(s.placementId)
-                ? { x: mineTarget.x, z: mineTarget.z }
-                : { x: enemyTH.x, z: enemyTH.z };
-            this.call.applySquadTargetPosition(s.placementId, target, { isMoveOrder: true }, now);
+    // Destroy a dead unit's remains once the death pipeline has produced them
+    // (deathState reaches corpse ~death-animation time after onUnitKilled).
+    _removeCorpse(entityId) {
+        const ds = this.game.getComponent(entityId, 'deathState');
+        if (!ds || ds.state === this.enums.deathState.alive) return;
+        try { this.game.destroyEntity(entityId); } catch (_) {}
+    }
+
+    _statsByTeam(team) {
+        for (const eid of this.call.getPlayerEntities()) {
+            const stats = this.game.getComponent(eid, 'playerStats');
+            if (stats?.team === team) return stats;
+        }
+        return null;
+    }
+
+    _statsByPlayerId(numericPlayerId) {
+        for (const eid of this.call.getPlayerEntities()) {
+            const stats = this.game.getComponent(eid, 'playerStats');
+            if (stats?.playerId === numericPlayerId) return stats;
+        }
+        return null;
+    }
+
+    _rosterSpawnType(entry) {
+        return entry.spawnType
+            || this.game.heroRosterSystem?.constructor?.CLASS_SPAWN_MAP?.[entry.heroClass]
+            || entry.heroClass;
+    }
+
+    // Rebuild one squad member at its corpse position. The respawn is tagged
+    // `summoned` (auto-cleaned at round end) with reassembled=true (once only).
+    _reassembleUnit(stats, rosterIndex, spawnType, level, at) {
+        const enums = this.game.getEnums();
+        const collectionIndex = enums.objectTypeDefinitions?.units ?? -1;
+        const typeIndex = enums.units?.[spawnType] ?? -1;
+        if (typeIndex < 0) return;
+        const newId = this.call.createUnit(collectionIndex, typeIndex,
+            { position: { x: at.x, y: at.y, z: at.z } }, stats.team);
+        if (newId == null) return;
+        if (rosterIndex != null) {
+            this.game.addComponent(newId, 'heroRosterInfo', {
+                playerId: stats.playerId, rosterIndex, level, reassembled: true
+            });
+            // Level scaling + owned techs/upgrades apply like any respawn.
+            this.call.applyLevelScaling?.(newId);
+            this.call.applyArmyUpgrades?.(newId);
+            this.call.applyArmyAbilities?.(newId);
+        }
+        this.game.addComponent(newId, 'summoned', { ownerId: newId, reassembled: true });
+    }
+
+    // Positions of living enemy army units (the hunt, once buildings are gone).    // Positions of living enemy army units (the hunt, once buildings are gone).
+    _livingEnemyUnitPositions(team) {
+        const out = [];
+        for (const eid of this.game.getEntitiesWith('heroRosterInfo')) {
+            if (this.game.entityAlive?.[eid] !== 1) continue;
+            const t = this.game.getComponent(eid, 'team');
+            if (!t || t.team === team) continue;
+            if (t.team !== this.enums.team.left && t.team !== this.enums.team.right) continue;
+            const hp = this.game.getComponent(eid, 'health');
+            if (!hp || hp.current <= 0) continue;
+            const ds = this.game.getComponent(eid, 'deathState');
+            if (ds && ds.state !== this.enums.deathState.alive) continue;
+            const pos = this.game.getComponent(eid, 'transform')?.position;
+            if (pos) out.push({ x: pos.x, z: pos.z });
+        }
+        return out;
+    }
+
+    // Positions of every living enemy BUILDING of `team` (march objectives).
+    _livingEnemyBuildingPositions(team) {
+        const out = [];
+        for (const eid of this.game.getEntitiesWith('buildingOwner')) {
+            if (this.game.entityAlive?.[eid] !== 1) continue;
+            const t = this.game.getComponent(eid, 'team');
+            if (!t || t.team === team) continue;
+            const hp = this.game.getComponent(eid, 'health');
+            if (!hp || hp.current <= 0) continue;
+            const pos = this.game.getComponent(eid, 'transform')?.position;
+            if (pos) out.push({ x: pos.x, z: pos.z });
+        }
+        return out;
+    }
+
+    _issueBattleOrders(team) {
+        const now = this.game.state.now;
+        const enemyBase = this._enemyBasePos(team);
+        if (!enemyBase) return;
+
+        // Enemy command buildings: each squad attack-moves at whichever one is
+        // closest to where it deployed — flank deployments assault the flank
+        // tower, center deployments push the nearer objective. Falls back to
+        // the enemy base position if no buildings stand.
+        const targets = [];
+        for (const eid of this.game.getEntitiesWith('buildingOwner')) {
+            if (this.game.entityAlive?.[eid] !== 1) continue;
+            const t = this.game.getComponent(eid, 'team');
+            if (!t || t.team === team) continue;
+            const hp = this.game.getComponent(eid, 'health');
+            if (!hp || hp.current <= 0) continue;
+            const pos = this.game.getComponent(eid, 'transform')?.position;
+            if (pos) targets.push({ x: pos.x, z: pos.z });
+        }
+        if (targets.length === 0) targets.push({ x: enemyBase.x, z: enemyBase.z });
+
+        for (const s of this._movableSquadsForTeam(team)) {
+            const anchor = s.pos || enemyBase;   // squad centroid from _movableSquadsForTeam
+            let best = targets[0], bestD = Infinity;
+            for (const t of targets) {
+                const d = (t.x - anchor.x) ** 2 + (t.z - anchor.z) ** 2;
+                if (d < bestD) { bestD = d; best = t; }
+            }
+            this.call.applySquadTargetPosition(s.placementId,
+                { x: best.x, z: best.z }, { isMoveOrder: true }, now);
         }
     }
 
@@ -477,8 +671,7 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
     }
 
     _formUpArmy(aiTeam) {
-        // Anchor off the level's starting locations (not the Town Hall entity — its
-        // buildingOwner tag isn't assigned yet this early in startPrep).
+        // Anchor off the level's starting locations.
         const locs = this.call.getStartingLocationsFromLevel?.();
         if (!locs || locs[aiTeam] == null) return;
         const enemyTeam = Object.keys(locs).map(Number).find(t => t !== aiTeam);
@@ -487,14 +680,20 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
         const enemyStart = this.call.tileToWorld(locs[enemyTeam].x, locs[enemyTeam].z);
         if (!myStart || !enemyStart) return;
 
-        // This team's movable units, sorted melee-first (low attack range to the
-        // front rows); ties broken by entity id for determinism.
+        // Only NEWLY BOUGHT units get positioned (their roster entries have no
+        // lastPosition yet). Veterans are locked to their saved battle positions —
+        // deployment is permanent for the AI exactly as it is for the human.
+        // Sorted melee-first (low attack range to the front); ties by id.
         const units = [];
+        let lockedCount = 0;
         for (const p of (this.call.getPlacementsForSide(aiTeam) || [])) {
             for (const uid of (p?.squadUnits || [])) {
                 if (uid == null || this.game.entityAlive?.[uid] !== 1) continue;
                 if (this.game.getComponent(uid, 'buildingOwner')) continue;
-                if (!this.game.getComponent(uid, 'heroRosterInfo')) continue;
+                const info = this.game.getComponent(uid, 'heroRosterInfo');
+                if (!info) continue;
+                const entry = this._rosterEntryFor(aiTeam, info);
+                if (entry?.lastPosition) { lockedCount++; continue; } // veteran: holds position
                 const range = this.game.getComponent(uid, 'combat')?.range ?? 0;
                 units.push({ uid, range });
             }
@@ -512,36 +711,38 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
         const N = units.length;
         const S = AutobattlerRoundSystem.FORM_SPACING;
         const RS = AutobattlerRoundSystem.FORM_ROW_SPACING;
-        const cols = Math.max(1, Math.min(N, Math.ceil(Math.sqrt(N))));
-        const rows = Math.ceil(N / cols);
+        const cols = 6;
 
-        // The army presses forward over the match: the formation advances toward the
-        // enemy each round so the AI eventually assaults even a defensive opponent
-        // (positions don't otherwise carry round to round). Capped at our own half of
-        // the map so the AI never sets up on the enemy's side — as fair as a human,
-        // who positions on their own side too. The in-battle march covers the rest.
-        const baseToBase = elen;
-        const advance = Math.min(
-            AutobattlerRoundSystem.FORM_FORWARD_OFFSET +
-                Math.max(0, (this.game.state.round || 1) - 1) * AutobattlerRoundSystem.FORM_ADVANCE_PER_ROUND,
-            baseToBase * AutobattlerRoundSystem.FORM_MAX_ADVANCE_FRAC
-        );
-        // Front row sits this far ahead of our base; later rows recede back toward it.
+        // New units form up in rows behind the veterans' block: skip as many rows
+        // as the veterans already fill so fresh squads never stack onto locked ones.
+        const startRow = Math.ceil(lockedCount / cols);
         const anchor = {
-            x: myStart.x + enemyDir.x * advance,
-            z: myStart.z + enemyDir.z * advance
+            x: myStart.x + enemyDir.x * AutobattlerRoundSystem.FORM_FORWARD_OFFSET,
+            z: myStart.z + enemyDir.z * AutobattlerRoundSystem.FORM_FORWARD_OFFSET
         };
 
         for (let i = 0; i < N; i++) {
-            const row = Math.floor(i / cols);
+            const row = startRow + Math.floor(i / cols);
             const col = i % cols;
-            const unitsInRow = (row < rows - 1) ? cols : (N - cols * (rows - 1));
+            const unitsInRow = Math.min(cols, N - Math.floor(i / cols) * cols);
             const colOffset = (col - (unitsInRow - 1) / 2) * S;
             const rowOffset = row * RS;
             const x = anchor.x + frontDir.x * colOffset - enemyDir.x * rowOffset;
             const z = anchor.z + frontDir.z * colOffset - enemyDir.z * rowOffset;
             this.call.moveHero(units[i].uid, x, z, rotationY);
         }
+    }
+
+    // Roster entry for a live unit (by its heroRosterInfo), looked up via the
+    // owning player's stats on the given team.
+    _rosterEntryFor(team, info) {
+        for (const eid of this.call.getPlayerEntities()) {
+            const stats = this.game.getComponent(eid, 'playerStats');
+            if (stats?.playerId === info.playerId) {
+                return stats.heroRoster?.[info.rosterIndex] || null;
+            }
+        }
+        return null;
     }
 
     // Enemy base position = the enemy's starting location, where their Town Hall
@@ -603,9 +804,9 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
         }
     }
 
-    // The match ends when a Town Hall is destroyed. cullDestroyedBuildings has
-    // already pruned dead buildings from stats.buildings this resolve, so a player
-    // with townhallLevel 0 lost theirs this battle.
+    // The match ends when a commander reaches 0 HP. If both hit 0 the same
+    // round, the higher remaining HP would have won — both at exactly 0 is a
+    // draw (winner null).
     _checkGameOver() {
         const playerEntities = this.call.getPlayerEntities();
         const standing = [];
@@ -614,16 +815,16 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
         for (const entityId of playerEntities) {
             const stats = this.game.getComponent(entityId, 'playerStats');
             if (!stats) continue;
-            if (this.call.townhallLevel(stats.playerId) > 0) standing.push(stats.playerId);
+            const hp = stats.commanderHP ?? AutobattlerRoundSystem.COMMANDER_HP;
+            if (hp > 0) standing.push(stats.playerId);
             else eliminated.push(stats.playerId);
         }
 
         if (eliminated.length === 0) return false;
 
         const result = {
-            // Both Town Halls down in the same battle is a draw (winner null).
             winner: standing.length === 1 ? standing[0] : null,
-            reason: 'townhall_destroyed',
+            reason: 'commander_defeated',
             totalRounds: this.game.state.round
         };
         this.call.broadcastGameEnd(result);

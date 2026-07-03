@@ -15,12 +15,17 @@ class AutobattlerEconomySystem extends GUTS.BaseSystem {
     static serviceDependencies = [
         'getPlayerEntities',
         'getEconomyEffects',
-        'getLeaderDef'
+        'getLeaderDef',
+        'shouldGrantNodeIncome'
     ];
 
-    static STARTING_GOLD = 30;   // round-1 purse (a tier-1 unit costs ~7 → ~4 opening units)
-    static ROUND_INCOME  = 10;   // flat income granted every round after round 1
-    static ALCHEMIST_GOLD = 5;   // The Alchemist leader: flat bonus gold each round
+    // Mechabellum scale: 200 supply ≈ 14g. Income is 200 x round (200, 400,
+    // 600...), so at our scale each round grants 14g x round number — round 1
+    // buys exactly 2 tier-1 squads, and economies steepen every round.
+    static INCOME_PER_ROUND_STEP = 14;
+    static SUPPLY_SPECIALIST_GOLD = 4;      // +50 supply/round at our scale
+    static COST_CONTROL_GOLD      = 7;      // +100 supply/round (units pay for it)
+    static QUICK_SUPPLY_GOLD      = 14;     // +200 supply in round 1
 
     constructor(game) {
         super(game);
@@ -39,12 +44,28 @@ class AutobattlerEconomySystem extends GUTS.BaseSystem {
         for (const entityId of playerEntities) {
             const stats = this.game.getComponent(entityId, 'playerStats');
             if (!stats) continue;
-            if (round <= 1) {
-                stats.gold = AutobattlerEconomySystem.STARTING_GOLD;
+            // Campaign: income = 14 x node depth, granted once per node so a
+            // replayed (lost) node can't be farmed; the enemy shell gets none.
+            const campaign = this.game.campaignRunSystem?.isCampaignMode?.();
+            if (campaign) {
+                if (stats.playerId !== 0) { stats.gold = 0; continue; }
+                if (!this.call.shouldGrantNodeIncome?.()) continue;
+                stats.gold = (stats.gold || 0)
+                    + AutobattlerEconomySystem.INCOME_PER_ROUND_STEP * round;
                 continue;
             }
 
-            let gold = (stats.gold || 0) + AutobattlerEconomySystem.ROUND_INCOME;
+            let income = AutobattlerEconomySystem.INCOME_PER_ROUND_STEP * round;
+            const leaderDef = this.call.getLeaderDef?.(stats.leaderId);
+            if (leaderDef?.id === 'supply')      income += AutobattlerEconomySystem.SUPPLY_SPECIALIST_GOLD;
+            if (leaderDef?.id === 'costControl') income += AutobattlerEconomySystem.COST_CONTROL_GOLD;
+            if (leaderDef?.id === 'quickSupply' && round <= 1) income += AutobattlerEconomySystem.QUICK_SUPPLY_GOLD;
+            if (round <= 1) {
+                stats.gold = income;   // round 1 SETS the purse (deterministic)
+                continue;
+            }
+
+            let gold = (stats.gold || 0) + income;
 
             const eff = this.call.getEconomyEffects?.(stats) || {};
             // Interest: +1 per `interestPer` banked, capped (rewards saving).
@@ -56,11 +77,6 @@ class AutobattlerEconomySystem extends GUTS.BaseSystem {
             gold += (stats.lossStreak || 0) * (eff.lossStreakGold || 0);
             // Flat income upgrade.
             gold += eff.flatIncome || 0;
-
-            // Gold leaders.
-            const leader = this.call.getLeaderDef?.(stats.leaderId);
-            if (leader?.id === 'alchemist') gold += AutobattlerEconomySystem.ALCHEMIST_GOLD;
-            if (leader?.id === 'warlord')   gold += (stats.winStreak || 0);
 
             stats.gold = gold;
         }

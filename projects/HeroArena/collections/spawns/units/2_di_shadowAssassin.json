@@ -6,10 +6,10 @@
   "weaponType": "dagger",
   "size": 25,
   "height": 50,
-  "value": 130,
-  "hp": 200,
-  "speed": 80,
-  "damage": 32,
+  "value": 70,
+  "hp": 145,
+  "speed": 85,
+  "damage": 25,
   "attackSpeed": 2,
   "element": "physical",
   "armor": 2,
@@ -146,14 +146,13 @@
     ]
   },
   "buyable": false,
-  "squadWidth": 1,
+  "squadWidth": 2,
   "squadHeight": 1,
-  "placementGridWidth": 1,
+  "placementGridWidth": 2,
   "placementGridHeight": 1,
-  "abilities": [
-    "ShadowStrikeAbility"
-  ],
+  "abilities": [],
   "requiresUnits": [],
   "requiresBuildings": [],
-  "spriteAnimationSet": "shadowassassin2di"
+  "spriteAnimationSet": "shadowassassin2di",
+  "visionRange": 250
 }

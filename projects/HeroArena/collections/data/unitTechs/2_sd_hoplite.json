@@ -1,0 +1,31 @@
+{
+ "unit": "2_sd_hoplite",
+ "techs": [
+  {
+   "id": "hop_phalanx",
+   "title": "Phalanx Masters",
+   "cost": 22,
+   "description": "Unlocks Phalanx Formation",
+   "unlockAbility": "PhalanxFormationAbility"
+  },
+  {
+   "id": "hop_pikes",
+   "title": "Sky-Piercing Pikes",
+   "cost": 15,
+   "description": "Hoplites can strike flying units",
+   "grantAntiAir": true
+  },
+  {
+   "id": "hop_wall",
+   "title": "Living Wall",
+   "cost": 14,
+   "description": "+40% max HP",
+   "statModifiers": {
+    "maxHP": {
+     "pct": 0.4
+    }
+   }
+  }
+ ],
+ "fileName": "2_sd_hoplite"
+}

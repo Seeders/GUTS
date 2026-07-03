@@ -1,0 +1,10 @@
+{
+ "title": "Meteor Strike",
+ "icon": "\u2604\ufe0f",
+ "radius": 130,
+ "damage": 130,
+ "element": "fire",
+ "effect": "fire",
+ "description": "Devastating fire damage in an area",
+ "fileName": "meteor"
+}

@@ -39,6 +39,15 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         'handleBuyOffer',
         'handleRerollOffers',
         'handleBuyUnlockedUnit',
+        'handleBuyUnitTech',
+        'handleBuySquadLevel',
+        'handleBuyTierUnlock',
+        'handleBuyDeploySlot',
+        'handleBuyUpgradeNode',
+        'handleSetSquadFormation',
+        'handleEnterCampaignNode',
+        'handlePickReinforcement',
+        'handleCastCommanderSkill',
         'handleSellUnit',
         'handleGrantSingleAbility',
         'handleSpecializeChoice',
@@ -70,6 +79,15 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         'buyOffer',
         'rerollOffers',
         'buyUnlockedUnit',
+        'buyUnitTech',
+        'buySquadLevel',
+        'buyTierUnlock',
+        'buyDeploySlot',
+        'buyUpgradeNode',
+        'setSquadFormation',
+        'enterCampaignNode',
+        'pickReinforcement',
+        'castCommanderSkill',
         'sellUnit',
         'grantSingleTargetAbility',
         'applySpecializationChoice',
@@ -376,6 +394,15 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         this.game.serverEventManager.subscribe('BUY_OFFER',            this.handleBuyOffer.bind(this));
         this.game.serverEventManager.subscribe('REROLL_OFFERS',        this.handleRerollOffers.bind(this));
         this.game.serverEventManager.subscribe('BUY_UNLOCKED_UNIT',    this.handleBuyUnlockedUnit.bind(this));
+        this.game.serverEventManager.subscribe('BUY_UNIT_TECH',        this.handleBuyUnitTech.bind(this));
+        this.game.serverEventManager.subscribe('BUY_SQUAD_LEVEL',      this.handleBuySquadLevel.bind(this));
+        this.game.serverEventManager.subscribe('BUY_TIER_UNLOCK',      this.handleBuyTierUnlock.bind(this));
+        this.game.serverEventManager.subscribe('SET_SQUAD_FORMATION',  this.handleSetSquadFormation.bind(this));
+        this.game.serverEventManager.subscribe('BUY_UPGRADE_NODE',      this.handleBuyUpgradeNode.bind(this));
+        this.game.serverEventManager.subscribe('ENTER_CAMPAIGN_NODE',   this.handleEnterCampaignNode.bind(this));
+        this.game.serverEventManager.subscribe('BUY_DEPLOY_SLOT',       this.handleBuyDeploySlot.bind(this));
+        this.game.serverEventManager.subscribe('PICK_REINFORCEMENT',   this.handlePickReinforcement.bind(this));
+        this.game.serverEventManager.subscribe('CAST_COMMANDER_SKILL', this.handleCastCommanderSkill.bind(this));
         this.game.serverEventManager.subscribe('SELL_UNIT',            this.handleSellUnit.bind(this));
         this.game.serverEventManager.subscribe('GRANT_SINGLE_ABILITY', this.handleGrantSingleAbility.bind(this));
         this.game.serverEventManager.subscribe('SPECIALIZE_CHOICE',    this.handleSpecializeChoice.bind(this));
@@ -1251,15 +1278,48 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
             }
         }
 
+        // Deployment is permanent: units that have fought a battle hold their
+        // positions for the rest of the match.
+        if (this.game.heroRosterSystem?.isUnitLocked?.(entityId)) {
+            return this.respond(playerId, 'HERO_MOVED_ACK', { success: false, reason: 'deployment_locked' }, callback);
+        }
+
+        // Mechabellum grid: deployment snaps to HALF-TILE cells (24.5u — matches
+        // squad member spacing, ~68 across x ~32 deep per side on battleplain).
+        const CELL = 24.5;
+        x = Math.floor(x / CELL) * CELL + CELL / 2;
+        z = Math.floor(z / CELL) * CELL + CELL / 2;
+
+        // Squads move as one: compute the dragged member's delta and shift its
+        // squadmates by the same amount, keeping the formation intact.
+        const draggedPos = this.game.getComponent(entityId, 'transform')?.position;
+        const dx = draggedPos ? x - draggedPos.x : 0;
+        const dz = draggedPos ? z - draggedPos.z : 0;
+
         const result = this.call.moveHero(entityId, x, z, rotationY);
-        // Echo the authoritative (grid-snapped) position back to the MOVER only — never
+        const moves = [{ entityId, x, z, rotationY }];
+        if (result?.success && draggedPos) {
+            const ref = this.game.heroRosterSystem?.getRosterEntryForEntity?.(entityId);
+            const mates = ref
+                ? (this.game.heroRosterSystem?.getHeroEntityIds?.(ref.playerId, ref.rosterIndex) || [])
+                : [];
+            for (const mate of mates) {
+                if (mate === entityId) continue;
+                const mp = this.game.getComponent(mate, 'transform')?.position;
+                if (!mp) continue;
+                const mr = this.call.moveHero(mate, mp.x + dx, mp.z + dz, rotationY);
+                if (mr?.success) moves.push({ entityId: mate, x: mp.x + dx, z: mp.z + dz, rotationY });
+            }
+        }
+        // Echo the authoritative (grid-snapped) positions back to the MOVER only — never
         // to the opponent, so prep-phase repositioning stays hidden until battle start
         // (where the full entitySync reveals everyone's real positions). The mover
         // already moved optimistically; this just reconciles any server-side snapping.
         if (result?.success) {
-            this.sendToPlayer(playerId, 'HERO_MOVED', { entityId, x, z, rotationY });
+            this.sendToPlayer(playerId, 'HERO_MOVED', { entityId, x, z, rotationY, moves });
         }
-        return this.respond(playerId, 'HERO_MOVED_ACK', result ?? { success: false, reason: 'no_system' }, callback);
+        return this.respond(playerId, 'HERO_MOVED_ACK',
+            result ? { ...result, moves } : { success: false, reason: 'no_system' }, callback);
     }
 
     // ==================== HERO ARENA: LOOT & EQUIPMENT ====================
@@ -1301,6 +1361,86 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         const result = this.call.buyUnlockedUnit(numericPlayerId, d.unitTypeId);
         this.syncEntitiesToClients(playerId, numericPlayerId);   // replicate to the buyer only
         return this.respond(playerId, 'BUY_UNLOCKED_UNIT_ACK', result ?? { success: false }, callback);
+    }
+
+    handleBuyUnitTech(eventData, callback) {
+        const { playerId } = eventData;
+        const numericPlayerId = eventData.numericPlayerId ?? eventData.playerId;
+        const d = eventData.data || eventData;
+        const result = this.call.buyUnitTech(numericPlayerId, d.unitId, d.techId);
+        this.syncEntitiesToClients(playerId, numericPlayerId);   // stat techs mutate live units
+        return this.respond(playerId, 'BUY_UNIT_TECH_ACK', result ?? { success: false }, callback);
+    }
+
+    handleBuySquadLevel(eventData, callback) {
+        const { playerId } = eventData;
+        const numericPlayerId = eventData.numericPlayerId ?? eventData.playerId;
+        const d = eventData.data || eventData;
+        const result = this.call.buySquadLevel(numericPlayerId, d.rosterIndex);
+        this.syncEntitiesToClients(playerId, numericPlayerId);   // unit rebuilt with new level
+        return this.respond(playerId, 'BUY_SQUAD_LEVEL_ACK', result ?? { success: false }, callback);
+    }
+
+    handleBuyTierUnlock(eventData, callback) {
+        const { playerId } = eventData;
+        const numericPlayerId = eventData.numericPlayerId ?? eventData.playerId;
+        const d = eventData.data || eventData;
+        const result = this.call.buyTierUnlock(numericPlayerId, d.unitId);
+        return this.respond(playerId, 'BUY_TIER_UNLOCK_ACK', result ?? { success: false }, callback);
+    }
+
+    handleBuyUpgradeNode(eventData, callback) {
+        const { playerId } = eventData;
+        const numericPlayerId = eventData.numericPlayerId ?? eventData.playerId;
+        const d = eventData.data || eventData;
+        const result = this.call.buyUpgradeNode(numericPlayerId, d.upgradeId);
+        this.syncEntitiesToClients(playerId, numericPlayerId);   // stat upgrades hit live units
+        return this.respond(playerId, 'BUY_UPGRADE_NODE_ACK', result ?? { success: false }, callback);
+    }
+
+    handleSetSquadFormation(eventData, callback) {
+        const { playerId } = eventData;
+        const numericPlayerId = eventData.numericPlayerId ?? eventData.playerId;
+        const d = eventData.data || eventData;
+        const result = this.call.setSquadFormation(numericPlayerId, d.rosterIndex, d.w, d.h);
+        // Echo the members' authoritative positions to the mover (prep positions
+        // stay hidden from the opponent until battle start, as with drags).
+        if (result?.success) {
+            this.sendToPlayer(playerId, 'HERO_MOVED', { moves: result.moves });
+        }
+        return this.respond(playerId, 'SET_SQUAD_FORMATION_ACK', result ?? { success: false }, callback);
+    }
+
+    handleBuyDeploySlot(eventData, callback) {
+        const { playerId } = eventData;
+        const numericPlayerId = eventData.numericPlayerId ?? eventData.playerId;
+        const result = this.call.buyDeploySlot(numericPlayerId);
+        return this.respond(playerId, 'BUY_DEPLOY_SLOT_ACK', result ?? { success: false }, callback);
+    }
+
+    handleEnterCampaignNode(eventData, callback) {
+        const { playerId } = eventData;
+        const numericPlayerId = eventData.numericPlayerId ?? eventData.playerId;
+        const d = eventData.data || eventData;
+        const result = this.call.enterCampaignNode(numericPlayerId, d.nodeId);
+        return this.respond(playerId, 'ENTER_CAMPAIGN_NODE_ACK', result ?? { success: false }, callback);
+    }
+
+    handlePickReinforcement(eventData, callback) {
+        const { playerId } = eventData;
+        const numericPlayerId = eventData.numericPlayerId ?? eventData.playerId;
+        const d = eventData.data || eventData;
+        const result = this.call.pickReinforcement(numericPlayerId, d.optionIndex);
+        this.syncEntitiesToClients(playerId, numericPlayerId);   // cards may spawn units
+        return this.respond(playerId, 'PICK_REINFORCEMENT_ACK', result ?? { success: false }, callback);
+    }
+
+    handleCastCommanderSkill(eventData, callback) {
+        const { playerId } = eventData;
+        const numericPlayerId = eventData.numericPlayerId ?? eventData.playerId;
+        const d = eventData.data || eventData;
+        const result = this.call.castCommanderSkill(numericPlayerId, d.skillId, d.x, d.z);
+        return this.respond(playerId, 'CAST_COMMANDER_SKILL_ACK', result ?? { success: false }, callback);
     }
 
     handleSellUnit(eventData, callback) {

@@ -20,16 +20,27 @@ class LeaderSystem extends GUTS.BaseSystem {
     // economy system. mods spec mirrors ArmyShopSystem upgrade statModifiers:
     // { <combatField>: { add?, pct? } }, with maxHP routed to the health component.
     static LEADERS = [
-        { id: 'commander', label: 'The Commander', bonus: '+10% HP to STR heroes',
-          archetype: 'str', mods: { maxHP: { pct: 0.10 } } },
-        { id: 'alchemist', label: 'The Alchemist', bonus: '+5 gold each round' },
-        { id: 'warlord',   label: 'The Warlord',   bonus: '+1 gold per win streak' },
-        { id: 'scholar',   label: 'The Scholar',   bonus: '+15% damage to INT heroes',
-          archetype: 'int', mods: { damage: { pct: 0.15 } } },
-        { id: 'ranger',    label: 'The Ranger',    bonus: '+15% damage to DEX heroes',
-          archetype: 'dex', mods: { damage: { pct: 0.15 } } },
-        { id: 'trickster', label: 'The Trickster', bonus: '+10 evasion to DEX heroes',
-          archetype: 'dex', mods: { evasion: { add: 10 } } }
+        { id: 'supply',      label: 'Supply Specialist',       archetype: 'int',
+          bonus: '+4 gold every round' },
+        { id: 'quickSupply', label: 'Quick Supply Specialist', archetype: 'int',
+          bonus: '+14 extra gold in round 1' },
+        { id: 'costControl', label: 'Cost Control Specialist', archetype: 'int',
+          bonus: '+7 gold every round, but all units -13% damage and HP',
+          allUnits: true, mods: { damage: { pct: -0.13 }, maxHP: { pct: -0.13 } } },
+        { id: 'heavyArmor',  label: 'Heavy Armor Specialist',  archetype: 'str',
+          bonus: 'All units +17% HP',
+          allUnits: true, mods: { maxHP: { pct: 0.17 } } },
+        { id: 'speed',       label: 'Speed Specialist',        archetype: 'dex',
+          bonus: 'All units +15% move speed',
+          allUnits: true, speedPct: 0.15 },
+        { id: 'giant',       label: 'Giant Specialist',        archetype: 'str',
+          bonus: 'Tier 3 and 4 units unlock for free' },
+        { id: 'sniper',      label: 'Marksman Specialist',     archetype: 'dex',
+          bonus: 'Start with a free level-3 Crossbowman' },
+        { id: 'golem',       label: 'Golem Specialist',        archetype: 'str',
+          bonus: 'A free level-2 Stone Golem arrives on round 4' },
+        { id: 'aerial',      label: 'Aerial Specialist',       archetype: 'int',
+          bonus: 'Flying units unlock for free and gain +15 range' }
     ];
 
     constructor(game) {
@@ -60,14 +71,27 @@ class LeaderSystem extends GUTS.BaseSystem {
         if (!info) return;
         const stats = this._statsByPlayerId(info.playerId);
         const def = this.getLeaderDef(stats?.leaderId);
-        if (!def?.mods || !def.archetype) return;   // gold leaders / no leader → nothing here
+        if (!def) return;
 
-        if (!this._heroHasArchetype(entityId, def.archetype)) return;
-        this._applyStatMods(
-            this.game.getComponent(entityId, 'combat'),
-            this.game.getComponent(entityId, 'health'),
-            def.mods
-        );
+        // Mechabellum specialists apply to EVERY unit (allUnits); legacy
+        // archetype-gated defs still work if data reintroduces them.
+        if (def.mods && (def.allUnits || (def.archetype && this._heroHasArchetype(entityId, def.archetype)))) {
+            this._applyStatMods(
+                this.game.getComponent(entityId, 'combat'),
+                this.game.getComponent(entityId, 'health'),
+                def.mods
+            );
+        }
+        if (def.speedPct) {
+            const vel = this.game.getComponent(entityId, 'velocity');
+            if (vel?.maxSpeed) vel.maxSpeed *= 1 + def.speedPct;
+        }
+        // Aerial Specialist: flyers shoot a little farther.
+        if (def.id === 'aerial') {
+            const unitDef = this.game.getUnitTypeDef(this.game.getComponent(entityId, 'unitType'));
+            const combat = this.game.getComponent(entityId, 'combat');
+            if (unitDef?.isFlying && combat?.range) combat.range += 15;
+        }
     }
 
     // A hero "is" an archetype when its unit def has that attribute > 0. Dual-stat

@@ -6,13 +6,13 @@
   "weaponType": "sword",
   "size": 25,
   "height": 50,
-  "value": 110,
-  "hp": 240,
+  "value": 70,
+  "hp": 290,
   "speed": 38,
-  "damage": 14,
+  "damage": 17,
   "attackSpeed": 1,
   "element": "physical",
-  "armor": 8,
+  "armor": 14,
   "fireResistance": 0.2,
   "coldResistance": 0.2,
   "lightningResistance": 0.2,
@@ -137,14 +137,13 @@
     ]
   },
   "buyable": false,
-  "squadWidth": 1,
+  "squadWidth": 2,
   "squadHeight": 1,
-  "placementGridWidth": 1,
+  "placementGridWidth": 2,
   "placementGridHeight": 1,
-  "abilities": [
-    "HealAbility"
-  ],
+  "abilities": [],
   "requiresUnits": [],
   "requiresBuildings": [],
-  "spriteAnimationSet": "templar2is"
+  "spriteAnimationSet": "templar2is",
+  "visionRange": 250
 }

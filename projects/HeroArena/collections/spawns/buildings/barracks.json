@@ -65,7 +65,7 @@
   "height": 100,
   "size": 75,
   "icon": "building_barracks",
-  "hp": 1500,
+  "hp": 220,
   "supplies": 7,
   "spriteAnimationSet": "barracks",
   "requiresUnits": [],
@@ -75,5 +75,6 @@
   "upgrades": [
     "giantsMight",
     "heavyPlating"
-  ]
+  ],
+  "armor": 0
 }

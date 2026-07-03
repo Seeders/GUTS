@@ -1,0 +1,35 @@
+{
+ "unit": "ballista",
+ "techs": [
+  {
+   "id": "bal_piercing",
+   "title": "Piercing Engine",
+   "cost": 19,
+   "description": "Unlocks Piercing Shot: bolts through whole columns",
+   "unlockAbility": "PiercingShotAbility"
+  },
+  {
+   "id": "bal_range",
+   "title": "Siege Rails",
+   "cost": 18,
+   "description": "+80 attack range",
+   "statModifiers": {
+    "range": {
+     "add": 80
+    }
+   }
+  },
+  {
+   "id": "bal_rapid",
+   "title": "Autoloader",
+   "cost": 16,
+   "description": "+30% attack speed",
+   "statModifiers": {
+    "attackSpeed": {
+     "pct": 0.3
+    }
+   }
+  }
+ ],
+ "fileName": "ballista"
+}

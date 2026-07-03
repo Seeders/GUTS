@@ -14,7 +14,7 @@
   "size": 64,
   "spriteScale": 128,
   "icon": "building_fletchersHall",
-  "hp": 1500,
+  "hp": 220,
   "render": {
     "animations": {
       "idle": [
@@ -75,5 +75,6 @@
   "upgrades": [
     "sharpenedArrows",
     "swiftStrikes"
-  ]
+  ],
+  "armor": 0
 }

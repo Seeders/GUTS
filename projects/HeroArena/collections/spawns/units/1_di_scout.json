@@ -7,9 +7,9 @@
   "size": 25,
   "height": 50,
   "value": 35,
-  "hp": 120,
+  "hp": 60,
   "speed": 75,
-  "damage": 30,
+  "damage": 14,
   "attackSpeed": 1.4,
   "range": 170,
   "projectile": "poisonDagger",
@@ -168,17 +168,18 @@
     "2_di_trickster",
     "2_di_goblinBomber"
   ],
-  "squadWidth": 1,
+  "squadWidth": 2,
   "squadHeight": 1,
-  "placementGridWidth": 1,
+  "placementGridWidth": 2,
   "placementGridHeight": 1,
   "icon": "unit_rogue",
-  "visionRange": 800,
+  "visionRange": 350,
   "stealth": 40,
   "supplyCost": 2,
   "spriteAnimationSet": "scout",
   "requiresUnits": [],
   "requiresBuildings": [
     "mageTower"
-  ]
+  ],
+  "canTargetAir": true
 }

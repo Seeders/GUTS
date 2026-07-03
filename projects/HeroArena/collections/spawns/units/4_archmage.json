@@ -130,5 +130,6 @@
   "placementGridWidth": 1,
   "placementGridHeight": 1,
   "requiresUnits": [],
-  "requiresBuildings": []
+  "requiresBuildings": [],
+  "visionRange": 300
 }

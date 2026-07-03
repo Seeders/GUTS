@@ -72,8 +72,11 @@ global.io = global._io; // also expose as global.io for convenience
 
 // Serve static files (your client game files)
 // First try compiled client, then fall back to source files
-app.use(express.static(path.join(__dirname, 'dist/client')));
+// Project root first: its index.html is the committed source of truth and must
+// never be shadowed by a stale dist/client/index.html (bundles still resolve
+// from dist/client below).
 app.use(express.static(path.join(__dirname, './')));
+app.use(express.static(path.join(__dirname, 'dist/client')));
 app.use('/engine', express.static(path.join(__dirname, '../../engine')));
 app.use('/global', express.static(path.join(__dirname, '../../global')));
 

@@ -1,0 +1,27 @@
+{
+ "unit": "2_d_trapper",
+ "techs": [
+  {
+   "id": "tra_entangle",
+   "title": "Entangling Snares",
+   "cost": 15,
+   "description": "Unlocks Entangle: root enemies in place",
+   "unlockAbility": "EntangleAbility"
+  },
+  {
+   "id": "tra_cripple",
+   "title": "Hamstring Shot",
+   "cost": 15,
+   "description": "Unlocks Crippling Shot",
+   "unlockAbility": "CripplingShotAbility"
+  },
+  {
+   "id": "tra_beartrap",
+   "title": "Bear Traps",
+   "cost": 15,
+   "description": "Unlocks Bear Trap placement",
+   "unlockAbility": "BearTrapAbility"
+  }
+ ],
+ "fileName": "2_d_trapper"
+}

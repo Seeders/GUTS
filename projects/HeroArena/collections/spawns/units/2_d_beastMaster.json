@@ -6,10 +6,10 @@
   "weaponType": "bow",
   "size": 25,
   "height": 50,
-  "value": 85,
-  "hp": 160,
+  "value": 70,
+  "hp": 230,
   "speed": 55,
-  "damage": 18,
+  "damage": 21,
   "attackSpeed": 1.1,
   "range": 200,
   "projectile": "arrow",
@@ -159,14 +159,14 @@
     ]
   },
   "buyable": false,
-  "squadWidth": 1,
+  "squadWidth": 2,
   "squadHeight": 1,
-  "placementGridWidth": 1,
+  "placementGridWidth": 2,
   "placementGridHeight": 1,
-  "abilities": [
-    "SummonWolfAbility"
-  ],
+  "abilities": [],
   "requiresUnits": [],
   "requiresBuildings": [],
-  "spriteAnimationSet": "beastmaster2d"
+  "spriteAnimationSet": "beastmaster2d",
+  "visionRange": 300,
+  "canTargetAir": true
 }

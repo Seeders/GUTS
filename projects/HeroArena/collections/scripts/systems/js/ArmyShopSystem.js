@@ -19,6 +19,12 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         'buyOffer',
         'rerollOffers',
         'buyUnlockedUnit',
+        'buyUnitTech',
+        'buySquadLevel',
+        'buyTierUnlock',
+        'buyUpgradeNode',
+        'buyDeploySlot',
+        'pickReinforcement',
         'getShopStateForPlayer',
         'getEligibleItems',
         'applyArmyUpgrades',
@@ -32,6 +38,7 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         'getPlayerEntities',
         'broadcastToRoom',
         'spawnPurchasedUnit',
+        'respawnRosterEntry',
         'addAbilitiesToUnit',
         'townhallLevel',
         'getOwnedBuildingIds',
@@ -39,10 +46,14 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         'upgradeTownHall',
         'placeBuildingAuto',
         'getAIPlayerIds',
-        'removeRosterEntry'
+        'removeRosterEntry',
+        'getLeaderDef',
+        'rollCampaignRewards'
     ];
 
     static OFFER_COUNT = 5;
+    static BASE_DEPLOY_SLOTS = 2;       // Mechabellum: 2 new squads per round...
+    static EXTRA_DEPLOY_COST = 7;       // ...unless you buy extra recruitment (cost doubles)
     static REROLL_BASE_COST = 2;     // escalates +1 per reroll within a round
     static SELL_REFUND_PCT = 0.5;    // base fraction of a unit's shop cost refunded on sell
     // Shop runs a small-number economy (income is 20g/round). A unit/upgrade/ability's
@@ -55,32 +66,58 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         return Math.max(1, Math.ceil((rawValue || 0) / ArmyShopSystem.SHOP_COST_DIVISOR));
     }
 
-    // ─── Unit tier + archetype (drives building-gated offers) ───────────────────
-    // Units never offered in the shop (workers, summons, transforms, unbalanced legendaries).
-    static UNIT_EXCLUDE = new Set(['peasant', '4_archmage', 'sentry', 'dragon_red_flying', '0_skeleton']);
-    // Tier-3 "legendary" units and the archetype building(s) that unlock them.
-    static T3_UNITS = {
-        dragon_red:        ['int'],   // Mage Tower
-        '4_ancientTreant': ['dex'],   // Hunting Lodge
-        '0_golemStone':    ['str'],   // Barracks
-        '0_golemFire':     ['int'],   // Mage Tower
-        '0_golemIce':      ['int'],   // Mage Tower
-        ballista:          ['str']    // Barracks
-    };
+    // ─── Unit tiers (Mechabellum model) ─────────────────────────────────────────
+    // Units never offered in the shop (workers, summons, transforms).
+    static UNIT_EXCLUDE = new Set(['peasant', '4_archmage', 'sentry']);
+    // Off-prefix tier-1s (the skeleton swarm) and tier-2s (air chaff).
+    static T1_UNIT_SET = new Set(['0_skeleton']);
+    static T2_UNIT_SET = new Set(['fairy']);
+    // Tier-3 "heavies": strong specialists above the tier-2 roster.
+    static T3_UNIT_SET = new Set(['0_golemStone', '0_golemFire', '0_golemIce', 'ballista']);
+    // Tier-4 "giants": the Mechabellum Fortress/Overlord analogues.
+    static T4_UNIT_SET = new Set(['dragon_red', '4_ancientTreant', 'dragon_red_flying']);
+    // Valid tiered units that are never OFFERED for unlock/purchase directly
+    // (gained through techs — the dragon's Take Flight transform).
+    static NOT_OFFERED = new Set(['dragon_red_flying']);
 
-    // Tier of a unit id: 1, 2, 3, or null (= not shop-offerable).
+    // Tier of a unit id: 1-4, or null (= not shop-offerable).
     static unitTier(id) {
         if (ArmyShopSystem.UNIT_EXCLUDE.has(id)) return null;
-        if (ArmyShopSystem.T3_UNITS[id]) return 3;
+        if (ArmyShopSystem.T4_UNIT_SET.has(id)) return 4;
+        if (ArmyShopSystem.T3_UNIT_SET.has(id)) return 3;
+        if (ArmyShopSystem.T2_UNIT_SET.has(id)) return 2;
+        if (ArmyShopSystem.T1_UNIT_SET.has(id)) return 1;
         if (/^1_/.test(id)) return 1;
         if (/^2_/.test(id)) return 2;
         return null;
     }
 
-    // Archetypes a unit belongs to (str/dex/int), derived from its id prefix letters or the
-    // T3 special table. Used to require the matching archetype building for higher tiers.
+    // Tech escalation (Mechabellum): every tech bought on a unit raises that
+    // unit's OTHER techs by +200 supply (14g), hard-capped at +1000 (70g).
+    static TECH_ESCALATION_STEP = 14;
+    static TECH_ESCALATION_CAP  = 70;
+
+    static techEscalation(ownedCount) {
+        return Math.min(ArmyShopSystem.TECH_ESCALATION_CAP,
+            ArmyShopSystem.TECH_ESCALATION_STEP * (ownedCount || 0));
+    }
+
+    // Mechabellum pricing at our ~14.3-supply-per-gold scale.
+    // Squad prices by tier (Mechabellum: 100 / 200 / 300 / 400 supply):
+    static TIER_PRICE = { 1: 7, 2: 14, 3: 21, 4: 28 };
+    // One-time unlock costs (Mechabellum: T1 free, then 50 / 100 / 200 supply):
+    static TIER_UNLOCK_COST = { 2: 4, 3: 7, 4: 14 };
+
+    // Shop price of a unit: tier-based (Mechabellum numbers) when tiered,
+    // else derived from its raw value.
+    static unitPrice(id, def) {
+        const tier = ArmyShopSystem.unitTier(id);
+        if (tier && ArmyShopSystem.TIER_PRICE[tier]) return ArmyShopSystem.TIER_PRICE[tier];
+        return ArmyShopSystem.shopCost(def?.value);
+    }
+
+    // Archetypes a unit belongs to (str/dex/int), from its id prefix letters.
     static unitArchetypes(id) {
-        if (ArmyShopSystem.T3_UNITS[id]) return ArmyShopSystem.T3_UNITS[id];
         const m = id.match(/^[12]_([a-z]+)_/);
         if (!m) return [];
         const map = { s: 'str', d: 'dex', i: 'int' };
@@ -115,14 +152,228 @@ class ArmyShopSystem extends GUTS.BaseSystem {
             this.game.state.round || 1,
             GUTS.SeededRandom.hashString('shop')
         ));
+        const campaign = this.game.campaignRunSystem?.isCampaignMode?.();
         for (const entityId of this.call.getPlayerEntities()) {
             const stats = this.game.getComponent(entityId, 'playerStats');
             if (!stats) continue;
             stats.rerollCount = 0;
+            // Fresh recruitment allowance each round (menu buys only — free
+            // units from cards/perks never consume slots).
+            stats.deploysUsed = 0;
+            stats.extraDeploySlots = 0;
+            if (campaign) {
+                // Campaign: no AI economy, no random reinforcements — the run
+                // system rolls the player's post-victory reward instead.
+                if (stats.playerId === 0) {
+                    this._applyLeaderRoundPerks(stats);
+                    stats.currentOffers = [];
+                    this.call.rollCampaignRewards?.(stats);
+                    this._broadcastShop(stats);
+                    this._notifyReinforcement(stats);
+                }
+                continue;
+            }
+            this._applyLeaderRoundPerks(stats);
             stats.currentOffers = this._buildOffers(stats);
+            // The round's one random decision: pick 1 of 3 reinforcement cards.
+            this._rollReinforcements(stats);
             this._broadcastShop(stats);
+            this._notifyReinforcement(stats);
         }
+        if (campaign) return;
+        this._aiAutoPick();
         this._aiAutoBuy();
+    }
+
+    // ─── Leader round perks (Mechabellum starting specialists) ──────────────────
+
+    // Free specialist units: Marksman Specialist's L3 Crossbowman (round 1),
+    // Golem Specialist's L2 Stone Golem (round 4). Granted once, tracked on
+    // stats.leaderPerks; the unit is a normal roster squad from then on.
+    _applyLeaderRoundPerks(stats) {
+        const def = this.call.getLeaderDef?.(stats.leaderId);
+        if (!def) return;
+        const round = this.game.state.round || 1;
+        if (!stats.leaderPerks) stats.leaderPerks = {};
+
+        const grants = [];
+        if (def.id === 'sniper' && round >= 1 && !stats.leaderPerks.sniper) {
+            stats.leaderPerks.sniper = true;
+            grants.push({ unitId: '2_sd_crossbowman', level: 3 });
+        }
+        if (def.id === 'golem' && round >= 4 && !stats.leaderPerks.golem) {
+            stats.leaderPerks.golem = true;
+            grants.push({ unitId: '0_golemStone', level: 2 });
+        }
+        for (const g of grants) {
+            if (!Array.isArray(stats.tierUnlocks)) stats.tierUnlocks = [];
+            if (!stats.tierUnlocks.includes(g.unitId)) stats.tierUnlocks.push(g.unitId);
+            this._addUnitToArmy(stats, g.unitId);
+            const entry = stats.heroRoster[stats.heroRoster.length - 1];
+            if (entry && g.level > 1) {
+                entry.paidLevels = g.level - 1;
+                entry.level = g.level;
+                this.call.respawnRosterEntry?.(stats.playerId, stats.heroRoster.length - 1);
+            }
+        }
+    }
+
+    // ─── Reinforcement cards (the round's 1-of-3 pick) ──────────────────────────
+
+    _rollReinforcements(stats) {
+        const round = this.game.state.round || 1;
+        const rng = this.game.rng.strand('shop');
+        const pool = Object.entries(this.collections.reinforcementCards || {})
+            .filter(([, def]) => (def.minRound || 1) <= round)
+            .map(([id, def]) => ({ id, def, weight: def.weight || 1 }));
+
+        const options = [];
+        const remaining = pool.slice();
+        while (options.length < 3 && remaining.length > 0) {
+            const total = remaining.reduce((s, c) => s + c.weight, 0);
+            let r = rng.next() * total;
+            let idx = 0;
+            for (let i = 0; i < remaining.length; i++) {
+                r -= remaining[i].weight;
+                if (r <= 0) { idx = i; break; }
+            }
+            const pick = remaining.splice(idx, 1)[0];
+            options.push({
+                id: pick.id,
+                title: pick.def.title,
+                icon: pick.def.icon || '🎁',
+                description: pick.def.description || ''
+            });
+        }
+        stats.pendingReinforcement = options.length ? { options, picked: false } : null;
+    }
+
+    _notifyReinforcement(stats) {
+        if (!stats.pendingReinforcement) return;
+        const payload = { playerId: stats.playerId, options: stats.pendingReinforcement.options };
+        this.call.broadcastToRoom(null, 'REINFORCEMENT_START', payload);
+        this.game.triggerEvent('onReinforcementStart', payload);
+    }
+
+    pickReinforcement(numericPlayerId, optionIndex) {
+        const stats = this._getStats(numericPlayerId);
+        if (!stats) return { success: false, reason: 'no_player' };
+        if (!this._inPlacement()) return { success: false, reason: 'wrong_phase' };
+        const pending = stats.pendingReinforcement;
+        if (!pending || pending.picked) return { success: false, reason: 'no_pending' };
+        const option = pending.options?.[optionIndex];
+        if (!option) return { success: false, reason: 'bad_option' };
+
+        const def = this.collections.reinforcementCards?.[option.id]
+            || pending.defs?.[optionIndex];
+        if (!def) return { success: false, reason: 'no_card' };
+
+        pending.picked = true;
+        this._applyReinforcement(stats, def);
+        this._broadcastShop(stats);
+        return { success: true, card: option.id, state: this.getShopStateForPlayer(numericPlayerId) };
+    }
+
+    _applyReinforcement(stats, def) {
+        const rng = this.game.rng.strand('shop');
+        switch (def.kind) {
+            case 'gold': {
+                stats.gold = (stats.gold || 0) + (def.amount || 10);
+                break;
+            }
+            case 'freeUnits': {
+                const maxLevel = this.game.heroExperienceSystem?.constructor?.MAX_LEVEL || 9;
+                const t1 = this._candidateUnitIds(stats)
+                    .filter(id => ArmyShopSystem.unitTier(id) === 1);
+                for (let i = 0; i < (def.count || 1) && t1.length; i++) {
+                    const unitId = t1[Math.floor(rng.next() * t1.length)];
+                    this._addUnitToArmy(stats, unitId);
+                    if (def.leveled) {
+                        const entry = stats.heroRoster[stats.heroRoster.length - 1];
+                        entry.level = Math.min(maxLevel, (entry.level || 1) + def.leveled);
+                        this.call.respawnRosterEntry?.(stats.playerId, stats.heroRoster.length - 1);
+                    }
+                }
+                break;
+            }
+            case 'techDiscount': {
+                stats.techDiscount = def.pct || 0.5;
+                break;
+            }
+            case 'freeLevel': {
+                const maxLevel = this.game.heroExperienceSystem?.constructor?.MAX_LEVEL || 9;
+                const roster = stats.heroRoster || [];
+                let best = -1, bestLevel = Infinity;
+                for (let i = 0; i < roster.length; i++) {
+                    const level = roster[i]?.level || 1;
+                    if (level < maxLevel && level < bestLevel) { bestLevel = level; best = i; }
+                }
+                if (best >= 0) {
+                    roster[best].level = (roster[best].level || 1) + 1;
+                    roster[best].xp = 0;
+                    this.call.respawnRosterEntry?.(stats.playerId, best);
+                }
+                break;
+            }
+            case 'randomUnlock': {
+                // Free unlock of a random still-locked unit of the card's tier
+                // (falls back to any locked unit if that tier is exhausted)
+                const locked = this._lockedUnits(stats);
+                const pool = locked.filter(u => u.tier === (def.tier || 2));
+                const from = pool.length ? pool : locked;
+                if (from.length) {
+                    const pick = from[Math.floor(rng.next() * from.length)];
+                    if (!Array.isArray(stats.tierUnlocks)) stats.tierUnlocks = [];
+                    stats.tierUnlocks.push(pick.id);
+                }
+                break;
+            }
+            case 'specificUnit': {
+                // Campaign reward: a specific squad, optionally pre-leveled.
+                const maxLevel = this.game.heroExperienceSystem?.constructor?.MAX_LEVEL || 9;
+                if (!Array.isArray(stats.tierUnlocks)) stats.tierUnlocks = [];
+                if (!stats.tierUnlocks.includes(def.unitId)) stats.tierUnlocks.push(def.unitId);
+                this._addUnitToArmy(stats, def.unitId);
+                const entry = stats.heroRoster[stats.heroRoster.length - 1];
+                if (entry && (def.level || 1) > 1) {
+                    entry.paidLevels = Math.min(maxLevel, def.level) - 1;
+                    entry.level = Math.min(maxLevel, def.level);
+                    this.call.respawnRosterEntry?.(stats.playerId, stats.heroRoster.length - 1);
+                }
+                break;
+            }
+            case 'unitTechGrant': {
+                // Campaign reward: a free tech for a fielded unit type.
+                if (!stats.unitTechs) stats.unitTechs = {};
+                const owned = stats.unitTechs[def.unitId] || [];
+                if (!owned.includes(def.techId)) {
+                    stats.unitTechs[def.unitId] = [...owned, def.techId];
+                    const techDef = (this.collections.unitTechs?.[def.unitId]?.techs || [])
+                        .find(t => t.id === def.techId);
+                    if (techDef?.statModifiers) this._applyTechToLiveUnits(stats, def.unitId, techDef);
+                    if (techDef?.unlockAbility) this._reapplyAbilitiesForUnitType(stats, def.unitId);
+                    if (techDef?.grantAntiAir) this._applyAntiAirToLiveUnits(stats, def.unitId);
+                    if (techDef?.grantBuff) this._applyBuffToLiveUnits(stats, def.unitId, techDef.grantBuff);
+                }
+                break;
+            }
+            case 'skillCharge': {
+                if (!Array.isArray(stats.skillCharges)) stats.skillCharges = [];
+                if (stats.skillCharges.length < 2) stats.skillCharges.push(def.skill);
+                break;
+            }
+        }
+    }
+
+    // AI picks a random reinforcement card (deterministic 'ai' strand).
+    _aiAutoPick() {
+        for (const pid of (this.call.getAIPlayerIds?.() || [])) {
+            const stats = this._getStats(pid);
+            if (!stats?.pendingReinforcement || stats.pendingReinforcement.picked) continue;
+            const n = stats.pendingReinforcement.options.length;
+            const idx = Math.floor(this.game.rng.strand('ai').next() * n);
+            this.pickReinforcement(pid, idx);
+        }
     }
 
     // Buy the offer at `offerIndex`. Consumes that slot.
@@ -234,13 +485,347 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         }
         const def = this.collections.units?.[unitTypeId];
         if (!def) return { success: false, reason: 'no_unit' };
-        const cost = ArmyShopSystem.shopCost(def.value);
+        const allowedDeploys = ArmyShopSystem.BASE_DEPLOY_SLOTS + (stats.extraDeploySlots || 0);
+        if ((stats.deploysUsed || 0) >= allowedDeploys) {
+            return { success: false, reason: 'no_deploy_slots' };
+        }
+
+        const cost = ArmyShopSystem.unitPrice(unitTypeId, def);
         if ((stats.gold || 0) < cost) return { success: false, reason: 'insufficient_gold' };
 
         stats.gold -= cost;
+        stats.deploysUsed = (stats.deploysUsed || 0) + 1;
         this._addUnitToArmy(stats, unitTypeId);
         this._broadcastShop(stats);
         return { success: true, state: this.getShopStateForPlayer(numericPlayerId) };
+    }
+
+    // ─── Unit techs (Mechabellum-style per-type technologies) ───────────────────
+
+    // Buy a tech for a unit TYPE. Effects apply to every current and future unit
+    // of that type: stat techs modify live units immediately and re-apply on each
+    // respawn; ability techs activate one of the unit's predefined abilities;
+    // unlock techs add a higher-tier unit to the buyable roster.
+    buyUnitTech(numericPlayerId, unitId, techId) {
+        const stats = this._getStats(numericPlayerId);
+        if (!stats) return { success: false, reason: 'no_player' };
+        if (!this._inPlacement()) return { success: false, reason: 'wrong_phase' };
+
+        const techDef = (this.collections.unitTechs?.[unitId]?.techs || []).find(t => t.id === techId);
+        if (!techDef) return { success: false, reason: 'no_tech' };
+
+        if (!stats.unitTechs) stats.unitTechs = {};
+        const owned = stats.unitTechs[unitId] || [];
+        if (owned.includes(techId)) return { success: false, reason: 'already_owned' };
+
+        // Techs require owning at least one unit of the type (you tech what you field)
+        const ownsType = (stats.heroRoster || []).some(e => this._resolveSpawnType(e) === unitId);
+        if (!ownsType) return { success: false, reason: 'no_unit_of_type' };
+
+        // Mechabellum escalation: prior techs on this unit inflate the price...
+        let cost = (techDef.cost || 10) + ArmyShopSystem.techEscalation(owned.length);
+        // ...then Field Manual reinforcement: next tech at a discount (consumed on buy)
+        if (stats.techDiscount) cost = Math.max(1, Math.ceil(cost * (1 - stats.techDiscount)));
+        if ((stats.gold || 0) < cost) return { success: false, reason: 'insufficient_gold' };
+
+        stats.gold -= cost;
+        if (stats.techDiscount) stats.techDiscount = 0;
+        stats.unitTechs[unitId] = [...owned, techId];
+
+        if (techDef.statModifiers) {
+            this._applyTechToLiveUnits(stats, unitId, techDef);
+        }
+        if (techDef.unlockAbility) {
+            this._reapplyAbilitiesForUnitType(stats, unitId);
+        }
+        if (techDef.grantAntiAir) this._applyAntiAirToLiveUnits(stats, unitId);
+        if (techDef.grantBuff) this._applyBuffToLiveUnits(stats, unitId, techDef.grantBuff);
+        if (techDef.transformUnit) this._transformUnitType(stats, unitId, techDef.transformUnit, techDef);
+        this._broadcastShop(stats);
+        return { success: true, state: this.getShopStateForPlayer(numericPlayerId) };
+    }
+
+    // Apply one tech's stat modifiers to all live units of the type.
+    _applyTechToLiveUnits(stats, unitId, techDef) {
+        for (const eid of (this.game.getEntitiesWith?.('heroRosterInfo') || [])) {
+            const info = this.game.getComponent(eid, 'heroRosterInfo');
+            if (!info || info.playerId !== stats.playerId) continue;
+            const entry = stats.heroRoster?.[info.rosterIndex];
+            if (!entry || this._resolveSpawnType(entry) !== unitId) continue;
+            this._applyStatMods(
+                this.game.getComponent(eid, 'combat'),
+                this.game.getComponent(eid, 'health'),
+                techDef.statModifiers
+            );
+        }
+    }
+
+    // ─── Squad level-ups (grow taller instead of wider) ─────────────────────────
+
+    // ─── Command-building upgrade trees (Mechabellum global tech) ────────────────
+
+    // Buy a node from an owned building's upgrade tree. Prereqs must be owned;
+    // the effect applies to every matching live unit now and at each respawn
+    // (applyArmyUpgrades reads stats.ownedUpgrades).
+    buyUpgradeNode(numericPlayerId, upgradeId) {
+        const stats = this._getStats(numericPlayerId);
+        if (!stats) return { success: false, reason: 'no_player' };
+        if (!this._inPlacement()) return { success: false, reason: 'wrong_phase' };
+        const def = this.collections.upgrades?.[upgradeId];
+        if (!def) return { success: false, reason: 'no_upgrade' };
+        if ((stats.ownedUpgrades || []).includes(upgradeId)) {
+            return { success: false, reason: 'already_owned' };
+        }
+
+        // Locate the tree node: the tree must belong to a building this player
+        // fields (Town Hall or their production building), and prereqs owned.
+        const ownedBuildings = new Set((stats.buildings || []).map(b => b.buildingId));
+        let node = null;
+        for (const tree of Object.values(this.collections.upgradeTrees || {})) {
+            if (!ownedBuildings.has(tree.building)) continue;
+            for (const branch of (tree.branches || [])) {
+                const n = (branch.nodes || []).find(n2 => n2.upgrade === upgradeId);
+                if (n) { node = n; break; }
+            }
+            if (node) break;
+        }
+        if (!node) return { success: false, reason: 'no_building_tree' };
+        const owned = new Set(stats.ownedUpgrades || []);
+        if (!(node.requires || []).every(r => owned.has(r))) {
+            return { success: false, reason: 'prereq_missing' };
+        }
+
+        const cost = ArmyShopSystem.shopCost(def.value);
+        if ((stats.gold || 0) < cost) return { success: false, reason: 'insufficient_gold' };
+        stats.gold -= cost;
+        if (!Array.isArray(stats.ownedUpgrades)) stats.ownedUpgrades = [];
+        stats.ownedUpgrades.push(upgradeId);
+
+        // Apply to live matching units immediately.
+        if (def.statModifiers) {
+            for (const eid of this.game.getEntitiesWith('heroRosterInfo')) {
+                if (this.game.entityAlive?.[eid] !== 1) continue;
+                const info = this.game.getComponent(eid, 'heroRosterInfo');
+                if (info?.playerId !== numericPlayerId) continue;
+                const entry = stats.heroRoster?.[info.rosterIndex];
+                if (!entry) continue;
+                if (!this.matchesCombo(this._profileForEntry(entry), def.target || {})) continue;
+                this._applyStatMods(
+                    this.game.getComponent(eid, 'combat'),
+                    this.game.getComponent(eid, 'health'),
+                    def.statModifiers);
+            }
+        }
+        this._broadcastShop(stats);
+        return { success: true, state: this.getShopStateForPlayer(numericPlayerId) };
+    }
+
+    // Extra recruitment (Mechabellum side-building): +1 deploy slot this round,
+    // price doubling per extra bought (7g, 14g, 28g...).
+    buyDeploySlot(numericPlayerId) {
+        const stats = this._getStats(numericPlayerId);
+        if (!stats) return { success: false, reason: 'no_player' };
+        if (!this._inPlacement()) return { success: false, reason: 'wrong_phase' };
+        const extras = stats.extraDeploySlots || 0;
+        const cost = ArmyShopSystem.EXTRA_DEPLOY_COST * Math.pow(2, extras);
+        if ((stats.gold || 0) < cost) return { success: false, reason: 'insufficient_gold' };
+        stats.gold -= cost;
+        stats.extraDeploySlots = extras + 1;
+        this._broadcastShop(stats);
+        return { success: true, state: this.getShopStateForPlayer(numericPlayerId) };
+    }
+
+    // ─── Tier unlocks (Mechabellum: pay once, buy forever) ──────────────────────
+
+    // All shop-offerable units the player has NOT unlocked yet, with their
+    // one-time unlock price. T1 is always unlocked.
+    _lockedUnits(stats) {
+        const unlocked = new Set(stats.tierUnlocks || []);
+        const out = [];
+        for (const [id, def] of Object.entries(this.collections.units || {})) {
+            const tier = ArmyShopSystem.unitTier(id);
+            if (!tier || tier === 1 || unlocked.has(id)) continue;
+            if (ArmyShopSystem.NOT_OFFERED.has(id)) continue;
+            out.push({
+                id, tier,
+                title: def.title || id,
+                icon: def.icon || null,
+                cost: ArmyShopSystem.unitPrice(id, def),
+                unlockCost: ArmyShopSystem.TIER_UNLOCK_COST[tier] || 0
+            });
+        }
+        out.sort((a, b) => a.tier - b.tier || a.title.localeCompare(b.title));
+        return out;
+    }
+
+    buyTierUnlock(numericPlayerId, unitId) {
+        const stats = this._getStats(numericPlayerId);
+        if (!stats) return { success: false, reason: 'no_player' };
+        if (!this._inPlacement()) return { success: false, reason: 'wrong_phase' };
+        const tier = ArmyShopSystem.unitTier(unitId);
+        if (!tier || tier === 1) return { success: false, reason: 'not_unlockable' };
+        if ((stats.tierUnlocks || []).includes(unitId)) return { success: false, reason: 'already_unlocked' };
+        let cost = ArmyShopSystem.TIER_UNLOCK_COST[tier] || 0;
+        // Giant Specialist: heavies and giants unlock for free
+        const leaderId = this.call.getLeaderDef?.(stats.leaderId)?.id;
+        if (tier >= 3 && leaderId === 'giant') cost = 0;
+        // Aerial Specialist: flying units unlock for free
+        if (leaderId === 'aerial' && this.collections.units?.[unitId]?.isFlying) cost = 0;
+        if ((stats.gold || 0) < cost) return { success: false, reason: 'insufficient_gold' };
+        stats.gold -= cost;
+        if (!Array.isArray(stats.tierUnlocks)) stats.tierUnlocks = [];
+        stats.tierUnlocks.push(unitId);
+        this._broadcastShop(stats);
+        return { success: true, state: this.getShopStateForPlayer(numericPlayerId) };
+    }
+
+    // Cost of the squad's next rank: unit shop price × current level — HALVED
+    // when the squad's combat-XP bar is full (Mechabellum: a full bar earns the
+    // right to promote at half price, never a free level). Ranks are worth it:
+    // each level MULTIPLIES the unit's HP and damage by its level.
+    squadLevelCost(entry) {
+        const def = this.collections.units?.[this._resolveSpawnType(entry)] || {};
+        // Mechabellum: promotion always costs 50% of the unit's BASE
+        // recruitment price — flat, regardless of current level.
+        const base = ArmyShopSystem.unitPrice(this._resolveSpawnType(entry), def);
+        return Math.max(1, Math.ceil(base / 2));
+    }
+
+    buySquadLevel(numericPlayerId, rosterIndex) {
+        const stats = this._getStats(numericPlayerId);
+        if (!stats) return { success: false, reason: 'no_player' };
+        if (!this._inPlacement()) return { success: false, reason: 'wrong_phase' };
+        const entry = stats.heroRoster?.[rosterIndex];
+        if (!entry) return { success: false, reason: 'bad_index' };
+
+        const maxLevel = this.game.heroExperienceSystem?.constructor?.MAX_LEVEL || 9;
+        if ((entry.level || 1) >= maxLevel) return { success: false, reason: 'max_level' };
+
+        // Mechabellum: a squad can only be promoted once its XP bar is FULL —
+        // levels can never simply be purchased early.
+        if (!this.game.heroExperienceSystem?.isLevelReady?.(entry)) {
+            return { success: false, reason: 'xp_not_ready' };
+        }
+
+        const cost = this.squadLevelCost(entry);
+        if ((stats.gold || 0) < cost) return { success: false, reason: 'insufficient_gold' };
+
+        stats.gold -= cost;
+        entry.level = (entry.level || 1) + 1;
+        entry.xp = 0;   // the bar (full or not) resets on promotion
+
+        // Rebuild the live unit so level scaling + techs + upgrades re-apply
+        // cleanly (position and HP% are preserved by replaceUnit).
+        this.call.respawnRosterEntry?.(numericPlayerId, rosterIndex);
+
+        this._broadcastShop(stats);
+        return { success: true, level: entry.level, state: this.getShopStateForPlayer(numericPlayerId) };
+    }
+
+    // AI: level up the lowest-level squad when affordable (keeps some gold back
+    // for units/techs, so only fires with a comfortable purse).
+    _aiBuyOneLevel(stats, pid) {
+        const roster = stats.heroRoster || [];
+        let best = -1, bestLevel = Infinity;
+        for (let i = 0; i < roster.length; i++) {
+            const level = roster[i]?.level || 1;
+            if (level < bestLevel) { bestLevel = level; best = i; }
+        }
+        if (best < 0) return false;
+        const cost = this.squadLevelCost(roster[best]);
+        if ((stats.gold || 0) < cost + 10) return false;
+        return !!this.buySquadLevel(pid, best)?.success;
+    }
+
+    // AI: unlock the cheapest locked unit when it can afford unlock + squad.
+    _aiBuyOneUnlock(stats, pid) {
+        const locked = this._lockedUnits(stats);
+        if (!locked.length) return false;
+        const pick = locked[0]; // lowest tier first
+        if ((stats.gold || 0) < pick.unlockCost + pick.cost) return false;
+        return !!this.buyTierUnlock(pid, pick.id)?.success;
+    }
+
+    // AI: buy the first affordable un-owned tech for any fielded unit type.
+    _aiBuyOneTech(stats, pid) {
+        const fielded = [...new Set((stats.heroRoster || [])
+            .map(e => this._resolveSpawnType(e)))];
+        for (const unitId of fielded) {
+            const owned = new Set(stats.unitTechs?.[unitId] || []);
+            for (const t of (this.collections.unitTechs?.[unitId]?.techs || [])) {
+                if (owned.has(t.id)) continue;
+                if ((stats.gold || 0) < (t.cost || 10)) continue;
+                if (this.buyUnitTech(pid, unitId, t.id)?.success) return true;
+            }
+        }
+        return false;
+    }
+
+    // Transform tech (dragon's Take Flight): every squad of the type becomes
+    // the target type — owned techs carry over (shared ids), live units are
+    // replaced in place with the takeoff animation.
+    _transformUnitType(stats, fromId, toId, techDef) {
+        // Carry owned techs to the new type's ledger (shared tech ids apply).
+        const owned = (stats.unitTechs?.[fromId] || []).filter(id => id !== techDef.id);
+        if (!stats.unitTechs) stats.unitTechs = {};
+        stats.unitTechs[toId] = [...new Set([...(stats.unitTechs[toId] || []), ...owned])];
+        if (!Array.isArray(stats.tierUnlocks)) stats.tierUnlocks = [];
+        if (!stats.tierUnlocks.includes(toId)) stats.tierUnlocks.push(toId);
+
+        for (let idx = 0; idx < (stats.heroRoster || []).length; idx++) {
+            const entry = stats.heroRoster[idx];
+            if (this._resolveSpawnType(entry) !== fromId) continue;
+            entry.spawnType = toId;
+            this.call.respawnRosterEntry?.(stats.playerId, idx, 'takeoff');
+        }
+    }
+
+    // Anti-air tech: flag every live unit of the type (finders check the
+    // heroRosterInfo flag alongside the def's canTargetAir).
+    _applyAntiAirToLiveUnits(stats, unitId) {
+        for (const eid of this.game.getEntitiesWith('heroRosterInfo')) {
+            if (this.game.entityAlive?.[eid] !== 1) continue;
+            const info = this.game.getComponent(eid, 'heroRosterInfo');
+            if (info?.playerId !== stats.playerId) continue;
+            const entry = stats.heroRoster?.[info.rosterIndex];
+            if (!entry || this._resolveSpawnType(entry) !== unitId) continue;
+            info.canTargetAir = true;
+        }
+    }
+
+    // Permanent weapon-buff techs (e.g. poisoned_weapon): stamp the buff on a unit.
+    _grantPermanentBuff(entityId, buffName) {
+        const buffType = this.enums.buffTypes?.[buffName];
+        if (buffType == null) return;
+        const existing = this.game.getComponent(entityId, 'buff');
+        if (existing && existing.buffType === buffType) return;
+        this.game.addComponent(entityId, 'buff', {
+            buffType,
+            endTime: (this.game.state.now || 0) + 1e9,   // effectively permanent
+            appliedTime: this.game.state.now || 0,
+            stacks: 1
+        });
+    }
+
+    _applyBuffToLiveUnits(stats, unitId, buffName) {
+        for (const eid of this.game.getEntitiesWith('heroRosterInfo')) {
+            if (this.game.entityAlive?.[eid] !== 1) continue;
+            const info = this.game.getComponent(eid, 'heroRosterInfo');
+            if (info?.playerId !== stats.playerId) continue;
+            const entry = stats.heroRoster?.[info.rosterIndex];
+            if (!entry || this._resolveSpawnType(entry) !== unitId) continue;
+            this._grantPermanentBuff(eid, buffName);
+        }
+    }
+
+    _reapplyAbilitiesForUnitType(stats, unitId) {
+        for (const eid of (this.game.getEntitiesWith?.('heroRosterInfo') || [])) {
+            const info = this.game.getComponent(eid, 'heroRosterInfo');
+            if (!info || info.playerId !== stats.playerId) continue;
+            const entry = stats.heroRoster?.[info.rosterIndex];
+            if (!entry || this._resolveSpawnType(entry) !== unitId) continue;
+            this.applyArmyAbilities(eid);
+        }
     }
 
     // Spend gold to discard the current offers and roll a fresh set.
@@ -298,10 +883,16 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         if (!this._inPlacement()) return { success: false, reason: 'wrong_phase' };
         const entry = stats.heroRoster?.[rosterIndex];
         if (!entry) return { success: false, reason: 'bad_index' };
+        // Deployment is permanent: a unit that has fought a battle can't be sold —
+        // selling is only an undo for this prep's purchases.
+        if (entry.lastPosition && !this.game.campaignRunSystem?.isCampaignMode?.()) {
+            return { success: false, reason: 'deployment_locked' };
+        }
 
+        if (!entry.lastPosition) stats.deploysUsed = Math.max(0, (stats.deploysUsed || 0) - 1);
         const def = this.collections.units?.[this._resolveSpawnType(entry)] || {};
         const pct = ArmyShopSystem.SELL_REFUND_PCT + (this.getEconomyEffects(stats).sellRefundPct || 0);
-        const refund = Math.floor(ArmyShopSystem.shopCost(def.value) * pct);
+        const refund = Math.floor(ArmyShopSystem.unitPrice(this._resolveSpawnType(entry), def) * pct);
 
         const res = this.call.removeRosterEntry?.(numericPlayerId, rosterIndex);
         if (!res?.success) return { success: false, reason: res?.reason || 'remove_failed' };
@@ -322,12 +913,25 @@ class ArmyShopSystem extends GUTS.BaseSystem {
             // bought ones — units are no longer unlocked through the shop).
             unlocked:   this._candidateUnitIds(stats).map(id => {
                 const def = this.collections.units?.[id] || {};
-                return { id, title: def.title || id, cost: ArmyShopSystem.shopCost(def.value), icon: def.icon || null };
+                return { id, title: def.title || id, cost: ArmyShopSystem.unitPrice(id, def), icon: def.icon || null };
             }),
             rerollCost: this.getRerollCost(stats),
             gold:       stats.gold || 0,
             // For the building upgrade-tree modal: which tree nodes are already bought.
-            ownedUpgrades: [...(stats.ownedUpgrades || [])]
+            ownedUpgrades: [...(stats.ownedUpgrades || [])],
+            // Per-unit techs owned: { unitId: [techId, ...] } (tech defs come from collections)
+            unitTechs: JSON.parse(JSON.stringify(stats.unitTechs || {})),
+            // Which unit types the player currently fields (tech gating in the UI)
+            ownedUnitTypes: [...new Set((stats.heroRoster || []).map(e => this._resolveSpawnType(e)))],
+            // This round's 1-of-3 reinforcement pick (null once picked)
+            pendingReinforcement: stats.pendingReinforcement && !stats.pendingReinforcement.picked
+                ? { options: stats.pendingReinforcement.options } : null,
+            locked: this._lockedUnits(stats),
+            techDiscount: stats.techDiscount || 0,
+            deploysUsed: stats.deploysUsed || 0,
+            deploySlots: ArmyShopSystem.BASE_DEPLOY_SLOTS + (stats.extraDeploySlots || 0),
+            nextSlotCost: ArmyShopSystem.EXTRA_DEPLOY_COST * Math.pow(2, stats.extraDeploySlots || 0),
+            skillCharges: [...(stats.skillCharges || [])]
         };
     }
 
@@ -387,48 +991,13 @@ class ArmyShopSystem extends GUTS.BaseSystem {
 
     // Weighted pool of units + eligible per-type upgrades (+ abilities, later phase).
     // Units are weighted higher so they dominate the early offers.
+    // Mechabellum redesign: the random 5-offer shop is retired. All spending is
+    // deterministic — units from the roster panel, per-unit techs, squad level-ups.
+    // The one random decision per round is the reinforcement card pick (phase 5),
+    // which replaces this entirely. Returning [] keeps the offer plumbing alive
+    // for the transition without ever presenting slot-machine offers.
     _buildOffers(stats) {
-        const profiles = this.ownedUnitProfiles(stats);
-        // Units are NOT sold here — they're bought from the "Your Units" panel
-        // (buyUnlockedUnit). The shop offers only upgrades, abilities and Town Hall
-        // tier/economy upgrades.
-        const candidates = [];
-        const ownedBuildings = new Set(this.game.hasService?.('getOwnedBuildingIds')
-            ? this.call.getOwnedBuildingIds(stats.playerId) : []);
-        const ownedUpgrades = new Set(stats.ownedUpgrades || []);
-        for (const [id, def] of Object.entries(this.collections.upgrades || {})) {
-            if (!def.perUnitType) continue;
-            if (ownedUpgrades.has(id)) continue;                  // one-time: already bought
-            // Upgrades are provided by buildings: require the owning building(s) to be present.
-            const reqB = def.requiresBuildings || [];
-            if (reqB.length && !reqB.every(b => ownedBuildings.has(b))) continue;
-            // Tech-tree gating: an upgrade only enters the pool once its prerequisite
-            // node(s) are owned (see upgradeTrees collection / _treeUnlocked).
-            if (!this._treeUnlocked(stats, id)) continue;
-            if (this.isEligible(profiles, def.requirements)) {
-                candidates.push({ kind: 'upgrade', id, weight: 1 });
-            }
-        }
-        for (const [id, def] of Object.entries(this.collections.shopAbilities || {})) {
-            if (this.isEligible(profiles, def.requirements)) {
-                candidates.push({ kind: 'ability', id, weight: 1 });
-            }
-        }
-        // Economy upgrades (Town Hall tree): not per-unit and not unit-gated — every
-        // player always has a Town Hall, so they're offered once their tree prereqs
-        // are met and they aren't already owned. Bought via the normal buyOffer path.
-        for (const [id, def] of Object.entries(this.collections.upgrades || {})) {
-            if (!def.economy) continue;
-            if (ownedUpgrades.has(id)) continue;
-            if (!this._treeUnlocked(stats, id)) continue;
-            candidates.push({ kind: 'upgrade', id, weight: 1 });
-        }
-        // Buildings are NOT sold in the regular shop — they come from the starting pick
-        // and the round-5 milestone (AutobattlerRoundSystem). Town Hall tier upgrades stay
-        // here, since that's how T2/T3 unit unlocks are reached.
-        const upId = this._townhallUpgradeId(stats);
-        if (upId) candidates.push({ kind: 'townhall_upgrade', id: upId, weight: 2 });
-        return this._sampleOffers(candidates, ArmyShopSystem.OFFER_COUNT);
+        return [];
     }
 
     // upgradeId -> [prerequisite upgradeIds], built once from the upgradeTrees collection.
@@ -516,27 +1085,19 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         return this._makeUnitOffer(id);
     }
 
-    // Units offered in the shop, gated by BUILDINGS:
-    //   • ALL units require a building matching one of the unit's archetypes
-    //     (Barracks=str / Hunting Lodge=dex / Mage Tower=int). Dual-archetype units need
-    //     ANY one matching building. With no building owned, no units are offered.
-    //   • Tier-1 needs only the matching building.
-    //   • Tier-2 / Tier-3 additionally require the Town Hall tier (Keep→T2, Castle→T3).
-    // (Tier-2 forms are still also reachable via leveling-up a Tier-1 unit; this just makes
-    //  them purchasable once the player has built up to them.)
+    // Units the player can buy (Mechabellum-style — no buildings):
+    //   • Every tier-1 unit is available from round 1.
+    //   • Tier-2 / tier-3 units require an explicit unlock recorded on
+    //     stats.tierUnlocks (granted by unit techs / reinforcement cards in
+    //     later phases).
     _candidateUnitIds(stats) {
-        const pid = stats.playerId;
-        const thLevel = this.game.hasService?.('townhallLevel') ? this.call.townhallLevel(pid) : 1;
-        const ownedArch = new Set(this.game.hasService?.('getOwnedBuildingArchetypes')
-            ? this.call.getOwnedBuildingArchetypes(pid) : []);
+        const unlocked = new Set(stats.tierUnlocks || []);
         const units = this.collections.units || {};
         const out = [];
         for (const id of Object.keys(units)) {
             const tier = ArmyShopSystem.unitTier(id);
             if (tier == null) continue;
-            if (tier > 1 && thLevel < tier) continue; // higher tiers also need the Town Hall tier
-            const arch = ArmyShopSystem.unitArchetypes(id);
-            if (arch.length && arch.some(a => ownedArch.has(a))) out.push(id);
+            if (tier === 1 || unlocked.has(id)) out.push(id);
         }
         return out;
     }
@@ -573,8 +1134,8 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         this._applyUpgradeToLiveUnits(stats, upgradeId);
     }
 
-    // Apply ALL of a player's owned upgrades to one freshly-spawned entity.
-    // Called by HeroRosterSystem at spawn (entity is "clean", no upgrades applied yet).
+    // Apply ALL of a player's owned upgrades + unit techs to one freshly-spawned
+    // entity. Called by HeroRosterSystem at spawn (entity is "clean").
     applyArmyUpgrades(entityId) {
         const info = this.game.getComponent(entityId, 'heroRosterInfo');
         if (!info) return;
@@ -589,6 +1150,15 @@ class ArmyShopSystem extends GUTS.BaseSystem {
             if (!up?.statModifiers) continue;
             if (!this.matchesCombo(profile, up.target || {})) continue;
             this._applyStatMods(combat, health, up.statModifiers);
+        }
+        // Unit techs: stat techs for this unit's type re-apply on every respawn.
+        const spawnType = this._resolveSpawnType(entry);
+        const ownedTechs = new Set(stats.unitTechs?.[spawnType] || []);
+        for (const t of (this.collections.unitTechs?.[spawnType]?.techs || [])) {
+            if (!ownedTechs.has(t.id)) continue;
+            if (t.statModifiers) this._applyStatMods(combat, health, t.statModifiers);
+            if (t.grantAntiAir) info.canTargetAir = true;
+            if (t.grantBuff) this._grantPermanentBuff(entityId, t.grantBuff);
         }
     }
 
@@ -662,8 +1232,17 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         const entry = stats?.heroRoster?.[info.rosterIndex];
         if (!entry) return;
         const profile = this._profileForEntry(entry);
-        const def = this.collections.units?.[this._resolveSpawnType(entry)] || {};
-        const ids = new Set(def.abilities || []);
+        const spawnType = this._resolveSpawnType(entry);
+
+        // Predefined unit abilities require INVESTMENT: only ability techs the
+        // player has bought for this unit type are active. (UnitCreationSystem
+        // grants def abilities at spawn; this rebuild replaces the whole list,
+        // so an unteched unit ends up with none — by design.)
+        const ids = new Set();
+        const ownedTechs = new Set(stats.unitTechs?.[spawnType] || []);
+        for (const t of (this.collections.unitTechs?.[spawnType]?.techs || [])) {
+            if (t.unlockAbility && ownedTechs.has(t.id)) ids.add(t.unlockAbility);
+        }
 
         for (const owned of (stats.ownedAbilities || [])) {
             const sdef = this.collections.shopAbilities?.[owned.abilityId];
@@ -676,7 +1255,8 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         }
         for (const a of (entry.grantedAbilities || [])) ids.add(a);
 
-        if (ids.size > 0 && this.game.hasService?.('addAbilitiesToUnit')) {
+        // Always call, even with an empty list — it clears the free def abilities.
+        if (this.game.hasService?.('addAbilitiesToUnit')) {
             this.call.addAbilitiesToUnit(entityId,
                 [...ids].map(id => ({ id, itemLevel: profile.level })));
         }
@@ -763,15 +1343,22 @@ class ArmyShopSystem extends GUTS.BaseSystem {
                 return !!this.buyOffer(pid, idx)?.success;
             };
 
+
             let guard = 0, progress = true;
             while (progress && guard++ < 80) {
                 progress = false;
                 // Army first: one of each affordable unit type this pass.
                 for (const id of this._candidateUnitIds(stats)) {
-                    const cost = ArmyShopSystem.shopCost(this.collections.units?.[id]?.value);
+                    const cost = ArmyShopSystem.unitPrice(id, this.collections.units?.[id]);
                     if ((stats.gold || 0) < cost) continue;
                     if (this.buyUnlockedUnit(pid, id)?.success) progress = true;
                 }
+                // Then one affordable unit tech for a fielded type.
+                if (this._aiBuyOneTech(stats, pid)) progress = true;
+                // Then a squad level-up with a comfortable purse.
+                if (this._aiBuyOneLevel(stats, pid)) progress = true;
+                // Then a tier unlock when there's spare gold to also buy it.
+                if (this._aiBuyOneUnlock(stats, pid)) progress = true;
                 // Then one affordable shop offer with whatever's left.
                 if (buyOneOffer()) progress = true;
             }

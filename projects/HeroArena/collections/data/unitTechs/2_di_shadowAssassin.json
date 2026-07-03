@@ -1,0 +1,27 @@
+{
+ "unit": "2_di_shadowAssassin",
+ "techs": [
+  {
+   "id": "sha_backstab",
+   "title": "Backstab",
+   "cost": 15,
+   "description": "Unlocks Backstab: massive damage from behind",
+   "unlockAbility": "BackstabAbility"
+  },
+  {
+   "id": "sha_strike",
+   "title": "Shadow Strike",
+   "cost": 20,
+   "description": "Unlocks Shadow Strike: teleport execution",
+   "unlockAbility": "ShadowStrikeAbility"
+  },
+  {
+   "id": "sha_blink",
+   "title": "Shadowstep",
+   "cost": 13,
+   "description": "Unlocks Blink",
+   "unlockAbility": "BlinkAbility"
+  }
+ ],
+ "fileName": "2_di_shadowAssassin"
+}

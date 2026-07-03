@@ -1,0 +1,12 @@
+{
+ "kind": "template",
+ "title": "Skeleton Tide",
+ "minDepth": 1,
+ "formation": "wide",
+ "weights": {
+  "0_skeleton": 4,
+  "1_sd_soldier": 2,
+  "1_s_barbarian": 1
+ },
+ "fileName": "swarm"
+}

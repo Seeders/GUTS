@@ -1,18 +1,18 @@
 {
-  "title": "Skeleton",
+  "title": "Skeleton Horde",
   "strength": 2,
   "dexterity": 0,
   "intelligence": 0,
   "weaponType": "sword",
   "size": 25,
   "height": 50,
-  "value": -1,
-  "hp": 50,
-  "speed": 65,
-  "damage": 10,
-  "attackSpeed": 1,
+  "value": 35,
+  "hp": 35,
+  "speed": 50,
+  "damage": 6,
+  "attackSpeed": 1.2,
   "element": "physical",
-  "armor": 5,
+  "armor": 0,
   "render": {
     "animations": {
       "idle": [
@@ -137,11 +137,12 @@
     ]
   },
   "buyable": false,
-  "squadWidth": 1,
+  "squadWidth": 6,
   "squadHeight": 1,
-  "placementGridWidth": 1,
+  "placementGridWidth": 6,
   "placementGridHeight": 1,
   "spriteAnimationSet": "skeleton",
   "requiresUnits": [],
-  "requiresBuildings": []
+  "requiresBuildings": [],
+  "visionRange": 250
 }

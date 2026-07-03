@@ -6,13 +6,13 @@
   "weaponType": "none",
   "size": 25,
   "height": 100,
-  "value": 110,
-  "hp": 420,
+  "value": 105,
+  "hp": 940,
   "speed": 28,
-  "damage": 38,
+  "damage": 62,
   "attackSpeed": 0.8,
   "element": "physical",
-  "armor": 10,
+  "armor": 18,
   "fireResistance": 0.1,
   "coldResistance": 0.1,
   "lightningResistance": 0.1,
@@ -113,5 +113,6 @@
   "requiresUnits": [],
   "requiresBuildings": [
     "keep"
-  ]
+  ],
+  "visionRange": 250
 }

@@ -1,0 +1,31 @@
+{
+ "unit": "0_golemStone",
+ "techs": [
+  {
+   "id": "gst_taunt",
+   "title": "Immovable Object",
+   "cost": 17,
+   "description": "Unlocks Taunt: enemies must face the golem",
+   "unlockAbility": "TauntAbility"
+  },
+  {
+   "id": "gst_ironskin",
+   "title": "Iron Skin",
+   "cost": 17,
+   "description": "Unlocks Iron Skin: harden against a burst",
+   "unlockAbility": "IronSkinAbility"
+  },
+  {
+   "id": "gst_monolith",
+   "title": "Monolith",
+   "cost": 16,
+   "description": "+50% max HP",
+   "statModifiers": {
+    "maxHP": {
+     "pct": 0.5
+    }
+   }
+  }
+ ],
+ "fileName": "0_golemStone"
+}
