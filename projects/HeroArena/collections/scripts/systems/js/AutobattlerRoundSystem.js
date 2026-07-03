@@ -373,6 +373,57 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
         for (const team of teams) {
             this._issueBattleOrders(team);
         }
+        this._nextRetargetAt = (this.game.state.now || 0) + AutobattlerRoundSystem.RETARGET_INTERVAL;
+    }
+
+    // Mechabellum target flow: units never stop hunting. Every couple of
+    // seconds each squad's attack-move is re-aimed at the closest LIVING
+    // enemy (unit or building) — so a squad that razes a tower rolls on to
+    // the next nearest fight instead of idling at its old order point.
+    // Engaged units are unaffected (the order tree yields to combat).
+    static RETARGET_INTERVAL = 2;
+
+    update() {
+        if (!this.game.isServer && !this.game.state?.isLocalGame) return;
+        if (this.game.state.phase !== this.enums.gamePhase.battle) return;
+        const now = this.game.state.now || 0;
+        if (now < (this._nextRetargetAt || 0)) return;
+        this._nextRetargetAt = now + AutobattlerRoundSystem.RETARGET_INTERVAL;
+
+        for (const team of [this.enums.team.left, this.enums.team.right]) {
+            const targets = this._livingEnemyPositions(team);
+            if (targets.length === 0) continue;
+            for (const s of this._movableSquadsForTeam(team)) {
+                const anchor = s.pos;
+                let best = null, bestD = Infinity;
+                for (const t of targets) {
+                    const d = (t.x - anchor.x) ** 2 + (t.z - anchor.z) ** 2;
+                    if (d < bestD) { bestD = d; best = t; }
+                }
+                if (best) {
+                    this.call.applySquadTargetPosition(s.placementId,
+                        { x: best.x, z: best.z }, { isMoveOrder: true }, now);
+                }
+            }
+        }
+    }
+
+    // Positions of every living enemy of `team`: army units AND buildings.
+    _livingEnemyPositions(team) {
+        const out = [];
+        for (const eid of this.game.getEntitiesWith('team', 'health')) {
+            if (this.game.entityAlive?.[eid] !== 1) continue;
+            const t = this.game.getComponent(eid, 'team');
+            if (!t || t.team === team) continue;
+            if (t.team !== this.enums.team.left && t.team !== this.enums.team.right) continue;
+            const hp = this.game.getComponent(eid, 'health');
+            if (!hp || hp.current <= 0) continue;
+            const ds = this.game.getComponent(eid, 'deathState');
+            if (ds && ds.state !== this.enums.deathState.alive) continue;
+            const pos = this.game.getComponent(eid, 'transform')?.position;
+            if (pos) out.push({ x: pos.x, z: pos.z });
+        }
+        return out;
     }
 
     _issueBattleOrders(team) {
