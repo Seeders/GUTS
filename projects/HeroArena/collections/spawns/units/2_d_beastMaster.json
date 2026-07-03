@@ -169,5 +169,6 @@
   "requiresUnits": [],
   "requiresBuildings": [],
   "spriteAnimationSet": "beastmaster2d",
-  "visionRange": 300
+  "visionRange": 300,
+  "canTargetAir": true
 }

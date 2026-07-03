@@ -152,5 +152,6 @@
   "requiresUnits": [],
   "requiresBuildings": [],
   "spriteAnimationSet": "enchanter2i",
-  "visionRange": 270
+  "visionRange": 270,
+  "canTargetAir": true
 }

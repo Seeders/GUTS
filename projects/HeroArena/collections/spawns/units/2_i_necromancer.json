@@ -172,5 +172,6 @@
   "requiresUnits": [],
   "requiresBuildings": [],
   "spriteAnimationSet": "necromancer2i",
-  "visionRange": 250
+  "visionRange": 250,
+  "canTargetAir": true
 }

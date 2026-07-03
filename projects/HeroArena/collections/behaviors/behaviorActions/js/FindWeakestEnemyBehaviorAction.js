@@ -34,8 +34,15 @@ class FindWeakestEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
         let bestMetric = Infinity;
         let bestDistSq = 0;
         let bestPercent = 0;
+        const myDef = game.getUnitTypeDef(game.getComponent(entityId, 'unitType'));
+        const canHitAir = !!(myDef?.canTargetAir || myDef?.isFlying);
         if (enemyIds) {
             for (const eid of enemyIds) {
+                // Air rule (Mechabellum): only air-capable attackers see flyers.
+                if (!canHitAir) {
+                    const targetDef = game.getUnitTypeDef(game.getComponent(eid, 'unitType'));
+                    if (targetDef?.isFlying) continue;
+                }
                 const health = game.getComponent(eid, 'health');
                 if (!health || health.current <= 0) continue;
                 const max = health.max || health.current;

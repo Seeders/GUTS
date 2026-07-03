@@ -182,5 +182,6 @@
   "requiresUnits": [],
   "requiresBuildings": [],
   "spriteAnimationSet": "elementalist2i",
-  "visionRange": 280
+  "visionRange": 280,
+  "canTargetAir": true
 }

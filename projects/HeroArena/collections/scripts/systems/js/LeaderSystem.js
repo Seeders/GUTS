@@ -38,7 +38,9 @@ class LeaderSystem extends GUTS.BaseSystem {
         { id: 'sniper',      label: 'Marksman Specialist',     archetype: 'dex',
           bonus: 'Start with a free level-3 Crossbowman' },
         { id: 'golem',       label: 'Golem Specialist',        archetype: 'str',
-          bonus: 'A free level-2 Stone Golem arrives on round 4' }
+          bonus: 'A free level-2 Stone Golem arrives on round 4' },
+        { id: 'aerial',      label: 'Aerial Specialist',       archetype: 'int',
+          bonus: 'Flying units unlock for free and gain +15 range' }
     ];
 
     constructor(game) {
@@ -83,6 +85,12 @@ class LeaderSystem extends GUTS.BaseSystem {
         if (def.speedPct) {
             const vel = this.game.getComponent(entityId, 'velocity');
             if (vel?.maxSpeed) vel.maxSpeed *= 1 + def.speedPct;
+        }
+        // Aerial Specialist: flyers shoot a little farther.
+        if (def.id === 'aerial') {
+            const unitDef = this.game.getUnitTypeDef(this.game.getComponent(entityId, 'unitType'));
+            const combat = this.game.getComponent(entityId, 'combat');
+            if (unitDef?.isFlying && combat?.range) combat.range += 15;
         }
     }
 

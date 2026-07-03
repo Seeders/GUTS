@@ -1,18 +1,18 @@
 {
-  "title": "Apprentice",
+  "title": "Fairy",
   "strength": 0,
   "dexterity": 0,
   "intelligence": 3,
   "weaponType": "staff",
   "size": 25,
-  "height": 50,
-  "value": 35,
-  "hp": 65,
-  "speed": 55,
-  "damage": 12,
-  "attackSpeed": 0.8,
-  "range": 180,
-  "projectile": "fireball",
+  "height": 60,
+  "value": 70,
+  "hp": 100,
+  "speed": 60,
+  "damage": 16,
+  "attackSpeed": 1.0,
+  "range": 160,
+  "projectile": "bolt",
   "element": "fire",
   "armor": 0,
   "fireResistance": 0.5,
@@ -45,7 +45,7 @@
                   "x": 1
                 },
                 "id": 0,
-                "animation": "idle_short"
+                "animation": "hovering"
               }
             ]
           }
@@ -62,7 +62,7 @@
                   "x": 1
                 },
                 "id": 0,
-                "animation": "walk_bow"
+                "animation": "swimming"
               }
             ]
           }
@@ -80,13 +80,13 @@
                 "color": "#FFFFFF",
                 "metalness": "0",
                 "roughness": "1",
-                "scale": {
+                "position": {
                   "z": 1,
-                  "y": 1,
+                  "y": 100,
                   "x": 1
                 },
                 "id": 0,
-                "animation": "1h_spell_throw"
+                "animation": "mutant_swipe"
               }
             ]
           }
@@ -137,30 +137,12 @@
               "y": 1,
               "x": 1
             },
-            "model": "apprentice"
+            "model": "elf_female"
           }
         ]
       }
     },
-    "equipment": [
-      {
-        "slot": "mainHand",
-        "item": "woodStaff",
-        "attachmentData": {
-          "bone": "RightHand",
-          "offset": {
-            "x": 0,
-            "y": 10,
-            "z": 0
-          },
-          "rotation": {
-            "x": 0,
-            "y": 20,
-            "z": 0
-          }
-        }
-      }
-    ]
+    "equipment": []
   },
   "buyable": true,
   "specUnits": [
@@ -168,16 +150,17 @@
     "2_i_enchanter",
     "2_i_necromancer"
   ],
-  "squadWidth": 2,
+  "squadWidth": 3,
   "squadHeight": 1,
-  "placementGridWidth": 2,
+  "placementGridWidth": 3,
   "placementGridHeight": 1,
   "abilities": [],
-  "icon": "unit_apprentice",
-  "visionRange": 280,
+  "icon": "shock",
+  "visionRange": 260,
   "supplyCost": 2,
-  "spriteAnimationSet": "apprentice",
+  "spriteAnimationSet": "fairy",
   "requiresUnits": [],
   "requiresBuildings": [],
+  "isFlying": true,
   "canTargetAir": true
 }

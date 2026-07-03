@@ -34,6 +34,16 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
 
         const unitTypeComp = game.getComponent(entityId, 'unitType');
         const unitDef = game.getUnitTypeDef( unitTypeComp);
+
+        // Air rule: a grounded melee attacker can never engage a flyer, even
+        // if another node handed it one — drop the target and report failure.
+        if (targetId != null) {
+            const targetDefAir = game.getUnitTypeDef(game.getComponent(targetId, 'unitType'));
+            if (targetDefAir?.isFlying && !unitDef?.canTargetAir && !unitDef?.isFlying) {
+                shared[targetKey] = null;
+                return this.failure();
+            }
+        }
         const teamComp = game.getComponent(entityId, 'team');
         const reverseEnums = game.getReverseEnums();
         const teamName = reverseEnums.team?.[teamComp?.team] || teamComp?.team;

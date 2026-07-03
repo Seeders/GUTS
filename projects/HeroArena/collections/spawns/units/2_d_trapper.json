@@ -153,5 +153,6 @@
   "requiresUnits": [],
   "requiresBuildings": [],
   "spriteAnimationSet": "trapper2d",
-  "visionRange": 300
+  "visionRange": 300,
+  "canTargetAir": true
 }

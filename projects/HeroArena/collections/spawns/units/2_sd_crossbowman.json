@@ -129,5 +129,6 @@
   "requiresUnits": [],
   "requiresBuildings": [],
   "spriteAnimationSet": "crossbowman2sd",
-  "visionRange": 340
+  "visionRange": 340,
+  "canTargetAir": true
 }

@@ -40,9 +40,16 @@ class FindNearestEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
         let nearestDistSq = Infinity;
         const myDef = game.getUnitTypeDef(game.getComponent(entityId, 'unitType'));
         if (myPos && enemyIds) {
+            const canHitAir = !!(myDef?.canTargetAir || myDef?.isFlying);
             for (const eid of enemyIds) {
                 const pos = game.getComponent(eid, 'transform')?.position;
                 if (!pos) continue;
+                // Air rule (Mechabellum): flying units can only be attacked by
+                // units that can shoot upward — ground melee walks on past.
+                if (!canHitAir) {
+                    const targetDef = game.getUnitTypeDef(game.getComponent(eid, 'unitType'));
+                    if (targetDef?.isFlying) continue;
+                }
                 // Terrain LOS: enemies behind cliffs are in fog — not targetable.
                 if (!this.call.hasLineOfSight(
                     { x: myPos.x, z: myPos.z }, { x: pos.x, z: pos.z }, myDef, entityId)) {

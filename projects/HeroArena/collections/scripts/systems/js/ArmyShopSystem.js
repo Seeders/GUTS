@@ -64,17 +64,20 @@ class ArmyShopSystem extends GUTS.BaseSystem {
 
     // ─── Unit tiers (Mechabellum model) ─────────────────────────────────────────
     // Units never offered in the shop (workers, summons, transforms).
-    static UNIT_EXCLUDE = new Set(['peasant', '4_archmage', 'sentry', 'dragon_red_flying', '0_skeleton']);
+    static UNIT_EXCLUDE = new Set(['peasant', '4_archmage', 'sentry', '0_skeleton']);
+    // Off-prefix tier-2s (air chaff lives here).
+    static T2_UNIT_SET = new Set(['fairy']);
     // Tier-3 "heavies": strong specialists above the tier-2 roster.
     static T3_UNIT_SET = new Set(['0_golemStone', '0_golemFire', '0_golemIce', 'ballista']);
     // Tier-4 "giants": the Mechabellum Fortress/Overlord analogues.
-    static T4_UNIT_SET = new Set(['dragon_red', '4_ancientTreant']);
+    static T4_UNIT_SET = new Set(['dragon_red', '4_ancientTreant', 'dragon_red_flying']);
 
     // Tier of a unit id: 1-4, or null (= not shop-offerable).
     static unitTier(id) {
         if (ArmyShopSystem.UNIT_EXCLUDE.has(id)) return null;
         if (ArmyShopSystem.T4_UNIT_SET.has(id)) return 4;
         if (ArmyShopSystem.T3_UNIT_SET.has(id)) return 3;
+        if (ArmyShopSystem.T2_UNIT_SET.has(id)) return 2;
         if (/^1_/.test(id)) return 1;
         if (/^2_/.test(id)) return 2;
         return null;
@@ -582,7 +585,10 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         if ((stats.tierUnlocks || []).includes(unitId)) return { success: false, reason: 'already_unlocked' };
         let cost = ArmyShopSystem.TIER_UNLOCK_COST[tier] || 0;
         // Giant Specialist: heavies and giants unlock for free
-        if (tier >= 3 && this.call.getLeaderDef?.(stats.leaderId)?.id === 'giant') cost = 0;
+        const leaderId = this.call.getLeaderDef?.(stats.leaderId)?.id;
+        if (tier >= 3 && leaderId === 'giant') cost = 0;
+        // Aerial Specialist: flying units unlock for free
+        if (leaderId === 'aerial' && this.collections.units?.[unitId]?.isFlying) cost = 0;
         if ((stats.gold || 0) < cost) return { success: false, reason: 'insufficient_gold' };
         stats.gold -= cost;
         if (!Array.isArray(stats.tierUnlocks)) stats.tierUnlocks = [];

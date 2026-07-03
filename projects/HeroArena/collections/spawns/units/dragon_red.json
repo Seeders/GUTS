@@ -149,5 +149,6 @@
   ],
   "icon": "dragon",
   "projectile": "fireball",
-  "visionRange": 250
+  "visionRange": 250,
+  "canTargetAir": true
 }

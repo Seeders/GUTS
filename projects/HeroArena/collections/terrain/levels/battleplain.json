@@ -6769,6 +6769,29 @@
             }
           }
         }
+      },
+      {
+        "spawnType": "unit",
+        "type": "fairy",
+        "components": {
+          "transform": {
+            "position": {
+              "x": -212.20468139648438,
+              "y": 30,
+              "z": -16.897911071777344
+            },
+            "rotation": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "scale": {
+              "x": 1,
+              "y": 1,
+              "z": 1
+            }
+          }
+        }
       }
     ],
     "cliffs": []

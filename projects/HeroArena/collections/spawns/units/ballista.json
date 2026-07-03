@@ -121,5 +121,6 @@
   ],
   "projectile": "ballista_bolt",
   "range": 320,
-  "visionRange": 420
+  "visionRange": 420,
+  "canTargetAir": true
 }

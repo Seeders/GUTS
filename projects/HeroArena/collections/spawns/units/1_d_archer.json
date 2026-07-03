@@ -178,5 +178,6 @@
   "supplyCost": 2,
   "spriteAnimationSet": "archer",
   "requiresUnits": [],
-  "requiresBuildings": []
+  "requiresBuildings": [],
+  "canTargetAir": true
 }

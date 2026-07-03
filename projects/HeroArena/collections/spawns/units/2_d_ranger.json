@@ -150,5 +150,6 @@
   "requiresUnits": [],
   "requiresBuildings": [],
   "spriteAnimationSet": "ranger2d",
-  "visionRange": 320
+  "visionRange": 320,
+  "canTargetAir": true
 }

@@ -180,5 +180,6 @@
   "requiresUnits": [],
   "requiresBuildings": [
     "mageTower"
-  ]
+  ],
+  "canTargetAir": true
 }

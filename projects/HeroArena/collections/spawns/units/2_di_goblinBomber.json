@@ -111,5 +111,6 @@
   "requiresUnits": [],
   "requiresBuildings": [],
   "spriteAnimationSet": "goblinbomber2di",
-  "visionRange": 250
+  "visionRange": 250,
+  "canTargetAir": true
 }
