@@ -19,7 +19,10 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
         this.game.serverBattlePhaseSystem = this;
 
         // Battle configuration
-        this.battleDuration = 30; // 30 seconds max
+        // Mechabellum battle phase: 60-90s cap; fights usually resolve by wipe
+        // well before it. If the timer expires with both armies standing, BOTH
+        // commanders take the enemy survivors' damage (checkForBattleEnd).
+        this.battleDuration = 75;
         // When one army is wiped, the survivors siege the enemy buildings. Extend
         // the round if needed so they always get at least this long to do it.
         this.siegeWindow = 20;
