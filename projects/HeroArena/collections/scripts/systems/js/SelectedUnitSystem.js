@@ -1097,15 +1097,28 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
         const pos = transform?.position;
         if (!pos) return;
 
-        // Determine radius based on unit type
-        const radius = this.getUnitRadius(entityId);
-
-        // Create ring geometry (donut shape)
-        const geometry = new THREE.RingGeometry(
-            radius - this.CIRCLE_THICKNESS / 2,
-            radius + this.CIRCLE_THICKNESS / 2,
-            this.CIRCLE_SEGMENTS
-        );
+        // Square outline the size of a deployment grid cell (49u tiles) so
+        // selection visualizes exactly which cell the unit occupies.
+        const CELL = 49;
+        const half = CELL / 2 - 1;
+        const t = this.CIRCLE_THICKNESS;
+        const geometry = new THREE.ShapeGeometry((() => {
+            const shape = new THREE.Shape();
+            shape.moveTo(-half, -half);
+            shape.lineTo(half, -half);
+            shape.lineTo(half, half);
+            shape.lineTo(-half, half);
+            shape.closePath();
+            const hole = new THREE.Path();
+            const ih = half - t;
+            hole.moveTo(-ih, -ih);
+            hole.lineTo(ih, -ih);
+            hole.lineTo(ih, ih);
+            hole.lineTo(-ih, ih);
+            hole.closePath();
+            shape.holes.push(hole);
+            return shape;
+        })());
 
         // Create material
         const material = new THREE.MeshBasicMaterial({
@@ -1133,7 +1146,6 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
             group: group,
             geometry: geometry,
             material: material,
-            radius: radius,
             lastPosition: { x: pos.x, y: pos.y, z: pos.z },
             baseOpacity: 0.8
         });
@@ -1150,8 +1162,12 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
                 continue;
             }
 
-            // Update position
-            circleData.group.position.set(pos.x, pos.y + this.CIRCLE_OFFSET_Y, pos.z);
+            // Update position — snapped to the deployment cell the unit occupies,
+            // so the square reads as GRID placement rather than a unit decal.
+            const CELL = 49;
+            const cx = Math.floor(pos.x / CELL) * CELL + CELL / 2;
+            const cz = Math.floor(pos.z / CELL) * CELL + CELL / 2;
+            circleData.group.position.set(cx, pos.y + this.CIRCLE_OFFSET_Y, cz);
         }
     }
     
