@@ -110,9 +110,10 @@ class BuildingSystem extends GUTS.BaseSystem {
         }
     }
 
-    // A command building fell mid-battle: its whole army loses heart — slowed,
-    // hitting softer, taking more damage — for a long stretch of the fight.
-    static MORALE_DEBUFF_DURATION = 20;
+    // A command building fell mid-battle: Mechabellum tower rules — the whole
+    // army hits for 10%, moves at half speed, and takes double damage for 9s;
+    // losing the second building EXTENDS the window by another 9s.
+    static MORALE_DEBUFF_DURATION = 9;
 
     onDestroyBuilding(destroyedEntityId) {
         if (!this._auth()) return;
@@ -135,19 +136,25 @@ class BuildingSystem extends GUTS.BaseSystem {
             if (info?.playerId !== owner.playerId) continue;
             const existing = this.game.getComponent(id, 'buff');
             if (existing && existing.buffType === buffType) {
-                existing.endTime = now + dur;
-                existing.appliedTime = now;
+                // Second building: durations ADD (Mechabellum), effects don't stack
+                existing.endTime = Math.max(existing.endTime, now) + dur;
             } else {
                 this.game.addComponent(id, 'buff', {
                     buffType, endTime: now + dur, appliedTime: now, stacks: 1
                 });
             }
-            this.game.schedulingSystem?.scheduleAction(() => {
+            const cleanup = () => {
                 const b = this.game.getComponent(id, 'buff');
-                if (b && b.buffType === buffType && this.game.state.now >= b.endTime) {
+                if (!b || b.buffType !== buffType) return;
+                if (this.game.state.now >= b.endTime) {
                     this.game.removeComponent(id, 'buff');
+                } else {
+                    // Extended by a second building loss — check again at the new end
+                    this.game.schedulingSystem?.scheduleAction(cleanup,
+                        b.endTime - this.game.state.now, id);
                 }
-            }, dur, id);
+            };
+            this.game.schedulingSystem?.scheduleAction(cleanup, dur, id);
         }
         this.call.broadcastToRoom?.(null, 'MORALE_BROKEN', { playerId: owner.playerId, buildingId: bid });
     }
