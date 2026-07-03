@@ -1094,3 +1094,10 @@
 .sq-techs { margin-top: 4px; }
 .sq-notechs { margin-top: 4px; font-size: 0.68rem; opacity: 0.5; font-style: italic; }
 .sq-multi { font-size: 0.72rem; color: #ffd97a; margin-bottom: 4px; }
+
+.sq-tech-btn {
+    width: 100%; margin-top: 7px; padding: 6px 0; font-size: 0.8rem;
+    background: rgba(120,160,255,0.12); border: 1px solid rgba(120,160,255,0.5);
+    border-radius: 5px; color: #cfe0ff; cursor: pointer; letter-spacing: 0.5px;
+}
+.sq-tech-btn:hover { background: rgba(120,160,255,0.3); color: #fff; }
