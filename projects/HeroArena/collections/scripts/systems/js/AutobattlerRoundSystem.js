@@ -379,9 +379,32 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
         const now = this.game.state.now;
         const enemyBase = this._enemyBasePos(team);
         if (!enemyBase) return;
+
+        // Enemy command buildings: each squad attack-moves at whichever one is
+        // closest to where it deployed — flank deployments assault the flank
+        // tower, center deployments push the nearer objective. Falls back to
+        // the enemy base position if no buildings stand.
+        const targets = [];
+        for (const eid of this.game.getEntitiesWith('buildingOwner')) {
+            if (this.game.entityAlive?.[eid] !== 1) continue;
+            const t = this.game.getComponent(eid, 'team');
+            if (!t || t.team === team) continue;
+            const hp = this.game.getComponent(eid, 'health');
+            if (!hp || hp.current <= 0) continue;
+            const pos = this.game.getComponent(eid, 'transform')?.position;
+            if (pos) targets.push({ x: pos.x, z: pos.z });
+        }
+        if (targets.length === 0) targets.push({ x: enemyBase.x, z: enemyBase.z });
+
         for (const s of this._movableSquadsForTeam(team)) {
+            const anchor = s.pos || enemyBase;   // squad centroid from _movableSquadsForTeam
+            let best = targets[0], bestD = Infinity;
+            for (const t of targets) {
+                const d = (t.x - anchor.x) ** 2 + (t.z - anchor.z) ** 2;
+                if (d < bestD) { bestD = d; best = t; }
+            }
             this.call.applySquadTargetPosition(s.placementId,
-                { x: enemyBase.x, z: enemyBase.z }, { isMoveOrder: true }, now);
+                { x: best.x, z: best.z }, { isMoveOrder: true }, now);
         }
     }
 
