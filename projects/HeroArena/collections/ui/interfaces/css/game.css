@@ -327,7 +327,7 @@
 .selection-hint { margin-top: 9px; font-size: 12px; color: var(--sk-bone-dim); line-height: 1.45; }
 .selection-hint.hidden { display: none; }
 
-.unlocked-units-cards { display: grid; grid-template-columns: repeat(auto-fill, 56px); gap: 6px; overflow: visible; }
+.unlocked-units-cards { display: grid; grid-template-columns: repeat(8, 44px); gap: 5px; overflow: visible; }
 .unlocked-unit-card {
     display: flex;
     justify-content: space-between;
@@ -1013,10 +1013,10 @@
 .locked-unit-card:hover { opacity: 1; border-color: #ffd97a !important; }
 
 /* ── Unit dock (Mechabellum recruit bar) ─────────────────────────────── */
-#unlockedUnitsPanel { max-height: none; overflow: visible; width: auto; max-width: 420px; }
+#unlockedUnitsPanel { max-height: none; overflow: visible; width: 404px; }
 
 .ud-card {
-    position: relative; width: 56px; height: 56px; border-radius: 6px;
+    position: relative; width: 44px; height: 44px; border-radius: 6px;
     background: #10151f; border: 2px solid #3a4152; cursor: pointer;
     display: flex; align-items: center; justify-content: center;
     transition: transform 0.08s, border-color 0.08s;
@@ -1027,7 +1027,7 @@
 .ud-card.tier-4 { border-color: #b0803a; }
 .ud-card.ud-locked { opacity: 0.55; border-style: dashed; }
 .ud-card.ud-poor { filter: grayscale(0.7); }
-.ud-img { width: 44px; height: 44px; object-fit: contain; pointer-events: none; }
+.ud-img { width: 34px; height: 34px; object-fit: contain; pointer-events: none; }
 .ud-fallback { font-size: 1.6rem; }
 .ud-lock { position: absolute; top: 2px; left: 3px; font-size: 0.7rem; }
 .ud-price {
