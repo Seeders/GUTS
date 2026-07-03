@@ -841,6 +841,7 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
         
         // Update all active selection circles
         this.updateSelectionCircles();
+        this.updatePromotionIndicators();
         
         // Clean up circles for units that no longer exist or are deselected
         this.cleanupRemovedCircles();
@@ -1152,6 +1153,87 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
         
     }
     
+    // ─── Promotion indicators ("this squad can level up") ──────────────────────
+    // A gold ⬆ floats over one member of every OWN squad whose XP bar is full,
+    // during prep — visible without selecting anything.
+
+    _promotionSpriteTexture() {
+        if (this._promoTexture) return this._promoTexture;
+        const c = document.createElement('canvas');
+        c.width = 64; c.height = 64;
+        const ctx = c.getContext('2d');
+        ctx.beginPath();
+        ctx.arc(32, 32, 28, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(20, 24, 34, 0.85)';
+        ctx.fill();
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = '#f0c860';
+        ctx.stroke();
+        ctx.fillStyle = '#f0c860';
+        ctx.font = 'bold 38px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('⬆', 32, 35);
+        this._promoTexture = new THREE.CanvasTexture(c);
+        return this._promoTexture;
+    }
+
+    updatePromotionIndicators() {
+        if (!this._promoSprites) this._promoSprites = new Map();   // rosterIndex → sprite
+        const scene = this.call.getWorldScene();
+        const enums = this.game.getEnums();
+        const inPrep = this.game.state.phase === enums.gamePhase.placement;
+        const hx = this.game.heroExperienceSystem;
+        const wanted = new Map();   // key → position
+
+        if (inPrep && scene && hx) {
+            const myId = this.game.clientNetworkManager?.numericPlayerId ?? 0;
+            let stats = null;
+            for (const eid of this.game.getEntitiesWith('playerStats')) {
+                const st = this.game.getComponent(eid, 'playerStats');
+                if (st?.playerId === myId) { stats = st; break; }
+            }
+            if (stats) {
+                const seen = new Set();
+                for (const eid of this.game.getEntitiesWith('heroRosterInfo')) {
+                    if (this.game.entityAlive?.[eid] !== 1) continue;
+                    const info = this.game.getComponent(eid, 'heroRosterInfo');
+                    if (info?.playerId !== myId || seen.has(info.rosterIndex)) continue;
+                    seen.add(info.rosterIndex);
+                    const entry = stats.heroRoster?.[info.rosterIndex];
+                    if (!entry || !hx.isLevelReady?.(entry)) continue;
+                    const pos = this.game.getComponent(eid, 'transform')?.position;
+                    if (pos) wanted.set(info.rosterIndex, pos);
+                }
+            }
+        }
+
+        // Reconcile sprites with the wanted set.
+        for (const [key, sprite] of this._promoSprites) {
+            if (!wanted.has(key)) {
+                sprite.parent?.remove(sprite);
+                this._promoSprites.delete(key);
+            }
+        }
+        for (const [key, pos] of wanted) {
+            let sprite = this._promoSprites.get(key);
+            if (!sprite) {
+                sprite = new THREE.Sprite(new THREE.SpriteMaterial({
+                    map: this._promotionSpriteTexture(),
+                    transparent: true,
+                    depthTest: false
+                }));
+                sprite.scale.set(26, 26, 1);
+                sprite.renderOrder = 9999;
+                scene.add(sprite);
+                this._promoSprites.set(key, sprite);
+            }
+            // Gentle bob so it reads as "actionable".
+            const bob = Math.sin((this.game.state.now || 0) * 3 + key) * 3;
+            sprite.position.set(pos.x, pos.y + 105 + bob, pos.z);
+        }
+    }
+
     updateSelectionCircles() {
         for (const [entityId, circleData] of this.selectionCircles) {
             // Check if entity still exists
