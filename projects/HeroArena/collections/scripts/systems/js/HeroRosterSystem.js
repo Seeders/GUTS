@@ -192,7 +192,7 @@ class HeroRosterSystem extends GUTS.BaseSystem {
         // centroid for new buys (either way, members form up around it facing
         // the enemy — never the world-aligned single file spawnSquad produces).
         let anchor = rosterEntry.lastPosition;
-        if (!anchor && u.squadUnits.length > 1) {
+        if (!anchor) {
             let cx = 0, cz = 0, n = 0;
             for (const id of u.squadUnits) {
                 const p = this.game.getComponent(id, 'transform')?.position;
@@ -200,6 +200,16 @@ class HeroRosterSystem extends GUTS.BaseSystem {
                 cx += p.x; cz += p.z; n++;
             }
             if (n > 0) anchor = { x: cx / n, z: cz / n };
+        }
+        // Snap the anchor to a deployment cell center — member offsets are
+        // whole cells, so every spawned unit lands exactly on the grid and
+        // its selection square is centered.
+        if (anchor) {
+            const CELL = 24.5;
+            anchor = {
+                x: Math.floor(anchor.x / CELL) * CELL + CELL / 2,
+                z: Math.floor(anchor.z / CELL) * CELL + CELL / 2
+            };
         }
 
         u.squadUnits.forEach((entityId, memberIndex) => {
