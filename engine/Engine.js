@@ -49,8 +49,13 @@ class Engine extends BaseEngine {
 
     getResourcesPath(){
         if(window){
-            // Return absolute path to prevent doubling when accessed from subdirectories
-            return window.location.pathname.replace('index.html', 'resources/');
+            // Directory of the current page + 'resources/'. Handles '/',
+            // '/index.html', and subdirectory hosting alike — the old
+            // replace('index.html') broke when the page was served at '/'
+            // (nothing to replace → the resources/ prefix was lost and
+            // every texture/model request 404'd).
+            const dir = window.location.pathname.replace(/[^/]*$/, '');
+            return dir + 'resources/';
         }
         return "resources/";
     }
@@ -85,12 +90,16 @@ class Engine extends BaseEngine {
 
         // Process ticks at fixed rate, limit per frame to catch up gradually
         // This prevents lag spikes while maintaining sync
-        const maxTicksPerFrame = 3;
+        // Battle fast-forward: game.state.battleSpeed multiplies how many fixed
+        // ticks are consumed per real second (sim dt stays fixed — deterministic).
+        const speed = this.gameInstance?.state?.battleSpeed || 1;
+        const tickInterval = this.tickRate / speed;
+        const maxTicksPerFrame = 3 * speed;
         let ticksProcessed = 0;
 
-        while (this.accumulator >= this.tickRate && ticksProcessed < maxTicksPerFrame) {
+        while (this.accumulator >= tickInterval && ticksProcessed < maxTicksPerFrame) {
             await this.tick();
-            this.accumulator -= this.tickRate;
+            this.accumulator -= tickInterval;
             ticksProcessed++;
         }
 
