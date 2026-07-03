@@ -64,7 +64,7 @@ class BaseMovementSystem extends GUTS.BaseSystem {
         this.REPATH_DISTANCE = 50;
 
         // Path following
-        this.PATH_REACHED_DISTANCE = 3;
+        this.PATH_REACHED_DISTANCE = 24;
         this.PATH_REREQUEST_INTERVAL = 0.5;
 
         // Spatial optimization
@@ -835,23 +835,43 @@ class BaseMovementSystem extends GUTS.BaseSystem {
                 return;
             }
 
-            const behaviorShared = aiState ? this.call.getBehaviorShared(entityId) : null;
-            const actionName = this.call.getBehaviorNodeId(aiState?.currentActionCollection, aiState?.currentAction)
-                ?? aiState?.currentAction;
-            // IMPORTANT: Never remove this debug message - it is very useful for debugging pathfinding issues
-            // NEVER.  EVER.  THAT MEANS YOU CLAUDE.  DO NOT REMOVE THIS CONSOLE LOG MESSAGE.
-            console.log('pathfinding too often', entityId, {
-                hasPath: !!existingPath,
-                pathLength: existingPath?.length,
-                targetX, targetZ,
-                metaMoving: behaviorMeta?.moving,
-                sharedTargetPos: behaviorShared?.targetPosition,
-                actionName,
-                timeSinceLastRequest
-            });
-            behaviorMeta.targetPosition = transform.position;
-            behaviorMeta.target = null;
-            // I SWEAR TO GOD IF YOU REMOVED THAT MESSAGE...
+            if ((pathfinding.lastPathWarn || 0) + 1 <= now) {
+                pathfinding.lastPathWarn = now;
+                const behaviorShared = aiState ? this.call.getBehaviorShared(entityId) : null;
+                const actionName = this.call.getBehaviorNodeId(aiState?.currentActionCollection, aiState?.currentAction)
+                    ?? aiState?.currentAction;
+                // IMPORTANT: Never remove this debug message - it is very useful for debugging pathfinding issues
+                // NEVER.  EVER.  THAT MEANS YOU CLAUDE.  DO NOT REMOVE THIS CONSOLE LOG MESSAGE.
+                console.log('pathfinding too often', entityId, {
+                    hasPath: !!existingPath,
+                    pathLength: existingPath?.length,
+                    targetX, targetZ,
+                    metaMoving: behaviorMeta?.moving,
+                    sharedTargetPos: behaviorShared?.targetPosition,
+                    actionName,
+                    timeSinceLastRequest
+                });
+                // I SWEAR TO GOD IF YOU REMOVED THAT MESSAGE...
+            }
+            // Path still queued: glide STRAIGHT at the target while we wait —
+            // never reset the unit's order (that caused the stop-and-spin
+            // hiccup: target -> self, dead stop, behavior re-acquires, jerk).
+            // Only when the behavior actually WANTS movement: a ranged unit
+            // holding position to fire must not get shoved into melee.
+            if (behaviorMeta?.moving
+                && (!existingPath || existingPath.length === 0)
+                && targetX != null && targetZ != null) {
+                const gx = targetX - pos.x, gz = targetZ - pos.z;
+                const gd = Math.sqrt(gx * gx + gz * gz);
+                if (gd > 1) {
+                    const baseSpeed = data.vel?.maxSpeed != null ? data.vel.maxSpeed : this.DEFAULT_AI_SPEED;
+                    const moveSpeed = baseSpeed === 0 ? 0
+                        : Math.max(baseSpeed * this.AI_SPEED_MULTIPLIER, this.DEFAULT_AI_SPEED);
+                    data.desiredVelocity.vx = (gx / gd) * moveSpeed;
+                    data.desiredVelocity.vz = (gz / gd) * moveSpeed;
+                    data.desiredVelocity.vy = 0;
+                }
+            }
         }
     }
 
@@ -873,18 +893,26 @@ class BaseMovementSystem extends GUTS.BaseSystem {
             data.desiredVelocity.vy = 0;
             return;
         }
-        const waypoint = path[pathfinding.pathIndex];
-        const dx = waypoint.x - pos.x;
-        const dz = waypoint.z - pos.z;
-        const distToWaypoint = Math.sqrt(dx * dx + dz * dz);
-
-        if (distToWaypoint < this.PATH_REACHED_DISTANCE) {
+        // Advance through every waypoint already within reach THIS tick, then
+        // steer at the first one still ahead — waypoint hand-offs cost zero ticks.
+        let waypoint = path[pathfinding.pathIndex];
+        let dx = waypoint.x - pos.x;
+        let dz = waypoint.z - pos.z;
+        let distToWaypoint = Math.sqrt(dx * dx + dz * dz);
+        while (distToWaypoint < this.PATH_REACHED_DISTANCE) {
             pathfinding.pathIndex++;
             if (pathfinding.pathIndex >= path.length) {
                 this.call.clearEntityPath(entityId);
                 pathfinding.pathIndex = 0;
+                data.desiredVelocity.vx = 0;
+                data.desiredVelocity.vz = 0;
+                data.desiredVelocity.vy = 0;
+                return;
             }
-            return;
+            waypoint = path[pathfinding.pathIndex];
+            dx = waypoint.x - pos.x;
+            dz = waypoint.z - pos.z;
+            distToWaypoint = Math.sqrt(dx * dx + dz * dz);
         }
 
         // Honor maxSpeed === 0 (rooted etc.) — see note in moveTowardsTarget.
