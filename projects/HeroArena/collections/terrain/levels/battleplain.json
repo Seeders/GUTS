@@ -5971,29 +5971,6 @@
     "components": {
      "transform": {
       "position": {
-       "x": -28.5,
-       "y": 0,
-       "z": -1110.3
-      },
-      "rotation": {
-       "x": 0,
-       "y": 4.61,
-       "z": 0
-      },
-      "scale": {
-       "x": 0.91,
-       "y": 0.91,
-       "z": 0.91
-      }
-     }
-    }
-   },
-   {
-    "spawnType": "worldObject",
-    "type": "tree_sprite",
-    "components": {
-     "transform": {
-      "position": {
        "x": 80.5,
        "y": 0,
        "z": -1144.4
@@ -6523,52 +6500,6 @@
     "components": {
      "transform": {
       "position": {
-       "x": -62.1,
-       "y": 0,
-       "z": 1150.8
-      },
-      "rotation": {
-       "x": 0,
-       "y": 1.9,
-       "z": 0
-      },
-      "scale": {
-       "x": 1.19,
-       "y": 1.19,
-       "z": 1.19
-      }
-     }
-    }
-   },
-   {
-    "spawnType": "worldObject",
-    "type": "tree_sprite",
-    "components": {
-     "transform": {
-      "position": {
-       "x": 26.2,
-       "y": 0,
-       "z": 1144.3
-      },
-      "rotation": {
-       "x": 0,
-       "y": 0.99,
-       "z": 0
-      },
-      "scale": {
-       "x": 1.05,
-       "y": 1.05,
-       "z": 1.05
-      }
-     }
-    }
-   },
-   {
-    "spawnType": "worldObject",
-    "type": "tree_sprite",
-    "components": {
-     "transform": {
-      "position": {
        "x": 165.6,
        "y": 0,
        "z": 1124.9
@@ -6835,121 +6766,6 @@
        "x": 0.81,
        "y": 0.81,
        "z": 0.81
-      }
-     }
-    }
-   },
-   {
-    "spawnType": "worldObject",
-    "type": "tree_sprite",
-    "components": {
-     "transform": {
-      "position": {
-       "x": -24.7,
-       "y": 0,
-       "z": -756.0
-      },
-      "rotation": {
-       "x": 0,
-       "y": 2.09,
-       "z": 0
-      },
-      "scale": {
-       "x": 0.78,
-       "y": 0.78,
-       "z": 0.78
-      }
-     }
-    }
-   },
-   {
-    "spawnType": "worldObject",
-    "type": "tree_sprite",
-    "components": {
-     "transform": {
-      "position": {
-       "x": 14.0,
-       "y": 0,
-       "z": -513.0
-      },
-      "rotation": {
-       "x": 0,
-       "y": 3.11,
-       "z": 0
-      },
-      "scale": {
-       "x": 0.94,
-       "y": 0.94,
-       "z": 0.94
-      }
-     }
-    }
-   },
-   {
-    "spawnType": "worldObject",
-    "type": "tree_sprite",
-    "components": {
-     "transform": {
-      "position": {
-       "x": 0.4,
-       "y": 0,
-       "z": -250.0
-      },
-      "rotation": {
-       "x": 0,
-       "y": 5.19,
-       "z": 0
-      },
-      "scale": {
-       "x": 1.06,
-       "y": 1.06,
-       "z": 1.06
-      }
-     }
-    }
-   },
-   {
-    "spawnType": "worldObject",
-    "type": "tree_sprite",
-    "components": {
-     "transform": {
-      "position": {
-       "x": -0.1,
-       "y": 0,
-       "z": 323.9
-      },
-      "rotation": {
-       "x": 0,
-       "y": 3.51,
-       "z": 0
-      },
-      "scale": {
-       "x": 1.06,
-       "y": 1.06,
-       "z": 1.06
-      }
-     }
-    }
-   },
-   {
-    "spawnType": "worldObject",
-    "type": "tree_sprite",
-    "components": {
-     "transform": {
-      "position": {
-       "x": 17.4,
-       "y": 0,
-       "z": 621.8
-      },
-      "rotation": {
-       "x": 0,
-       "y": 4.52,
-       "z": 0
-      },
-      "scale": {
-       "x": 0.83,
-       "y": 0.83,
-       "z": 0.83
       }
      }
     }
