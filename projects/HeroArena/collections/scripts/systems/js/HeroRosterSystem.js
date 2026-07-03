@@ -100,7 +100,7 @@ class HeroRosterSystem extends GUTS.BaseSystem {
     // render instance is properly swapped (removeInstance + createPlacement, same
     // entity id) and position/HP% are preserved; then re-applies hero tagging/bonuses
     // since replaceUnit rebuilds the entity from the new unit definition.
-    respawnRosterEntry(numericPlayerId, rosterIndex) {
+    respawnRosterEntry(numericPlayerId, rosterIndex, animationType = null) {
         const stats = this._statsByPlayerId(numericPlayerId);
         const entry = stats?.heroRoster?.[rosterIndex];
         if (!entry) return { success: false, reason: 'no_entry' };
@@ -111,7 +111,8 @@ class HeroRosterSystem extends GUTS.BaseSystem {
         if (liveIds.length > 0 && this.game.hasService?.('replaceUnit')) {
             let ok = 0;
             for (const liveId of liveIds) {
-                const newId = this.call.replaceUnit(liveId, newSpawnType);
+                const newId = this.call.replaceUnit(liveId, newSpawnType,
+                    animationType ? { animationType } : undefined);
                 if (newId == null) continue;
                 ok++;
                 const level = entry.level || this._calcLevel(entry.roundsPlayed || 0);

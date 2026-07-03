@@ -76,6 +76,9 @@ class ArmyShopSystem extends GUTS.BaseSystem {
     static T3_UNIT_SET = new Set(['0_golemStone', '0_golemFire', '0_golemIce', 'ballista']);
     // Tier-4 "giants": the Mechabellum Fortress/Overlord analogues.
     static T4_UNIT_SET = new Set(['dragon_red', '4_ancientTreant', 'dragon_red_flying']);
+    // Valid tiered units that are never OFFERED for unlock/purchase directly
+    // (gained through techs — the dragon's Take Flight transform).
+    static NOT_OFFERED = new Set(['dragon_red_flying']);
 
     // Tier of a unit id: 1-4, or null (= not shop-offerable).
     static unitTier(id) {
@@ -537,6 +540,7 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         }
         if (techDef.grantAntiAir) this._applyAntiAirToLiveUnits(stats, unitId);
         if (techDef.grantBuff) this._applyBuffToLiveUnits(stats, unitId, techDef.grantBuff);
+        if (techDef.transformUnit) this._transformUnitType(stats, unitId, techDef.transformUnit, techDef);
         this._broadcastShop(stats);
         return { success: true, state: this.getShopStateForPlayer(numericPlayerId) };
     }
@@ -641,6 +645,7 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         for (const [id, def] of Object.entries(this.collections.units || {})) {
             const tier = ArmyShopSystem.unitTier(id);
             if (!tier || tier === 1 || unlocked.has(id)) continue;
+            if (ArmyShopSystem.NOT_OFFERED.has(id)) continue;
             out.push({
                 id, tier,
                 title: def.title || id,
@@ -754,6 +759,25 @@ class ArmyShopSystem extends GUTS.BaseSystem {
             }
         }
         return false;
+    }
+
+    // Transform tech (dragon's Take Flight): every squad of the type becomes
+    // the target type — owned techs carry over (shared ids), live units are
+    // replaced in place with the takeoff animation.
+    _transformUnitType(stats, fromId, toId, techDef) {
+        // Carry owned techs to the new type's ledger (shared tech ids apply).
+        const owned = (stats.unitTechs?.[fromId] || []).filter(id => id !== techDef.id);
+        if (!stats.unitTechs) stats.unitTechs = {};
+        stats.unitTechs[toId] = [...new Set([...(stats.unitTechs[toId] || []), ...owned])];
+        if (!Array.isArray(stats.tierUnlocks)) stats.tierUnlocks = [];
+        if (!stats.tierUnlocks.includes(toId)) stats.tierUnlocks.push(toId);
+
+        for (let idx = 0; idx < (stats.heroRoster || []).length; idx++) {
+            const entry = stats.heroRoster[idx];
+            if (this._resolveSpawnType(entry) !== fromId) continue;
+            entry.spawnType = toId;
+            this.call.respawnRosterEntry?.(stats.playerId, idx, 'takeoff');
+        }
     }
 
     // Anti-air tech: flag every live unit of the type (finders check the
