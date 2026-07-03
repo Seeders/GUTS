@@ -391,12 +391,11 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
         this._nextRetargetAt = now + AutobattlerRoundSystem.RETARGET_INTERVAL;
 
         for (const team of [this.enums.team.left, this.enums.team.right]) {
-            const targets = this._livingEnemyBuildingPositions(team);
-            if (targets.length === 0) {
-                const base = this._enemyBasePos(team);
-                if (base) targets.push({ x: base.x, z: base.z });
-                else continue;
-            }
+            // March on buildings while any stand; once both are rubble, hunt
+            // down the nearest enemy units to finish the round.
+            let targets = this._livingEnemyBuildingPositions(team);
+            if (targets.length === 0) targets = this._livingEnemyUnitPositions(team);
+            if (targets.length === 0) continue;
             for (const s of this._movableSquadsForTeam(team)) {
                 const anchor = s.pos;
                 let best = null, bestD = Infinity;
@@ -410,6 +409,24 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
                 }
             }
         }
+    }
+
+    // Positions of living enemy army units (the hunt, once buildings are gone).
+    _livingEnemyUnitPositions(team) {
+        const out = [];
+        for (const eid of this.game.getEntitiesWith('heroRosterInfo')) {
+            if (this.game.entityAlive?.[eid] !== 1) continue;
+            const t = this.game.getComponent(eid, 'team');
+            if (!t || t.team === team) continue;
+            if (t.team !== this.enums.team.left && t.team !== this.enums.team.right) continue;
+            const hp = this.game.getComponent(eid, 'health');
+            if (!hp || hp.current <= 0) continue;
+            const ds = this.game.getComponent(eid, 'deathState');
+            if (ds && ds.state !== this.enums.deathState.alive) continue;
+            const pos = this.game.getComponent(eid, 'transform')?.position;
+            if (pos) out.push({ x: pos.x, z: pos.z });
+        }
+        return out;
     }
 
     // Positions of every living enemy BUILDING of `team` (march objectives).
