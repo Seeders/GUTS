@@ -1,0 +1,50 @@
+{
+ "unit": "dragon_red_flying",
+ "fileName": "dragon_red_flying",
+ "techs": [
+  {
+   "id": "drf_inferno",
+   "title": "Inferno Breath",
+   "cost": 21,
+   "description": "+25% damage",
+   "statModifiers": {
+    "damage": {
+     "pct": 0.25
+    }
+   }
+  },
+  {
+   "id": "drf_scales",
+   "title": "Ancient Scales",
+   "cost": 21,
+   "description": "+25% max HP",
+   "statModifiers": {
+    "maxHP": {
+     "pct": 0.25
+    }
+   }
+  },
+  {
+   "id": "drf_swoop",
+   "title": "Wide Swoop",
+   "cost": 21,
+   "description": "+20% attack speed",
+   "statModifiers": {
+    "attackSpeed": {
+     "pct": 0.2
+    }
+   }
+  },
+  {
+   "id": "drf_farFlame",
+   "title": "Far-Reaching Flame",
+   "cost": 21,
+   "description": "+30 attack range",
+   "statModifiers": {
+    "range": {
+     "add": 30
+    }
+   }
+  }
+ ]
+}

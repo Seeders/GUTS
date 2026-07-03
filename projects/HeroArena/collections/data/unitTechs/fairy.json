@@ -1,0 +1,50 @@
+{
+ "unit": "fairy",
+ "fileName": "fairy",
+ "techs": [
+  {
+   "id": "fai_stingers",
+   "title": "Searing Stingers",
+   "cost": 14,
+   "description": "+25% damage",
+   "statModifiers": {
+    "damage": {
+     "pct": 0.25
+    }
+   }
+  },
+  {
+   "id": "fai_gossamer",
+   "title": "Gossamer Weave",
+   "cost": 14,
+   "description": "+30% max HP",
+   "statModifiers": {
+    "maxHP": {
+     "pct": 0.3
+    }
+   }
+  },
+  {
+   "id": "fai_pixieDust",
+   "title": "Pixie Dust",
+   "cost": 14,
+   "description": "+15 evasion",
+   "statModifiers": {
+    "evasion": {
+     "add": 15
+    }
+   }
+  },
+  {
+   "id": "fai_longWings",
+   "title": "Soaring Wings",
+   "cost": 14,
+   "description": "+30 attack range",
+   "statModifiers": {
+    "range": {
+     "add": 30
+    }
+   }
+  }
+ ]
+}
