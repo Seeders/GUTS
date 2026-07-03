@@ -41,6 +41,6 @@
   "title": "Bolt",
   "attackSound": "plasma",
   "hitSound": "plasma",
-  "homing": false,
-  "homingStrength": 0
+  "homing": true,
+  "homingStrength": 0.8
 }

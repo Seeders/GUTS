@@ -462,7 +462,8 @@ class ProjectileSystem extends GUTS.BaseSystem {
 
         if (targetPos) {
             // Update last known position
-            homing.lastKnownPosition = { x: targetPos.x, y: targetPos.y, z: targetPos.z };
+            // Mutate fields individually — the component proxy disallows replacing nested objects
+            homing.lastKnownPosition.x = targetPos.x; homing.lastKnownPosition.y = targetPos.y; homing.lastKnownPosition.z = targetPos.z;
             
             // For ballistic projectiles, we adjust the trajectory mid-flight
             // Calculate time elapsed since launch
@@ -518,7 +519,8 @@ class ProjectileSystem extends GUTS.BaseSystem {
 
         if (targetPos) {
             // Update last known position
-            homing.lastKnownPosition = { x: targetPos.x, y: targetPos.y, z: targetPos.z };
+            // Mutate fields individually — the component proxy disallows replacing nested objects
+            homing.lastKnownPosition.x = targetPos.x; homing.lastKnownPosition.y = targetPos.y; homing.lastKnownPosition.z = targetPos.z;
             
             // Calculate direction to target
             const dx = targetPos.x - pos.x;
@@ -712,7 +714,7 @@ class ProjectileSystem extends GUTS.BaseSystem {
         if (homing) {
             homing.targetId = originalSource;
             if (sourcePos) {
-                homing.lastKnownPosition = { x: sourcePos.x, y: sourcePos.y, z: sourcePos.z };
+                homing.lastKnownPosition.x = sourcePos.x; homing.lastKnownPosition.y = sourcePos.y; homing.lastKnownPosition.z = sourcePos.z;
             }
         }
 

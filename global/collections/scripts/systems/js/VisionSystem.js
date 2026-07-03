@@ -102,126 +102,69 @@ class VisionSystem extends GUTS.BaseSystem {
     }
 
     hasLineOfSight(from, to, unitType, viewerEntityId = null) {
-        const log = GUTS.HeadlessLogger;
         const dx = to.x - from.x;
         const dz = to.z - from.z;
         const distanceSq = dx * dx + dz * dz;
-        const distance = Math.sqrt(distanceSq);
         const gridSize = this._getGridSize();
-        const terrainSize = this._getTerrainSize();
+        if (distanceSq < gridSize * gridSize * 4) return true;
+        const distance = Math.sqrt(distanceSq);
 
-        // Get viewer info for logging
-        let viewerName = 'unknown';
-        if (viewerEntityId !== null) {
-            const viewerUnitTypeComp = this.game.getComponent(viewerEntityId, 'unitType');
-            const viewerUnitType = this.game.getUnitTypeDef( viewerUnitTypeComp);
-            viewerName = viewerUnitType?.id || viewerEntityId;
+        // One-time per-scene LOS profile: is the map flat, and where are the
+        // static occluders (trees)? Saves height lookups + a grid query and
+        // component reads PER CANDIDATE PER TICK on large armies.
+        if (this._losProfile === undefined) this._buildLosProfile();
+        const profile = this._losProfile;
+
+        let fromTerrainHeight, toTerrainHeight;
+        if (profile.flat) {
+            fromTerrainHeight = toTerrainHeight = profile.height;
+        } else {
+            const terrainSize = this._getTerrainSize();
+            const fromGridX = Math.floor((from.x + terrainSize / 2) / gridSize);
+            const fromGridZ = Math.floor((from.z + terrainSize / 2) / gridSize);
+            const toGridX = Math.floor((to.x + terrainSize / 2) / gridSize);
+            const toGridZ = Math.floor((to.z + terrainSize / 2) / gridSize);
+            const fromHeightLevel = this.call.getHeightLevelAtGridPosition( fromGridX, fromGridZ);
+            const toHeightLevel = this.call.getHeightLevelAtGridPosition( toGridX, toGridZ);
+            if (fromHeightLevel === null || fromHeightLevel === undefined) return true;
+            if (toHeightLevel !== null && toHeightLevel > fromHeightLevel) return false;
+
+            fromTerrainHeight = this.call.getTerrainHeightAtPositionSmooth( from.x, from.z);
+            toTerrainHeight = this.call.getTerrainHeightAtPositionSmooth( to.x, to.z);
+            const lookingDown = (toHeightLevel !== null && toHeightLevel !== undefined &&
+                toHeightLevel < fromHeightLevel);
+            const unitH = (unitType && unitType.height) ? unitType.height : this.DEFAULT_UNIT_HEIGHT;
+            if (!this.checkTileBasedLOS(from, to, fromTerrainHeight + unitH, toTerrainHeight, fromHeightLevel, lookingDown)) {
+                return false;
+            }
         }
 
-        if (distance < gridSize*2) {
-            log.trace('Vision', `${viewerName} LOS check: PASS (too close)`, {
-                from: { x: from.x?.toFixed(0), z: from.z?.toFixed(0) },
-                to: { x: to.x?.toFixed(0), z: to.z?.toFixed(0) },
-                distance: distance.toFixed(0)
-            });
-            return true;
-        }
-
-        // Get discrete heightmap levels for from and to positions
-        const fromGridX = Math.floor((from.x + terrainSize / 2) / gridSize);
-        const fromGridZ = Math.floor((from.z + terrainSize / 2) / gridSize);
-        const toGridX = Math.floor((to.x + terrainSize / 2) / gridSize);
-        const toGridZ = Math.floor((to.z + terrainSize / 2) / gridSize);
-
-        const fromHeightLevel = this.call.getHeightLevelAtGridPosition( fromGridX, fromGridZ);
-        const toHeightLevel = this.call.getHeightLevelAtGridPosition( toGridX, toGridZ);
-
-        // If height data is not available (e.g., headless mode without full terrain),
-        // assume flat terrain and allow LOS
-        if (fromHeightLevel === null || fromHeightLevel === undefined) {
-            return true;
-        }
-
-        // Cannot see up to tiles with higher heightmap values
-        if (toHeightLevel !== null && toHeightLevel > fromHeightLevel) {
-            log.trace('Vision', `${viewerName} LOS check: BLOCKED (height)`, {
-                from: { x: from.x?.toFixed(0), z: from.z?.toFixed(0) },
-                to: { x: to.x?.toFixed(0), z: to.z?.toFixed(0) },
-                fromHeightLevel,
-                toHeightLevel
-            });
-            return false;
-        }
-
-        const fromTerrainHeight = this.call.getTerrainHeightAtPositionSmooth( from.x, from.z);
-        const toTerrainHeight = this.call.getTerrainHeightAtPositionSmooth( to.x, to.z);
-
-        // Use unit height from unitType, or fall back to default if not available
         const unitHeight = (unitType && unitType.height) ? unitType.height : this.DEFAULT_UNIT_HEIGHT;
-
         const fromEyeHeight = fromTerrainHeight + unitHeight;
         const toEyeHeight = toTerrainHeight + unitHeight;
 
-        // When looking DOWN to a lower height level, a unit on high ground should be
-        // able to see lower terrain freely — its own cliff edge must not occlude the
-        // ground below it. We still block on genuinely HIGHER terrain between the two
-        // (the discrete height-level check inside checkTileBasedLOS), but skip the
-        // smooth ray-below-terrain test that otherwise clips downhill sightlines.
-        const lookingDown = (toHeightLevel !== null && toHeightLevel !== undefined &&
-            toHeightLevel < fromHeightLevel);
-
-        // Check for terrain blocking along the path (for same-level or downward vision)
-        if (!this.checkTileBasedLOS(from, to, fromEyeHeight, toTerrainHeight, fromHeightLevel, lookingDown)) {
-            log.trace('Vision', `${viewerName} LOS check: BLOCKED (terrain)`, {
-                from: { x: from.x?.toFixed(0), z: from.z?.toFixed(0) },
-                to: { x: to.x?.toFixed(0), z: to.z?.toFixed(0) },
-                distance: distance.toFixed(0)
-            });
-            return false;
-        }
-        
-        const midX = (from.x + to.x) / 2;
-        const midZ = (from.z + to.z) / 2;
-        const unitSize = (unitType && unitType.size) ? unitType.size : gridSize;
-        const nearbyTreeIds = this.call.getNearbyUnits( { x: midX, y: 0, z: midZ}, distance / 2 + unitSize, viewerEntityId, 'worldObjects');
-
-        // Check worldObjects (trees, etc.) blocking vision
-        if (nearbyTreeIds && nearbyTreeIds.length > 0) {
-            const numSamples = Math.max(2, Math.ceil(distance / (gridSize * 0.5)));
-            const stepX = dx / numSamples;
-            const stepZ = dz / numSamples;
-
-            for (let i = 1; i < numSamples; i++) {
-                const t = i / numSamples;
-                const sampleX = from.x + stepX * i;
-                const sampleZ = from.z + stepZ * i;
-                const rayHeight = fromEyeHeight + (toEyeHeight - fromEyeHeight) * t;
-
-                for (const treeId of nearbyTreeIds) {
-                    const treeTransform = this.game.getComponent(treeId, 'transform');
-                    const treePos = treeTransform?.position;
-                    if (!treePos) continue;
-
-                    const treeUnitTypeComp = this.game.getComponent(treeId, 'unitType');
-                    const treeUnitType = this.game.getUnitTypeDef( treeUnitTypeComp);
-                    const treeSize = treeUnitType?.size || gridSize;
-                    const treeHeight = treeUnitType?.height || 0;
-
-                    const treeDx = sampleX - treePos.x;
-                    const treeDz = sampleZ - treePos.z;
-                    const distSq = treeDx * treeDx + treeDz * treeDz;
-
-                    if (distSq < treeSize * treeSize) {
-                        if (rayHeight < treePos.y + treeHeight) {
-                            log.trace('Vision', `${viewerName} LOS check: BLOCKED (tree)`, {
-                                from: { x: from.x?.toFixed(0), z: from.z?.toFixed(0) },
-                                to: { x: to.x?.toFixed(0), z: to.z?.toFixed(0) },
-                                treePos: { x: treePos.x.toFixed(0), z: treePos.z.toFixed(0) }
-                            });
-                            return false;
-                        }
-                    }
-                }
+        // Static tree occluders: exact segment-vs-circle test against the
+        // cached list (bbox reject first) instead of grid queries + sampling.
+        const trees = profile.trees;
+        if (trees.length > 0) {
+            const pad = profile.maxTreeSize;
+            const minX = (from.x < to.x ? from.x : to.x) - pad;
+            const maxX = (from.x > to.x ? from.x : to.x) + pad;
+            const minZ = (from.z < to.z ? from.z : to.z) - pad;
+            const maxZ = (from.z > to.z ? from.z : to.z) + pad;
+            const invLen = 1 / distance;
+            const dirX = dx * invLen, dirZ = dz * invLen;
+            for (let i = 0; i < trees.length; i++) {
+                const tr = trees[i];
+                if (tr.x < minX || tr.x > maxX || tr.z < minZ || tr.z > maxZ) continue;
+                let t = (tr.x - from.x) * dirX + (tr.z - from.z) * dirZ;
+                if (t < 0) t = 0; else if (t > distance) t = distance;
+                const px = from.x + dirX * t;
+                const pz = from.z + dirZ * t;
+                const ddx = tr.x - px, ddz = tr.z - pz;
+                if (ddx * ddx + ddz * ddz >= tr.r2) continue;
+                const rayHeight = fromEyeHeight + (toEyeHeight - fromEyeHeight) * (t * invLen);
+                if (rayHeight < tr.top) return false;
             }
         }
 
@@ -265,23 +208,12 @@ class VisionSystem extends GUTS.BaseSystem {
 
                     if (distSq < illusionSize * illusionSize) {
                         if (rayHeight < illusionPos.y + illusionHeight) {
-                            log.trace('Vision', `${viewerName} LOS check: BLOCKED (illusion)`, {
-                                from: { x: from.x?.toFixed(0), z: from.z?.toFixed(0) },
-                                to: { x: to.x?.toFixed(0), z: to.z?.toFixed(0) },
-                                illusionPos: { x: illusionPos.x.toFixed(0), z: illusionPos.z.toFixed(0) }
-                            });
                             return false;
                         }
                     }
                 }
             }
         }
-
-        log.trace('Vision', `${viewerName} LOS check: PASS`, {
-            from: { x: from.x?.toFixed(0), z: from.z?.toFixed(0) },
-            to: { x: to.x?.toFixed(0), z: to.z?.toFixed(0) },
-            distance: distance.toFixed(0)
-        });
         return true;
     }
 
@@ -400,6 +332,41 @@ class VisionSystem extends GUTS.BaseSystem {
      * @param {number} range - The search range
      * @returns {number[]} - Array of visible enemy entity IDs
      */
+    postSceneLoad() {
+        this._losProfile = undefined;   // terrain/trees changed — rebuild lazily
+    }
+
+    // Build the per-scene LOS profile: flat-terrain flag + static occluders.
+    _buildLosProfile() {
+        const gridSize = this._getGridSize();
+        const terrainSize = this._getTerrainSize();
+        const n = Math.max(1, Math.round(terrainSize / gridSize));
+        let flat = true;
+        const h0 = this.call.getHeightLevelAtGridPosition?.(0, 0);
+        if (h0 !== null && h0 !== undefined) {
+            outer:
+            for (let z = 0; z < n; z++) {
+                for (let x = 0; x < n; x++) {
+                    if (this.call.getHeightLevelAtGridPosition(x, z) !== h0) { flat = false; break outer; }
+                }
+            }
+        }
+        const height = this.call.getTerrainHeightAtPositionSmooth?.(0, 0) || 0;
+        const trees = [];
+        let maxTreeSize = 0;
+        for (const eid of (this.game.getEntitiesWith('unitType', 'transform') || [])) {
+            const def = this.game.getUnitTypeDef(this.game.getComponent(eid, 'unitType'));
+            if (!def || def.collection !== 'worldObjects') continue;
+            const hgt = def.height || 0;
+            if (hgt <= 0) continue;
+            const p = this.game.getComponent(eid, 'transform').position;
+            const size = def.size || gridSize;
+            if (size > maxTreeSize) maxTreeSize = size;
+            trees.push({ x: p.x, z: p.z, r2: size * size, top: p.y + hgt });
+        }
+        this._losProfile = { flat, height, trees, maxTreeSize };
+    }
+
     getVisibleEnemiesInRange(entityId, range) {
         // Ensure field arrays are ready
         this._ensureFieldArrays();

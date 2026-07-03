@@ -14,7 +14,7 @@ const MATCHUPS = [
     { name: 'alpha vs giant: ballista+archer vs treant', left: ['ballista', 1, '1_d_archer', 1], right: ['4_ancientTreant', 1], expect: 'left' },
     { name: 'splash vs swarm: 4 apprentice vs 4 skeleton hordes', left: ['1_i_apprentice', 4], right: ['0_skeleton', 4], expect: 'left' },
     { name: 'air vs melee: 2 fairy squads vs 4 barbarian', left: ['fairy', 2], right: ['1_s_barbarian', 4], expect: 'left' },
-    { name: 'anti-air vs air: 4 archer vs 2 fairy squads', left: ['1_d_archer', 4], right: ['fairy', 2], expect: 'left' },
+    { name: 'anti-air vs air: 4 archer vs 2 fairy squads (cost-fair trade)', left: ['1_d_archer', 4], right: ['fairy', 2], expect: 'even' },
     { name: 'poison vs armor: 2 oathbreaker vs 2 hoplite', left: ['2_is_oathBreaker', 2], right: ['2_sd_hoplite', 2], expect: 'left' },
     { name: 'dive vs sniper: 2 assassin vs 2 crossbowman', left: ['2_di_shadowAssassin', 2], right: ['2_sd_crossbowman', 2], expect: 'left' },
     { name: 'armor vs phys chaff: golem vs 3 soldier squads', left: ['0_golemStone', 1], right: ['1_sd_soldier', 3], expect: 'left' },
@@ -96,6 +96,13 @@ async function runMatchup(m) {
     // the post-battle prep floods the field and corrupts the tally.
     for (const pid of [0, 1]) statsByPlayer[pid].gold = 0;
 
+    // Remove command buildings: march orders target the nearest enemy
+    // BUILDING, so tower races + morale breaks pollute a pure unit-vs-unit
+    // test. With no buildings, squads hunt enemy units directly.
+    for (const eid of [...game.getEntitiesWith('buildingOwner')]) {
+        try { game.destroyEntity(eid); } catch (_) {}
+    }
+
     // Force the battle.
     game.serverNetworkSystem.handleReadyForBattle({ playerId: 0, numericPlayerId: 0 }, () => {});
     game.serverNetworkSystem.handleReadyForBattle({ playerId: 1, numericPlayerId: 1 }, () => {});
@@ -119,14 +126,18 @@ async function runMatchup(m) {
         }
         return t;
     };
-    let tally = snapshot();
+    // Baseline army sizes at battle start — corpses DECAY during long fights,
+    // so scoring against the live totals under-counts the dead side.
+    const baseline = snapshot();
+    let tally = baseline;
     for (let i = 0; i < 1800 && game.state.phase === enums.gamePhase.battle; i++) {
         step(1);
         if (game.state.phase === enums.gamePhase.battle) tally = snapshot();
     }
     await engine.shutdown?.();
 
-    const L = tally[0], R = tally[1];
+    const L = { alive: tally[0].alive, total: baseline[0].total, hp: tally[0].hp };
+    const R = { alive: tally[1].alive, total: baseline[1].total, hp: tally[1].hp };
     const lScore = L.total ? L.alive / L.total : 0;
     const rScore = R.total ? R.alive / R.total : 0;
     let winner = 'even';

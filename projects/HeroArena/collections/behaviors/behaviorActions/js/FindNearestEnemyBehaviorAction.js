@@ -28,6 +28,33 @@ class FindNearestEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
         const range = combat?.visionRange || params.range || 300;
 
         const myPos = game.getComponent(entityId, 'transform')?.position;
+
+        // Large-army throttles (deterministic — keyed to the game clock):
+        // 1) A still-valid current target skips the scan entirely (Mechabellum
+        //    target lock: fight what you're fighting).
+        const shared = this.getShared(entityId, game);
+        const current = shared[targetKey];
+        if (current != null && game.entityAlive?.[current] === 1 && myPos) {
+            const chp = game.getComponent(current, 'health');
+            const cpos = game.getComponent(current, 'transform')?.position;
+            if (chp && chp.current > 0 && cpos) {
+                const ddx = cpos.x - myPos.x, ddz = cpos.z - myPos.z;
+                const d2 = ddx * ddx + ddz * ddz;
+                if (d2 <= range * range * 1.44) {
+                    // Same payload shape as a fresh find — downstream nodes
+                    // read distance/range off the result.
+                    return this.success({ target: current, distance: Math.sqrt(d2), range });
+                }
+            }
+        }
+        // 2) A scan that found NOTHING isn't repeated for 0.3s — marching
+        //    armies were burning most of the tick budget re-scanning nothing.
+        if (!this._noEnemyUntil) this._noEnemyUntil = new Map();
+        const nextAllowed = this._noEnemyUntil.get(entityId);
+        if (nextAllowed !== undefined && game.state.now < nextAllowed) {
+            return this.failure();
+        }
+
         const enemyIds = this.call.getVisibleEnemiesInRange( entityId, range);
 
         // Buildings and units are EQUAL targets: the nearest visible enemy wins
@@ -84,7 +111,6 @@ class FindNearestEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
         }
 
         if (nearestId != null) {
-            const shared = this.getShared(entityId, game);
             shared[targetKey] = nearestId;
 
             const distance = Math.sqrt(nearestDistSq);
@@ -96,6 +122,7 @@ class FindNearestEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
             return this.success({ target: nearestId, distance, range });
         }
 
+        this._noEnemyUntil.set(entityId, game.state.now + 0.3);
         return this.failure();
     }
 }
