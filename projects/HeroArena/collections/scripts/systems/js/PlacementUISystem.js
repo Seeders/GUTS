@@ -1270,7 +1270,8 @@ class PlacementUISystem extends GUTS.BaseSystem {
             const isReady = entry && hx?.isLevelReady?.(entry);
             if (!isReady) continue;
             ready = true;
-            const base = Math.max(1, Math.ceil((def.value || 0) / 5)) * level;
+            // Mechabellum: flat 50% of the unit's base recruitment price
+            const base = Math.max(1, Math.ceil((def.value || 0) / 5));
             total += Math.max(1, Math.ceil(base / 2));
         }
         return { cost: total, ready, allMaxed: unitIds.length > 0 && leveable === 0 };

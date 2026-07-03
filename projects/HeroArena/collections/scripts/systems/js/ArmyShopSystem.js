@@ -680,9 +680,9 @@ class ArmyShopSystem extends GUTS.BaseSystem {
     // each level MULTIPLIES the unit's HP and damage by its level.
     squadLevelCost(entry) {
         const def = this.collections.units?.[this._resolveSpawnType(entry)] || {};
-        const level = entry.level || 1;
-        const base = ArmyShopSystem.unitPrice(this._resolveSpawnType(entry), def) * level;
-        // Mechabellum: promotion is only OFFERED at a full bar, at half price.
+        // Mechabellum: promotion always costs 50% of the unit's BASE
+        // recruitment price — flat, regardless of current level.
+        const base = ArmyShopSystem.unitPrice(this._resolveSpawnType(entry), def);
         return Math.max(1, Math.ceil(base / 2));
     }
 
