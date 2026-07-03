@@ -1200,18 +1200,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
         }
         panel.classList.remove('hidden');
 
-        const icons = this.collections?.icons || {};
-        this.elements.selectionCards.innerHTML = units.map(id => {
-            const def = this.game.getUnitTypeDef(this.game.getComponent(id, 'unitType'));
-            const level = this.game.getComponent(id, 'heroRosterInfo')?.level || 1;
-            const imagePath = icons[def?.icon]?.imagePath;
-            const img = imagePath
-                ? `<img class="sel-card-img" src="./resources/${imagePath}" alt="">`
-                : `<span class="sel-card-img sel-card-fallback">⚔</span>`;
-            return `<div class="sel-card" title="${def?.title || 'Unit'} — Level ${level}">
-                ${img}<span class="sel-card-badge sel-card-level">L${level}</span>
-            </div>`;
-        }).join('');
+        this.elements.selectionCards.innerHTML = this._renderSquadDetail(units);
 
         // Formation button: shows the first selected multi-member squad's current
         // shape; hidden when nothing selected has squadmates.
