@@ -146,9 +146,7 @@
   "squadHeight": 1,
   "placementGridWidth": 2,
   "placementGridHeight": 1,
-  "abilities": [
-    "ExplosiveTrapAbility"
-  ],
+  "abilities": [],
   "actionSet": "trapper_actions",
   "requiresUnits": [],
   "requiresBuildings": [],

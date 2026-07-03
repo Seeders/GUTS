@@ -155,9 +155,7 @@
   "squadHeight": 1,
   "placementGridWidth": 2,
   "placementGridHeight": 1,
-  "abilities": [
-    "MirrorImagesAbility"
-  ],
+  "abilities": [],
   "requiresUnits": [],
   "requiresBuildings": [],
   "spriteAnimationSet": "trickster2di",

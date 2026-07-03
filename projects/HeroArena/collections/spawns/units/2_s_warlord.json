@@ -142,9 +142,7 @@
   "squadHeight": 1,
   "placementGridWidth": 2,
   "placementGridHeight": 1,
-  "abilities": [
-    "BattleCryAbility"
-  ],
+  "abilities": [],
   "requiresUnits": [],
   "requiresBuildings": [],
   "spriteAnimationSet": "warlord2s",

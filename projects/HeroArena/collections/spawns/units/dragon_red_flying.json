@@ -145,10 +145,7 @@
   "squadHeight": 1,
   "placementGridWidth": 1,
   "placementGridHeight": 1,
-  "abilities": [
-    "FireBallAbility",
-    "LandAbility"
-  ],
+  "abilities": [],
   "spriteAnimationSet": "dragonredflying",
   "spriteYOffset": -48,
   "range": 140,

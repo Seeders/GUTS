@@ -103,9 +103,7 @@
   "squadHeight": 1,
   "placementGridWidth": 1,
   "placementGridHeight": 1,
-  "abilities": [
-    "MeteorStrikeAbility"
-  ],
+  "abilities": [],
   "range": 140,
   "projectile": "fireball",
   "requiresUnits": [],

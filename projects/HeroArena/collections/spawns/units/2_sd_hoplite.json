@@ -141,9 +141,7 @@
   "squadHeight": 1,
   "placementGridWidth": 3,
   "placementGridHeight": 1,
-  "abilities": [
-    "PhalanxFormationAbility"
-  ],
+  "abilities": [],
   "requiresUnits": [],
   "requiresBuildings": [],
   "spriteAnimationSet": "hoplite2sd",

@@ -163,9 +163,7 @@
   "squadHeight": 1,
   "placementGridWidth": 2,
   "placementGridHeight": 1,
-  "abilities": [
-    "CurseAbility"
-  ],
+  "abilities": [],
   "requiresUnits": [],
   "requiresBuildings": [],
   "spriteAnimationSet": "oathbreaker2is",

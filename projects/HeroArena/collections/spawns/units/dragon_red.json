@@ -136,10 +136,7 @@
   "squadHeight": 1,
   "placementGridWidth": 1,
   "placementGridHeight": 1,
-  "abilities": [
-    "FireBallAbility",
-    "TakeOffAbility"
-  ],
+  "abilities": [],
   "spriteAnimationSet": "dragonred",
   "spriteYOffset": -48,
   "range": 140,

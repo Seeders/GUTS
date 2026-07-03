@@ -142,9 +142,7 @@
   "squadHeight": 1,
   "placementGridWidth": 2,
   "placementGridHeight": 1,
-  "abilities": [
-    "ChargeAbility"
-  ],
+  "abilities": [],
   "requiresUnits": [],
   "requiresBuildings": [],
   "spriteAnimationSet": "knight2sd",

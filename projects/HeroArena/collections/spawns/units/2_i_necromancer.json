@@ -161,9 +161,7 @@
       }
     ]
   },
-  "abilities": [
-    "RaiseDeadAbility"
-  ],
+  "abilities": [],
   "buyable": false,
   "squadWidth": 1,
   "squadHeight": 1,

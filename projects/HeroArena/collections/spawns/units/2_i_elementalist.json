@@ -18,9 +18,7 @@
   "fireResistance": 0.4,
   "coldResistance": 0,
   "lightningResistance": 0.2,
-  "abilities": [
-    "ChainLightningAbility"
-  ],
+  "abilities": [],
   "render": {
     "animations": {
       "idle": [
