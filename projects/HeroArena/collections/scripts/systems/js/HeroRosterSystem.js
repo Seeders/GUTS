@@ -260,7 +260,7 @@ class HeroRosterSystem extends GUTS.BaseSystem {
     static memberOffset(memberIndex, squadWidth, squadHeight, basis = null) {
         const w = Math.max(1, squadWidth | 0), h = Math.max(1, squadHeight | 0);
         if (w * h <= 1) return { x: 0, z: 0 };
-        const SPACING = 30;
+        const SPACING = 24.5;   // one deployment cell — members sit on adjacent cells
         const col = memberIndex % w, row = Math.floor(memberIndex / w);
         const ax = (col - (w - 1) / 2) * SPACING;   // across the line
         const az = (row - (h - 1) / 2) * SPACING;   // toward the enemy

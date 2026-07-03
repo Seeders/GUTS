@@ -808,9 +808,9 @@ class PlacementUISystem extends GUTS.BaseSystem {
         const worldPos = this.getWorldPositionFromMouse(event.clientX, event.clientY, false);
         if (!worldPos) return;
 
-        // Mechabellum grid: snap the DRAGGED unit's landing cell (49u tile
-        // centers); the group shifts by the same adjustment so formations hold.
-        const CELL = 49;
+        // Mechabellum grid: snap the DRAGGED unit's landing cell (24.5u half-
+        // tiles); the group shifts by the same adjustment so formations hold.
+        const CELL = 24.5;
         const rawX = worldPos.x + this.dragOffset.x;
         const rawZ = worldPos.z + this.dragOffset.z;
         const snapAdjX = (Math.floor(rawX / CELL) * CELL + CELL / 2) - rawX;

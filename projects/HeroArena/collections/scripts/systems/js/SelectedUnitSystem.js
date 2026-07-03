@@ -1097,9 +1097,9 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
         const pos = transform?.position;
         if (!pos) return;
 
-        // Square outline the size of a deployment grid cell (49u tiles) so
-        // selection visualizes exactly which cell the unit occupies.
-        const CELL = 49;
+        // Square outline the size of a deployment grid cell (24.5u half-tiles)
+        // so every squad member shows the exact cell it occupies.
+        const CELL = 24.5;
         const half = CELL / 2 - 1;
         const t = this.CIRCLE_THICKNESS;
         const geometry = new THREE.ShapeGeometry((() => {
@@ -1164,7 +1164,7 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
 
             // Update position — snapped to the deployment cell the unit occupies,
             // so the square reads as GRID placement rather than a unit decal.
-            const CELL = 49;
+            const CELL = 24.5;
             const cx = Math.floor(pos.x / CELL) * CELL + CELL / 2;
             const cz = Math.floor(pos.z / CELL) * CELL + CELL / 2;
             circleData.group.position.set(cx, pos.y + this.CIRCLE_OFFSET_Y, cz);
