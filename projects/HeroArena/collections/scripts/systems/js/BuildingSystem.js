@@ -103,7 +103,12 @@ class BuildingSystem extends GUTS.BaseSystem {
             for (const w of wanted) {
                 const rec = (stats.buildings || []).find(b => b.buildingId === w.buildingId);
                 const live = rec && this._findBuildingEntity(stats.playerId, rec.placementId);
-                if (live != null && this.game.entityAlive?.[live] === 1) continue;
+                if (live != null && this.game.entityAlive?.[live] === 1) {
+                    // Mechabellum: surviving towers heal to full between rounds
+                    const hp = this.game.getComponent(live, 'health');
+                    if (hp) hp.current = hp.max;
+                    continue;
+                }
                 if (rec) stats.buildings = stats.buildings.filter(b => b !== rec);
                 this._createBuilding(w.buildingId, stats, w.x, w.z, 0);
             }
