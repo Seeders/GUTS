@@ -173,7 +173,7 @@
   "placementGridWidth": 2,
   "placementGridHeight": 1,
   "icon": "unit_rogue",
-  "visionRange": 800,
+  "visionRange": 350,
   "stealth": 40,
   "supplyCost": 2,
   "spriteAnimationSet": "scout",

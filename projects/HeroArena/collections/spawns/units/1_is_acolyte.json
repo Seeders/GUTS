@@ -29,7 +29,7 @@
   "placementGridHeight": 1,
   "abilities": [],
   "icon": "unit_acolyte",
-  "visionRange": 500,
+  "visionRange": 250,
   "supplyCost": 2,
   "spriteAnimationSet": "acolyte",
   "render": {

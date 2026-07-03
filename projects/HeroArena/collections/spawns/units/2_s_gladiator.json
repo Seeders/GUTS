@@ -149,5 +149,6 @@
   ],
   "requiresUnits": [],
   "requiresBuildings": [],
-  "spriteAnimationSet": "gladiator2s"
+  "spriteAnimationSet": "gladiator2s",
+  "visionRange": 250
 }

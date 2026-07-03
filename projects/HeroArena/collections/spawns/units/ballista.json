@@ -120,5 +120,6 @@
     "keep"
   ],
   "projectile": "ballista_bolt",
-  "range": 320
+  "range": 320,
+  "visionRange": 420
 }

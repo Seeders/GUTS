@@ -111,5 +111,6 @@
   "requiresBuildings": [
     "keep"
   ],
-  "spriteAnimationSet": "firegolem"
+  "spriteAnimationSet": "firegolem",
+  "visionRange": 250
 }

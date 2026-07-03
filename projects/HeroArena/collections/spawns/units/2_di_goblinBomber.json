@@ -110,5 +110,6 @@
   "projectile": "fireball",
   "requiresUnits": [],
   "requiresBuildings": [],
-  "spriteAnimationSet": "goblinbomber2di"
+  "spriteAnimationSet": "goblinbomber2di",
+  "visionRange": 250
 }

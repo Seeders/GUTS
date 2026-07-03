@@ -163,7 +163,7 @@
   "abilities": [],
   "range": 5,
   "icon": "unit_barbarian",
-  "visionRange": 500,
+  "visionRange": 250,
   "supplyCost": 2,
   "spriteAnimationSet": "barbarian",
   "requiresUnits": [],

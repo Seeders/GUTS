@@ -168,5 +168,6 @@
   ],
   "requiresUnits": [],
   "requiresBuildings": [],
-  "spriteAnimationSet": "oathbreaker2is"
+  "spriteAnimationSet": "oathbreaker2is",
+  "visionRange": 250
 }

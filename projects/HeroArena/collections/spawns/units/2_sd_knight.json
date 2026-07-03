@@ -147,5 +147,6 @@
   ],
   "requiresUnits": [],
   "requiresBuildings": [],
-  "spriteAnimationSet": "knight2sd"
+  "spriteAnimationSet": "knight2sd",
+  "visionRange": 250
 }

@@ -174,7 +174,7 @@
   "placementGridHeight": 1,
   "abilities": [],
   "icon": "unit_apprentice",
-  "visionRange": 500,
+  "visionRange": 280,
   "supplyCost": 2,
   "spriteAnimationSet": "apprentice",
   "requiresUnits": [],

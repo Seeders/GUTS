@@ -181,5 +181,6 @@
   "placementGridHeight": 1,
   "requiresUnits": [],
   "requiresBuildings": [],
-  "spriteAnimationSet": "elementalist2i"
+  "spriteAnimationSet": "elementalist2i",
+  "visionRange": 280
 }

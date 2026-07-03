@@ -151,5 +151,6 @@
   "placementGridHeight": 1,
   "requiresUnits": [],
   "requiresBuildings": [],
-  "spriteAnimationSet": "enchanter2i"
+  "spriteAnimationSet": "enchanter2i",
+  "visionRange": 270
 }

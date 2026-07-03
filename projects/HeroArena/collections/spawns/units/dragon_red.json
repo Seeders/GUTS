@@ -148,5 +148,6 @@
     "castle"
   ],
   "icon": "dragon",
-  "projectile": "fireball"
+  "projectile": "fireball",
+  "visionRange": 250
 }

@@ -144,5 +144,6 @@
   "abilities": [],
   "requiresUnits": [],
   "requiresBuildings": [],
-  "spriteAnimationSet": "berserker2s"
+  "spriteAnimationSet": "berserker2s",
+  "visionRange": 250
 }

@@ -171,5 +171,6 @@
   "placementGridHeight": 1,
   "requiresUnits": [],
   "requiresBuildings": [],
-  "spriteAnimationSet": "necromancer2i"
+  "spriteAnimationSet": "necromancer2i",
+  "visionRange": 250
 }

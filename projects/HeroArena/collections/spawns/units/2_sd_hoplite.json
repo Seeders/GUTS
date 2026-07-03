@@ -146,5 +146,6 @@
   ],
   "requiresUnits": [],
   "requiresBuildings": [],
-  "spriteAnimationSet": "hoplite2sd"
+  "spriteAnimationSet": "hoplite2sd",
+  "visionRange": 250
 }

@@ -149,5 +149,6 @@
   "abilities": [],
   "requiresUnits": [],
   "requiresBuildings": [],
-  "spriteAnimationSet": "ranger2d"
+  "spriteAnimationSet": "ranger2d",
+  "visionRange": 320
 }

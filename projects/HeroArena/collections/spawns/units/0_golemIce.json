@@ -111,5 +111,6 @@
   "requiresUnits": [],
   "requiresBuildings": [
     "keep"
-  ]
+  ],
+  "visionRange": 250
 }

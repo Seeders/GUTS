@@ -155,5 +155,6 @@
   ],
   "requiresUnits": [],
   "requiresBuildings": [],
-  "spriteAnimationSet": "shadowassassin2di"
+  "spriteAnimationSet": "shadowassassin2di",
+  "visionRange": 250
 }

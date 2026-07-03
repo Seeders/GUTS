@@ -862,9 +862,9 @@ class PlacementSystem extends GUTS.BaseSystem {
         }
         // Mechabellum flanking: FOREST tiles are placeable anywhere on the map,
         // including the enemy side — the treeline is the infiltration route.
-        const terrain = this.call.getTerrainTypeAtPosition?.(worldX, worldZ);
-        const terrainName = typeof terrain === 'string' ? terrain : terrain?.type;
-        if (terrainName === 'forest') return { x: worldX, z: worldZ };
+        if (this._terrainNameAt(worldX, worldZ) === 'forest') {
+            return { x: worldX, z: worldZ };
+        }
 
         const team = this.game.getComponent(entityId, 'team')?.team;
         const locs = this.getStartingLocationsFromLevel();
@@ -899,6 +899,20 @@ class PlacementSystem extends GUTS.BaseSystem {
             pz += (clampedAcross - across) * a.z;
         }
         return { x: cx + px, z: cz + pz };
+    }
+
+    // Terrain type NAME at a world position. getTerrainTypeAtPosition returns a
+    // numeric index into the level's tileMap.terrainTypes list — resolve it.
+    _terrainNameAt(worldX, worldZ) {
+        const idx = this.call.getTerrainTypeAtPosition?.(worldX, worldZ);
+        if (idx == null) return null;
+        if (typeof idx === 'string') return idx;
+        const terrainEntities = this.game.getEntitiesWith('terrain');
+        if (!terrainEntities.length) return null;
+        const levelIndex = this.game.getComponent(terrainEntities[0], 'terrain')?.level;
+        const levelKey = this.reverseEnums.levels?.[levelIndex];
+        const types = this.collections.levels?.[levelKey]?.tileMap?.terrainTypes;
+        return types?.[idx] ?? null;
     }
 
     moveHero(entityId, worldX, worldZ, rotationY) {

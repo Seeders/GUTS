@@ -146,5 +146,6 @@
   ],
   "requiresUnits": [],
   "requiresBuildings": [],
-  "spriteAnimationSet": "templar2is"
+  "spriteAnimationSet": "templar2is",
+  "visionRange": 250
 }

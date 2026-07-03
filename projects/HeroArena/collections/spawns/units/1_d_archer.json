@@ -174,7 +174,7 @@
   "placementGridHeight": 1,
   "abilities": [],
   "icon": "unit_archer",
-  "visionRange": 650,
+  "visionRange": 280,
   "supplyCost": 2,
   "spriteAnimationSet": "archer",
   "requiresUnits": [],

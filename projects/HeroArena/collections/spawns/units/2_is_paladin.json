@@ -168,5 +168,6 @@
   ],
   "requiresUnits": [],
   "requiresBuildings": [],
-  "spriteAnimationSet": "paladin2is"
+  "spriteAnimationSet": "paladin2is",
+  "visionRange": 250
 }

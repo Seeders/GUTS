@@ -128,5 +128,6 @@
   "projectile": "bolt",
   "requiresUnits": [],
   "requiresBuildings": [],
-  "spriteAnimationSet": "crossbowman2sd"
+  "spriteAnimationSet": "crossbowman2sd",
+  "visionRange": 340
 }

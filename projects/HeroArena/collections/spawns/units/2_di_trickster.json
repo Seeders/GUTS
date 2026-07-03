@@ -160,5 +160,6 @@
   ],
   "requiresUnits": [],
   "requiresBuildings": [],
-  "spriteAnimationSet": "trickster2di"
+  "spriteAnimationSet": "trickster2di",
+  "visionRange": 250
 }

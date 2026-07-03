@@ -152,5 +152,6 @@
   "actionSet": "trapper_actions",
   "requiresUnits": [],
   "requiresBuildings": [],
-  "spriteAnimationSet": "trapper2d"
+  "spriteAnimationSet": "trapper2d",
+  "visionRange": 300
 }

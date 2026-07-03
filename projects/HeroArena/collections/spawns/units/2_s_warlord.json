@@ -147,5 +147,6 @@
   ],
   "requiresUnits": [],
   "requiresBuildings": [],
-  "spriteAnimationSet": "warlord2s"
+  "spriteAnimationSet": "warlord2s",
+  "visionRange": 250
 }
