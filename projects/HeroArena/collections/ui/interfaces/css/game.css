@@ -253,7 +253,7 @@
 }
 #unlockedUnitsPanel.hidden { display: none; }
 
-#selectionPanel { width: 216px; padding: 13px; }
+#selectionPanel { width: 404px; padding: 13px; }
 #selectionPanel.hidden { display: none; }
 
 .selection-cards {
@@ -1075,7 +1075,7 @@
 .ut-hint { margin-top: 6px; font-size: 0.65rem; opacity: 0.55; text-align: center; }
 
 /* ── Squad detail (selection panel) ──────────────────────────────────── */
-.sq-detail { min-width: 250px; }
+.sq-detail { min-width: 0; }
 .sq-head { display: flex; gap: 10px; align-items: center; margin-bottom: 5px; }
 .sq-img { width: 48px; height: 48px; object-fit: contain; }
 .sq-name { font-weight: bold; font-size: 0.95rem; }
