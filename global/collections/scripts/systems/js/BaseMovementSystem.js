@@ -259,7 +259,9 @@ class BaseMovementSystem extends GUTS.BaseSystem {
             if (!projectile) {
                 const leaping = this.game.getComponent(entityId, "leaping");
                 if (!(leaping && leaping.isLeaping)) {
-                    this.handleGroundInteraction(pos, vel);
+                    const flyHeight = this._flyHeightForEntity(entityId);
+                    if (flyHeight > 0) this.handleFlyingHover(pos, vel, flyHeight);
+                    else this.handleGroundInteraction(pos, vel);
                 }
                 if (!vel.anchored) {
                     this.enforceBoundaries(pos, collision);
@@ -1038,6 +1040,34 @@ class BaseMovementSystem extends GUTS.BaseSystem {
             return true;
         }
         return false;
+    }
+
+    // Flying units hover flyHeight above the terrain instead of snapping to it.
+    // Per-TYPE cache (unit defs are static) keeps this out of the hot path.
+    _flyHeightForEntity(entityId) {
+        const unitTypeComp = this.game.getComponent(entityId, "unitType");
+        if (!unitTypeComp) return 0;
+        if (!this._flyHeightByType) this._flyHeightByType = new Map();
+        const key = unitTypeComp.collection * 100000 + unitTypeComp.type;
+        let h = this._flyHeightByType.get(key);
+        if (h === undefined) {
+            const def = this.game.getUnitTypeDef(unitTypeComp);
+            h = def?.isFlying ? (def.flyHeight || 80) : 0;
+            this._flyHeightByType.set(key, h);
+        }
+        return h;
+    }
+
+    handleFlyingHover(pos, vel, flyHeight) {
+        const terrainHeight = this.call.getTerrainHeightAtPosition(pos.x, pos.z);
+        const base = terrainHeight !== null ? terrainHeight : this.GROUND_LEVEL;
+        const target = base + flyHeight;
+        // Ease toward hover altitude — smooth takeoff after spawn/placement
+        // snaps a flyer to the ground, deterministic (fixed-step lerp).
+        const dy = target - pos.y;
+        if (dy > -0.5 && dy < 0.5) pos.y = target;
+        else pos.y += dy * 0.15;
+        vel.vy = 0;
     }
 
     handleGroundInteraction(pos, vel) {
