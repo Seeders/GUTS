@@ -5,6 +5,8 @@
     "summonType": null,
     "originalStats": null,
     "createdTime": 0,
-    "isSummoned": true
+    "isSummoned": true,
+    "reassembled": 0,
+    "ownerId": null
   }
 }

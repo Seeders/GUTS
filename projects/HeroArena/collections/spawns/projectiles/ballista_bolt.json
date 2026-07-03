@@ -32,13 +32,13 @@
       }
     }
   },
-  "speed": 600,
+  "speed": 900,
   "attackSound": "",
   "hitSound": "",
   "homing": false,
   "homingStrength": 0,
-  "ballistic": true,
-  "sticksInGround": true,
+  "ballistic": false,
+  "sticksInGround": false,
   "stickDuration": 3,
   "spriteAnimationSet": "ballistabolt"
 }
