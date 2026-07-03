@@ -493,6 +493,42 @@ class PlacementUISystem extends GUTS.BaseSystem {
         }
     }
 
+    // ─── Battle fast-forward (local games) ──────────────────────────────────────
+
+    _ensureSpeedButton() {
+        if (this._speedBtn || !this.game.state?.isLocalGame) return;
+        const btn = document.createElement('button');
+        btn.id = 'battleSpeedBtn';
+        btn.style.cssText = `position:fixed; top:12px; right:200px; z-index:1500;
+            padding:6px 16px; background:rgba(20,26,38,0.9); border:1px solid #d8b45a;
+            color:#e8d9a0; border-radius:6px; cursor:pointer; font-size:1rem; display:none;`;
+        btn.addEventListener('click', () => {
+            const cur = this.game.state.battleSpeed || 1;
+            this.game.state.battleSpeed = cur >= 4 ? 1 : cur * 2;
+            this._updateSpeedButton();
+        });
+        document.body.appendChild(btn);
+        this._speedBtn = btn;
+        this._updateSpeedButton();
+    }
+
+    _updateSpeedButton() {
+        if (!this._speedBtn) return;
+        this._speedBtn.textContent = `⏩ ${this.game.state.battleSpeed || 1}×`;
+    }
+
+    onBattleStart() {
+        this._ensureSpeedButton();
+        if (this._speedBtn) this._speedBtn.style.display = 'block';
+        this._updateSpeedButton();
+    }
+
+    onRoundResult() {
+        // Speed always resets at the end of the round.
+        this.game.state.battleSpeed = 1;
+        if (this._speedBtn) this._speedBtn.style.display = 'none';
+    }
+
     // Called by game.triggerEvent('onReinforcementStart', data) at each prep start.
     // Reuses the (otherwise retired) hero-select overlay as the 1-of-3 card pick.
     onReinforcementStart(data) {
@@ -772,13 +808,22 @@ class PlacementUISystem extends GUTS.BaseSystem {
         const worldPos = this.getWorldPositionFromMouse(event.clientX, event.clientY, false);
         if (!worldPos) return;
 
+        // Mechabellum grid: snap the DRAGGED unit's landing cell (49u tile
+        // centers); the group shifts by the same adjustment so formations hold.
+        const CELL = 49;
+        const rawX = worldPos.x + this.dragOffset.x;
+        const rawZ = worldPos.z + this.dragOffset.z;
+        const snapAdjX = (Math.floor(rawX / CELL) * CELL + CELL / 2) - rawX;
+        const snapAdjZ = (Math.floor(rawZ / CELL) * CELL + CELL / 2) - rawZ;
+
         // Optimistic local update so the entity (or group) follows the cursor immediately
         if (this.dragUnits) {
             for (const u of this.dragUnits) {
-                this.game.placementSystem?.moveHero(u.id, worldPos.x + u.offX, worldPos.z + u.offZ);
+                this.game.placementSystem?.moveHero(u.id,
+                    worldPos.x + u.offX + snapAdjX, worldPos.z + u.offZ + snapAdjZ);
             }
         } else {
-            this.game.placementSystem?.moveHero(draggedId, worldPos.x + this.dragOffset.x, worldPos.z + this.dragOffset.z);
+            this.game.placementSystem?.moveHero(draggedId, rawX + snapAdjX, rawZ + snapAdjZ);
         }
         this.dragMoved = true;
     }

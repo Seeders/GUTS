@@ -1281,6 +1281,12 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
             return this.respond(playerId, 'HERO_MOVED_ACK', { success: false, reason: 'deployment_locked' }, callback);
         }
 
+        // Mechabellum grid: deployment snaps to terrain-tile centers (49u cells,
+        // ~34 across x ~16 deep per side on battleplain).
+        const CELL = 49;
+        x = Math.floor(x / CELL) * CELL + CELL / 2;
+        z = Math.floor(z / CELL) * CELL + CELL / 2;
+
         // Squads move as one: compute the dragged member's delta and shift its
         // squadmates by the same amount, keeping the formation intact.
         const draggedPos = this.game.getComponent(entityId, 'transform')?.position;
