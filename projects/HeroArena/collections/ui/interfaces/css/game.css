@@ -1133,3 +1133,15 @@
 .selection-actions button:disabled { opacity: 0.4; cursor: default; }
 #levelUpBtn:not(:disabled) { border-color: rgba(216,180,90,0.7); color: #ffe9b0; }
 #sellUnitBtn:hover:not(:disabled) { border-color: #a05a5a; }
+
+/* Explicit buy affordance on tech rows */
+.sq-techrow.buyable { cursor: default; }
+.sq-techrow.buyable:hover { background: rgba(255,255,255,0.04); }
+.sq-tech-buy {
+    padding: 3px 10px; font-size: 0.66rem; font-weight: bold; letter-spacing: 0.5px;
+    background: linear-gradient(180deg, #3d5a2e, #2c4222); border: 1px solid #6a9a4a;
+    border-radius: 4px; color: #dfffc8; cursor: pointer; white-space: nowrap;
+}
+.sq-tech-buy:hover { background: linear-gradient(180deg, #4c7038, #37522a); border-color: #8fca66; color: #fff; }
+.sq-tech-owned { font-size: 0.62rem; color: #7dff9e; letter-spacing: 0.5px; white-space: nowrap; }
+.sq-tech-cant { font-size: 0.7rem; color: #8a8578; white-space: nowrap; }

@@ -1301,11 +1301,15 @@ class PlacementUISystem extends GUTS.BaseSystem {
                         const price = Math.max(1, Math.ceil(((t.cost || 10) + escalation) * (1 - discount)));
                         const affordable = (s.gold ?? 0) >= price;
                         const cls = isOwned ? 'owned' : affordable ? 'buyable' : 'poor';
-                        return `<div class="sq-techrow ${cls}" ${isOwned ? '' : `data-buy-tech="${t.id}" data-tech-unit-id="${unitId}"`}
-                            title="${t.description || ''}">
-                            <span class="sq-techrow-name">${isOwned ? '✔' : '○'} ${t.title}</span>
+                        const action = isOwned
+                            ? '<span class="sq-tech-owned">✔ OWNED</span>'
+                            : affordable
+                                ? `<button class="sq-tech-buy" data-buy-tech="${t.id}" data-tech-unit-id="${unitId}">BUY ${price}g</button>`
+                                : `<span class="sq-tech-cant">${price}g</span>`;
+                        return `<div class="sq-techrow ${cls}" title="${t.description || ''}">
+                            <span class="sq-techrow-name">${t.title}</span>
                             <span class="sq-techrow-desc">${t.description || ''}</span>
-                            <span class="sq-techrow-price">${isOwned ? 'Owned' : `${price}g`}</span>
+                            ${action}
                         </div>`;
                     }).join('')}
                 </div>` : ''}
@@ -1320,8 +1324,8 @@ class PlacementUISystem extends GUTS.BaseSystem {
         if (this._selTechWired || !this.elements.selectionCards) return;
         this._selTechWired = true;
         this.elements.selectionCards.addEventListener('click', (e) => {
-            const row = e.target.closest('[data-buy-tech]');
-            if (!row || row.classList.contains('poor')) return;
+            const row = e.target.closest('button[data-buy-tech]');
+            if (!row) return;
             this.call.submitBuyUnitTech(row.dataset.techUnitId, row.dataset.buyTech, (res) => {
                 if (res?.success === false && res?.reason) {
                     GUTS.NotificationSystem?.show?.(`Cannot buy: ${res.reason}`, 'error');
