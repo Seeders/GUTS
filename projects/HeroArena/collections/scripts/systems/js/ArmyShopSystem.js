@@ -475,6 +475,7 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         if (techDef.unlockAbility) {
             this._reapplyAbilitiesForUnitType(stats, unitId);
         }
+        if (techDef.grantAntiAir) this._applyAntiAirToLiveUnits(stats, unitId);
         this._broadcastShop(stats);
         return { success: true, state: this.getShopStateForPlayer(numericPlayerId) };
     }
@@ -671,6 +672,19 @@ class ArmyShopSystem extends GUTS.BaseSystem {
             }
         }
         return false;
+    }
+
+    // Anti-air tech: flag every live unit of the type (finders check the
+    // heroRosterInfo flag alongside the def's canTargetAir).
+    _applyAntiAirToLiveUnits(stats, unitId) {
+        for (const eid of this.game.getEntitiesWith('heroRosterInfo')) {
+            if (this.game.entityAlive?.[eid] !== 1) continue;
+            const info = this.game.getComponent(eid, 'heroRosterInfo');
+            if (info?.playerId !== stats.playerId) continue;
+            const entry = stats.heroRoster?.[info.rosterIndex];
+            if (!entry || this._resolveSpawnType(entry) !== unitId) continue;
+            info.canTargetAir = true;
+        }
     }
 
     _reapplyAbilitiesForUnitType(stats, unitId) {
@@ -1004,9 +1018,9 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         const spawnType = this._resolveSpawnType(entry);
         const ownedTechs = new Set(stats.unitTechs?.[spawnType] || []);
         for (const t of (this.collections.unitTechs?.[spawnType]?.techs || [])) {
-            if (t.statModifiers && ownedTechs.has(t.id)) {
-                this._applyStatMods(combat, health, t.statModifiers);
-            }
+            if (!ownedTechs.has(t.id)) continue;
+            if (t.statModifiers) this._applyStatMods(combat, health, t.statModifiers);
+            if (t.grantAntiAir) info.canTargetAir = true;
         }
     }
 

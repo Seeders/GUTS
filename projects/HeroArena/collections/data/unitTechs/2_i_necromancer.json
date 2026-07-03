@@ -2,25 +2,25 @@
  "unit": "2_i_necromancer",
  "techs": [
   {
-   "id": "necromancer_vet",
-   "title": "Veterancy",
-   "cost": 24,
-   "description": "+20% max HP and +20% damage",
-   "statModifiers": {
-    "maxHP": {
-     "pct": 0.2
-    },
-    "damage": {
-     "pct": 0.2
-    }
-   }
+   "id": "nec_raise",
+   "title": "Raise Dead",
+   "cost": 18,
+   "description": "Unlocks Raise Dead: skeletons from corpses",
+   "unlockAbility": "RaiseDeadAbility"
   },
   {
-   "id": "necromancer_raisedead",
-   "title": "RaiseDead",
-   "cost": 22,
-   "description": "Unlocks RaiseDead: this unit's signature ability",
-   "unlockAbility": "RaiseDeadAbility"
+   "id": "nec_curse",
+   "title": "Withering Curse",
+   "cost": 18,
+   "description": "Unlocks Curse",
+   "unlockAbility": "CurseAbility"
+  },
+  {
+   "id": "nec_drain",
+   "title": "Drain Life",
+   "cost": 18,
+   "description": "Unlocks Drain Life",
+   "unlockAbility": "DrainLifeAbility"
   }
  ],
  "fileName": "2_i_necromancer"

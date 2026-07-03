@@ -2,25 +2,29 @@
  "unit": "2_d_ranger",
  "techs": [
   {
-   "id": "ranger_vet",
-   "title": "Veterancy",
-   "cost": 24,
-   "description": "+20% max HP and +20% damage",
-   "statModifiers": {
-    "maxHP": {
-     "pct": 0.2
-    },
-    "damage": {
-     "pct": 0.2
-    }
-   }
+   "id": "ran_multishot",
+   "title": "Split Volley",
+   "cost": 18,
+   "description": "Unlocks Multi-Shot",
+   "unlockAbility": "MultiShotAbility"
   },
   {
-   "id": "ranger_rapidfire",
-   "title": "RapidFire",
-   "cost": 22,
-   "description": "Unlocks RapidFire: this unit's signature ability",
-   "unlockAbility": "RapidFireAbility"
+   "id": "ran_aimed",
+   "title": "Deadeye",
+   "cost": 18,
+   "description": "Unlocks Aimed Shot",
+   "unlockAbility": "AimedShotAbility"
+  },
+  {
+   "id": "ran_hawkeye",
+   "title": "Hawkeye",
+   "cost": 18,
+   "description": "+50 attack range",
+   "statModifiers": {
+    "range": {
+     "add": 50
+    }
+   }
   }
  ],
  "fileName": "2_d_ranger"

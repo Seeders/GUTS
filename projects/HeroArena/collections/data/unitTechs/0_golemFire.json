@@ -1,0 +1,31 @@
+{
+ "unit": "0_golemFire",
+ "techs": [
+  {
+   "id": "gfi_aura",
+   "title": "Burning Aura",
+   "cost": 21,
+   "description": "Unlocks Burning Aura: scorch everything close",
+   "unlockAbility": "BurningAuraAbility"
+  },
+  {
+   "id": "gfi_inferno",
+   "title": "Inferno",
+   "cost": 21,
+   "description": "Unlocks Inferno: eruption of flame",
+   "unlockAbility": "InfernoAbility"
+  },
+  {
+   "id": "gfi_core",
+   "title": "Molten Core",
+   "cost": 21,
+   "description": "+30% damage",
+   "statModifiers": {
+    "damage": {
+     "pct": 0.3
+    }
+   }
+  }
+ ],
+ "fileName": "0_golemFire"
+}

@@ -2,25 +2,29 @@
  "unit": "2_s_warlord",
  "techs": [
   {
-   "id": "warlord_vet",
-   "title": "Veterancy",
-   "cost": 24,
-   "description": "+20% max HP and +20% damage",
-   "statModifiers": {
-    "maxHP": {
-     "pct": 0.2
-    },
-    "damage": {
-     "pct": 0.2
-    }
-   }
+   "id": "war_cry",
+   "title": "Command Shout",
+   "cost": 18,
+   "description": "Unlocks Battle Cry: rally the army",
+   "unlockAbility": "BattleCryAbility"
   },
   {
-   "id": "warlord_battlecry",
-   "title": "BattleCry",
-   "cost": 22,
-   "description": "Unlocks BattleCry: this unit's signature ability",
-   "unlockAbility": "BattleCryAbility"
+   "id": "war_presence",
+   "title": "Arena Presence",
+   "cost": 18,
+   "description": "Unlocks Arena Presence: aura of dominance",
+   "unlockAbility": "ArenaPresenceAbility"
+  },
+  {
+   "id": "war_conqueror",
+   "title": "Conqueror",
+   "cost": 18,
+   "description": "+30% damage",
+   "statModifiers": {
+    "damage": {
+     "pct": 0.3
+    }
+   }
   }
  ],
  "fileName": "2_s_warlord"

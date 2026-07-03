@@ -2,25 +2,29 @@
  "unit": "2_sd_knight",
  "techs": [
   {
-   "id": "knight_vet",
-   "title": "Veterancy",
-   "cost": 24,
-   "description": "+20% max HP and +20% damage",
-   "statModifiers": {
-    "maxHP": {
-     "pct": 0.2
-    },
-    "damage": {
-     "pct": 0.2
-    }
-   }
+   "id": "kni_charge",
+   "title": "Cavalry Charge",
+   "cost": 18,
+   "description": "Unlocks Charge: lance into the line",
+   "unlockAbility": "ChargeAbility"
   },
   {
-   "id": "knight_charge",
-   "title": "Charge",
-   "cost": 22,
-   "description": "Unlocks Charge: this unit's signature ability",
-   "unlockAbility": "ChargeAbility"
+   "id": "kni_bash",
+   "title": "Shield Bash",
+   "cost": 18,
+   "description": "Unlocks Bash: stun the target",
+   "unlockAbility": "BashAbility"
+  },
+  {
+   "id": "kni_barding",
+   "title": "Full Barding",
+   "cost": 18,
+   "description": "+8 armor",
+   "statModifiers": {
+    "armor": {
+     "add": 8
+    }
+   }
   }
  ],
  "fileName": "2_sd_knight"

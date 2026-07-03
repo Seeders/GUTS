@@ -2,25 +2,29 @@
  "unit": "2_sd_hoplite",
  "techs": [
   {
-   "id": "hoplite_vet",
-   "title": "Veterancy",
-   "cost": 24,
-   "description": "+20% max HP and +20% damage",
-   "statModifiers": {
-    "maxHP": {
-     "pct": 0.2
-    },
-    "damage": {
-     "pct": 0.2
-    }
-   }
+   "id": "hop_phalanx",
+   "title": "Phalanx Masters",
+   "cost": 18,
+   "description": "Unlocks Phalanx Formation",
+   "unlockAbility": "PhalanxFormationAbility"
   },
   {
-   "id": "hoplite_phalanx",
-   "title": "Phalanx",
-   "cost": 22,
-   "description": "Unlocks Phalanx: this unit's signature ability",
-   "unlockAbility": "PhalanxFormationAbility"
+   "id": "hop_pikes",
+   "title": "Sky-Piercing Pikes",
+   "cost": 18,
+   "description": "Hoplites can strike flying units",
+   "grantAntiAir": true
+  },
+  {
+   "id": "hop_wall",
+   "title": "Living Wall",
+   "cost": 18,
+   "description": "+40% max HP",
+   "statModifiers": {
+    "maxHP": {
+     "pct": 0.4
+    }
+   }
   }
  ],
  "fileName": "2_sd_hoplite"

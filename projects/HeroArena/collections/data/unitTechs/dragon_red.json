@@ -1,0 +1,31 @@
+{
+ "unit": "dragon_red",
+ "techs": [
+  {
+   "id": "dra_inferno",
+   "title": "Inferno",
+   "cost": 24,
+   "description": "Unlocks Inferno: eruption of dragonfire",
+   "unlockAbility": "InfernoAbility"
+  },
+  {
+   "id": "dra_storm",
+   "title": "Fire Storm",
+   "cost": 24,
+   "description": "Unlocks Fire Storm: the sky burns",
+   "unlockAbility": "FireStormAbility"
+  },
+  {
+   "id": "dra_hoardlust",
+   "title": "Hoardlust",
+   "cost": 24,
+   "description": "+30% damage",
+   "statModifiers": {
+    "damage": {
+     "pct": 0.3
+    }
+   }
+  }
+ ],
+ "fileName": "dragon_red"
+}

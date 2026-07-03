@@ -2,25 +2,29 @@
  "unit": "2_s_gladiator",
  "techs": [
   {
-   "id": "gladiator_vet",
-   "title": "Veterancy",
-   "cost": 24,
-   "description": "+20% max HP and +20% damage",
-   "statModifiers": {
-    "maxHP": {
-     "pct": 0.2
-    },
-    "damage": {
-     "pct": 0.2
-    }
-   }
+   "id": "gla_retaliate",
+   "title": "Retaliation",
+   "cost": 18,
+   "description": "Unlocks Retaliate: counter every blow",
+   "unlockAbility": "RetaliateAbility"
   },
   {
-   "id": "gladiator_arenapresence",
-   "title": "ArenaPresence",
-   "cost": 22,
-   "description": "Unlocks ArenaPresence: this unit's signature ability",
-   "unlockAbility": "ArenaPresenceAbility"
+   "id": "gla_taunt",
+   "title": "Crowd Favorite",
+   "cost": 18,
+   "description": "Unlocks Taunt: demand attention",
+   "unlockAbility": "TauntAbility"
+  },
+  {
+   "id": "gla_champion",
+   "title": "Champion",
+   "cost": 18,
+   "description": "+40% max HP",
+   "statModifiers": {
+    "maxHP": {
+     "pct": 0.4
+    }
+   }
   }
  ],
  "fileName": "2_s_gladiator"

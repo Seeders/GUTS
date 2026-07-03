@@ -1,50 +1,27 @@
 {
  "unit": "fairy",
- "fileName": "fairy",
  "techs": [
   {
-   "id": "fai_stingers",
-   "title": "Searing Stingers",
-   "cost": 14,
-   "description": "+25% damage",
-   "statModifiers": {
-    "damage": {
-     "pct": 0.25
-    }
-   }
+   "id": "fai_shield",
+   "title": "Magic Shield",
+   "cost": 18,
+   "description": "Unlocks Magic Shield: absorb a burst of damage",
+   "unlockAbility": "MagicShieldAbility"
   },
   {
-   "id": "fai_gossamer",
-   "title": "Gossamer Weave",
-   "cost": 14,
-   "description": "+30% max HP",
-   "statModifiers": {
-    "maxHP": {
-     "pct": 0.3
-    }
-   }
+   "id": "fai_wind",
+   "title": "Wind Shield",
+   "cost": 18,
+   "description": "Unlocks Wind Shield: deflect projectiles",
+   "unlockAbility": "WindShieldAbility"
   },
   {
-   "id": "fai_pixieDust",
-   "title": "Pixie Dust",
-   "cost": 14,
-   "description": "+15 evasion",
-   "statModifiers": {
-    "evasion": {
-     "add": 15
-    }
-   }
-  },
-  {
-   "id": "fai_longWings",
-   "title": "Soaring Wings",
-   "cost": 14,
-   "description": "+30 attack range",
-   "statModifiers": {
-    "range": {
-     "add": 30
-    }
-   }
+   "id": "fai_polymorph",
+   "title": "Fey Mischief",
+   "cost": 24,
+   "description": "Unlocks Polymorph: turn a threat into a sheep",
+   "unlockAbility": "PolymorphAbility"
   }
- ]
+ ],
+ "fileName": "fairy"
 }

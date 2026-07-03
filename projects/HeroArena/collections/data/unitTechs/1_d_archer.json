@@ -2,40 +2,36 @@
  "unit": "1_d_archer",
  "techs": [
   {
-   "id": "arc_fletch",
-   "title": "Fine Fletching",
+   "id": "arc_multishot",
+   "title": "Multi-Shot",
    "cost": 14,
-   "description": "+20% damage",
-   "statModifiers": {
-    "damage": {
-     "pct": 0.2
-    }
-   }
-  },
-  {
-   "id": "arc_longbow",
-   "title": "Longbows",
-   "cost": 16,
-   "description": "+25% attack range",
-   "statModifiers": {
-    "range": {
-     "pct": 0.25
-    }
-   }
-  },
-  {
-   "id": "arc_multi",
-   "title": "Multi Shot",
-   "cost": 20,
-   "description": "Unlocks Multi Shot: hit several enemies",
+   "description": "Unlocks Multi-Shot: volley several arrows",
    "unlockAbility": "MultiShotAbility"
   },
   {
    "id": "arc_aimed",
    "title": "Aimed Shot",
-   "cost": 18,
-   "description": "Unlocks Aimed Shot: precise heavy hit",
+   "cost": 14,
+   "description": "Unlocks Aimed Shot: slow, huge single hit",
    "unlockAbility": "AimedShotAbility"
+  },
+  {
+   "id": "arc_piercing",
+   "title": "Piercing Shot",
+   "cost": 14,
+   "description": "Unlocks Piercing Shot: bolts punch through lines",
+   "unlockAbility": "PiercingShotAbility"
+  },
+  {
+   "id": "arc_longbows",
+   "title": "Longbows",
+   "cost": 14,
+   "description": "+50 attack range",
+   "statModifiers": {
+    "range": {
+     "add": 50
+    }
+   }
   }
  ],
  "fileName": "1_d_archer"

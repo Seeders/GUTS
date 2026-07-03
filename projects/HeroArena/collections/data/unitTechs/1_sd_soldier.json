@@ -2,43 +2,32 @@
  "unit": "1_sd_soldier",
  "techs": [
   {
-   "id": "sol_shields",
-   "title": "Tower Shields",
-   "cost": 14,
-   "description": "+20% max HP, +5 armor",
-   "statModifiers": {
-    "maxHP": {
-     "pct": 0.2
-    },
-    "armor": {
-     "add": 5
-    }
-   }
-  },
-  {
-   "id": "sol_drill",
-   "title": "Combat Drill",
-   "cost": 14,
-   "description": "+15% attack speed",
-   "statModifiers": {
-    "attackSpeed": {
-     "pct": 0.15
-    }
-   }
-  },
-  {
-   "id": "sol_wall",
+   "id": "sol_shieldwall",
    "title": "Shield Wall",
-   "cost": 18,
-   "description": "Unlocks Shield Wall: heavy damage reduction",
+   "cost": 14,
+   "description": "Unlocks Shield Wall: brace against damage",
    "unlockAbility": "ShieldWallAbility"
   },
   {
-   "id": "sol_charge",
-   "title": "Charge",
-   "cost": 18,
-   "description": "Unlocks Charge: rush the enemy line",
-   "unlockAbility": "ChargeAbility"
+   "id": "sol_phalanx",
+   "title": "Phalanx Drill",
+   "cost": 14,
+   "description": "Unlocks Phalanx Formation with nearby soldiers",
+   "unlockAbility": "PhalanxFormationAbility"
+  },
+  {
+   "id": "sol_taunt",
+   "title": "Provoke",
+   "cost": 14,
+   "description": "Unlocks Taunt: force enemies onto the line",
+   "unlockAbility": "TauntAbility"
+  },
+  {
+   "id": "sol_pikes",
+   "title": "Skyward Pikes",
+   "cost": 14,
+   "description": "Soldiers can strike flying units",
+   "grantAntiAir": true
   }
  ],
  "fileName": "1_sd_soldier"

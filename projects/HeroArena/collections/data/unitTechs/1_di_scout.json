@@ -2,40 +2,36 @@
  "unit": "1_di_scout",
  "techs": [
   {
-   "id": "sco_evasion",
-   "title": "Evasive Training",
+   "id": "sco_sprint",
+   "title": "Sprint",
    "cost": 14,
-   "description": "+15 evasion",
-   "statModifiers": {
-    "evasion": {
-     "add": 15
-    }
-   }
-  },
-  {
-   "id": "sco_blades",
-   "title": "Serrated Blades",
-   "cost": 14,
-   "description": "+20% damage",
-   "statModifiers": {
-    "damage": {
-     "pct": 0.2
-    }
-   }
-  },
-  {
-   "id": "sco_poison",
-   "title": "Poison Coat",
-   "cost": 18,
-   "description": "Unlocks Poison Coat: venomous weapons",
-   "unlockAbility": "PoisonCoatAbility"
+   "description": "Unlocks Sprint: burst of speed",
+   "unlockAbility": "SprintAbility"
   },
   {
    "id": "sco_smoke",
    "title": "Smoke Bomb",
-   "cost": 18,
-   "description": "Unlocks Smoke Bomb: blind nearby enemies",
+   "cost": 14,
+   "description": "Unlocks Smoke Bomb: vanish from combat",
    "unlockAbility": "SmokeBombAbility"
+  },
+  {
+   "id": "sco_cripple",
+   "title": "Crippling Shot",
+   "cost": 14,
+   "description": "Unlocks Crippling Shot: slow fleeing prey",
+   "unlockAbility": "CripplingShotAbility"
+  },
+  {
+   "id": "sco_venom",
+   "title": "Concentrated Venom",
+   "cost": 14,
+   "description": "+35% damage (poison ignores armor)",
+   "statModifiers": {
+    "damage": {
+     "pct": 0.35
+    }
+   }
   }
  ],
  "fileName": "1_di_scout"

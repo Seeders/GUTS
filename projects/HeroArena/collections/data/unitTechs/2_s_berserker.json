@@ -2,16 +2,27 @@
  "unit": "2_s_berserker",
  "techs": [
   {
-   "id": "berserker_vet",
-   "title": "Veterancy",
-   "cost": 24,
-   "description": "+20% max HP and +20% damage",
+   "id": "ber_bloodlust",
+   "title": "Bloodlust",
+   "cost": 18,
+   "description": "Unlocks Bloodlust: kills feed frenzy",
+   "unlockAbility": "BloodlustAbility"
+  },
+  {
+   "id": "ber_charge",
+   "title": "Reckless Charge",
+   "cost": 18,
+   "description": "Unlocks Charge: crash into the enemy line",
+   "unlockAbility": "ChargeAbility"
+  },
+  {
+   "id": "ber_frenzy",
+   "title": "Frenzy",
+   "cost": 18,
+   "description": "+35% attack speed",
    "statModifiers": {
-    "maxHP": {
-     "pct": 0.2
-    },
-    "damage": {
-     "pct": 0.2
+    "attackSpeed": {
+     "pct": 0.35
     }
    }
   }

@@ -2,40 +2,36 @@
  "unit": "1_i_apprentice",
  "techs": [
   {
-   "id": "app_focus",
-   "title": "Arcane Focus",
+   "id": "app_blink",
+   "title": "Blink",
    "cost": 14,
-   "description": "+25% damage",
-   "statModifiers": {
-    "damage": {
-     "pct": 0.25
-    }
-   }
-  },
-  {
-   "id": "app_robes",
-   "title": "Warded Robes",
-   "cost": 14,
-   "description": "+20% max HP",
-   "statModifiers": {
-    "maxHP": {
-     "pct": 0.2
-    }
-   }
-  },
-  {
-   "id": "app_fireball",
-   "title": "Fireball",
-   "cost": 20,
-   "description": "Unlocks Fireball: explosive projectile",
-   "unlockAbility": "FireBallAbility"
+   "description": "Unlocks Blink: teleport out of danger",
+   "unlockAbility": "BlinkAbility"
   },
   {
    "id": "app_iceshard",
    "title": "Ice Shard",
-   "cost": 18,
-   "description": "Unlocks Ice Shard: chilling bolt",
+   "cost": 14,
+   "description": "Unlocks Ice Shard: chilling projectile",
    "unlockAbility": "IceShardAbility"
+  },
+  {
+   "id": "app_chain",
+   "title": "Chain Lightning",
+   "cost": 14,
+   "description": "Unlocks Chain Lightning: arcs between foes",
+   "unlockAbility": "ChainLightningAbility"
+  },
+  {
+   "id": "app_focus",
+   "title": "Arcane Focus",
+   "cost": 14,
+   "description": "+35% damage",
+   "statModifiers": {
+    "damage": {
+     "pct": 0.35
+    }
+   }
   }
  ],
  "fileName": "1_i_apprentice"

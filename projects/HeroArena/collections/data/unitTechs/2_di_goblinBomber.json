@@ -2,25 +2,29 @@
  "unit": "2_di_goblinBomber",
  "techs": [
   {
-   "id": "goblinbomber_vet",
-   "title": "Veterancy",
-   "cost": 24,
-   "description": "+20% max HP and +20% damage",
-   "statModifiers": {
-    "maxHP": {
-     "pct": 0.2
-    },
-    "damage": {
-     "pct": 0.2
-    }
-   }
+   "id": "gob_disrupt",
+   "title": "Disruption Bomb",
+   "cost": 18,
+   "description": "Unlocks Disruption Bomb: silences a whole area",
+   "unlockAbility": "DisruptionBombAbility"
   },
   {
-   "id": "goblinbomber_meteorstrike",
-   "title": "MeteorStrike",
-   "cost": 22,
-   "description": "Unlocks MeteorStrike: this unit's signature ability",
-   "unlockAbility": "MeteorStrikeAbility"
+   "id": "gob_explosive",
+   "title": "Explosive Cache",
+   "cost": 18,
+   "description": "Unlocks Explosive Trap placement",
+   "unlockAbility": "ExplosiveTrapAbility"
+  },
+  {
+   "id": "gob_payload",
+   "title": "Bigger Payloads",
+   "cost": 18,
+   "description": "+40% damage",
+   "statModifiers": {
+    "damage": {
+     "pct": 0.4
+    }
+   }
   }
  ],
  "fileName": "2_di_goblinBomber"

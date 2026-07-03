@@ -2,25 +2,29 @@
  "unit": "2_is_crusader",
  "techs": [
   {
-   "id": "crusader_vet",
-   "title": "Veterancy",
-   "cost": 24,
-   "description": "+20% max HP and +20% damage",
-   "statModifiers": {
-    "maxHP": {
-     "pct": 0.2
-    },
-    "damage": {
-     "pct": 0.2
-    }
-   }
+   "id": "cru_shieldwall",
+   "title": "Bulwark",
+   "cost": 18,
+   "description": "Unlocks Shield Wall",
+   "unlockAbility": "ShieldWallAbility"
   },
   {
-   "id": "crusader_holyheal",
-   "title": "HolyHeal",
-   "cost": 22,
-   "description": "Unlocks HolyHeal: this unit's signature ability",
-   "unlockAbility": "HealAbility"
+   "id": "cru_consecrate",
+   "title": "Consecrated Ground",
+   "cost": 18,
+   "description": "Unlocks Consecration",
+   "unlockAbility": "ConsecrationAbility"
+  },
+  {
+   "id": "cru_aegis",
+   "title": "Aegis",
+   "cost": 18,
+   "description": "+8 armor",
+   "statModifiers": {
+    "armor": {
+     "add": 8
+    }
+   }
   }
  ],
  "fileName": "2_is_crusader"

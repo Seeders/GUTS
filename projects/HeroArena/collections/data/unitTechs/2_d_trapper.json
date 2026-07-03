@@ -2,25 +2,25 @@
  "unit": "2_d_trapper",
  "techs": [
   {
-   "id": "trapper_vet",
-   "title": "Veterancy",
-   "cost": 24,
-   "description": "+20% max HP and +20% damage",
-   "statModifiers": {
-    "maxHP": {
-     "pct": 0.2
-    },
-    "damage": {
-     "pct": 0.2
-    }
-   }
+   "id": "tra_entangle",
+   "title": "Entangling Snares",
+   "cost": 18,
+   "description": "Unlocks Entangle: root enemies in place",
+   "unlockAbility": "EntangleAbility"
   },
   {
-   "id": "trapper_explosivetrap",
-   "title": "ExplosiveTrap",
-   "cost": 22,
-   "description": "Unlocks ExplosiveTrap: this unit's signature ability",
-   "unlockAbility": "ExplosiveTrapAbility"
+   "id": "tra_cripple",
+   "title": "Hamstring Shot",
+   "cost": 18,
+   "description": "Unlocks Crippling Shot",
+   "unlockAbility": "CripplingShotAbility"
+  },
+  {
+   "id": "tra_beartrap",
+   "title": "Bear Traps",
+   "cost": 18,
+   "description": "Unlocks Bear Trap placement",
+   "unlockAbility": "BearTrapAbility"
   }
  ],
  "fileName": "2_d_trapper"

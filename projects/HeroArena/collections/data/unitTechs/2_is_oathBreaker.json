@@ -2,25 +2,25 @@
  "unit": "2_is_oathBreaker",
  "techs": [
   {
-   "id": "oathbreaker_vet",
-   "title": "Veterancy",
-   "cost": 24,
-   "description": "+20% max HP and +20% damage",
-   "statModifiers": {
-    "maxHP": {
-     "pct": 0.2
-    },
-    "damage": {
-     "pct": 0.2
-    }
-   }
+   "id": "oat_curse",
+   "title": "Dark Oath",
+   "cost": 18,
+   "description": "Unlocks Curse: weaken and doom enemies",
+   "unlockAbility": "CurseAbility"
   },
   {
-   "id": "oathbreaker_curse",
-   "title": "Curse",
-   "cost": 22,
-   "description": "Unlocks Curse: this unit's signature ability",
-   "unlockAbility": "CurseAbility"
+   "id": "oat_drain",
+   "title": "Drain Life",
+   "cost": 18,
+   "description": "Unlocks Drain Life: steal HP",
+   "unlockAbility": "DrainLifeAbility"
+  },
+  {
+   "id": "oat_corrupt",
+   "title": "Corrupting Aura",
+   "cost": 18,
+   "description": "Unlocks Corrupting Aura",
+   "unlockAbility": "CorruptingAuraAbility"
   }
  ],
  "fileName": "2_is_oathBreaker"

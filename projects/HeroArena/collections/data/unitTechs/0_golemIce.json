@@ -1,0 +1,31 @@
+{
+ "unit": "0_golemIce",
+ "techs": [
+  {
+   "id": "gic_aura",
+   "title": "Freezing Aura",
+   "cost": 21,
+   "description": "Unlocks Freezing Aura: chill nearby enemies",
+   "unlockAbility": "FreezingAuraAbility"
+  },
+  {
+   "id": "gic_nova",
+   "title": "Frost Nova",
+   "cost": 21,
+   "description": "Unlocks Frost Nova",
+   "unlockAbility": "FrostNovaAbility"
+  },
+  {
+   "id": "gic_glacial",
+   "title": "Glacial Mass",
+   "cost": 21,
+   "description": "+40% max HP",
+   "statModifiers": {
+    "maxHP": {
+     "pct": 0.4
+    }
+   }
+  }
+ ],
+ "fileName": "0_golemIce"
+}

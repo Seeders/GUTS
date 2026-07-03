@@ -2,25 +2,25 @@
  "unit": "2_di_trickster",
  "techs": [
   {
-   "id": "trickster_vet",
-   "title": "Veterancy",
-   "cost": 24,
-   "description": "+20% max HP and +20% damage",
-   "statModifiers": {
-    "maxHP": {
-     "pct": 0.2
-    },
-    "damage": {
-     "pct": 0.2
-    }
-   }
+   "id": "tri_mirror",
+   "title": "Mirror Images",
+   "cost": 18,
+   "description": "Unlocks Mirror Images: confusing duplicates",
+   "unlockAbility": "MirrorImagesAbility"
   },
   {
-   "id": "trickster_mirrorimages",
-   "title": "MirrorImages",
-   "cost": 22,
-   "description": "Unlocks MirrorImages: this unit's signature ability",
-   "unlockAbility": "MirrorImagesAbility"
+   "id": "tri_smoke",
+   "title": "Vanishing Act",
+   "cost": 18,
+   "description": "Unlocks Smoke Bomb",
+   "unlockAbility": "SmokeBombAbility"
+  },
+  {
+   "id": "tri_poison",
+   "title": "Poison Coat",
+   "cost": 18,
+   "description": "Unlocks Poison Coat: envenomed blades",
+   "unlockAbility": "PoisonCoatAbility"
   }
  ],
  "fileName": "2_di_trickster"

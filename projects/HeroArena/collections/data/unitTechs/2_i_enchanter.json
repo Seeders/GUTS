@@ -2,25 +2,25 @@
  "unit": "2_i_enchanter",
  "techs": [
   {
-   "id": "enchanter_vet",
-   "title": "Veterancy",
-   "cost": 24,
-   "description": "+20% max HP and +20% damage",
-   "statModifiers": {
-    "maxHP": {
-     "pct": 0.2
-    },
-    "damage": {
-     "pct": 0.2
-    }
-   }
+   "id": "enc_enchant",
+   "title": "Enchant Weapon",
+   "cost": 18,
+   "description": "Unlocks Enchant Weapon: empower an ally's blade",
+   "unlockAbility": "EnchantWeaponAbility"
   },
   {
-   "id": "enchanter_mindcontrol",
-   "title": "MindControl",
-   "cost": 22,
-   "description": "Unlocks MindControl: this unit's signature ability",
-   "unlockAbility": "MindControlAbility"
+   "id": "enc_nova",
+   "title": "Frost Nova",
+   "cost": 18,
+   "description": "Unlocks Frost Nova: freeze everything nearby",
+   "unlockAbility": "FrostNovaAbility"
+  },
+  {
+   "id": "enc_polymorph",
+   "title": "Polymorph",
+   "cost": 24,
+   "description": "Unlocks Polymorph: turn a threat into a sheep",
+   "unlockAbility": "PolymorphAbility"
   }
  ],
  "fileName": "2_i_enchanter"
