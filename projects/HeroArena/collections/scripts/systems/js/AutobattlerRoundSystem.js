@@ -376,11 +376,11 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
         this._nextRetargetAt = (this.game.state.now || 0) + AutobattlerRoundSystem.RETARGET_INTERVAL;
     }
 
-    // Mechabellum target flow: units never stop hunting. Every couple of
-    // seconds each squad's attack-move is re-aimed at the closest LIVING
-    // enemy (unit or building) — so a squad that razes a tower rolls on to
-    // the next nearest fight instead of idling at its old order point.
-    // Engaged units are unaffected (the order tree yields to combat).
+    // Mechabellum target flow: the MARCH objective is always a structure —
+    // each squad advances on its nearest living enemy building (then the
+    // base when none stand), fighting whatever units enter vision along the
+    // way (the order tree yields to combat). When a building falls, squads
+    // roll on to the next nearest one instead of idling at the rubble.
     static RETARGET_INTERVAL = 2;
 
     update() {
@@ -391,8 +391,12 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
         this._nextRetargetAt = now + AutobattlerRoundSystem.RETARGET_INTERVAL;
 
         for (const team of [this.enums.team.left, this.enums.team.right]) {
-            const targets = this._livingEnemyPositions(team);
-            if (targets.length === 0) continue;
+            const targets = this._livingEnemyBuildingPositions(team);
+            if (targets.length === 0) {
+                const base = this._enemyBasePos(team);
+                if (base) targets.push({ x: base.x, z: base.z });
+                else continue;
+            }
             for (const s of this._movableSquadsForTeam(team)) {
                 const anchor = s.pos;
                 let best = null, bestD = Infinity;
@@ -408,18 +412,15 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
         }
     }
 
-    // Positions of every living enemy of `team`: army units AND buildings.
-    _livingEnemyPositions(team) {
+    // Positions of every living enemy BUILDING of `team` (march objectives).
+    _livingEnemyBuildingPositions(team) {
         const out = [];
-        for (const eid of this.game.getEntitiesWith('team', 'health')) {
+        for (const eid of this.game.getEntitiesWith('buildingOwner')) {
             if (this.game.entityAlive?.[eid] !== 1) continue;
             const t = this.game.getComponent(eid, 'team');
             if (!t || t.team === team) continue;
-            if (t.team !== this.enums.team.left && t.team !== this.enums.team.right) continue;
             const hp = this.game.getComponent(eid, 'health');
             if (!hp || hp.current <= 0) continue;
-            const ds = this.game.getComponent(eid, 'deathState');
-            if (ds && ds.state !== this.enums.deathState.alive) continue;
             const pos = this.game.getComponent(eid, 'transform')?.position;
             if (pos) out.push({ x: pos.x, z: pos.z });
         }
