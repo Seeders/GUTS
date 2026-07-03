@@ -235,13 +235,17 @@ class HeroRosterSystem extends GUTS.BaseSystem {
 
         entry.formation = { w: W, h: H };
 
-        // Reposition around the current centroid
+        // Reposition around the current centroid, SNAPPED to a cell center —
+        // offsets are whole cells, so every member lands exactly on the grid.
+        const CELL = 24.5;
         let cx = 0, cz = 0;
         for (const id of members) {
             const p = this.game.getComponent(id, 'transform')?.position;
             cx += p?.x || 0; cz += p?.z || 0;
         }
         cx /= members.length; cz /= members.length;
+        cx = Math.floor(cx / CELL) * CELL + CELL / 2;
+        cz = Math.floor(cz / CELL) * CELL + CELL / 2;
 
         const basis = this.formationBasis(stats.team);
         const moves = [];
@@ -262,8 +266,10 @@ class HeroRosterSystem extends GUTS.BaseSystem {
         if (w * h <= 1) return { x: 0, z: 0 };
         const SPACING = 24.5;   // one deployment cell — members sit on adjacent cells
         const col = memberIndex % w, row = Math.floor(memberIndex / w);
-        const ax = (col - (w - 1) / 2) * SPACING;   // across the line
-        const az = (row - (h - 1) / 2) * SPACING;   // toward the enemy
+        // INTEGER cell steps (even widths must not straddle half-cells: every
+        // member has to land on a grid cell center for the markers to line up)
+        const ax = (col - Math.floor((w - 1) / 2)) * SPACING;   // across the line
+        const az = (row - Math.floor((h - 1) / 2)) * SPACING;   // toward the enemy
         const b = basis || { across: { x: 0, z: 1 }, forward: { x: 1, z: 0 } };
         return {
             x: b.across.x * ax + b.forward.x * az,
