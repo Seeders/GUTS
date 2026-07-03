@@ -1292,11 +1292,23 @@ class PlacementUISystem extends GUTS.BaseSystem {
                 </div>` : ''}
                 <div class="sq-stats">${stats.map(([k, v]) =>
                     `<span class="ut-k">${k}</span><span class="ut-v">${v}</span>`).join('')}</div>
-                ${ownedTechs.length ? `<div class="sq-techs">${ownedTechs.map(t =>
-                    `<div class="ut-tech owned">✔ ${t.title}</div>`).join('')}</div>`
-                    : '<div class="sq-notechs">No technologies purchased</div>'}
-                ${techsAll.length ? `<button class="sq-tech-btn" data-tech-unit="${unitId}">
-                    ⚙ Technologies (${ownedTechs.length}/${techsAll.length})</button>` : ''}
+                ${techsAll.length ? `<div class="sq-techlist">
+                    <div class="sq-techlist-head">⚙ Technologies ${ownedTechs.length}/${techsAll.length}</div>
+                    ${techsAll.map(t => {
+                        const isOwned = owned.has(t.id);
+                        const escalation = Math.min(70, 14 * owned.size);
+                        const discount = s.techDiscount || 0;
+                        const price = Math.max(1, Math.ceil(((t.cost || 10) + escalation) * (1 - discount)));
+                        const affordable = (s.gold ?? 0) >= price;
+                        const cls = isOwned ? 'owned' : affordable ? 'buyable' : 'poor';
+                        return `<div class="sq-techrow ${cls}" ${isOwned ? '' : `data-buy-tech="${t.id}" data-tech-unit-id="${unitId}"`}
+                            title="${t.description || ''}">
+                            <span class="sq-techrow-name">${isOwned ? '✔' : '○'} ${t.title}</span>
+                            <span class="sq-techrow-desc">${t.description || ''}</span>
+                            <span class="sq-techrow-price">${isOwned ? 'Owned' : `${price}g`}</span>
+                        </div>`;
+                    }).join('')}
+                </div>` : ''}
             </div>`;
         };
 
@@ -1308,8 +1320,15 @@ class PlacementUISystem extends GUTS.BaseSystem {
         if (this._selTechWired || !this.elements.selectionCards) return;
         this._selTechWired = true;
         this.elements.selectionCards.addEventListener('click', (e) => {
-            const btn = e.target.closest('[data-tech-unit]');
-            if (btn) this._openUnitTechPanel(btn.dataset.techUnit);
+            const row = e.target.closest('[data-buy-tech]');
+            if (!row || row.classList.contains('poor')) return;
+            this.call.submitBuyUnitTech(row.dataset.techUnitId, row.dataset.buyTech, (res) => {
+                if (res?.success === false && res?.reason) {
+                    GUTS.NotificationSystem?.show?.(`Cannot buy: ${res.reason}`, 'error');
+                }
+                this._renderShop(res?.state || res);
+                this._refreshSelectionPanel();
+            });
         });
     }
 
