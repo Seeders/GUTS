@@ -64,8 +64,9 @@ class ArmyShopSystem extends GUTS.BaseSystem {
 
     // ─── Unit tiers (Mechabellum model) ─────────────────────────────────────────
     // Units never offered in the shop (workers, summons, transforms).
-    static UNIT_EXCLUDE = new Set(['peasant', '4_archmage', 'sentry', '0_skeleton']);
-    // Off-prefix tier-2s (air chaff lives here).
+    static UNIT_EXCLUDE = new Set(['peasant', '4_archmage', 'sentry']);
+    // Off-prefix tier-1s (the skeleton swarm) and tier-2s (air chaff).
+    static T1_UNIT_SET = new Set(['0_skeleton']);
     static T2_UNIT_SET = new Set(['fairy']);
     // Tier-3 "heavies": strong specialists above the tier-2 roster.
     static T3_UNIT_SET = new Set(['0_golemStone', '0_golemFire', '0_golemIce', 'ballista']);
@@ -78,6 +79,7 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         if (ArmyShopSystem.T4_UNIT_SET.has(id)) return 4;
         if (ArmyShopSystem.T3_UNIT_SET.has(id)) return 3;
         if (ArmyShopSystem.T2_UNIT_SET.has(id)) return 2;
+        if (ArmyShopSystem.T1_UNIT_SET.has(id)) return 1;
         if (/^1_/.test(id)) return 1;
         if (/^2_/.test(id)) return 2;
         return null;
@@ -476,6 +478,7 @@ class ArmyShopSystem extends GUTS.BaseSystem {
             this._reapplyAbilitiesForUnitType(stats, unitId);
         }
         if (techDef.grantAntiAir) this._applyAntiAirToLiveUnits(stats, unitId);
+        if (techDef.grantBuff) this._applyBuffToLiveUnits(stats, unitId, techDef.grantBuff);
         this._broadcastShop(stats);
         return { success: true, state: this.getShopStateForPlayer(numericPlayerId) };
     }
@@ -684,6 +687,31 @@ class ArmyShopSystem extends GUTS.BaseSystem {
             const entry = stats.heroRoster?.[info.rosterIndex];
             if (!entry || this._resolveSpawnType(entry) !== unitId) continue;
             info.canTargetAir = true;
+        }
+    }
+
+    // Permanent weapon-buff techs (e.g. poisoned_weapon): stamp the buff on a unit.
+    _grantPermanentBuff(entityId, buffName) {
+        const buffType = this.enums.buffTypes?.[buffName];
+        if (buffType == null) return;
+        const existing = this.game.getComponent(entityId, 'buff');
+        if (existing && existing.buffType === buffType) return;
+        this.game.addComponent(entityId, 'buff', {
+            buffType,
+            endTime: (this.game.state.now || 0) + 1e9,   // effectively permanent
+            appliedTime: this.game.state.now || 0,
+            stacks: 1
+        });
+    }
+
+    _applyBuffToLiveUnits(stats, unitId, buffName) {
+        for (const eid of this.game.getEntitiesWith('heroRosterInfo')) {
+            if (this.game.entityAlive?.[eid] !== 1) continue;
+            const info = this.game.getComponent(eid, 'heroRosterInfo');
+            if (info?.playerId !== stats.playerId) continue;
+            const entry = stats.heroRoster?.[info.rosterIndex];
+            if (!entry || this._resolveSpawnType(entry) !== unitId) continue;
+            this._grantPermanentBuff(eid, buffName);
         }
     }
 
@@ -1021,6 +1049,7 @@ class ArmyShopSystem extends GUTS.BaseSystem {
             if (!ownedTechs.has(t.id)) continue;
             if (t.statModifiers) this._applyStatMods(combat, health, t.statModifiers);
             if (t.grantAntiAir) info.canTargetAir = true;
+            if (t.grantBuff) this._grantPermanentBuff(entityId, t.grantBuff);
         }
     }
 

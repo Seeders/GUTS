@@ -29,6 +29,11 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
         'despawnBattleHeroes',
         'grantRoundIncome',
         'spawnCommandBuildings',
+        'applySplashDamage',
+        'createUnit',
+        'applyLevelScaling',
+        'applyArmyUpgrades',
+        'applyArmyAbilities',
         'selectLeader',
         'generateOffersForRound',
         'processSpecializations',
@@ -409,6 +414,78 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
                 }
             }
         }
+    }
+
+    // On-death unit-tech mechanics (Mechabellum-style): exploding and
+    // self-reassembling squads. Fired by DeathSystem's onUnitKilled event.
+    onUnitKilled(entityId) {
+        if (!this.game.isServer && !this.game.state?.isLocalGame) return;
+        if (this.game.state.phase !== this.enums.gamePhase.battle) return;
+        const info = this.game.getComponent(entityId, 'heroRosterInfo');
+        if (!info) return;
+        const stats = this._statsByPlayerId(info.playerId);
+        const entry = stats?.heroRoster?.[info.rosterIndex];
+        if (!entry) return;
+        const spawnType = this._rosterSpawnType(entry);
+        const ownedTechs = stats.unitTechs?.[spawnType];
+        if (!ownedTechs?.length) return;
+        const techs = (this.collections.unitTechs?.[spawnType]?.techs || [])
+            .filter(t => ownedTechs.includes(t.id));
+        const pos = this.game.getComponent(entityId, 'transform')?.position;
+        if (!pos) return;
+
+        for (const t of techs) {
+            if (t.onDeathExplode) {
+                this.call.applySplashDamage(entityId,
+                    { x: pos.x, y: pos.y, z: pos.z },
+                    t.onDeathExplode.damage || 45,
+                    this.enums.element.fire,
+                    t.onDeathExplode.radius || 70,
+                    { allowFriendlyFire: false });
+            }
+            if (t.onDeathReassemble && !info.reassembled) {
+                const level = info.level || 1;
+                const respawnAt = { x: pos.x, y: pos.y, z: pos.z };
+                this.game.schedulingSystem?.scheduleAction(() => {
+                    if (this.game.state.phase !== this.enums.gamePhase.battle) return;
+                    this._reassembleUnit(stats, info.rosterIndex, spawnType, level, respawnAt);
+                }, 2.5, entityId);
+            }
+        }
+    }
+
+    _statsByPlayerId(numericPlayerId) {
+        for (const eid of this.call.getPlayerEntities()) {
+            const stats = this.game.getComponent(eid, 'playerStats');
+            if (stats?.playerId === numericPlayerId) return stats;
+        }
+        return null;
+    }
+
+    _rosterSpawnType(entry) {
+        return entry.spawnType
+            || this.game.heroRosterSystem?.constructor?.CLASS_SPAWN_MAP?.[entry.heroClass]
+            || entry.heroClass;
+    }
+
+    // Rebuild one squad member at its corpse position. The respawn is tagged
+    // `summoned` (auto-cleaned at round end) and `reassembled` (once only).
+    _reassembleUnit(stats, rosterIndex, spawnType, level, at) {
+        const enums = this.game.getEnums();
+        const collectionIndex = enums.objectTypeDefinitions?.units ?? -1;
+        const typeIndex = enums.units?.[spawnType] ?? -1;
+        if (typeIndex < 0) return;
+        const newId = this.call.createUnit(collectionIndex, typeIndex,
+            { position: { x: at.x, y: at.y, z: at.z } }, stats.team);
+        if (newId == null) return;
+        this.game.addComponent(newId, 'heroRosterInfo', {
+            playerId: stats.playerId, rosterIndex, level, reassembled: true
+        });
+        this.game.addComponent(newId, 'summoned', { ownerId: newId });
+        // Level scaling + owned techs/upgrades apply like any respawn.
+        this.call.applyLevelScaling?.(newId);
+        this.call.applyArmyUpgrades?.(newId);
+        this.call.applyArmyAbilities?.(newId);
     }
 
     // Positions of living enemy army units (the hunt, once buildings are gone).

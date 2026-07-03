@@ -1,0 +1,30 @@
+{
+ "unit": "0_skeleton",
+ "fileName": "0_skeleton",
+ "techs": [
+  {
+   "id": "sk_poison",
+   "title": "Venomous Claws",
+   "cost": 14,
+   "description": "Skeleton hits poison their victims",
+   "grantBuff": "poisoned_weapon"
+  },
+  {
+   "id": "sk_explode",
+   "title": "Bone Blast",
+   "cost": 14,
+   "description": "Skeletons explode on death, burning everything nearby",
+   "onDeathExplode": {
+    "damage": 45,
+    "radius": 70
+   }
+  },
+  {
+   "id": "sk_reassemble",
+   "title": "Reassemble",
+   "cost": 14,
+   "description": "Each skeleton rebuilds itself once per battle",
+   "onDeathReassemble": true
+  }
+ ]
+}

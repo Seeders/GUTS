@@ -2,11 +2,11 @@
  "unit": "2_i_necromancer",
  "techs": [
   {
-   "id": "nec_raise",
-   "title": "Raise Dead",
-   "cost": 18,
-   "description": "Unlocks Raise Dead: skeletons from corpses",
-   "unlockAbility": "RaiseDeadAbility"
+   "id": "nec_mindcontrol",
+   "title": "Dominate Mind",
+   "cost": 24,
+   "description": "Unlocks Mind Control: seize an enemy unit for your side",
+   "unlockAbility": "MindControlAbility"
   },
   {
    "id": "nec_curse",
