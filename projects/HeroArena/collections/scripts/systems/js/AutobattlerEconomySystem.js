@@ -18,12 +18,10 @@ class AutobattlerEconomySystem extends GUTS.BaseSystem {
         'getLeaderDef'
     ];
 
-    // Mechabellum scale: 200 starting supply / 100-cost chaff = 2 squads in
-    // round 1. Our tier-1 squad is 7g, so 14g start and a flat 14g per round
-    // (Mechabellum's base income is flat; growth comes from upgrades/cards).
-    static STARTING_GOLD = 14;
-    static ROUND_INCOME  = 14;
-    static INCOME_ESCALATION = 0;
+    // Mechabellum scale: 200 supply ≈ 14g. Income is 200 x round (200, 400,
+    // 600...), so at our scale each round grants 14g x round number — round 1
+    // buys exactly 2 tier-1 squads, and economies steepen every round.
+    static INCOME_PER_ROUND_STEP = 14;
     static ALCHEMIST_GOLD = 5;   // The Alchemist leader: flat bonus gold each round
 
     constructor(game) {
@@ -43,13 +41,13 @@ class AutobattlerEconomySystem extends GUTS.BaseSystem {
         for (const entityId of playerEntities) {
             const stats = this.game.getComponent(entityId, 'playerStats');
             if (!stats) continue;
+            const income = AutobattlerEconomySystem.INCOME_PER_ROUND_STEP * round;
             if (round <= 1) {
-                stats.gold = AutobattlerEconomySystem.STARTING_GOLD;
+                stats.gold = income;   // round 1 SETS the purse (deterministic)
                 continue;
             }
 
-            let gold = (stats.gold || 0) + AutobattlerEconomySystem.ROUND_INCOME
-                + round * AutobattlerEconomySystem.INCOME_ESCALATION;
+            let gold = (stats.gold || 0) + income;
 
             const eff = this.call.getEconomyEffects?.(stats) || {};
             // Interest: +1 per `interestPer` banked, capped (rewards saving).
