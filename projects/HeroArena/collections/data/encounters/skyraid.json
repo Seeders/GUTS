@@ -1,0 +1,12 @@
+{
+ "kind": "template",
+ "title": "Sky Raid",
+ "minDepth": 6,
+ "formation": "wide",
+ "weights": {
+  "fairy": 3,
+  "1_d_archer": 2,
+  "2_sd_crossbowman": 1
+ },
+ "fileName": "skyraid"
+}

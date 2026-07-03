@@ -1,0 +1,13 @@
+{
+ "kind": "template",
+ "title": "Border Militia",
+ "minDepth": 1,
+ "formation": "line",
+ "weights": {
+  "1_sd_soldier": 3,
+  "1_d_archer": 2,
+  "1_s_barbarian": 2,
+  "1_is_acolyte": 1
+ },
+ "fileName": "militia"
+}

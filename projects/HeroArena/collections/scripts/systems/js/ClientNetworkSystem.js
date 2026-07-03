@@ -39,6 +39,7 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
         'submitSetSquadFormation',
         'submitBuyUpgradeNode',
         'submitPickReinforcement',
+        'submitEnterCampaignNode',
         'submitCastCommanderSkill',
         'submitSellUnit',
         'submitGrantSingleAbility',
@@ -299,6 +300,9 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
             }),
 
             // Mechabellum loop: round-start 1-of-3 reinforcement pick + resolve report
+            nm.listen('CAMPAIGN_MAP_SHOW', (data) => {
+                this.game.triggerEvent('onCampaignMapShow', data);
+            }),
             nm.listen('REINFORCEMENT_START', (data) => {
                 this.game.triggerEvent('onReinforcementStart', data);
             }),
@@ -1720,6 +1724,15 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
             eventName: 'SET_SQUAD_FORMATION',
             responseName: 'SET_SQUAD_FORMATION_ACK',
             data: { rosterIndex, w, h },
+            onSuccess
+        }, () => {});
+    }
+
+    submitEnterCampaignNode(nodeId, onSuccess) {
+        this.networkRequest({
+            eventName: 'ENTER_CAMPAIGN_NODE',
+            responseName: 'ENTER_CAMPAIGN_NODE_ACK',
+            data: { nodeId },
             onSuccess
         }, () => {});
     }

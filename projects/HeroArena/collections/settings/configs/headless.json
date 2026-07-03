@@ -71,7 +71,9 @@
     "AutobattlerEconomySystem",
     "BuffEffectsSystem",
     "GoldMineCaptureSystem",
-    "CommanderSkillSystem"
+    "CommanderSkillSystem",
+    "CampaignRunSystem",
+    "CampaignMapUISystem"
   ],
   "classes": [
     {

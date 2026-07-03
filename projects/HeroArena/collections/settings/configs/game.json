@@ -144,7 +144,9 @@
     "SurvivalMissionSystem",
     "LootSystem",
     "GoldMineCaptureSystem",
-    "CommanderSkillSystem"
+    "CommanderSkillSystem",
+    "CampaignRunSystem",
+    "CampaignMapUISystem"
   ],
   "classes": [
     {

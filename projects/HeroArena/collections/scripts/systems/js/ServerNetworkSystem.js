@@ -44,6 +44,7 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         'handleBuyTierUnlock',
         'handleBuyUpgradeNode',
         'handleSetSquadFormation',
+        'handleEnterCampaignNode',
         'handlePickReinforcement',
         'handleCastCommanderSkill',
         'handleSellUnit',
@@ -82,6 +83,7 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         'buyTierUnlock',
         'buyUpgradeNode',
         'setSquadFormation',
+        'enterCampaignNode',
         'pickReinforcement',
         'castCommanderSkill',
         'sellUnit',
@@ -395,6 +397,7 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         this.game.serverEventManager.subscribe('BUY_TIER_UNLOCK',      this.handleBuyTierUnlock.bind(this));
         this.game.serverEventManager.subscribe('SET_SQUAD_FORMATION',  this.handleSetSquadFormation.bind(this));
         this.game.serverEventManager.subscribe('BUY_UPGRADE_NODE',      this.handleBuyUpgradeNode.bind(this));
+        this.game.serverEventManager.subscribe('ENTER_CAMPAIGN_NODE',   this.handleEnterCampaignNode.bind(this));
         this.game.serverEventManager.subscribe('PICK_REINFORCEMENT',   this.handlePickReinforcement.bind(this));
         this.game.serverEventManager.subscribe('CAST_COMMANDER_SKILL', this.handleCastCommanderSkill.bind(this));
         this.game.serverEventManager.subscribe('SELL_UNIT',            this.handleSellUnit.bind(this));
@@ -1397,6 +1400,14 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
             this.sendToPlayer(playerId, 'HERO_MOVED', { moves: result.moves });
         }
         return this.respond(playerId, 'SET_SQUAD_FORMATION_ACK', result ?? { success: false }, callback);
+    }
+
+    handleEnterCampaignNode(eventData, callback) {
+        const { playerId } = eventData;
+        const numericPlayerId = eventData.numericPlayerId ?? eventData.playerId;
+        const d = eventData.data || eventData;
+        const result = this.call.enterCampaignNode(numericPlayerId, d.nodeId);
+        return this.respond(playerId, 'ENTER_CAMPAIGN_NODE_ACK', result ?? { success: false }, callback);
     }
 
     handlePickReinforcement(eventData, callback) {

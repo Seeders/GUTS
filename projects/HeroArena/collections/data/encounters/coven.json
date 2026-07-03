@@ -1,0 +1,13 @@
+{
+ "kind": "template",
+ "title": "Dark Coven",
+ "minDepth": 5,
+ "formation": "back",
+ "weights": {
+  "2_i_necromancer": 2,
+  "0_skeleton": 3,
+  "2_is_oathBreaker": 2,
+  "2_i_elementalist": 1
+ },
+ "fileName": "coven"
+}

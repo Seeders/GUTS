@@ -1,0 +1,38 @@
+{
+ "kind": "boss",
+ "title": "The Iron Warlord",
+ "minDepth": 8,
+ "squads": [
+  {
+   "unit": "2_s_warlord",
+   "level": 3,
+   "row": 0,
+   "col": 0
+  },
+  {
+   "unit": "2_sd_hoplite",
+   "level": 2,
+   "row": 0,
+   "col": -1
+  },
+  {
+   "unit": "2_sd_hoplite",
+   "level": 2,
+   "row": 0,
+   "col": 1
+  },
+  {
+   "unit": "2_sd_crossbowman",
+   "level": 2,
+   "row": 1,
+   "col": -1
+  },
+  {
+   "unit": "2_sd_crossbowman",
+   "level": 2,
+   "row": 1,
+   "col": 1
+  }
+ ],
+ "fileName": "boss_warlord"
+}

@@ -169,7 +169,13 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
                 const stats = this.game.getComponent(entityId, 'playerStats');
                 if (stats) stats.commanderHP = AutobattlerRoundSystem.COMMANDER_HP;
             }
-            this.startPrep();
+            // Campaign: the run system owns the flow from here (map screen,
+            // node entry, resume) — no immediate prep.
+            if (this.game.campaignRunSystem?.isCampaignMode?.()) {
+                this.game.campaignRunSystem.onLeadersReady();
+            } else {
+                this.startPrep();
+            }
         }
         return { success: true };
     }
@@ -274,7 +280,7 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
         // AI players form up their NEWLY BOUGHT units ahead of their base
         // (veterans hold their saved positions). Runs before the sync so clients
         // receive the arranged positions.
-        this._repositionAIArmies();
+        if (!this.game.campaignRunSystem?.isCampaignMode?.()) this._repositionAIArmies();
         // Replicate the freshly-spawned army to clients (multiplayer) so they render
         // and can position units this prep. No-op in local.
         this.call.syncEntitiesToClients?.();
@@ -319,6 +325,20 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
         damageToTeam[this.enums.team.left] = this._survivorDamage(rightSurvivors);
         damageToTeam[this.enums.team.right] = this._survivorDamage(leftSurvivors);
 
+        // Campaign: only the PLAYER's run HP matters — the enemy shell's
+        // commander is meaningless and must never decide anything.
+        const campaign = this.game.campaignRunSystem?.isCampaignMode?.();
+        if (campaign) {
+            const enemyStats = (() => {
+                for (const eid of this.call.getPlayerEntities()) {
+                    const st = this.game.getComponent(eid, 'playerStats');
+                    if (st && st.playerId !== 0) return st;
+                }
+                return null;
+            })();
+            if (enemyStats) damageToTeam[enemyStats.team] = 0;
+        }
+
         const hpReport = [];
         for (const entityId of this.call.getPlayerEntities()) {
             const stats = this.game.getComponent(entityId, 'playerStats');
@@ -333,6 +353,22 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
         const roundResult = { round: this.game.state.round, winningTeam, report: hpReport };
         this.call.broadcastToRoom(null, 'ROUND_RESULT', roundResult);
         this.game.triggerEvent('onRoundResult', roundResult);
+
+        if (campaign) {
+            // Campaign node resolution: hand the result to the run system
+            // (map return / reward / replay / run end). Skip streaks, the
+            // dual-commander game-over check, and the skirmish round loop.
+            this.call.despawnBattleHeroes();
+            const playerTeam = (() => {
+                for (const eid of this.call.getPlayerEntities()) {
+                    const st = this.game.getComponent(eid, 'playerStats');
+                    if (st && st.playerId === 0) return st.team;
+                }
+                return this.enums.team.left;
+            })();
+            this.game.campaignRunSystem.onNodeResolved(winningTeam === playerTeam);
+            return;
+        }
 
         // Update win/loss streaks (leader bonuses key off these).
         this._updateStreaks(winningTeam);

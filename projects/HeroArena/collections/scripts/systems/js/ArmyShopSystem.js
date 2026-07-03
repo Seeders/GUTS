@@ -46,7 +46,8 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         'placeBuildingAuto',
         'getAIPlayerIds',
         'removeRosterEntry',
-        'getLeaderDef'
+        'getLeaderDef',
+        'rollCampaignRewards'
     ];
 
     static OFFER_COUNT = 5;
@@ -145,10 +146,23 @@ class ArmyShopSystem extends GUTS.BaseSystem {
             this.game.state.round || 1,
             GUTS.SeededRandom.hashString('shop')
         ));
+        const campaign = this.game.campaignRunSystem?.isCampaignMode?.();
         for (const entityId of this.call.getPlayerEntities()) {
             const stats = this.game.getComponent(entityId, 'playerStats');
             if (!stats) continue;
             stats.rerollCount = 0;
+            if (campaign) {
+                // Campaign: no AI economy, no random reinforcements — the run
+                // system rolls the player's post-victory reward instead.
+                if (stats.playerId === 0) {
+                    this._applyLeaderRoundPerks(stats);
+                    stats.currentOffers = [];
+                    this.call.rollCampaignRewards?.(stats);
+                    this._broadcastShop(stats);
+                    this._notifyReinforcement(stats);
+                }
+                continue;
+            }
             this._applyLeaderRoundPerks(stats);
             stats.currentOffers = this._buildOffers(stats);
             // The round's one random decision: pick 1 of 3 reinforcement cards.
@@ -156,6 +170,7 @@ class ArmyShopSystem extends GUTS.BaseSystem {
             this._broadcastShop(stats);
             this._notifyReinforcement(stats);
         }
+        if (campaign) return;
         this._aiAutoPick();
         this._aiAutoBuy();
     }
@@ -239,7 +254,8 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         const option = pending.options?.[optionIndex];
         if (!option) return { success: false, reason: 'bad_option' };
 
-        const def = this.collections.reinforcementCards?.[option.id];
+        const def = this.collections.reinforcementCards?.[option.id]
+            || pending.defs?.[optionIndex];
         if (!def) return { success: false, reason: 'no_card' };
 
         pending.picked = true;
@@ -299,6 +315,35 @@ class ArmyShopSystem extends GUTS.BaseSystem {
                     const pick = from[Math.floor(rng.next() * from.length)];
                     if (!Array.isArray(stats.tierUnlocks)) stats.tierUnlocks = [];
                     stats.tierUnlocks.push(pick.id);
+                }
+                break;
+            }
+            case 'specificUnit': {
+                // Campaign reward: a specific squad, optionally pre-leveled.
+                const maxLevel = this.game.heroExperienceSystem?.constructor?.MAX_LEVEL || 9;
+                if (!Array.isArray(stats.tierUnlocks)) stats.tierUnlocks = [];
+                if (!stats.tierUnlocks.includes(def.unitId)) stats.tierUnlocks.push(def.unitId);
+                this._addUnitToArmy(stats, def.unitId);
+                const entry = stats.heroRoster[stats.heroRoster.length - 1];
+                if (entry && (def.level || 1) > 1) {
+                    entry.paidLevels = Math.min(maxLevel, def.level) - 1;
+                    entry.level = Math.min(maxLevel, def.level);
+                    this.call.respawnRosterEntry?.(stats.playerId, stats.heroRoster.length - 1);
+                }
+                break;
+            }
+            case 'unitTechGrant': {
+                // Campaign reward: a free tech for a fielded unit type.
+                if (!stats.unitTechs) stats.unitTechs = {};
+                const owned = stats.unitTechs[def.unitId] || [];
+                if (!owned.includes(def.techId)) {
+                    stats.unitTechs[def.unitId] = [...owned, def.techId];
+                    const techDef = (this.collections.unitTechs?.[def.unitId]?.techs || [])
+                        .find(t => t.id === def.techId);
+                    if (techDef?.statModifiers) this._applyTechToLiveUnits(stats, def.unitId, techDef);
+                    if (techDef?.unlockAbility) this._reapplyAbilitiesForUnitType(stats, def.unitId);
+                    if (techDef?.grantAntiAir) this._applyAntiAirToLiveUnits(stats, def.unitId);
+                    if (techDef?.grantBuff) this._applyBuffToLiveUnits(stats, def.unitId, techDef.grantBuff);
                 }
                 break;
             }
@@ -782,7 +827,9 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         if (!entry) return { success: false, reason: 'bad_index' };
         // Deployment is permanent: a unit that has fought a battle can't be sold —
         // selling is only an undo for this prep's purchases.
-        if (entry.lastPosition) return { success: false, reason: 'deployment_locked' };
+        if (entry.lastPosition && !this.game.campaignRunSystem?.isCampaignMode?.()) {
+            return { success: false, reason: 'deployment_locked' };
+        }
 
         const def = this.collections.units?.[this._resolveSpawnType(entry)] || {};
         const pct = ArmyShopSystem.SELL_REFUND_PCT + (this.getEconomyEffects(stats).sellRefundPct || 0);

@@ -15,7 +15,8 @@ class AutobattlerEconomySystem extends GUTS.BaseSystem {
     static serviceDependencies = [
         'getPlayerEntities',
         'getEconomyEffects',
-        'getLeaderDef'
+        'getLeaderDef',
+        'shouldGrantNodeIncome'
     ];
 
     // Mechabellum scale: 200 supply ≈ 14g. Income is 200 x round (200, 400,
@@ -43,6 +44,17 @@ class AutobattlerEconomySystem extends GUTS.BaseSystem {
         for (const entityId of playerEntities) {
             const stats = this.game.getComponent(entityId, 'playerStats');
             if (!stats) continue;
+            // Campaign: income = 14 x node depth, granted once per node so a
+            // replayed (lost) node can't be farmed; the enemy shell gets none.
+            const campaign = this.game.campaignRunSystem?.isCampaignMode?.();
+            if (campaign) {
+                if (stats.playerId !== 0) { stats.gold = 0; continue; }
+                if (!this.call.shouldGrantNodeIncome?.()) continue;
+                stats.gold = (stats.gold || 0)
+                    + AutobattlerEconomySystem.INCOME_PER_ROUND_STEP * round;
+                continue;
+            }
+
             let income = AutobattlerEconomySystem.INCOME_PER_ROUND_STEP * round;
             const leaderDef = this.call.getLeaderDef?.(stats.leaderId);
             if (leaderDef?.id === 'supply')      income += AutobattlerEconomySystem.SUPPLY_SPECIALIST_GOLD;

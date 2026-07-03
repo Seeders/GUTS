@@ -1,0 +1,13 @@
+{
+ "kind": "template",
+ "title": "Woodland Ambush",
+ "minDepth": 3,
+ "formation": "back",
+ "weights": {
+  "1_d_archer": 3,
+  "2_d_ranger": 2,
+  "1_di_scout": 2,
+  "2_d_trapper": 1
+ },
+ "fileName": "rangers"
+}

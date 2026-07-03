@@ -391,6 +391,8 @@ class HeroRosterSystem extends GUTS.BaseSystem {
     // carries a snapshotted lastPosition) can no longer be repositioned or sold.
     // Units bought this prep have no lastPosition yet and are freely placeable.
     isUnitLocked(entityId) {
+        // Campaign: every node is a fresh field — nothing is ever locked.
+        if (this.game.campaignRunSystem?.isCampaignMode?.()) return false;
         const ref = this._entityToRoster.get(entityId);
         if (!ref) return false;
         const stats = this._statsByPlayerId(ref.playerId);
