@@ -5668,7 +5668,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -5691,7 +5691,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -5737,7 +5737,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -5783,7 +5783,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -5806,7 +5806,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -5829,7 +5829,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -5852,7 +5852,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -5875,7 +5875,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -5898,7 +5898,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -5921,7 +5921,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -5944,7 +5944,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -5990,7 +5990,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -6013,7 +6013,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -6036,7 +6036,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -6059,7 +6059,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -6082,7 +6082,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -6151,7 +6151,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -6220,7 +6220,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -6243,7 +6243,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -6266,7 +6266,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -6289,7 +6289,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -6312,7 +6312,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -6335,7 +6335,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -6358,7 +6358,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -6381,7 +6381,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -6427,7 +6427,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -6450,7 +6450,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -6473,7 +6473,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -6496,7 +6496,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -6542,7 +6542,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -6565,7 +6565,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -6588,7 +6588,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -6611,7 +6611,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -6634,7 +6634,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -6657,7 +6657,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -6680,7 +6680,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -6703,7 +6703,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -6726,7 +6726,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -6749,7 +6749,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -6795,7 +6795,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -6841,7 +6841,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -6864,7 +6864,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -6910,7 +6910,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -6933,7 +6933,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -6956,7 +6956,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -6979,7 +6979,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -7002,7 +7002,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -7025,7 +7025,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -7048,7 +7048,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -7071,7 +7071,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -7094,7 +7094,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -7117,7 +7117,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -7163,7 +7163,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -7186,7 +7186,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -7209,7 +7209,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -7232,7 +7232,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -7255,7 +7255,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -7278,7 +7278,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -7301,7 +7301,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -7324,7 +7324,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -7347,7 +7347,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -7370,7 +7370,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -7462,7 +7462,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -7485,7 +7485,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -7531,7 +7531,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -7554,7 +7554,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -7600,7 +7600,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -7623,7 +7623,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -7646,7 +7646,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -7669,7 +7669,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -7738,7 +7738,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -7761,7 +7761,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -7784,7 +7784,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -7807,7 +7807,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -7830,7 +7830,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -7853,7 +7853,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -7876,7 +7876,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -7899,7 +7899,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -7922,7 +7922,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -7945,7 +7945,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -7991,7 +7991,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -8037,7 +8037,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -8060,7 +8060,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -8083,7 +8083,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -8106,7 +8106,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -8129,7 +8129,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -8152,7 +8152,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -8175,7 +8175,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -8198,7 +8198,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -8221,7 +8221,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -8244,7 +8244,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -8267,7 +8267,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -8290,7 +8290,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -8313,7 +8313,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -8382,7 +8382,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -8405,7 +8405,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -8428,7 +8428,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -8451,7 +8451,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -8497,7 +8497,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -8543,7 +8543,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -8566,7 +8566,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -8589,7 +8589,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -8612,7 +8612,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -8635,7 +8635,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -8658,7 +8658,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -8681,7 +8681,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -8704,7 +8704,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -8727,7 +8727,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -8750,7 +8750,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -8773,7 +8773,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -8796,7 +8796,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -8819,7 +8819,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -8842,7 +8842,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -8865,7 +8865,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -8888,7 +8888,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -8934,7 +8934,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -8957,7 +8957,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -9003,7 +9003,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -9026,7 +9026,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -9049,7 +9049,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -9118,7 +9118,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -9141,7 +9141,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -9210,7 +9210,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -9233,7 +9233,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -9256,7 +9256,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -9279,7 +9279,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -9302,7 +9302,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -9325,7 +9325,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -9348,7 +9348,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -9371,7 +9371,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -9417,7 +9417,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -9463,7 +9463,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -9486,7 +9486,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -9509,7 +9509,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -9532,7 +9532,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -9578,7 +9578,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -9601,7 +9601,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -9647,7 +9647,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -9670,7 +9670,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -9693,7 +9693,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -9739,7 +9739,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -9762,7 +9762,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -9785,7 +9785,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -9808,7 +9808,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -9831,7 +9831,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -9854,7 +9854,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -9877,7 +9877,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -9900,7 +9900,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -9923,7 +9923,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -9946,7 +9946,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -9969,7 +9969,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -9992,7 +9992,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -10038,7 +10038,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -10084,7 +10084,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -10107,7 +10107,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -10130,7 +10130,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -10153,7 +10153,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -10199,7 +10199,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -10245,7 +10245,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -10268,7 +10268,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -10291,7 +10291,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -10314,7 +10314,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -10337,7 +10337,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -10360,7 +10360,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -10406,7 +10406,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -10429,7 +10429,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -10452,7 +10452,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -10521,7 +10521,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -10544,7 +10544,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -10659,7 +10659,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -10682,7 +10682,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -10705,7 +10705,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -10728,7 +10728,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -10751,7 +10751,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -10774,7 +10774,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -10797,7 +10797,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -10820,7 +10820,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -10843,7 +10843,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -10889,7 +10889,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -10912,7 +10912,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -10935,7 +10935,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -10958,7 +10958,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -11004,7 +11004,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -11027,7 +11027,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -11050,7 +11050,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -11096,7 +11096,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -11119,7 +11119,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -11165,7 +11165,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -11188,7 +11188,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -11211,7 +11211,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -11234,7 +11234,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -11280,7 +11280,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -11303,7 +11303,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -11326,7 +11326,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -11349,7 +11349,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -11372,7 +11372,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -11395,7 +11395,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -11441,7 +11441,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -11464,7 +11464,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -11487,7 +11487,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -11510,7 +11510,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -11533,7 +11533,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -11556,7 +11556,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -11579,7 +11579,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -11602,7 +11602,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -11625,7 +11625,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_fir",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
@@ -11648,7 +11648,7 @@
    },
    {
     "spawnType": "worldObject",
-    "type": "tree_oak",
+    "type": "tree_sprite",
     "components": {
      "transform": {
       "position": {
