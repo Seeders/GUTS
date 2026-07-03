@@ -1,0 +1,11 @@
+{
+ "title": "Broken Morale",
+ "damageMultiplier": 0.6,
+ "attackSpeedMultiplier": 0.8,
+ "armorMultiplier": 1,
+ "damageTakenMultiplier": 1.25,
+ "damageReduction": 0,
+ "accuracyReduction": 0,
+ "movementSpeedMultiplier": 0.6,
+ "fileName": "moraleBroken"
+}

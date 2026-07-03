@@ -28,6 +28,7 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
         'spawnHeroesForRound',
         'despawnBattleHeroes',
         'grantRoundIncome',
+        'spawnCommandBuildings',
         'selectLeader',
         'generateOffersForRound',
         'processSpecializations',
@@ -262,6 +263,9 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
         if (!this.game.isServer && !this.game.state?.isLocalGame) return;
         this.call.grantRoundIncome();
         this.game.state.phase = this.enums.gamePhase.placement;
+        // Command buildings: Town Hall + the leader's production building, one
+        // per flank. Respawns any that fell last battle (fresh HP each round).
+        this.call.spawnCommandBuildings?.();
         // Respawn the persistent army: every purchased squad returns at its saved
         // battle position (deployment is permanent — Mechabellum-style).
         this.call.spawnHeroesForRound();

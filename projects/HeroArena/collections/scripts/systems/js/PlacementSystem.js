@@ -42,6 +42,7 @@ class PlacementSystem extends GUTS.BaseSystem {
         'calculateUnitPositions',
         'getSquadCells',
         'getTerrainHeight',
+        'getTerrainTypeAtPosition',
         'createPlacement',
         'reserveGridCells',
         'buildGoldMine',
@@ -859,6 +860,12 @@ class PlacementSystem extends GUTS.BaseSystem {
         if (!this.game.getComponent(entityId, 'heroRosterInfo')) {
             return { x: worldX, z: worldZ };
         }
+        // Mechabellum flanking: FOREST tiles are placeable anywhere on the map,
+        // including the enemy side — the treeline is the infiltration route.
+        const terrain = this.call.getTerrainTypeAtPosition?.(worldX, worldZ);
+        const terrainName = typeof terrain === 'string' ? terrain : terrain?.type;
+        if (terrainName === 'forest') return { x: worldX, z: worldZ };
+
         const team = this.game.getComponent(entityId, 'team')?.team;
         const locs = this.getStartingLocationsFromLevel();
         if (team == null || !locs || locs[team] == null) return { x: worldX, z: worldZ };

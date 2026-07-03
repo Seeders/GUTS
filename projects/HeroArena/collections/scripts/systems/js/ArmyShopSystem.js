@@ -22,6 +22,7 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         'buyUnitTech',
         'buySquadLevel',
         'buyTierUnlock',
+        'buyUpgradeNode',
         'pickReinforcement',
         'getShopStateForPlayer',
         'getEligibleItems',
@@ -445,6 +446,64 @@ class ArmyShopSystem extends GUTS.BaseSystem {
     }
 
     // ─── Squad level-ups (grow taller instead of wider) ─────────────────────────
+
+    // ─── Command-building upgrade trees (Mechabellum global tech) ────────────────
+
+    // Buy a node from an owned building's upgrade tree. Prereqs must be owned;
+    // the effect applies to every matching live unit now and at each respawn
+    // (applyArmyUpgrades reads stats.ownedUpgrades).
+    buyUpgradeNode(numericPlayerId, upgradeId) {
+        const stats = this._getStats(numericPlayerId);
+        if (!stats) return { success: false, reason: 'no_player' };
+        if (!this._inPlacement()) return { success: false, reason: 'wrong_phase' };
+        const def = this.collections.upgrades?.[upgradeId];
+        if (!def) return { success: false, reason: 'no_upgrade' };
+        if ((stats.ownedUpgrades || []).includes(upgradeId)) {
+            return { success: false, reason: 'already_owned' };
+        }
+
+        // Locate the tree node: the tree must belong to a building this player
+        // fields (Town Hall or their production building), and prereqs owned.
+        const ownedBuildings = new Set((stats.buildings || []).map(b => b.buildingId));
+        let node = null;
+        for (const tree of Object.values(this.collections.upgradeTrees || {})) {
+            if (!ownedBuildings.has(tree.building)) continue;
+            for (const branch of (tree.branches || [])) {
+                const n = (branch.nodes || []).find(n2 => n2.upgrade === upgradeId);
+                if (n) { node = n; break; }
+            }
+            if (node) break;
+        }
+        if (!node) return { success: false, reason: 'no_building_tree' };
+        const owned = new Set(stats.ownedUpgrades || []);
+        if (!(node.requires || []).every(r => owned.has(r))) {
+            return { success: false, reason: 'prereq_missing' };
+        }
+
+        const cost = ArmyShopSystem.shopCost(def.value);
+        if ((stats.gold || 0) < cost) return { success: false, reason: 'insufficient_gold' };
+        stats.gold -= cost;
+        if (!Array.isArray(stats.ownedUpgrades)) stats.ownedUpgrades = [];
+        stats.ownedUpgrades.push(upgradeId);
+
+        // Apply to live matching units immediately.
+        if (def.statModifiers) {
+            for (const eid of this.game.getEntitiesWith('heroRosterInfo')) {
+                if (this.game.entityAlive?.[eid] !== 1) continue;
+                const info = this.game.getComponent(eid, 'heroRosterInfo');
+                if (info?.playerId !== numericPlayerId) continue;
+                const entry = stats.heroRoster?.[info.rosterIndex];
+                if (!entry) continue;
+                if (!this.matchesCombo(this._profileForEntry(entry), def.target || {})) continue;
+                this._applyStatMods(
+                    this.game.getComponent(eid, 'combat'),
+                    this.game.getComponent(eid, 'health'),
+                    def.statModifiers);
+            }
+        }
+        this._broadcastShop(stats);
+        return { success: true, state: this.getShopStateForPlayer(numericPlayerId) };
+    }
 
     // ─── Tier unlocks (Mechabellum: pay once, buy forever) ──────────────────────
 

@@ -64,6 +64,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
         'submitBuySquadLevel',
         'submitBuyTierUnlock',
         'submitSetSquadFormation',
+        'submitBuyUpgradeNode',
         'submitPickReinforcement',
         'submitCastCommanderSkill',
         'submitSellUnit',
@@ -1373,10 +1374,10 @@ class PlacementUISystem extends GUTS.BaseSystem {
                     ? `<img class="tt-node-img" src="./resources/${imagePath}" alt="">`
                     : `<span class="tt-node-img tt-node-fallback">★</span>`;
                 const badge = state === 'owned' ? '✔ Owned'
-                    : state === 'available' ? 'In shop pool' : '🔒 Locked';
+                    : state === 'available' ? '🛒 Buy' : '🔒 Locked';
                 const edge = i > 0 ? `<div class="tt-edge tt-edge-${state}"></div>` : '';
                 return `${edge}
-                    <div class="tt-node tt-${state}">
+                    <div class="tt-node tt-${state}" ${state === 'available' ? `data-upgrade-id="${node.upgrade}"` : ''}>
                         ${img}
                         <div class="tt-node-body">
                             <div class="tt-node-name">${def.title || node.upgrade}</div>
@@ -1396,6 +1397,23 @@ class PlacementUISystem extends GUTS.BaseSystem {
                 ${nodes}
             </div>`;
         }).join('');
+
+        // Buy on click (Mechabellum tower tech): available nodes are live buttons.
+        if (!container._upgradeWired) {
+            container._upgradeWired = true;
+            container.addEventListener('click', (e) => {
+                const nodeEl = e.target.closest('[data-upgrade-id]');
+                if (!nodeEl) return;
+                this.call.submitBuyUpgradeNode(nodeEl.dataset.upgradeId, (res) => {
+                    if (res?.success === false && res?.reason === 'insufficient_gold') {
+                        GUTS.NotificationSystem?.show?.('Not enough gold', 'error');
+                    }
+                    this._renderShop(res?.state || res);
+                    const tree = this.collections?.upgradeTrees?.[this._selectedBuildingId];
+                    if (tree) this._renderUpgradeTree(tree);
+                });
+            });
+        }
     }
 
     // Cancel the selected squads' orders: they hold position (and the cleared

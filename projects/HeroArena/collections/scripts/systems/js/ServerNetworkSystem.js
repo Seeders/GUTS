@@ -42,6 +42,7 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         'handleBuyUnitTech',
         'handleBuySquadLevel',
         'handleBuyTierUnlock',
+        'handleBuyUpgradeNode',
         'handleSetSquadFormation',
         'handlePickReinforcement',
         'handleCastCommanderSkill',
@@ -79,6 +80,7 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         'buyUnitTech',
         'buySquadLevel',
         'buyTierUnlock',
+        'buyUpgradeNode',
         'setSquadFormation',
         'pickReinforcement',
         'castCommanderSkill',
@@ -392,6 +394,7 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         this.game.serverEventManager.subscribe('BUY_SQUAD_LEVEL',      this.handleBuySquadLevel.bind(this));
         this.game.serverEventManager.subscribe('BUY_TIER_UNLOCK',      this.handleBuyTierUnlock.bind(this));
         this.game.serverEventManager.subscribe('SET_SQUAD_FORMATION',  this.handleSetSquadFormation.bind(this));
+        this.game.serverEventManager.subscribe('BUY_UPGRADE_NODE',      this.handleBuyUpgradeNode.bind(this));
         this.game.serverEventManager.subscribe('PICK_REINFORCEMENT',   this.handlePickReinforcement.bind(this));
         this.game.serverEventManager.subscribe('CAST_COMMANDER_SKILL', this.handleCastCommanderSkill.bind(this));
         this.game.serverEventManager.subscribe('SELL_UNIT',            this.handleSellUnit.bind(this));
@@ -1372,6 +1375,15 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         const d = eventData.data || eventData;
         const result = this.call.buyTierUnlock(numericPlayerId, d.unitId);
         return this.respond(playerId, 'BUY_TIER_UNLOCK_ACK', result ?? { success: false }, callback);
+    }
+
+    handleBuyUpgradeNode(eventData, callback) {
+        const { playerId } = eventData;
+        const numericPlayerId = eventData.numericPlayerId ?? eventData.playerId;
+        const d = eventData.data || eventData;
+        const result = this.call.buyUpgradeNode(numericPlayerId, d.upgradeId);
+        this.syncEntitiesToClients(playerId, numericPlayerId);   // stat upgrades hit live units
+        return this.respond(playerId, 'BUY_UPGRADE_NODE_ACK', result ?? { success: false }, callback);
     }
 
     handleSetSquadFormation(eventData, callback) {
