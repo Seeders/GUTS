@@ -23,7 +23,11 @@ const LOG_LEVELS = {
 };
 
 class HeadlessLogger {
-    static _level = LOG_LEVELS.INFO;
+    static _level = (typeof process !== 'undefined'
+        && process.env?.HEADLESS_LOG_LEVEL
+        && LOG_LEVELS[process.env.HEADLESS_LOG_LEVEL.toUpperCase()] !== undefined)
+        ? LOG_LEVELS[process.env.HEADLESS_LOG_LEVEL.toUpperCase()]
+        : LOG_LEVELS.INFO;
     static _enabled = true;
     static _timestamps = true;
     static _captureMode = false;

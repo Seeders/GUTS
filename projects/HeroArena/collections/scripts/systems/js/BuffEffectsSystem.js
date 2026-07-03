@@ -435,7 +435,7 @@ class BuffEffectsSystem extends GUTS.BaseSystem {
             const unitType = this.game.getUnitTypeDef?.(unitTypeComp);
             const yOffset = unitType?.height || 50;
 
-            console.log('[BuffFx] Poison tick number', { entityId, tickDamage, stacks: poison.stacks });
+            // console.log('[BuffFx] Poison tick number', { entityId, tickDamage, stacks: poison.stacks });
             this.call.showDamageNumber(pos.x, pos.y + yOffset, pos.z, tickDamage, poisonElement);
         }
 

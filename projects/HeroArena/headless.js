@@ -35,6 +35,18 @@ const __dirname = path.dirname(__filename);
 // Import HeadlessEngine
 import HeadlessEngine from '../../engine/HeadlessEngine.js';
 
+// Simulations are console-I/O bound on Windows — per-tick debug spam can slow
+// a run 10x. Default to WARN; pass --verbose for the old firehose.
+if (!process.argv.includes('--verbose')) {
+    process.env.HEADLESS_LOG_LEVEL = process.env.HEADLESS_LOG_LEVEL || 'WARN';
+    const noisy = /^\[(UnitOrderSystem|BuffFx|PlacementSystem|AutobattlerRoundSystem|SkirmishGameSystem|HeroRoster|Death|Projectile)\]/;
+    const origLog = console.log.bind(console);
+    console.log = (...args) => {
+        if (typeof args[0] === 'string' && noisy.test(args[0])) return;
+        origLog(...args);
+    };
+}
+
 /**
  * Load the compiled game bundle into the global context
  */
@@ -340,7 +352,7 @@ function formatResultsAsText(result, verbose = false) {
 
     const winnerDisplay = result.winner === 'left' ? `LEFT (${result.leftBuildOrder}) WINS!`
         : result.winner === 'right' ? `RIGHT (${result.rightBuildOrder}) WINS!`
-        : result.winner === 'draw' ? 'DRAW (equal Town Hall health at round cap)'
+        : result.winner === 'draw' ? 'DRAW (equal Commander HP at round cap)'
         : 'NO WINNER (timeout)';
 
     lines.push(`  Result: ${winnerDisplay}`);
@@ -777,7 +789,7 @@ function printSimulationResults(result, verbose = false) {
     // Determine winner display with team color
     const winnerDisplay = result.winner === 'left' ? `LEFT (${result.leftBuildOrder}) WINS!`
         : result.winner === 'right' ? `RIGHT (${result.rightBuildOrder}) WINS!`
-        : result.winner === 'draw' ? 'DRAW (equal Town Hall health at round cap)'
+        : result.winner === 'draw' ? 'DRAW (equal Commander HP at round cap)'
         : 'NO WINNER (timeout)';
 
     console.log(`║  Result: ${winnerDisplay.padEnd(51)}║`);
