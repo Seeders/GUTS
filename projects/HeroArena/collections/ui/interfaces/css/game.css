@@ -1101,3 +1101,35 @@
     border-radius: 5px; color: #cfe0ff; cursor: pointer; letter-spacing: 0.5px;
 }
 .sq-tech-btn:hover { background: rgba(120,160,255,0.3); color: #fff; }
+
+/* Inline tech list on the squad inspector */
+.sq-techlist { margin-top: 7px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 5px; }
+.sq-techlist-head { font-size: 0.7rem; letter-spacing: 1px; opacity: 0.7; margin-bottom: 3px; text-transform: uppercase; }
+.sq-techrow {
+    display: grid; grid-template-columns: auto 1fr auto; gap: 6px; align-items: baseline;
+    padding: 3px 6px; border-radius: 4px; font-size: 0.74rem; line-height: 1.25;
+}
+.sq-techrow.owned { color: #9fdcA8; }
+.sq-techrow.buyable { cursor: pointer; }
+.sq-techrow.buyable:hover { background: rgba(120,160,255,0.15); }
+.sq-techrow.poor { opacity: 0.45; }
+.sq-techrow-desc { opacity: 0.6; font-size: 0.66rem; }
+.sq-techrow-price { color: #ffd97a; font-size: 0.7rem; white-space: nowrap; }
+.sq-techrow.owned .sq-techrow-price { color: #7dff9e; }
+
+/* Squad action buttons (Formation / Promote / Sell) */
+.selection-actions { display: flex; gap: 6px; }
+.selection-actions button {
+    flex: 1; padding: 7px 4px; font-size: 0.76rem; letter-spacing: 0.3px;
+    background: linear-gradient(180deg, #1c2433, #141a26);
+    border: 1px solid #3f4a60; border-radius: 6px; color: #e8e2d0;
+    cursor: pointer; transition: border-color 0.1s, background 0.1s;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.selection-actions button:hover:not(:disabled) {
+    border-color: #d8b45a; background: linear-gradient(180deg, #26304200, #1a2232);
+    background-color: #202a3c; color: #fff;
+}
+.selection-actions button:disabled { opacity: 0.4; cursor: default; }
+#levelUpBtn:not(:disabled) { border-color: rgba(216,180,90,0.7); color: #ffe9b0; }
+#sellUnitBtn:hover:not(:disabled) { border-color: #a05a5a; }
