@@ -1200,6 +1200,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
         }
         panel.classList.remove('hidden');
 
+        this._wireSelectionTechButton();
         this.elements.selectionCards.innerHTML = this._renderSquadDetail(units);
 
         // Formation button: shows the first selected multi-member squad's current
@@ -1294,11 +1295,22 @@ class PlacementUISystem extends GUTS.BaseSystem {
                 ${ownedTechs.length ? `<div class="sq-techs">${ownedTechs.map(t =>
                     `<div class="ut-tech owned">✔ ${t.title}</div>`).join('')}</div>`
                     : '<div class="sq-notechs">No technologies purchased</div>'}
+                ${techsAll.length ? `<button class="sq-tech-btn" data-tech-unit="${unitId}">
+                    ⚙ Technologies (${ownedTechs.length}/${techsAll.length})</button>` : ''}
             </div>`;
         };
 
         if (squads.length === 1) return one(squads[0]);
         return `<div class="sq-multi">${squads.length} squads selected</div>` + one(squads[0]);
+    }
+
+    _wireSelectionTechButton() {
+        if (this._selTechWired || !this.elements.selectionCards) return;
+        this._selTechWired = true;
+        this.elements.selectionCards.addEventListener('click', (e) => {
+            const btn = e.target.closest('[data-tech-unit]');
+            if (btn) this._openUnitTechPanel(btn.dataset.techUnit);
+        });
     }
 
     _myStats() {
@@ -1803,8 +1815,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
             const tier = GUTS.ArmyShopSystem.unitTier(u.id) || 1;
             const pips = techs.length && fielded.has(u.id)
                 ? `<span class="ud-pips">${'●'.repeat(ownedTechs)}${'○'.repeat(Math.max(0, techs.length - ownedTechs))}</span>` : '';
-            const techBtn = techs.length && fielded.has(u.id) && !locked
-                ? `<button class="ud-tech" data-tech-unit="${u.id}" title="Technologies">⚙</button>` : '';
+            const techBtn = '';
             return `<div class="ud-card tier-${tier} ${locked ? 'ud-locked' : ''} ${affordable ? '' : 'ud-poor'}"
                 data-${locked ? 'locked-id' : 'unit-id'}="${u.id}" data-hover-id="${u.id}">
                 ${this._iconImg(def, 'ud-img')}
