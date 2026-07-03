@@ -23,6 +23,7 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         'buySquadLevel',
         'buyTierUnlock',
         'buyUpgradeNode',
+        'buyDeploySlot',
         'pickReinforcement',
         'getShopStateForPlayer',
         'getEligibleItems',
@@ -51,6 +52,8 @@ class ArmyShopSystem extends GUTS.BaseSystem {
     ];
 
     static OFFER_COUNT = 5;
+    static BASE_DEPLOY_SLOTS = 2;       // Mechabellum: 2 new squads per round...
+    static EXTRA_DEPLOY_COST = 7;       // ...unless you buy extra recruitment (cost doubles)
     static REROLL_BASE_COST = 2;     // escalates +1 per reroll within a round
     static SELL_REFUND_PCT = 0.5;    // base fraction of a unit's shop cost refunded on sell
     // Shop runs a small-number economy (income is 20g/round). A unit/upgrade/ability's
@@ -151,6 +154,10 @@ class ArmyShopSystem extends GUTS.BaseSystem {
             const stats = this.game.getComponent(entityId, 'playerStats');
             if (!stats) continue;
             stats.rerollCount = 0;
+            // Fresh recruitment allowance each round (menu buys only — free
+            // units from cards/perks never consume slots).
+            stats.deploysUsed = 0;
+            stats.extraDeploySlots = 0;
             if (campaign) {
                 // Campaign: no AI economy, no random reinforcements — the run
                 // system rolls the player's post-victory reward instead.
@@ -475,10 +482,16 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         }
         const def = this.collections.units?.[unitTypeId];
         if (!def) return { success: false, reason: 'no_unit' };
+        const allowedDeploys = ArmyShopSystem.BASE_DEPLOY_SLOTS + (stats.extraDeploySlots || 0);
+        if ((stats.deploysUsed || 0) >= allowedDeploys) {
+            return { success: false, reason: 'no_deploy_slots' };
+        }
+
         const cost = ArmyShopSystem.unitPrice(unitTypeId, def);
         if ((stats.gold || 0) < cost) return { success: false, reason: 'insufficient_gold' };
 
         stats.gold -= cost;
+        stats.deploysUsed = (stats.deploysUsed || 0) + 1;
         this._addUnitToArmy(stats, unitTypeId);
         this._broadcastShop(stats);
         return { success: true, state: this.getShopStateForPlayer(numericPlayerId) };
@@ -603,6 +616,21 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         return { success: true, state: this.getShopStateForPlayer(numericPlayerId) };
     }
 
+    // Extra recruitment (Mechabellum side-building): +1 deploy slot this round,
+    // price doubling per extra bought (7g, 14g, 28g...).
+    buyDeploySlot(numericPlayerId) {
+        const stats = this._getStats(numericPlayerId);
+        if (!stats) return { success: false, reason: 'no_player' };
+        if (!this._inPlacement()) return { success: false, reason: 'wrong_phase' };
+        const extras = stats.extraDeploySlots || 0;
+        const cost = ArmyShopSystem.EXTRA_DEPLOY_COST * Math.pow(2, extras);
+        if ((stats.gold || 0) < cost) return { success: false, reason: 'insufficient_gold' };
+        stats.gold -= cost;
+        stats.extraDeploySlots = extras + 1;
+        this._broadcastShop(stats);
+        return { success: true, state: this.getShopStateForPlayer(numericPlayerId) };
+    }
+
     // ─── Tier unlocks (Mechabellum: pay once, buy forever) ──────────────────────
 
     // All shop-offerable units the player has NOT unlocked yet, with their
@@ -654,8 +682,8 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         const def = this.collections.units?.[this._resolveSpawnType(entry)] || {};
         const level = entry.level || 1;
         const base = ArmyShopSystem.unitPrice(this._resolveSpawnType(entry), def) * level;
-        const ready = this.game.heroExperienceSystem?.isLevelReady?.(entry);
-        return ready ? Math.max(1, Math.ceil(base / 2)) : base;
+        // Mechabellum: promotion is only OFFERED at a full bar, at half price.
+        return Math.max(1, Math.ceil(base / 2));
     }
 
     buySquadLevel(numericPlayerId, rosterIndex) {
@@ -667,6 +695,12 @@ class ArmyShopSystem extends GUTS.BaseSystem {
 
         const maxLevel = this.game.heroExperienceSystem?.constructor?.MAX_LEVEL || 9;
         if ((entry.level || 1) >= maxLevel) return { success: false, reason: 'max_level' };
+
+        // Mechabellum: a squad can only be promoted once its XP bar is FULL —
+        // levels can never simply be purchased early.
+        if (!this.game.heroExperienceSystem?.isLevelReady?.(entry)) {
+            return { success: false, reason: 'xp_not_ready' };
+        }
 
         const cost = this.squadLevelCost(entry);
         if ((stats.gold || 0) < cost) return { success: false, reason: 'insufficient_gold' };
@@ -831,6 +865,7 @@ class ArmyShopSystem extends GUTS.BaseSystem {
             return { success: false, reason: 'deployment_locked' };
         }
 
+        if (!entry.lastPosition) stats.deploysUsed = Math.max(0, (stats.deploysUsed || 0) - 1);
         const def = this.collections.units?.[this._resolveSpawnType(entry)] || {};
         const pct = ArmyShopSystem.SELL_REFUND_PCT + (this.getEconomyEffects(stats).sellRefundPct || 0);
         const refund = Math.floor(ArmyShopSystem.unitPrice(this._resolveSpawnType(entry), def) * pct);
@@ -869,6 +904,9 @@ class ArmyShopSystem extends GUTS.BaseSystem {
                 ? { options: stats.pendingReinforcement.options } : null,
             locked: this._lockedUnits(stats),
             techDiscount: stats.techDiscount || 0,
+            deploysUsed: stats.deploysUsed || 0,
+            deploySlots: ArmyShopSystem.BASE_DEPLOY_SLOTS + (stats.extraDeploySlots || 0),
+            nextSlotCost: ArmyShopSystem.EXTRA_DEPLOY_COST * Math.pow(2, stats.extraDeploySlots || 0),
             skillCharges: [...(stats.skillCharges || [])]
         };
     }

@@ -40,6 +40,7 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
         'submitBuyUpgradeNode',
         'submitPickReinforcement',
         'submitEnterCampaignNode',
+        'submitBuyDeploySlot',
         'submitCastCommanderSkill',
         'submitSellUnit',
         'submitGrantSingleAbility',
@@ -1724,6 +1725,15 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
             eventName: 'SET_SQUAD_FORMATION',
             responseName: 'SET_SQUAD_FORMATION_ACK',
             data: { rosterIndex, w, h },
+            onSuccess
+        }, () => {});
+    }
+
+    submitBuyDeploySlot(onSuccess) {
+        this.networkRequest({
+            eventName: 'BUY_DEPLOY_SLOT',
+            responseName: 'BUY_DEPLOY_SLOT_ACK',
+            data: {},
             onSuccess
         }, () => {});
     }

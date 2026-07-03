@@ -42,6 +42,7 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         'handleBuyUnitTech',
         'handleBuySquadLevel',
         'handleBuyTierUnlock',
+        'handleBuyDeploySlot',
         'handleBuyUpgradeNode',
         'handleSetSquadFormation',
         'handleEnterCampaignNode',
@@ -81,6 +82,7 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         'buyUnitTech',
         'buySquadLevel',
         'buyTierUnlock',
+        'buyDeploySlot',
         'buyUpgradeNode',
         'setSquadFormation',
         'enterCampaignNode',
@@ -398,6 +400,7 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         this.game.serverEventManager.subscribe('SET_SQUAD_FORMATION',  this.handleSetSquadFormation.bind(this));
         this.game.serverEventManager.subscribe('BUY_UPGRADE_NODE',      this.handleBuyUpgradeNode.bind(this));
         this.game.serverEventManager.subscribe('ENTER_CAMPAIGN_NODE',   this.handleEnterCampaignNode.bind(this));
+        this.game.serverEventManager.subscribe('BUY_DEPLOY_SLOT',       this.handleBuyDeploySlot.bind(this));
         this.game.serverEventManager.subscribe('PICK_REINFORCEMENT',   this.handlePickReinforcement.bind(this));
         this.game.serverEventManager.subscribe('CAST_COMMANDER_SKILL', this.handleCastCommanderSkill.bind(this));
         this.game.serverEventManager.subscribe('SELL_UNIT',            this.handleSellUnit.bind(this));
@@ -1406,6 +1409,13 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
             this.sendToPlayer(playerId, 'HERO_MOVED', { moves: result.moves });
         }
         return this.respond(playerId, 'SET_SQUAD_FORMATION_ACK', result ?? { success: false }, callback);
+    }
+
+    handleBuyDeploySlot(eventData, callback) {
+        const { playerId } = eventData;
+        const numericPlayerId = eventData.numericPlayerId ?? eventData.playerId;
+        const result = this.call.buyDeploySlot(numericPlayerId);
+        return this.respond(playerId, 'BUY_DEPLOY_SLOT_ACK', result ?? { success: false }, callback);
     }
 
     handleEnterCampaignNode(eventData, callback) {

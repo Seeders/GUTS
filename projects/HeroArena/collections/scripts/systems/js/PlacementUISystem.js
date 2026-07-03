@@ -63,6 +63,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
         'submitBuyUnitTech',
         'submitBuySquadLevel',
         'submitBuyTierUnlock',
+        'submitBuyDeploySlot',
         'submitSetSquadFormation',
         'submitBuyUpgradeNode',
         'submitPickReinforcement',
@@ -1238,9 +1239,9 @@ class PlacementUISystem extends GUTS.BaseSystem {
             const { cost, ready, allMaxed } = this._levelUpCostForSelection(units);
             this.elements.levelUpBtn.textContent = allMaxed
                 ? '⬆ Max Level'
-                : `⬆ Level Up (${cost}g${ready ? ' ★' : ''})`;
-            this.elements.levelUpBtn.disabled = notPrep || allMaxed || cost <= 0 ||
-                (this._shopState?.gold ?? 0) < cost;
+                : ready ? `⬆ Promote (${cost}g ★)` : '⬆ Promote (XP not full)';
+            this.elements.levelUpBtn.disabled = notPrep || allMaxed || !ready ||
+                cost <= 0 || (this._shopState?.gold ?? 0) < cost;
         }
         if (this.elements.sellUnitBtn) this.elements.sellUnitBtn.disabled = notPrep;
     }
@@ -1265,10 +1266,12 @@ class PlacementUISystem extends GUTS.BaseSystem {
             const level = info.level || 1;
             if (level >= maxLevel) continue;
             leveable++;
-            const base = Math.max(1, Math.ceil((def.value || 0) / 5)) * level;
+            // Mechabellum: only squads with a FULL XP bar can be promoted.
             const isReady = entry && hx?.isLevelReady?.(entry);
-            if (isReady) ready = true;
-            total += isReady ? Math.max(1, Math.ceil(base / 2)) : base;
+            if (!isReady) continue;
+            ready = true;
+            const base = Math.max(1, Math.ceil((def.value || 0) / 5)) * level;
+            total += Math.max(1, Math.ceil(base / 2));
         }
         return { cost: total, ready, allMaxed: unitIds.length > 0 && leveable === 0 };
     }
@@ -1679,6 +1682,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
 
     _renderUnlockedUnits(s) {
         if (!this.elements.unlockedUnitsCards) return;
+        this._renderDeploySlots(s);
         const unlocked = s.unlocked || [];
         const fielded = new Set(s.ownedUnitTypes || []);
         this.elements.unlockedUnitsCards.innerHTML = unlocked.map(u => {
@@ -1713,6 +1717,34 @@ class PlacementUISystem extends GUTS.BaseSystem {
         const offer = this._shopState?.offers?.[idx];
         if (!offer || offer.consumed) return;
         this.call.submitBuyOffer(idx, (res) => this._handleBuyResult(res));
+    }
+
+    // "Deploys 1/2  [+slot 7g]" header — Mechabellum recruitment allowance.
+    _renderDeploySlots(s) {
+        let bar = document.getElementById('deploySlotsBar');
+        if (!bar) {
+            const host = this.elements.unlockedUnitsCards?.parentElement;
+            if (!host) return;
+            bar = document.createElement('div');
+            bar.id = 'deploySlotsBar';
+            bar.style.cssText = 'display:flex; align-items:center; gap:8px; padding:2px 4px 6px; font-size:0.8rem; color:#e8d9a0;';
+            host.insertBefore(bar, this.elements.unlockedUnitsCards);
+            bar.addEventListener('click', (e) => {
+                if (e.target.id !== 'buyDeploySlotBtn') return;
+                this.call.submitBuyDeploySlot((res) => {
+                    if (res?.success === false && res?.reason === 'insufficient_gold') {
+                        GUTS.NotificationSystem?.show?.('Not enough gold', 'error');
+                    }
+                    this._renderShop(res?.state || res);
+                });
+            });
+        }
+        const used = s.deploysUsed ?? 0;
+        const slots = s.deploySlots ?? 2;
+        bar.innerHTML = `<span title="New squads you can recruit from the menu this round (free card units don't count)">🎖 Deploys ${used}/${slots}</span>
+            <button id="buyDeploySlotBtn" style="padding:1px 8px; font-size:0.72rem; background:rgba(216,180,90,0.15);
+                border:1px solid rgba(216,180,90,0.5); border-radius:3px; color:#e8d9a0; cursor:pointer;"
+                title="Extra recruitment: +1 deploy slot this round">+1 slot (${s.nextSlotCost ?? 7}g)</button>`;
     }
 
     _onUnlockedUnitClick(event) {
