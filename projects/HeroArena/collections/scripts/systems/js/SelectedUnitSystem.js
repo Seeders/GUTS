@@ -1194,16 +1194,23 @@ class SelectedUnitSystem extends GUTS.BaseSystem {
                 if (st?.playerId === myId) { stats = st; break; }
             }
             if (stats) {
-                const seen = new Set();
+                // Accumulate the CENTROID of each ready squad's members so the
+                // badge floats over the formation's center, not one member.
+                const acc = new Map();   // rosterIndex → {x, y, z, n}
                 for (const eid of this.game.getEntitiesWith('heroRosterInfo')) {
                     if (this.game.entityAlive?.[eid] !== 1) continue;
                     const info = this.game.getComponent(eid, 'heroRosterInfo');
-                    if (info?.playerId !== myId || seen.has(info.rosterIndex)) continue;
-                    seen.add(info.rosterIndex);
+                    if (info?.playerId !== myId) continue;
                     const entry = stats.heroRoster?.[info.rosterIndex];
                     if (!entry || !hx.isLevelReady?.(entry)) continue;
                     const pos = this.game.getComponent(eid, 'transform')?.position;
-                    if (pos) wanted.set(info.rosterIndex, pos);
+                    if (!pos) continue;
+                    const a = acc.get(info.rosterIndex) || { x: 0, y: 0, z: 0, n: 0 };
+                    a.x += pos.x; a.y += pos.y; a.z += pos.z; a.n++;
+                    acc.set(info.rosterIndex, a);
+                }
+                for (const [idx, a] of acc) {
+                    wanted.set(idx, { x: a.x / a.n, y: a.y / a.n, z: a.z / a.n });
                 }
             }
         }
