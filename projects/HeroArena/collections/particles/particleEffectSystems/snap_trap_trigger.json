@@ -1,7 +1,11 @@
 {
   "title": "Snap Trap Trigger",
   "category": "physical",
-  "tags": ["trap", "snap", "trigger"],
+  "tags": [
+    "trap",
+    "snap",
+    "trigger"
+  ],
   "layers": [
     {
       "effect": "dust_explosion",

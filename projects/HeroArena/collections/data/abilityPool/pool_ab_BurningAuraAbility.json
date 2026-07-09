@@ -1,0 +1,19 @@
+{
+ "id": "pool_ab_BurningAuraAbility",
+ "title": "Burning Aura",
+ "description": "Emanate heat that burns nearby enemies",
+ "cost": 19,
+ "requirements": [
+  {
+   "int": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Burning Aura",
+  "cost": 19,
+  "description": "Emanate heat that burns nearby enemies",
+  "unlockAbility": "BurningAuraAbility"
+ }
+}

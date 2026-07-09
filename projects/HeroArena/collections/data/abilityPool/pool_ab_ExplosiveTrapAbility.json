@@ -1,0 +1,19 @@
+{
+ "id": "pool_ab_ExplosiveTrapAbility",
+ "title": "Explosive Trap",
+ "description": "Place a hidden trap that explodes when enemies approach (max 2)",
+ "cost": 17,
+ "requirements": [
+  {
+   "dex": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Explosive Trap",
+  "cost": 17,
+  "description": "Place a hidden trap that explodes when enemies approach (max 2)",
+  "unlockAbility": "ExplosiveTrapAbility"
+ }
+}

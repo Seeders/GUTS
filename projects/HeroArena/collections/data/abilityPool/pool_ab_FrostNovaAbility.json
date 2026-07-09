@@ -1,0 +1,19 @@
+{
+ "id": "pool_ab_FrostNovaAbility",
+ "title": "Frost Nova",
+ "description": "A burst of frost freezes nearby enemies.",
+ "cost": 26,
+ "requirements": [
+  {
+   "int": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Frost Nova",
+  "cost": 26,
+  "description": "A burst of frost freezes nearby enemies.",
+  "unlockAbility": "FrostNovaAbility"
+ }
+}

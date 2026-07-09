@@ -1,0 +1,19 @@
+{
+ "id": "pool_ab_RevealAbility",
+ "title": "Reveal",
+ "description": "Expose nearby hidden enemies so your whole team can target them.",
+ "cost": 15,
+ "requirements": [
+  {
+   "dex": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Reveal",
+  "cost": 15,
+  "description": "Expose nearby hidden enemies so your whole team can target them.",
+  "unlockAbility": "RevealAbility"
+ }
+}

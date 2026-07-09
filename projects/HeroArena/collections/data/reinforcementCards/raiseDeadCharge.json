@@ -1,0 +1,12 @@
+{
+ "title": "Raise Dead",
+ "icon": "💀",
+ "kind": "skillCharge",
+ "skill": "summonSkeletons",
+ "description": "A single-use Raise Dead — summon a skeleton pack mid-battle",
+ "cost": 100,
+ "weight": 2,
+ "minRound": 3,
+ "fileName": "raiseDeadCharge",
+ "category": "skill"
+}

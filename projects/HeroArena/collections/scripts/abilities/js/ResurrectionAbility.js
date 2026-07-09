@@ -20,7 +20,7 @@ class ResurrectionAbility extends GUTS.BaseAbility {
 
         this.game.schedulingSystem.scheduleAction(() => {
             this._resurrect(casterEntity, target);
-        }, this.castTime, casterEntity);
+        }, 0, casterEntity); // payload at execute — queue already waited to the release point
     }
 
     // Looks for dead allies (health <= 0 but entity still exists, e.g. before despawn)

@@ -1,0 +1,31 @@
+{
+  "title": "Smoke Burst",
+  "category": "physical",
+  "tags": [
+    "smoke",
+    "burst"
+  ],
+  "particleEffectData": {
+    "count": 20,
+    "lifetime": 1.2,
+    "scale": 22,
+    "scaleMultiplier": 2.2,
+    "startColor": "#777777",
+    "endColor": "#222222",
+    "emitterShape": "point",
+    "emitterRadius": 0,
+    "heightOffset": 10,
+    "velocityXMin": -80,
+    "velocityXMax": 80,
+    "velocityYMin": 40,
+    "velocityYMax": 120,
+    "velocityZMin": -80,
+    "velocityZMax": 80,
+    "gravity": -30,
+    "drag": 0.93,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "normal"
+  },
+  "fileName": "smoke_burst"
+}

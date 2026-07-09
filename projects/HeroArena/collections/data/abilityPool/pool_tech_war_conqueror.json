@@ -1,0 +1,23 @@
+{
+ "id": "pool_tech_war_conqueror",
+ "title": "Conqueror",
+ "description": "+30% damage",
+ "cost": 14,
+ "requirements": [
+  {
+   "str": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Conqueror",
+  "cost": 14,
+  "description": "+30% damage",
+  "statModifiers": {
+   "damage": {
+    "pct": 0.3
+   }
+  }
+ }
+}

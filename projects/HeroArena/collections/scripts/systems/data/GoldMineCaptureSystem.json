@@ -1,0 +1,11 @@
+{
+  "filePath": "/projects/HeroArena/collections/scripts/systems/js/GoldMineCaptureSystem.js",
+  "services": [
+    "autoSpawnGoldMines",
+    "resolveGoldMineCaptures",
+    "getGoldMinePositions",
+    "getContestableObjectives"
+  ],
+  "testFilePath": "/projects/HeroArena/collections/scripts/systems/tests/GoldMineCaptureSystem.test.js",
+  "fileName": "GoldMineCaptureSystem"
+}

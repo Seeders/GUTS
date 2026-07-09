@@ -5,6 +5,7 @@
     "showLobby",
     "updateLobby",
     "getSelectedLevel",
-    "handleMultiplayerModeSelection"
+    "handleMultiplayerModeSelection",
+    "showSkirmishLobby"
   ]
 }

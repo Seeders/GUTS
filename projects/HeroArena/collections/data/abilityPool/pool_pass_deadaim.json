@@ -1,0 +1,23 @@
+{
+ "id": "pool_pass_deadaim",
+ "title": "Dead Aim",
+ "description": "+20 accuracy",
+ "cost": 14,
+ "requirements": [
+  {
+   "int": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Dead Aim",
+  "cost": 14,
+  "description": "+20 accuracy",
+  "statModifiers": {
+   "accuracy": {
+    "add": 20
+   }
+  }
+ }
+}

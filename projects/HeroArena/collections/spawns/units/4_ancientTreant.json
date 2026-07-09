@@ -9,6 +9,7 @@
   "value": 140,
   "hp": 1520,
   "speed": 15,
+  "turnSpeed": 2.5,
   "damage": 77,
   "attackSpeed": 0.7,
   "element": "physical",

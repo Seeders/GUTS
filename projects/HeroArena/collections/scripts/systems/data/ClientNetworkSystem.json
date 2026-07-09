@@ -28,7 +28,26 @@
     "getLocalPlayerId",
     "setLocalGame",
     "resetTeamReadyState",
-    "claimLootItem",
-    "skipLoot"
+    "submitLeaderSelection",
+    "submitHeroSelection",
+    "submitHeroMove",
+    "submitBuyOffer",
+    "submitRerollOffers",
+    "submitBuyUnlockedUnit",
+    "submitBuyUnitTech",
+    "submitBuySquadLevel",
+    "submitBuyTierUnlock",
+    "submitSetSquadFormation",
+    "submitBuyUpgradeNode",
+    "submitPickReinforcement",
+    "submitEnterCampaignNode",
+    "submitBuyDeploySlot",
+    "submitCastCommanderSkill",
+    "submitSellUnit",
+    "submitGrantSingleAbility",
+    "submitSpecializeChoice",
+    "submitPlaceBuilding",
+    "submitMoveBuilding",
+    "submitCancelPlaceBuilding"
   ]
 }

@@ -102,6 +102,10 @@ class SkirmishGameSystem extends GUTS.BaseSystem {
         const saveData = this.game.pendingSaveData;
         console.log('[SkirmishGameSystem] initializeSkirmish, isLoadingSave:', isLoadingSave, 'pendingSaveData:', saveData ? 'present' : 'null');
 
+        // Match-flow state (round, phase, gameOver, …) is reset to
+        // configs/state.json defaults by SceneManager on scene unload — the
+        // gameState component follows the scene lifecycle like all ECS data.
+
         // Enable local game mode (sets game.state.isLocalGame and local player ID)
         this.call.setLocalGame( true, 0);
 

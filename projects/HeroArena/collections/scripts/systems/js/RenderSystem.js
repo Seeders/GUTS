@@ -1,0 +1,791 @@
+class RenderSystem extends GUTS.BaseSystem {
+    static services = [
+        'setInstanceClip',
+        'setInstanceSpeed',
+        'isInstanced',
+        'getEntityAnimationState',
+        'setInstanceAnimationTime',
+        'getBatchInfo',
+        'removeInstance',
+        'isBillboardWithAnimations',
+        'getEntityRenderer',
+        'updateInstanceCapacities',
+        'applyBillboardAnimationFrame'
+    ];
+
+    static serviceDependencies = [
+        'getTileMap',
+        'getCamera',
+        'isVisibleAt',
+        'isVisibleInFogAt',
+        'getActivePlayerTeam',
+        'getLocalPlayerStats',
+        'isEntityVisibleToTeam',
+        'getZoomLevel',
+        'setTerrainDetailLighting',
+        'getWorldScene',
+        'getRenderer'
+    ];
+
+    constructor(game) {
+        super(game);
+        this.game.renderSystem = this;
+
+        // EntityRenderer handles ALL rendering
+        this.entityRenderer = null;
+
+        // Track which entities have been spawned
+        this.spawnedEntities = new Set();
+
+        // Reusable set for cleanup to avoid per-frame allocation
+        this._currentEntitiesSet = new Set();
+
+        // Position cache to skip unchanged entity transforms
+        this._entityPositionCache = new Map();  // entityId -> {x, y, z, angle}
+        this._positionThreshold = 0.01;  // Minimum movement to trigger transform update
+
+        // Debug stats
+        this._frame = 0;
+        this._stats = {
+            entitiesProcessed: 0,
+            entitiesSpawned: 0,
+            entitiesUpdated: 0
+        };
+
+        // Reusable objects for spawn/update to avoid per-frame allocations
+        this._spawnData = {
+            objectType: 0,
+            spawnType: 0,
+            position: { x: 0, y: 0, z: 0 },
+            rotation: 0,
+            transform: null,
+            velocity: null
+        };
+        this._updateData = {
+            position: { x: 0, y: 0, z: 0 },
+            rotation: 0,
+            transform: null,
+            velocity: null
+        };
+
+        // Pre-allocate Color objects for applySpriteLighting to avoid per-frame allocations
+        this._combinedColor = null; // Created lazily when THREE is available
+        this._ambientContrib = null;
+        this._skyContrib = null;
+        this._directionalContrib = null;
+        this._lightDir = null;
+
+        // Reusable array for cleanup to avoid per-frame allocations
+        this._toRemove = [];
+    }
+
+    init() {
+    }
+
+    // Service getter
+    getEntityRenderer() {
+        return this.entityRenderer;
+    }
+
+    /**
+     * Called after all systems have completed onSceneLoad - initialize EntityRenderer with scene
+     * Uses postSceneLoad to ensure WorldSystem has created the Three.js scene first
+     */
+    postSceneLoad(sceneData) {
+        console.log('[RenderSystem] postSceneLoad called, spawnedEntities count:', this.spawnedEntities.size);
+
+        // Get scene from WorldSystem service (ensures we always get the current scene)
+        const scene = this.call.getWorldScene();
+        console.log('[RenderSystem] postSceneLoad called, scene exists:', !!scene, 'scene.uuid:', scene?.uuid);
+        if (!scene) {
+            console.error('[RenderSystem] Scene not available in postSceneLoad - WorldSystem may have failed');
+            return;
+        }
+
+        const collections = this.game.getCollections?.();
+        const projectName = collections?.configs?.game?.projectName || 'TurnBasedWarfare';
+
+        // Count instances needed for each entity type from level data
+        const capacitiesByType = this.calculateInstanceCapacities();
+
+        this.entityRenderer = new GUTS.EntityRenderer({
+            scene: scene,
+            collections: collections,
+            projectName: projectName,
+            modelManager: this.game.modelManager,
+            game: this.game,
+            getPalette: () => collections?.palette || {},
+            modelScale: 32,
+            defaultCapacity: 2056,
+            capacitiesByType: capacitiesByType,
+            minMovementThreshold: 0.1
+        });
+
+        console.log('[RenderSystem] EntityRenderer created, scene.uuid:', scene?.uuid);
+
+        // Set initial ambient light color for sprite/billboard rendering
+        // Combine ambient light with hemisphere light for overall scene illumination
+        // Note: Lighting may not be set up yet since WorldSystem.setupWorldRendering is async
+        // We'll apply lighting after WorldSystem finishes (see waitForLightingAndApply below)
+        this.waitForLightingAndApply();
+
+    }
+
+    /**
+     * Calculate instance capacities needed for each entity type
+     * by counting them in the level data
+     */
+    calculateInstanceCapacities() {
+        const capacities = {};
+
+        // Get tile map from TerrainSystem via gameManager
+        const tileMap = this.call.getTileMap();
+        if (!tileMap) {
+            return capacities;
+        }
+
+        // Build prefab to collection mapping from objectTypeDefinitions
+        const objectTypeDefinitions = this.collections.objectTypeDefinitions || {};
+        const prefabToCollection = {};
+        for (const [collectionId, typeDef] of Object.entries(objectTypeDefinitions)) {
+            if (typeDef.singular) {
+                prefabToCollection[typeDef.singular] = collectionId;
+            }
+        }
+
+        // Count each type of entity from levelEntities
+        const levelEntities = tileMap.levelEntities || [];
+        const counts = {};
+        for (const entityDef of levelEntities) {
+            const collectionId = prefabToCollection[entityDef.spawnType];
+            if (!collectionId) continue;
+            const key = `${collectionId}_${entityDef.type}`;
+            counts[key] = (counts[key] || 0) + 1;
+        }
+
+        // Set capacity with some buffer (20% extra for dynamic spawning)
+        for (const [key, count] of Object.entries(counts)) {
+            capacities[key] = Math.ceil(count * 1.2);
+        }
+
+        // Also count cliffs if present
+        if (tileMap.cliffs) {
+            const cliffCounts = {};
+            tileMap.cliffs.forEach(cliff => {
+                const key = `cliffs_${cliff.type}`;
+                cliffCounts[key] = (cliffCounts[key] || 0) + 1;
+            });
+
+            for (const [key, count] of Object.entries(cliffCounts)) {
+                capacities[key] = Math.ceil(count * 1.2);
+            }
+        }
+
+        return capacities;
+    }
+
+    /**
+     * Update instance capacities after terrain has loaded
+     * Called by WorldSystem when terrain data is available
+     */
+    updateInstanceCapacities() {
+
+        if (!this.entityRenderer) {
+            console.warn('[RenderSystem] Cannot update capacities - EntityRenderer not initialized');
+            return;
+        }
+
+        const capacities = this.calculateInstanceCapacities();
+
+
+        // Update EntityRenderer's capacity map
+        this.entityRenderer.capacitiesByType = capacities;
+
+    }
+
+    /**
+     * Remove entity instance and mark for re-spawn
+     * Used when RENDERABLE component changes (e.g., construction completion)
+     */
+    removeInstance(entityId) {
+        // Remove from renderer
+        this.entityRenderer.removeEntity(entityId);
+
+        // Mark as not spawned so it will be re-spawned with new model on next update
+        this.spawnedEntities.delete(entityId);
+
+        // Clear position cache
+        if (this._entityPositionCache) {
+            this._entityPositionCache.delete(entityId);
+        }
+    }
+
+    /**
+     * Called when an entity is destroyed - clean up visual representation
+     */
+    entityDestroyed(entityId) {
+        if (this.spawnedEntities.has(entityId)) {
+            this.removeInstance(entityId);
+        }
+    }
+    /**
+     * Get batch information for animation system
+     * Returns available clips and other batch metadata
+     */
+    getBatchInfo(objectType, spawnType) {
+        if (!this.entityRenderer) {
+            return null;
+        }
+
+        const batchKey = `${objectType}_${spawnType}`;
+        const batch = this.entityRenderer.vatBatches.get(batchKey);
+
+        if (!batch || !batch.meta) {
+            return null;
+        }
+
+        // Extract available clips from meta
+        const availableClips = batch.meta.clips ? batch.meta.clips.map(clip => clip.name) : [];
+
+        return {
+            availableClips,
+            clipIndexByName: batch.meta.clipIndexByName,
+            meta: batch.meta
+        };
+    }
+
+
+    async update() {
+        if (!this.call.getWorldScene() || !this.call.getCamera() || !this.call.getRenderer()) return;
+        if (!this.entityRenderer) return;
+
+        this._frame++;
+        await this.updateEntities();
+        this.updateAnimations();
+        this.finalizeUpdates();
+    }
+
+    async updateEntities() {
+        const entities = this.game.getEntitiesWith("transform", "renderable");
+        this._stats.entitiesProcessed = entities.length;
+
+        // Debug: Check if player entity is in the list
+        const playerController = this.game.getEntitiesWith("playerController");
+        if (playerController.length > 0) {
+            const playerId = playerController[0];
+            const playerInList = entities.includes(playerId);
+            const hasTransform = !!this.game.getComponent(playerId, "transform");
+            const hasRenderable = !!this.game.getComponent(playerId, "renderable");
+            const alreadySpawned = this.spawnedEntities.has(playerId);
+            if (!playerInList || !hasTransform || !hasRenderable) {
+                console.warn(`[RenderSystem] Player ${playerId} state: inList=${playerInList}, hasTransform=${hasTransform}, hasRenderable=${hasRenderable}, alreadySpawned=${alreadySpawned}`);
+            }
+        }
+
+        // Track which entities should be visible this frame (for cleanup of invisible entities)
+        this._currentEntitiesSet.clear();
+
+        for (const entityId of entities) {
+            const transform = this.game.getComponent(entityId, "transform");
+            const renderable = this.game.getComponent(entityId, "renderable");
+            const velocity = this.game.getComponent(entityId, "velocity");
+            const unitTypeComp = this.game.getComponent(entityId, "unitType");
+            const unitType = this.game.getUnitTypeDef( unitTypeComp);
+
+            // Debug: Log if this is the player and why it might be skipped
+            const isPlayer = this.game.getComponent(entityId, "playerController");
+            if (isPlayer && (!unitType || !transform?.position)) {
+                console.warn(`[RenderSystem] Player ${entityId} skipped: unitType=${!!unitType}, hasPosition=${!!transform?.position}`);
+            }
+
+            if (!unitType || !transform?.position) {
+                continue;
+            }
+
+            const pos = transform.position;
+            const angle = transform.rotation?.y || 0;
+
+            // Check fog of war visibility (cliffs and worldObjects always visible, player always visible to self)
+            const isVisible = this.call.isVisibleAt( pos.x, pos.z);
+            const unitTypeCollection = unitTypeComp?.collection;
+            const isAlwaysVisible = unitTypeCollection === this.enums.objectTypeDefinitions?.worldObjects ||
+                                    unitTypeCollection === this.enums.objectTypeDefinitions?.cliffs ||
+                                    unitType.alwaysVisibleInFog === true || // map objectives (e.g. gold mines)
+                                    isPlayer; // Local player is always visible to themselves
+
+            if (!isAlwaysVisible && !isVisible) {
+                // Debug: Log if player is being skipped due to fog of war
+                if (isPlayer) {
+                    console.warn(`[RenderSystem] Player ${entityId} skipped by fog of war: isVisible=${isVisible}, pos=(${pos.x}, ${pos.z})`);
+                }
+                // Entity not currently visible in fog of war - skip entirely (don't spawn or update)
+                continue;
+            }
+
+            // Enemy visibility — hide enemies the local player can't currently see.
+            // Skip for always-visible entities (worldObjects, cliffs, the player).
+            // "Enemy" = any entity on a team other than mine (includes neutral
+            // creeps / hostile dragons). Two independent reasons to hide:
+            //   1) Fog of war: the enemy is not in any of my units' current
+            //      vision (isVisibleInFogAt false). Position-based, so it also
+            //      hides remembered enemies in explored-but-dark fog.
+            //   2) Stealth: the enemy is stealthed and undetected by my team.
+            if (!isAlwaysVisible && this.game.hasService('getLocalPlayerStats')) {
+                const myTeam = this.game.hasService('getActivePlayerTeam')
+                    ? this.call.getActivePlayerTeam()
+                    : this.call.getLocalPlayerStats()?.team;
+                const entityTeam = this.game.getComponent(entityId, 'team');
+                if (myTeam !== undefined && myTeam !== null &&
+                    entityTeam && entityTeam.team !== myTeam) {
+                    // Fog of war: only render enemies in my team's current vision.
+                    if (this.game.hasService('isVisibleInFogAt') &&
+                        !this.call.isVisibleInFogAt(pos.x, pos.z)) {
+                        continue;
+                    }
+                    // Stealth: hide undetected stealthed enemies.
+                    if (this.game.hasService('isEntityVisibleToTeam') &&
+                        !this.call.isEntityVisibleToTeam(entityId, myTeam)) {
+                        continue;
+                    }
+                }
+            }
+
+            // Determine opacity: use renderable.opacity if set, otherwise check hiding state
+            let opacity = 1.0;
+            if (renderable.opacity !== null) {
+                opacity = renderable.opacity;
+            } else {
+                const playerOrder = this.game.getComponent(entityId, 'playerOrder');
+                const isHiding = playerOrder?.isHiding || false;
+                opacity = isHiding ? 0.5 : 1.0;
+            }
+            if (typeof opacity !== 'number') opacity = 1.0;
+
+            // Cloaked / invisible units render at half opacity (billboards included).
+            // Undetected enemy stealthers are already skipped above, so this affects my
+            // own hidden units and revealed enemies — both read as "in stealth".
+            const _bes = this.game.buffEffectsSystem;
+            if (_bes) {
+                const _bt = this.game.getEnums().buffTypes || {};
+                if ((_bt.invisible != null && _bes.hasBuff(entityId, _bt.invisible)) ||
+                    (_bt.cloaked != null && _bes.hasBuff(entityId, _bt.cloaked))) {
+                    opacity = Math.min(opacity, 0.5);
+                }
+            }
+
+            // Hide the camera's follow target only when fully zoomed in (first-person mode)
+            // No gradual fade - character is either fully visible or fully hidden
+            const cameraFollowTarget = this.game.cameraControlSystem?.followTargetId;
+            if (entityId === cameraFollowTarget && this.game.hasService('getZoomLevel')) {
+                const zoomLevel = this.call.getZoomLevel();
+                // Only hide at exactly first-person (zoom level 0)
+                if (zoomLevel === 0) {
+                    opacity = 0;
+                }
+            }
+
+            // Skip rendering entirely if fully transparent (avoids fog masking issues)
+            // Must be before adding to _currentEntitiesSet so entity gets cleaned up
+            if (opacity <= 0) {
+                continue;
+            }
+
+            // Entity passed visibility checks - mark it as visible for cleanup tracking
+            this._currentEntitiesSet.add(entityId);
+
+            // Pass numeric indices directly to EntityRenderer (O(1) lookup)
+            const objectType = renderable.objectType;
+            const spawnType = renderable.spawnType;
+
+            if (objectType == null || spawnType == null) {
+                console.error(`[RenderSystem] Invalid renderable for ${entityId}: objectType=${objectType}, spawnType=${spawnType}`);
+                continue;
+            }
+
+            // Check if entity already spawned or currently spawning
+            if (!this.spawnedEntities.has(entityId)) {
+                // DEBUG: Log when spawning player entity
+                if (isPlayer) {
+                    console.log(`[RenderSystem] Spawning player ${entityId} to renderer: objectType=${objectType}, spawnType=${spawnType}`);
+                }
+
+                // Mark as spawned immediately to prevent race condition with async spawn
+                this.spawnedEntities.add(entityId);
+
+                // Spawn new entity using numeric indices.
+                // MUST be a fresh object per spawn: spawnEntity awaits texture/model
+                // loads, and a later update() tick would mutate a shared object while
+                // this spawn is still in flight — the resumed spawn then reads the
+                // OTHER entity's objectType/spawnType and wires the billboard to the
+                // wrong sprite animation set (misaligned UV crops of the wrong sheet).
+                const spawnData = {
+                    objectType,
+                    spawnType,
+                    position: { x: pos.x, y: pos.y, z: pos.z },
+                    rotation: angle,
+                    transform,
+                    velocity
+                };
+                const tint = renderable.tint;
+                await this.spawnEntity(entityId, spawnData, opacity, tint);
+                // Cache initial position - reuse existing cache object if available
+                let posCache = this._entityPositionCache.get(entityId);
+                if (!posCache) {
+                    posCache = { x: 0, y: 0, z: 0, angle: 0, scaleX: 1, opacity: 1 };
+                    this._entityPositionCache.set(entityId, posCache);
+                }
+                posCache.x = pos.x;
+                posCache.y = pos.y;
+                posCache.z = pos.z;
+                posCache.angle = angle;
+                posCache.opacity = opacity;
+            } else {
+                // Check if position/rotation/scale/renderOffset has actually changed
+                const cached = this._entityPositionCache.get(entityId);
+                const scale = transform.scale;
+                const scaleX = scale?.x ?? 1;
+
+                if (cached) {
+                    const dx = pos.x - cached.x;
+                    const dy = pos.y - cached.y;
+                    const dz = pos.z - cached.z;
+                    const distSq = dx*dx + dy*dy + dz*dz;
+                    const angleDiff = Math.abs(angle - cached.angle);
+                    const scaleChanged = (cached.scaleX ?? 1) !== scaleX;
+                    const opacityChanged = (cached.opacity ?? 1) !== opacity;
+
+                    // Check if renderOffset or spriteCameraAngle changed
+                    const animState = this.game.getComponent(entityId, 'animationState');
+                    const renderOffsetY = animState?.renderOffset?.y ?? 0;
+                    const renderOffsetChanged = Math.abs((cached.renderOffsetY ?? 0) - renderOffsetY) > 0.001;
+                    // spriteCameraAngle affects sprite offset (ground-level vs isometric)
+                    const spriteCameraAngle = animState?.spriteCameraAngle ?? 0;
+                    const cameraAngleChanged = (cached.spriteCameraAngle ?? 0) !== spriteCameraAngle;
+
+                    // Skip update if position/rotation/scale/renderOffset/cameraAngle/opacity hasn't changed significantly
+                    if (distSq < this._positionThreshold && angleDiff < 0.01 && !scaleChanged && !renderOffsetChanged && !cameraAngleChanged && !opacityChanged) {
+                        continue;
+                    }
+
+                    // Update cache
+                    cached.x = pos.x;
+                    cached.y = pos.y;
+                    cached.z = pos.z;
+                    cached.angle = angle;
+                    cached.scaleX = scaleX;
+                    cached.renderOffsetY = renderOffsetY;
+                    cached.spriteCameraAngle = spriteCameraAngle;
+                    cached.opacity = opacity;
+                }
+
+                // Update existing entity (reuse object to avoid allocation)
+                this._updateData.position.x = pos.x;
+                this._updateData.position.y = pos.y;
+                this._updateData.position.z = pos.z;
+                this._updateData.rotation = angle;
+                this._updateData.transform = transform;
+                this._updateData.velocity = velocity;
+                this.updateEntity(entityId, this._updateData, opacity);
+            }
+        }
+
+        // Cleanup entities that are no longer visible (removed, stealthed, or in fog of war)
+        this.cleanupRemovedEntities(this._currentEntitiesSet);
+    }
+
+    async spawnEntity(entityId, data, opacity = 1.0, tint = null) {
+        // Debug: Check if this is the player
+        const isPlayer = this.game.getComponent(entityId, 'playerController');
+
+        // Capture indices before awaiting — `data` may be shared/mutated by callers
+        // while the spawn is in flight, and the billboardSpawned event below must
+        // describe THIS entity's def, not whatever was spawned next.
+        const objectType = data.objectType;
+        const spawnType = data.spawnType;
+
+        const spawned = await this.entityRenderer.spawnEntity(entityId, data);
+        if (isPlayer) {
+            console.log(`[RenderSystem] spawnEntity result for player ${entityId}: spawned=${spawned}`);
+        }
+
+        if (spawned) {
+            // Note: spawnedEntities is already updated by caller to prevent race conditions
+            this._stats.entitiesSpawned++;
+
+            // Set opacity for hiding units (only affects billboard entities)
+            if (opacity !== 1.0) {
+                this.entityRenderer.setEntityOpacity(entityId, opacity);
+            }
+
+            // Set tint if specified (only affects billboard entities)
+            if (tint !== null) {
+                this.entityRenderer.setEntityTint(entityId, tint);
+            }
+
+            // Trigger billboard spawn event for AnimationSystem
+            // Use EntityRenderer's indexed lookup (indices captured before the await)
+            const entityDef = this.entityRenderer.getEntityDefByIndex(objectType, spawnType);
+            if (isPlayer) {
+                console.log(`[RenderSystem] Player entityDef:`, entityDef?.spriteAnimationSet);
+            }
+            if (entityDef?.spriteAnimationSet) {
+                const collections = this.collections;
+                const animSetData = collections?.spriteAnimationSets?.[entityDef.spriteAnimationSet];
+                const spriteAnimationCollection = animSetData?.animationCollection || 'peasantSpritesAnimations';
+                if (isPlayer) {
+                    console.log(`[RenderSystem] Triggering billboardSpawned for player ${entityId}`);
+                }
+                this.game.triggerEvent('billboardSpawned', {
+                    entityId,
+                    spriteAnimationSet: entityDef.spriteAnimationSet,
+                    spriteAnimationCollection
+                });
+            }
+        }
+        return spawned;
+    }
+
+    updateEntity(entityId, data, opacity = 1.0) {
+        const updated = this.entityRenderer.updateEntityTransform(entityId, data);
+        if (updated) {
+            this._stats.entitiesUpdated++;
+        }
+        // Always set opacity (to restore when hiding stops)
+        this.entityRenderer.setEntityOpacity(entityId, opacity);
+        return updated;
+    }
+
+    updateAnimations() {
+        const deltaTime = this.game.state?.deltaTime;
+        if (!deltaTime) return;
+
+        this.entityRenderer.updateAnimations(deltaTime);
+
+        // Update shader time for custom materials (e.g., portal effects)
+        const modelManager = this.game.modelManager;
+        if (modelManager?.shapeFactory) {
+            const currentTime = this.game.state?.now || 0;
+            modelManager.shapeFactory.updateShaderTime(currentTime);
+        }
+    }
+
+    finalizeUpdates() {
+        this.entityRenderer.finalizeUpdates();
+    }
+
+    cleanupRemovedEntities(currentEntities) {
+        // Reuse array to avoid per-frame allocations
+        this._toRemove.length = 0;
+
+        for (const entityId of this.spawnedEntities) {
+            if (!currentEntities.has(entityId)) {
+                // Debug: Check if this is the player being removed
+                const isPlayer = this.game.getComponent(entityId, 'playerController');
+                if (isPlayer) {
+                    console.warn(`[RenderSystem] Player ${entityId} being removed - not in currentEntities!`);
+                }
+                this._toRemove.push(entityId);
+            }
+        }
+
+        for (let i = 0; i < this._toRemove.length; i++) {
+            this.removeEntity(this._toRemove[i]);
+        }
+    }
+
+    removeEntity(entityId) {
+        const removed = this.entityRenderer.removeEntity(entityId);
+        if (removed) {
+            this.spawnedEntities.delete(entityId);
+            this._entityPositionCache.delete(entityId);
+        }
+        return removed;
+    }
+
+    // ============ DELEGATED API METHODS ============
+    // These delegate to EntityRenderer for backward compatibility
+
+    setInstanceClip(entityId, clipName, resetTime = true) {
+        if (!this.entityRenderer) return false;
+        return this.entityRenderer.setAnimationClip(entityId, clipName, resetTime);
+    }
+
+    setInstanceSpeed(entityId, speed) {
+        if (!this.entityRenderer) return false;
+        return this.entityRenderer.setAnimationSpeed(entityId, speed);
+    }
+
+    setInstanceAnimationTime(entityId, time) {
+        if (!this.entityRenderer) return false;
+        const entity = this.entityRenderer.entities.get(entityId);
+        if (!entity || entity.type !== 'vat') return false;
+
+        const batch = entity.batch;
+        batch.attributes.animTime.setX(entity.instanceIndex, time);
+        batch.attributes.animTime.array[entity.instanceIndex] = time;
+        batch.dirty.animation = true;
+
+        return true;
+    }
+
+    isInstanced(entityId) {
+        if (!this.entityRenderer) return false;
+        return this.entityRenderer.hasEntity(entityId);
+    }
+
+    // ============ BILLBOARD/SPRITE ANIMATION METHODS ============
+
+    isBillboardWithAnimations(entityId) {
+        if (!this.entityRenderer) return false;
+        return this.entityRenderer.isBillboardWithAnimations(entityId);
+    }
+
+    applyBillboardAnimationFrame(entityId) {
+        if (!this.entityRenderer) return;
+        const animState = this.game.getComponent(entityId, 'animationState');
+        if (!animState) return;
+        this.entityRenderer.applyBillboardAnimationFrame(entityId, animState);
+    }
+
+    /**
+     * Wait for WorldSystem to finish setting up lighting, then apply to sprites
+     */
+    async waitForLightingAndApply() {
+        // Wait for WorldSystem's async setup to complete
+        const worldSystem = this.game.worldSystem;
+        if (worldSystem?.setupWorldRenderingPromise) {
+            await worldSystem.setupWorldRenderingPromise;
+        }
+
+        const worldRenderer = worldSystem?.worldRenderer;
+        if (worldRenderer) {
+            this.applySpriteLighting(worldRenderer);
+        }
+    }
+
+    /**
+     * Apply lighting settings to sprites/billboards
+     * Matches MeshLambertMaterial lighting for an upward-facing surface
+     * so sprites appear consistent with terrain/cliffs
+     * @param {WorldRenderer} worldRenderer - The world renderer with lighting
+     */
+    applySpriteLighting(worldRenderer) {
+        if (!this.entityRenderer) return;
+
+        // Lazily create reusable Color objects
+        if (!this._combinedColor) {
+            this._combinedColor = new THREE.Color();
+            this._ambientContrib = new THREE.Color();
+            this._skyContrib = new THREE.Color();
+            this._directionalContrib = new THREE.Color();
+            this._lightDir = new THREE.Vector3();
+        }
+
+        // Start with ambient light as base (same as MeshLambertMaterial)
+        this._combinedColor.setHex(0x000000);
+
+        // Add ambient light contribution (full, same as Lambert)
+        if (worldRenderer.ambientLight) {
+            this._ambientContrib.copy(worldRenderer.ambientLight.color);
+            this._ambientContrib.multiplyScalar(worldRenderer.ambientLight.intensity);
+            this._combinedColor.add(this._ambientContrib);
+        }
+
+        // Add hemisphere light contribution
+        // For an upward-facing normal (0,1,0), MeshLambertMaterial uses 100% sky color
+        if (worldRenderer.hemisphereLight) {
+            this._skyContrib.copy(worldRenderer.hemisphereLight.color);
+            this._skyContrib.multiplyScalar(worldRenderer.hemisphereLight.intensity);
+            this._combinedColor.add(this._skyContrib);
+        }
+
+        // Add directional light contribution using N·L for upward-facing surface
+        // This matches what MeshLambertMaterial computes for the terrain
+        if (worldRenderer.directionalLight) {
+            const light = worldRenderer.directionalLight;
+
+            // Get normalized light direction (from light position to origin)
+            this._lightDir.copy(light.position).normalize();
+
+            // For upward-facing surface, normal is (0, 1, 0)
+            // N·L = lightDir.y (the Y component of the normalized direction)
+            const NdotL = Math.max(0, this._lightDir.y);
+
+            this._directionalContrib.copy(light.color);
+            this._directionalContrib.multiplyScalar(light.intensity * NdotL);
+            this._combinedColor.add(this._directionalContrib);
+        }
+
+        // Clamp to valid range and apply
+        this._combinedColor.r = Math.min(1.0, this._combinedColor.r);
+        this._combinedColor.g = Math.min(1.0, this._combinedColor.g);
+        this._combinedColor.b = Math.min(1.0, this._combinedColor.b);
+
+        // Apply combined lighting (intensity 1.0 since we pre-multiplied)
+        this.entityRenderer.setAmbientLightColor(this._combinedColor, 1.0);
+
+        // Also apply to TerrainDetailSystem (static terrain sprites like grass/trees)
+        this.call.setTerrainDetailLighting( this._combinedColor);
+
+        // Apply to liquid surfaces (water, lava) in WorldRenderer
+        worldRenderer.setAmbientLightColor(this._combinedColor, 1.0);
+    }
+
+    getEntityAnimationState(entityId) {
+        if (!this.entityRenderer) return null;
+
+        const entity = this.entityRenderer.entities.get(entityId);
+        if (!entity || entity.type !== 'vat') return null;
+
+        try {
+            const batch = entity.batch;
+            const clipIndex = batch.attributes.clipIndex.array[entity.instanceIndex];
+            const animTime = batch.attributes.animTime.array[entity.instanceIndex];
+            const animSpeed = batch.attributes.animSpeed.array[entity.instanceIndex];
+
+            if (clipIndex === undefined || clipIndex === null) return null;
+
+            const clipName = Object.keys(batch.meta.clipIndexByName).find(
+                name => batch.meta.clipIndexByName[name] === clipIndex
+            );
+
+            return {
+                clipName,
+                clipIndex,
+                animTime,
+                animSpeed,
+                clipDuration: batch.meta.clips[clipIndex]?.duration || 1.0
+            };
+        } catch (error) {
+            return null;
+        }
+    }
+
+    /**
+     * Called when scene is unloaded - cleanup all Three.js resources
+     */
+    onSceneUnload() {
+        console.log('[RenderSystem] onSceneUnload called, spawnedEntities:', this.spawnedEntities.size);
+
+        // Cleanup EntityRenderer and all its batches/meshes
+        if (this.entityRenderer) {
+            this.entityRenderer.dispose();
+            this.entityRenderer = null;
+        }
+
+        // Clear tracking data
+        this.spawnedEntities.clear();
+        this._currentEntitiesSet.clear();
+        this._entityPositionCache.clear();
+
+        // Reset stats
+        this._stats = {
+            entitiesProcessed: 0,
+            entitiesSpawned: 0,
+            entitiesUpdated: 0
+        };
+
+        console.log('[RenderSystem] onSceneUnload complete, tracking data cleared');
+    }
+
+}

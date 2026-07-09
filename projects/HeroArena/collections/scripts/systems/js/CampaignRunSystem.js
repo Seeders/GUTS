@@ -86,7 +86,7 @@ class CampaignRunSystem extends GUTS.BaseSystem {
             seed,
             level: this.game.state.skirmishConfig?.selectedLevel || 'battleplain',
             leaderId: stats?.leaderId || null,
-            commanderHP: stats?.commanderHP ?? 210,
+            commanderHP: stats?.commanderHP ?? (GUTS.AutobattlerRoundSystem?.COMMANDER_HP ?? 3500),
             depth: 0,                      // layers cleared
             currentNodeId: null,
             state: 'map',
@@ -444,7 +444,7 @@ class CampaignRunSystem extends GUTS.BaseSystem {
             layers: CampaignRunSystem.LAYERS,
             reachable: this._reachableNodeIds(),
             commanderHP: stats?.commanderHP ?? this.run?.commanderHP,
-            maxHP: 210,
+            maxHP: stats?.commanderMaxHP || (GUTS.AutobattlerRoundSystem?.COMMANDER_HP ?? 3500),
             gold: stats?.gold ?? 0,
             currentNodeId: this.run?.currentNodeId || null
         };

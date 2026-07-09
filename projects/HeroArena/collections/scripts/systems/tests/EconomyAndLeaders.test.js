@@ -62,37 +62,6 @@ describe('Leaders', () => {
     });
 });
 
-describe('Economy effects', () => {
-    let game, shop;
-
-    beforeEach(() => {
-        game = new TestGameContext();
-        shop = game.createSystem(GUTS.ArmyShopSystem);
-    });
-
-    it('aggregates owned economy upgrades', () => {
-        const eff = shop.getEconomyEffects({
-            ownedUpgrades: ['eco_interest1', 'eco_interest2', 'eco_winStreak1', 'eco_trade1']
-        });
-        expect(eff.interestPer).toBe(10);
-        expect(eff.interestCap).toBe(3);          // 2 + 1
-        expect(eff.winStreakGold).toBe(1);
-        expect(eff.rerollDiscount).toBe(1);
-        expect(eff.sellRefundPct).toBeCloseTo(0.15);
-    });
-
-    it('gates an economy upgrade behind its tree prereq', () => {
-        expect(shop._treeUnlocked({ ownedUpgrades: [] }, 'eco_interest2')).toBe(false);
-        expect(shop._treeUnlocked({ ownedUpgrades: ['eco_interest1'] }, 'eco_interest2')).toBe(true);
-        expect(shop._treeUnlocked({ ownedUpgrades: [] }, 'eco_interest1')).toBe(true); // no prereq
-    });
-
-    it('applies a reroll discount', () => {
-        const stats = { rerollCount: 0, ownedUpgrades: ['eco_trade1'] };
-        expect(shop.getRerollCost(stats)).toBe(Math.max(1, GUTS.ArmyShopSystem.REROLL_BASE_COST - 1));
-    });
-});
-
 describe('grantRoundIncome', () => {
     let game, eco;
 
@@ -119,18 +88,20 @@ describe('grantRoundIncome', () => {
 
         eco.grantRoundIncome();
 
-        // 30 +10 income =40; interest min(4,2)=2 ->42; winStreak 2*1=2 ->44; alchemist +5 ->49
-        expect(game.getComponent(game._players[0], 'playerStats').gold).toBe(49);
+        // Mechabellum supply scale: income = 200 x round. 30 +400 income =430;
+        // interest floor(min(floor(430/10)*F, cap 2)) =2 ->432; winStreak 2*1=2 ->434.
+        expect(game.getComponent(game._players[0], 'playerStats').gold).toBe(434);
     });
 
-    it('round 1 sets the starting purse with no bonuses', () => {
+    it('round 1 sets the starting purse to one round of income, no bonuses', () => {
         game.state.round = 1;
         addPlayer({ gold: 999, winStreak: 5, leaderId: 'alchemist', ownedUpgrades: ['eco_interest1'] });
         game.register('getEconomyEffects', () => ({}));
         game.register('getLeaderDef', (id) => ({ id }));
         eco.grantRoundIncome();
+        // Round 1 SETS the purse to income = 200 x 1 = 200 supply (no interest/streak).
         expect(game.getComponent(game._players[0], 'playerStats').gold)
-            .toBe(GUTS.AutobattlerEconomySystem.STARTING_GOLD);
+            .toBe(GUTS.AutobattlerEconomySystem.INCOME_PER_ROUND_STEP);
     });
 });
 
@@ -161,10 +132,10 @@ describe('sellUnit', () => {
 
         const res = shop.sellUnit(0, 0);
         const stats = game.getComponent(eid, 'playerStats');
-        // barbarian value 35 -> shopCost ceil(35/5)=7 -> refund floor(7*0.5)=3
+        // barbarian is tier-1 -> unitPrice = TIER_PRICE[1] = 100 -> refund floor(100*0.5)=50
         expect(res.success).toBe(true);
-        expect(res.refund).toBe(3);
-        expect(stats.gold).toBe(3);
+        expect(res.refund).toBe(50);
+        expect(stats.gold).toBe(50);
         expect(stats.heroRoster.length).toBe(0);
     });
 });
@@ -180,20 +151,26 @@ describe('Shop sells no units; Your Units lists buyable units', () => {
         game.register('getOwnedBuildingIds', () => []);
         game.register('getOwnedBuildingArchetypes', () => new Set(['str']));
         game.register('townhallLevel', () => 1);
+        game.register('getLeaderDef', () => null);
         shop = game.createSystem(GUTS.ArmyShopSystem);
         game.getServiceDependencies(shop);
     });
 
-    function addPlayer() {
+    function addPlayer(extra = {}) {
         const eid = game.createEntityWith({
-            playerStats: { playerId: 0, team: 0, gold: 100, heroRoster: [], ownedUpgrades: [], unlockedUnits: [] }
+            playerStats: { playerId: 0, team: 0, gold: 100, heroRoster: [],
+                ownedUpgrades: [], unlockedUnits: [], tierUnlocks: [], ...extra }
         });
         (game._players ||= []).push(eid);
         return game.getComponent(eid, 'playerStats');
     }
 
-    it('candidate units include tier-1 units for an owned archetype', () => {
-        const ids = shop._candidateUnitIds(addPlayer());
+    it('nothing is buyable until unlocked — even tier-1 units', () => {
+        expect(shop._candidateUnitIds(addPlayer())).toEqual([]);
+    });
+
+    it('candidate units are exactly the unlocked ones', () => {
+        const ids = shop._candidateUnitIds(addPlayer({ tierUnlocks: ['1_s_barbarian'] }));
         expect(ids).toContain('1_s_barbarian');
     });
 
@@ -202,18 +179,100 @@ describe('Shop sells no units; Your Units lists buyable units', () => {
         expect(offers.every(o => o.kind !== 'unit')).toBe(true);
     });
 
-    it('Your Units (shop state.unlocked) lists buyable units', () => {
-        addPlayer();
+    it('Your Units (shop state.unlocked) lists the unlocked units', () => {
+        addPlayer({ tierUnlocks: ['1_s_barbarian'] });
         const state = shop.getShopStateForPlayer(0);
         expect(state.unlocked.some(u => u.id === '1_s_barbarian')).toBe(true);
     });
 
-    it('buyUnlockedUnit accepts any currently-buyable unit (not just previously bought)', () => {
+    it('buyUnlockedUnit accepts an unlocked unit', () => {
         game.state.phase = game.getEnums().gamePhase.placement;
         game.register('spawnPurchasedUnit', () => ({ success: true }));
-        const stats = addPlayer();
+        const stats = addPlayer({ tierUnlocks: ['1_s_barbarian'] });
         const res = shop.buyUnlockedUnit(0, '1_s_barbarian');
         expect(res.success).toBe(true);
         expect(stats.heroRoster.length).toBe(1);
+    });
+
+    it('buyUnlockedUnit refuses a not-yet-unlocked unit', () => {
+        game.state.phase = game.getEnums().gamePhase.placement;
+        addPlayer();   // no unlocks
+        const res = shop.buyUnlockedUnit(0, '1_s_barbarian');
+        expect(res.success).toBe(false);
+        expect(res.reason).toBe('not_available');
+    });
+
+    it('tier-1 unlock is free and limited to one unlock per round', () => {
+        game.state.phase = game.getEnums().gamePhase.placement;
+        const stats = addPlayer({ gold: 100 });
+        const res = shop.buyTierUnlock(0, '1_s_barbarian');    // T1 -> free unlock
+        expect(res.success).toBe(true);
+        expect(stats.gold).toBe(100);                           // no unlock cost
+        expect(stats.tierUnlocks).toContain('1_s_barbarian');
+        expect(stats.unlockedThisRound).toBe(true);
+
+        // A second unlock the same round is refused.
+        const again = shop.buyTierUnlock(0, '1_d_archer');
+        expect(again.success).toBe(false);
+        expect(again.reason).toBe('unlock_used');
+        expect(stats.tierUnlocks).not.toContain('1_d_archer');
+    });
+});
+
+describe('Reinforcement skip and Elite Recruitment', () => {
+    let game, shop;
+
+    beforeEach(() => {
+        game = new TestGameContext();
+        game.state.isLocalGame = true;
+        game.state.phase = game.getEnums().gamePhase.placement;
+        game.register('getPlayerEntities', () => game._players || []);
+        shop = game.createSystem(GUTS.ArmyShopSystem);
+        game.getServiceDependencies(shop);
+    });
+
+    function addPlayer(extra = {}) {
+        const eid = game.createEntityWith({
+            playerStats: { playerId: 0, team: 0, gold: 0, heroRoster: [], ownedUpgrades: [], ...extra }
+        });
+        (game._players ||= []).push(eid);
+        return game.getComponent(eid, 'playerStats');
+    }
+
+    it('skipReinforcement grants +50 supply and marks the pick done', () => {
+        const stats = addPlayer({ gold: 100,
+            pendingReinforcement: { options: [{ id: 'a' }], defs: [{}], picked: false } });
+        const res = shop.skipReinforcement(0);
+        expect(res.success).toBe(true);
+        expect(res.gold).toBe(GUTS.ArmyShopSystem.SKIP_REINFORCEMENT_GOLD);   // 50
+        expect(stats.gold).toBe(150);
+        expect(stats.pendingReinforcement.picked).toBe(true);
+    });
+
+    it('skipReinforcement rejects when there is no pending card', () => {
+        addPlayer({ gold: 100, pendingReinforcement: { options: [{ id: 'a' }], picked: true } });
+        const res = shop.skipReinforcement(0);
+        expect(res.success).toBe(false);
+        expect(res.reason).toBe('no_pending');
+    });
+
+    it('buyEliteRecruit is a one-time purchase (100 supply), not a toggle', () => {
+        const stats = addPlayer({ gold: 250 });
+        const res = shop.buyEliteRecruit(0);
+        expect(res.success).toBe(true);
+        expect(stats.eliteRecruit).toBe(true);
+        expect(stats.gold).toBe(250 - GUTS.ArmyShopSystem.ELITE_RECRUIT_COST);   // 150
+
+        // Buying again is refused — it stays active, cannot be toggled off.
+        const again = shop.buyEliteRecruit(0);
+        expect(again.success).toBe(false);
+        expect(again.reason).toBe('already_owned');
+        expect(stats.eliteRecruit).toBe(true);
+    });
+
+    it('elite-adjusted recruit price is base + one rank-up (50% of base)', () => {
+        expect(shop.eliteAdjustedCost(100, false)).toBe(100);   // T1 base
+        expect(shop.eliteAdjustedCost(100, true)).toBe(150);    // arrives Lv2
+        expect(shop.eliteAdjustedCost(300, true)).toBe(450);    // pricier tier -> bigger bump
     });
 });

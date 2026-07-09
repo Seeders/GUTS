@@ -9,6 +9,7 @@
     "appliedTime": 0,
     "stacks": 1,
     "sourceEntity": null,
-    "weaponElement": null
+    "weaponElement": null,
+    "targetEntity": null
   }
 }

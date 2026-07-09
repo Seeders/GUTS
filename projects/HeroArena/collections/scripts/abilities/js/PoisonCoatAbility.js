@@ -7,8 +7,7 @@ class PoisonCoatAbility extends GUTS.BaseAbility {
     canExecute(casterEntity) {
         if (!this._meetsWeaponRequirement(casterEntity)) return false;
         const enums = this.game.getEnums();
-        const buff = this.game.getComponent(casterEntity, "buff");
-        return !(buff && buff.buffType === enums.buffTypes.poisoned_weapon);
+        return !this.hasBuff(casterEntity, enums.buffTypes.poisoned_weapon);
     }
 
     execute(casterEntity) {
@@ -20,19 +19,19 @@ class PoisonCoatAbility extends GUTS.BaseAbility {
         this.logAbilityUsage(casterEntity, "Weapon coated with venom!");
 
         this.game.schedulingSystem.scheduleAction(() => {
-            this.applyBuff(casterEntity);
-        }, this.castTime, casterEntity);
+            this.applyPoisonBuff(casterEntity);
+        }, 0, casterEntity); // payload at execute — queue already waited to the release point
     }
 
-    applyBuff(casterEntity) {
+    applyPoisonBuff(casterEntity) {
         const enums = this.game.getEnums();
-        const existing = this.game.getComponent(casterEntity, "buff");
-        if (existing && existing.buffType === enums.buffTypes.poisoned_weapon) {
+        const existing = this.getBuff(casterEntity, enums.buffTypes.poisoned_weapon);
+        if (existing) {
             existing.endTime = this.game.state.now + this.duration;
             existing.appliedTime = this.game.state.now;
             return;
         }
-        this.game.addComponent(casterEntity, "buff", {
+        this.applyBuff(casterEntity, {
             buffType: enums.buffTypes.poisoned_weapon,
             endTime: this.game.state.now + this.duration,
             appliedTime: this.game.state.now,
@@ -43,16 +42,15 @@ class PoisonCoatAbility extends GUTS.BaseAbility {
         if (transform?.position) this.playConfiguredEffects('buff', transform.position);
 
         this.game.schedulingSystem.scheduleAction(() => {
-            this.removeBuff(casterEntity);
+            this.expirePoisonBuff(casterEntity);
         }, this.duration, casterEntity);
     }
 
-    removeBuff(casterEntity) {
+    // Expiry handled centrally by BuffEffectsSystem._reapExpiredBuffs.
+    // This schedule only plays the expiration visual.
+    expirePoisonBuff(casterEntity) {
         const enums = this.game.getEnums();
-        if (!this.game.hasComponent(casterEntity, "buff")) return;
-        const buff = this.game.getComponent(casterEntity, "buff");
-        if (buff && buff.buffType === enums.buffTypes.poisoned_weapon) {
-            this.game.removeComponent(casterEntity, "buff");
+        if (this.hasBuff(casterEntity, enums.buffTypes.poisoned_weapon)) {
             const t = this.game.getComponent(casterEntity, "transform");
             if (t?.position) this.playConfiguredEffects('expiration', t.position);
         }

@@ -1,0 +1,9 @@
+{
+  "filePath": "/projects/HeroArena/collections/scripts/systems/js/HeadlessSimulationSystem.js",
+  "services": [
+    "runSimulation",
+    "isSimulationComplete",
+    "getSimulationResults"
+  ],
+  "fileName": "HeadlessSimulationSystem"
+}

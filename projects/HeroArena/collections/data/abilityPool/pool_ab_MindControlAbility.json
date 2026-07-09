@@ -1,0 +1,19 @@
+{
+ "id": "pool_ab_MindControlAbility",
+ "title": "Mind Control",
+ "description": "Charms enemy to fight for you",
+ "cost": 22,
+ "requirements": [
+  {
+   "int": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Mind Control",
+  "cost": 22,
+  "description": "Charms enemy to fight for you",
+  "unlockAbility": "MindControlAbility"
+ }
+}

@@ -17,14 +17,10 @@
   },
   {
    "id": "gic_glacial",
-   "title": "Glacial Mass",
+   "title": "Avalanche",
    "cost": 16,
-   "description": "+40% max HP",
-   "statModifiers": {
-    "maxHP": {
-     "pct": 0.4
-    }
-   }
+   "description": "Unlocks Avalanche",
+   "unlockAbility": "BlizzardAbility"
   }
  ],
  "fileName": "0_golemIce"

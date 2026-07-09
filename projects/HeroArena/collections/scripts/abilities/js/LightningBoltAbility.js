@@ -35,7 +35,7 @@ class LightningBoltAbility extends GUTS.BaseAbility {
 
         this.game.schedulingSystem.scheduleAction(() => {
             this.strikeLightning(casterEntity, target, targetPos);
-        }, this.castTime, casterEntity);
+        }, 0, casterEntity); // payload at execute — queue already waited to the release point
     }
 
     strikeLightning(casterEntity, targetId, targetPos) {
@@ -45,13 +45,11 @@ class LightningBoltAbility extends GUTS.BaseAbility {
 
         // Create lightning bolt visual effect
         if (this.game.effectsSystem) {
+            // No style overrides: every bolt in the game uses EffectsSystem's
+            // one canonical 'lightning' look.
             this.game.effectsSystem.createLightningBolt(
                 new THREE.Vector3(casterPos.x, casterPos.y + 50, casterPos.z),
-                new THREE.Vector3(targetPos.x, targetPos.y + 10, targetPos.z),
-                {
-                    style: { color: 0xffffaa, linewidth: 6 },
-                    animation: { duration: 400, flickerCount: 3 }
-                }
+                new THREE.Vector3(targetPos.x, targetPos.y + 10, targetPos.z)
             );
         }
 

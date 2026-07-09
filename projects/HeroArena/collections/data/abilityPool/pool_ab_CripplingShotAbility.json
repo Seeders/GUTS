@@ -1,0 +1,23 @@
+{
+ "id": "pool_ab_CripplingShotAbility",
+ "title": "Crippling Shot",
+ "description": "A shot that cripples the target — slowed movement and attack.",
+ "cost": 16,
+ "requirements": [
+  {
+   "dex": {
+    "min": 1
+   },
+   "weaponType": [
+    "bow",
+    "crossbow"
+   ]
+  }
+ ],
+ "tech": {
+  "title": "Crippling Shot",
+  "cost": 16,
+  "description": "A shot that cripples the target — slowed movement and attack.",
+  "unlockAbility": "CripplingShotAbility"
+ }
+}

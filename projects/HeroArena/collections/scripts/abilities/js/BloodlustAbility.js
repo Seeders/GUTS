@@ -16,8 +16,7 @@ class BloodlustAbility extends GUTS.BaseAbility {
     canExecute(casterEntity) {
         // Check if already has bloodlust active to prevent stacking
         const enums = this.game.getEnums();
-        const existingBuff = this.game.getComponent(casterEntity, "buff");
-        return !existingBuff || existingBuff.buffType !== enums.buffTypes.bloodlust;
+        return !this.hasBuff(casterEntity, enums.buffTypes.bloodlust);
     }
 
     execute(casterEntity) {
@@ -32,7 +31,7 @@ class BloodlustAbility extends GUTS.BaseAbility {
         // DESYNC SAFE: Use scheduling system for bloodlust activation
         this.game.schedulingSystem.scheduleAction(() => {
             this.activateBloodlust(casterEntity);
-        }, this.castTime, casterEntity);
+        }, 0, casterEntity); // payload at execute — queue already waited to the release point
     }
     
     activateBloodlust(casterEntity) {
@@ -45,8 +44,8 @@ class BloodlustAbility extends GUTS.BaseAbility {
 
         // Check if already has bloodlust to prevent double application
         const enums = this.game.getEnums();
-        const existingBuff = this.game.getComponent(casterEntity, "buff");
-        if (existingBuff && existingBuff.buffType === enums.buffTypes.bloodlust) {
+        const existingBuff = this.getBuff(casterEntity, enums.buffTypes.bloodlust);
+        if (existingBuff) {
             // DESYNC SAFE: Refresh duration instead of stacking
             existingBuff.endTime = this.game.state.now + this.duration;
             existingBuff.appliedTime = this.game.state.now;
@@ -57,7 +56,7 @@ class BloodlustAbility extends GUTS.BaseAbility {
         }
 
         // Apply bloodlust buff - static modifiers defined in buffTypes/bloodlust.json
-        this.game.addComponent(casterEntity, "buff", {
+        this.applyBuff(casterEntity, {
             buffType: enums.buffTypes.bloodlust,
             endTime: this.game.state.now + this.duration,
             appliedTime: this.game.state.now,
@@ -84,31 +83,27 @@ class BloodlustAbility extends GUTS.BaseAbility {
     
     // DESYNC SAFE: Remove bloodlust buff
     removeBloodlust(casterEntity) {
+        // Expiry handled centrally by BuffEffectsSystem._reapExpiredBuffs.
         // Check if entity still exists and has the bloodlust buff
         const enums = this.game.getEnums();
-        if (this.game.hasComponent(casterEntity, "buff")) {
-            const buff = this.game.getComponent(casterEntity, "buff");
-            if (buff && buff.buffType === enums.buffTypes.bloodlust) {
-                this.game.removeComponent(casterEntity, "buff");
-
-                // Visual effect when bloodlust expires
-                const transform = this.game.getComponent(casterEntity, "transform");
-                const casterPos = transform?.position;
-                if (casterPos) {
-                    this.playConfiguredEffects('expiration', casterPos);
-                }
+        if (this.hasBuff(casterEntity, enums.buffTypes.bloodlust)) {
+            // Visual effect when bloodlust expires
+            const transform = this.game.getComponent(casterEntity, "transform");
+            const casterPos = transform?.position;
+            if (casterPos) {
+                this.playConfiguredEffects('expiration', casterPos);
             }
         }
     }
 
     // Helper method to handle kill stacking (called by damage system when enemy dies)
     onEnemyKilled(killerId) {
-        if (!this.game.hasComponent(killerId, "buff")) return;
-
         const enums = this.game.getEnums();
-        const buff = this.game.getComponent(killerId, "buff");
+        const buff = this.getBuff(killerId, enums.buffTypes.bloodlust);
+        if (!buff) return;
+
         const buffTypeDef = this.call.getBuffTypeDef( buff.buffType);
-        if (!buff || buff.buffType !== enums.buffTypes.bloodlust || !buffTypeDef) return;
+        if (!buffTypeDef) return;
 
         // Increase kill stacks up to maximum (maxStacks from buffType definition)
         const maxStacks = buffTypeDef.maxStacks || 10;

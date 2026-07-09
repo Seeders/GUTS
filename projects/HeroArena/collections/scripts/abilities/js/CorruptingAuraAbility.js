@@ -110,10 +110,9 @@ class CorruptingAuraAbility extends GUTS.BaseAbility {
                 if (distance <= this.range) {
                     // Check if already has empowerment buff
                     const enums = this.game.getEnums();
-                    const existingBuff = this.game.getComponent(allyId, "buff");
 
-                    if (!existingBuff || existingBuff.buffType !== enums.buffTypes.dark_empowerment) {
-                        this.game.addComponent(allyId, "buff", {
+                    if (!this.hasBuff(allyId, enums.buffTypes.dark_empowerment)) {
+                        this.applyBuff(allyId, {
                             buffType: enums.buffTypes.dark_empowerment,
                             endTime: this.game.state.now + 3.0,
                             appliedTime: this.game.state.now,

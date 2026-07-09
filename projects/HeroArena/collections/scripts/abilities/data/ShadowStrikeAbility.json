@@ -3,7 +3,7 @@
   "filePath": "/projects/HeroArena/collections/scripts/abilities/js/ShadowStrikeAbility.js",
   "name": "Shadow Strike",
   "description": "Teleport behind an enemy and deal critical damage",
-  "cooldown": 9.0,
+  "cooldown": 9,
   "range": 120,
   "manaCost": 30,
   "targetType": "enemy",
@@ -11,8 +11,19 @@
   "priority": 8,
   "castTime": 0.5,
   "backstabDamage": 75,
-  "castParticleEffectSystems": ["dark_energy"],
-  "launchParticleEffectSystems": ["dark_burst", "dark_sparkles"],
-  "targetParticleEffectSystems": ["dark_burst", "dark_sparkles"],
-  "impactParticleEffectSystems": ["fire_burst_core", "dark_energy"]
+  "castParticleEffectSystems": [
+    "dark_energy"
+  ],
+  "launchParticleEffectSystems": [
+    "dark_burst",
+    "dark_sparkles"
+  ],
+  "targetParticleEffectSystems": [
+    "dark_burst",
+    "dark_sparkles"
+  ],
+  "impactParticleEffectSystems": [
+    "fire_burst_core",
+    "dark_energy"
+  ]
 }

@@ -15,5 +15,68 @@
     "RaycastHelper",
     "HeadlessLogger",
     "SimulationEditor"
+  ],
+  "classes": [
+    {
+      "collection": "abilities",
+      "baseClass": "BaseAbility"
+    },
+    {
+      "collection": "behaviorActions",
+      "baseClass": "BaseBehaviorAction"
+    },
+    {
+      "collection": "behaviorDecorators",
+      "baseClass": "BaseBehaviorDecorator"
+    },
+    {
+      "collection": "behaviorTrees",
+      "baseClass": "BaseBehaviorTree"
+    },
+    {
+      "collection": "sequenceBehaviorTrees",
+      "baseClass": "SequenceBehaviorTree"
+    }
+  ],
+  "systems": [
+    "HeadlessSimulationSystem",
+    "BaseNetworkSystem",
+    "ClientNetworkSystem",
+    "ServerNetworkSystem",
+    "GameInterfaceSystem",
+    "ServerBattlePhaseSystem",
+    "GridSystem",
+    "TerrainSystem",
+    "RoundSystem",
+    "BehaviorSystem",
+    "MovementSystem",
+    "ProjectileSystem",
+    "SquadSystem",
+    "UnitCreationSystem",
+    "PlayerStatsSystem",
+    "TeamHealthSystem",
+    "DeathSystem",
+    "DamageSystem",
+    "AbilitySystem",
+    "SquadExperienceSystem",
+    "LifetimeSystem",
+    "SchedulingSystem",
+    "GoldMineSystem",
+    "PathfindingSystem",
+    "VisionSystem",
+    "SupplySystem",
+    "PlacementSystem",
+    "UnitOrderSystem",
+    "SkirmishGameSystem",
+    "RenderSystem",
+    "WorldSystem",
+    "TerrainDetailSystem",
+    "AnimationSystem",
+    "ArmyDisplaySystem",
+    "EffectsSystem",
+    "HealthBarSystem",
+    "EquipmentSystem",
+    "ParticleSystem",
+    "DamageNumberSystem"
   ]
 }

@@ -23,7 +23,7 @@ class BattleCryAbility extends GUTS.BaseAbility {
         // DESYNC SAFE: Use scheduling system for the rally effect
         this.game.schedulingSystem.scheduleAction(() => {
             this.performBattleCry(casterEntity);
-        }, this.castTime, casterEntity);
+        }, 0, casterEntity); // payload at execute — queue already waited to the release point
         
         // Log immediately when cast starts
         const allies = this.getAlliesInRange(casterEntity);
@@ -54,15 +54,15 @@ class BattleCryAbility extends GUTS.BaseAbility {
 
             // DESYNC SAFE: Check if already rallied - don't stack multiple battle cries
             const enums = this.game.getEnums();
-            const existingBuff = this.game.getComponent(allyId, "buff");
+            const existingBuff = this.getBuff(allyId, enums.buffTypes.rallied);
 
-            if (existingBuff && existingBuff.buffType === enums.buffTypes.rallied) {
+            if (existingBuff) {
                 // DESYNC SAFE: Refresh duration instead of stacking
                 existingBuff.endTime = this.game.state.now + this.duration;
                 existingBuff.appliedTime = this.game.state.now; // Update applied time
             } else {
                 // Apply new rally buff
-                this.game.addComponent(allyId, "buff", {
+                this.applyBuff(allyId, {
                     buffType: enums.buffTypes.rallied,
                     endTime: this.game.state.now + this.duration,
                     appliedTime: this.game.state.now,
@@ -94,19 +94,15 @@ class BattleCryAbility extends GUTS.BaseAbility {
     
     // DESYNC SAFE: Remove rally buff
     removeRallyBuff(allyId) {
+        // Expiry handled centrally by BuffEffectsSystem._reapExpiredBuffs.
         // Check if ally still exists and has the rally buff
         const enums = this.game.getEnums();
-        if (this.game.hasComponent(allyId, "buff")) {
-            const buff = this.game.getComponent(allyId, "buff");
-            if (buff && buff.buffType === enums.buffTypes.rallied) {
-                this.game.removeComponent(allyId, "buff");
-
-                // Visual effect when rally expires
-                const transform = this.game.getComponent(allyId, "transform");
-                const allyPos = transform?.position;
-                if (allyPos) {
-                    this.playConfiguredEffects('expiration', allyPos);
-                }
+        if (this.hasBuff(allyId, enums.buffTypes.rallied)) {
+            // Visual effect when rally expires
+            const transform = this.game.getComponent(allyId, "transform");
+            const allyPos = transform?.position;
+            if (allyPos) {
+                this.playConfiguredEffects('expiration', allyPos);
             }
         }
     }

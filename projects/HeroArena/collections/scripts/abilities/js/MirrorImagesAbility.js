@@ -26,7 +26,7 @@ class MirrorImagesAbility extends GUTS.BaseAbility {
         // Schedule mirror image creation after cast time
         this.game.schedulingSystem.scheduleAction(() => {
             this.createMirrorImages(casterEntity, casterPos);
-        }, this.castTime, casterEntity);
+        }, 0, casterEntity); // payload at execute — queue already waited to the release point
     }
     
     createMirrorImages(casterEntity, casterPos) {

@@ -1,0 +1,7 @@
+{
+  "filePath": "/projects/HeroArena/collections/scripts/systems/js/CommanderSkillSystem.js",
+  "services": [
+    "castCommanderSkill"
+  ],
+  "fileName": "CommanderSkillSystem"
+}

@@ -1,0 +1,19 @@
+{
+ "title": "Heavy Plating",
+ "icon": "🛡️",
+ "kind": "unitModifier",
+ "modId": "heavy",
+ "prefix": "Heavy",
+ "description": "+150% HP and +10 armor, but −25 range and −20% attack speed",
+ "statModifiers": {
+  "maxHP": { "pct": 1.5 },
+  "armor": { "add": 10 },
+  "range": { "add": -25 },
+  "attackSpeed": { "pct": -0.2 }
+ },
+ "appliesToTiers": [3, 4],
+ "weight": 2,
+ "minRound": 4,
+ "fileName": "modHeavy",
+ "category": "modifier"
+}

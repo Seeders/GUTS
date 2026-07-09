@@ -14,7 +14,7 @@ class DisruptionBombAbility extends GUTS.BaseAbility {
     }
     
     execute(casterEntity) {
-        const pos = this.game.getComponent(casterEntity, position);
+        const pos = this.game.getComponent(casterEntity, 'transform')?.position;
         if (!pos) return;
         
         // Immediate cast effect
@@ -24,15 +24,15 @@ class DisruptionBombAbility extends GUTS.BaseAbility {
         // DESYNC SAFE: Use scheduling system for bomb throw and explosion
         this.game.schedulingSystem.scheduleAction(() => {
             this.throwDisruptionBomb(casterEntity);
-        }, this.castTime, casterEntity);
+        }, 0, casterEntity); // payload at execute — queue already waited to the release point
     }
     
     throwDisruptionBomb(casterEntity) {
-        const pos = this.game.getComponent(casterEntity, position);
+        const pos = this.game.getComponent(casterEntity, 'transform')?.position;
         if (!pos) return;
         
         // Check if caster is still alive
-        const casterHealth = this.game.getComponent(casterEntity, health);
+        const casterHealth = this.game.getComponent(casterEntity, 'health');
         if (!casterHealth || casterHealth.current <= 0) return;
         
         // DESYNC SAFE: Get and sort enemies deterministically
@@ -64,8 +64,8 @@ class DisruptionBombAbility extends GUTS.BaseAbility {
         let disruptedCount = 0;
         
         sortedEnemies.forEach(enemyId => {
-            const enemyPos = this.game.getComponent(enemyId, position);
-            const enemyHealth = this.game.getComponent(enemyId, health);
+            const enemyPos = this.game.getComponent(enemyId, 'transform')?.position;
+            const enemyHealth = this.game.getComponent(enemyId, 'health');
             
             // Only affect living enemies
             if (!enemyPos || !enemyHealth || enemyHealth.current <= 0) return;
@@ -79,15 +79,15 @@ class DisruptionBombAbility extends GUTS.BaseAbility {
             if (distance <= this.explosionRadius) {
                 // DESYNC SAFE: Check if already disrupted - don't stack disruptions
                 const enums = this.game.getEnums();
-                const existingBuff = this.game.getComponent(enemyId, buff);
+                const existingBuff = this.getBuff(enemyId, enums.buffTypes.disrupted);
 
-                if (existingBuff && existingBuff.buffType === enums.buffTypes.disrupted) {
+                if (existingBuff) {
                     // DESYNC SAFE: Just refresh duration instead of stacking
                     existingBuff.endTime = this.game.state.now + this.disruptionDuration;
                     existingBuff.appliedTime = this.game.state.now;
                 } else {
                     // Apply new disruption buff
-                    this.game.addComponent(enemyId, "buff", {
+                    this.applyBuff(enemyId, {
                         buffType: enums.buffTypes.disrupted,
                         endTime: this.game.state.now + this.disruptionDuration,
                         appliedTime: this.game.state.now,
@@ -122,14 +122,14 @@ class DisruptionBombAbility extends GUTS.BaseAbility {
         let bestScore = 0;
         
         sortedEnemies.forEach(enemyId => {
-            const pos = this.game.getComponent(enemyId, position);
+            const pos = this.game.getComponent(enemyId, 'transform')?.position;
             if (!pos) return;
             
             // Count nearby enemies within explosion radius
             let nearbyCount = 0;
             sortedEnemies.forEach(otherId => {
                 if (otherId === enemyId) return;
-                const otherPos = this.game.getComponent(otherId, position);
+                const otherPos = this.game.getComponent(otherId, 'transform')?.position;
                 if (!otherPos) return;
                 
                 const distance = Math.sqrt(
@@ -154,20 +154,18 @@ class DisruptionBombAbility extends GUTS.BaseAbility {
     removeDisruption(enemyId) {
         // Check if enemy still exists and has the disruption buff
         const enums = this.game.getEnums();
-        if (this.game.hasComponent(enemyId, "buff")) {
-            const buff = this.game.getComponent(enemyId, "buff");
-            if (buff && buff.buffType === enums.buffTypes.disrupted) {
-                this.game.removeComponent(enemyId, "buff");
-                
-                // Visual effect when disruption expires
-                const transform = this.game.getComponent(enemyId, "transform");
-                const enemyPos = transform?.position;
-                if (enemyPos) {
-                    this.playConfiguredEffects('expiration', enemyPos);
-                }
-                
-           
-            }
+        const buff = this.getBuff(enemyId, enums.buffTypes.disrupted);
+        if (!buff) return;
+        // Refreshed since this schedule was armed — the later expiry (or the
+        // central reaper) owns removal now.
+        if (buff.endTime - (this.game.state.now || 0) > 0.1) return;
+        this.removeBuff(enemyId, enums.buffTypes.disrupted);
+
+        // Visual effect when disruption expires
+        const transform = this.game.getComponent(enemyId, "transform");
+        const enemyPos = transform?.position;
+        if (enemyPos) {
+            this.playConfiguredEffects('expiration', enemyPos);
         }
     }
 }

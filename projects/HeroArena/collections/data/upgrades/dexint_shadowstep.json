@@ -4,8 +4,33 @@
   "value": 90,
   "icon": "dodge",
   "perUnitType": true,
-  "requirements": [ { "dex": { "min": 2 }, "int": { "min": 2 } } ],
-  "target": { "dex": { "min": 2 }, "int": { "min": 2 } },
-  "statModifiers": { "attackSpeed": { "pct": 0.15 }, "damage": { "pct": 0.12 } },
-  "requiresBuildings": [ "fletchersHall" ]
+  "requirements": [
+    {
+      "dex": {
+        "min": 2
+      },
+      "int": {
+        "min": 2
+      }
+    }
+  ],
+  "target": {
+    "dex": {
+      "min": 2
+    },
+    "int": {
+      "min": 2
+    }
+  },
+  "statModifiers": {
+    "attackSpeed": {
+      "pct": 0.15
+    },
+    "damage": {
+      "pct": 0.12
+    }
+  },
+  "requiresBuildings": [
+    "fletchersHall"
+  ]
 }

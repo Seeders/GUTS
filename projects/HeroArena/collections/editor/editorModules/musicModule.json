@@ -1,0 +1,15 @@
+{
+  "title": "Music Editor",
+  "container": "music-editor-container",
+  "propertyNames": "[\"notes\", \"voices\", \"oscillator\"]",
+  "interface": "musicEditor",
+  "inputElement": "textarea",
+  "inputDataType": "json",
+  "loadHook": "editMusic",
+  "saveHook": "saveMusic",
+  "unloadHook": "unloadMusic",
+  "libraries": [
+    "AudioManager",
+    "MusicEditor"
+  ]
+}

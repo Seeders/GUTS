@@ -1,0 +1,26 @@
+{
+ "id": "pool_pass_bulwark",
+ "title": "Bulwark",
+ "description": "+5 armor, +8 evasion",
+ "cost": 14,
+ "requirements": [
+  {
+   "str": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Bulwark",
+  "cost": 14,
+  "description": "+5 armor, +8 evasion",
+  "statModifiers": {
+   "armor": {
+    "add": 5
+   },
+   "evasion": {
+    "add": 8
+   }
+  }
+ }
+}

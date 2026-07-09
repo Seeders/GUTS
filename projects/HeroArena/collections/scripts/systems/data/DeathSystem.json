@@ -1,0 +1,8 @@
+{
+  "filePath": "/projects/scripts/systems/js/DeathSystem.js",
+  "fileName": "DeathSystem",
+  "services": [
+    "startDeathProcess"
+  ],
+  "testFilePath": "/projects/HeroArena/collections/scripts/systems/tests/DeathSystem.test.js"
+}

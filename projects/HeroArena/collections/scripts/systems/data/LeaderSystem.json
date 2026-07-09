@@ -3,6 +3,7 @@
   "fileName": "LeaderSystem",
   "services": [
     "selectLeader",
+    "getLeaderDef",
     "applyLeaderBonuses"
   ]
 }

@@ -1,0 +1,19 @@
+{
+ "id": "pool_ab_CorruptingAuraAbility",
+ "title": "Corrupting Aura",
+ "description": "Emanate dark energy that drains enemies and empowers undead (does not stack)",
+ "cost": 24,
+ "requirements": [
+  {
+   "str": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Corrupting Aura",
+  "cost": 24,
+  "description": "Emanate dark energy that drains enemies and empowers undead (does not stack)",
+  "unlockAbility": "CorruptingAuraAbility"
+ }
+}

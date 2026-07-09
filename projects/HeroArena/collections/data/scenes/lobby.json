@@ -11,6 +11,7 @@
     "BaseNetworkSystem",
     "ClientNetworkSystem",
     "SkirmishGameSystem",
-    "SaveSystem"
+    "SaveSystem",
+    "DeckBuilderSystem"
   ]
 }

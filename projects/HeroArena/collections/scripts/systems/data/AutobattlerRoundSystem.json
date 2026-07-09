@@ -2,8 +2,11 @@
   "filePath": "/projects/HeroArena/collections/scripts/systems/js/AutobattlerRoundSystem.js",
   "fileName": "AutobattlerRoundSystem",
   "services": [
+    "startLeaderSelect",
+    "confirmLeaderSelection",
     "confirmHeroSelection",
     "startHeroSelect",
-    "startPrep"
+    "startPrep",
+    "getAIPlayerIds"
   ]
 }

@@ -12,8 +12,13 @@
   "castTime": 0,
   "passive": true,
   "drainPerSecond": 4,
-  "cycleDuration": 12.0,
-  "tickInterval": 1.0,
-  "auraParticleEffectSystems": ["fire_burst_core", "fire_embers"],
-  "tickParticleEffectSystems": ["fire_trail"]
+  "cycleDuration": 12,
+  "tickInterval": 1,
+  "auraParticleEffectSystems": [
+    "fire_burst_core",
+    "fire_embers"
+  ],
+  "tickParticleEffectSystems": [
+    "fire_trail"
+  ]
 }

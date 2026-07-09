@@ -1,0 +1,19 @@
+{
+ "id": "pool_ab_ExecuteAbility",
+ "title": "Execute",
+ "description": "Strike the most wounded enemy in reach for damage that scales with its missing health.",
+ "cost": 15,
+ "requirements": [
+  {
+   "str": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Execute",
+  "cost": 15,
+  "description": "Strike the most wounded enemy in reach for damage that scales with its missing health.",
+  "unlockAbility": "ExecuteAbility"
+ }
+}

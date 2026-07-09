@@ -28,7 +28,8 @@ class IceShardAbility extends GUTS.BaseAbility {
 
         // Schedule all shards with staggered timing
         for (let i = 0; i < this.shardCount; i++) {
-            const shardDelay = this.castTime + (i * 0.2); // 0.2 second stagger between shards
+            // First shard at the release point (queue already waited), then stagger
+            const shardDelay = i * 0.2;
 
             this.game.schedulingSystem.scheduleAction(() => {
                 // Re-get enemies at firing time (some may have died)
@@ -91,9 +92,9 @@ class IceShardAbility extends GUTS.BaseAbility {
         // Apply slow buff (BuffEffectsSystem reads slowed.movementSpeedMultiplier
         // and attackSpeedMultiplier and applies them each tick).
         const enums = this.game.getEnums();
-        const existing = this.game.getComponent(targetId, "buff");
-        if (existing) this.game.removeComponent(targetId, "buff");
-        this.game.addComponent(targetId, "buff", {
+        // applyBuff refreshes an existing slowed buff in place; the old
+        // clobber-any-buff removal was a legacy single-slot workaround.
+        this.applyBuff(targetId, {
             buffType: enums.buffTypes.slowed,
             endTime: this.game.state.now + this.slowDuration,
             appliedTime: this.game.state.now,

@@ -1,0 +1,31 @@
+{
+  "title": "Dark Energy",
+  "category": "shadow",
+  "tags": [
+    "dark",
+    "aura"
+  ],
+  "particleEffectData": {
+    "count": 14,
+    "lifetime": 1.4,
+    "scale": 10,
+    "scaleMultiplier": 1.0,
+    "startColor": "#6b51e6",
+    "endColor": "#1a0a30",
+    "emitterShape": "sphere",
+    "emitterRadius": 22,
+    "heightOffset": 10,
+    "velocityXMin": -25,
+    "velocityXMax": 25,
+    "velocityYMin": 20,
+    "velocityYMax": 70,
+    "velocityZMin": -25,
+    "velocityZMax": 25,
+    "gravity": -50,
+    "drag": 0.96,
+    "fadeOut": true,
+    "scaleOverTime": false,
+    "blending": "additive"
+  },
+  "fileName": "dark_energy"
+}

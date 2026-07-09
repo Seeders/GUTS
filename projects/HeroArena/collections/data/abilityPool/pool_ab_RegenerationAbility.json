@@ -1,0 +1,19 @@
+{
+ "id": "pool_ab_RegenerationAbility",
+ "title": "Regeneration",
+ "description": "Grant an ally regeneration over time.",
+ "cost": 18,
+ "requirements": [
+  {
+   "str": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Regeneration",
+  "cost": 18,
+  "description": "Grant an ally regeneration over time.",
+  "unlockAbility": "RegenerationAbility"
+ }
+}

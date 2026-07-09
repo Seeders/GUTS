@@ -1,0 +1,23 @@
+{
+ "id": "pool_tech_gob_payload",
+ "title": "Bigger Payloads",
+ "description": "+40% damage",
+ "cost": 14,
+ "requirements": [
+  {
+   "dex": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Bigger Payloads",
+  "cost": 14,
+  "description": "+40% damage",
+  "statModifiers": {
+   "damage": {
+    "pct": 0.4
+   }
+  }
+ }
+}

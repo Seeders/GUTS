@@ -1,4 +1,5 @@
 {
   "filePath": "/projects/HeroArena/collections/scripts/systems/js/TeamHealthSystem.js",
-  "fileName": "TeamHealthSystem"
+  "fileName": "TeamHealthSystem",
+  "testFilePath": "/projects/HeroArena/collections/scripts/systems/tests/TeamHealthSystem.test.js"
 }

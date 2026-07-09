@@ -4,8 +4,33 @@
   "value": 90,
   "icon": "chain_lightning",
   "perUnitType": true,
-  "requirements": [ { "int": { "min": 2 }, "dex": { "min": 2 } } ],
-  "target": { "int": { "min": 2 }, "dex": { "min": 2 } },
-  "statModifiers": { "damage": { "pct": 0.18 }, "range": { "add": 15 } },
-  "requiresBuildings": [ "mageTower" ]
+  "requirements": [
+    {
+      "int": {
+        "min": 2
+      },
+      "dex": {
+        "min": 2
+      }
+    }
+  ],
+  "target": {
+    "int": {
+      "min": 2
+    },
+    "dex": {
+      "min": 2
+    }
+  },
+  "statModifiers": {
+    "damage": {
+      "pct": 0.18
+    },
+    "range": {
+      "add": 15
+    }
+  },
+  "requiresBuildings": [
+    "mageTower"
+  ]
 }

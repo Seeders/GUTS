@@ -1,3 +1,14 @@
+/**
+ * PhalanxFormationAbility - link shields with nearby squadmates.
+ * Applies the phalanx buff (armorMultiplier / damageTakenMultiplier from
+ * data/buffTypes/phalanx.json — DamageSystem.getDefenderModifiers reads it)
+ * to the caster and every SAME-UNIT-TYPE ally in range.
+ *
+ * Historical bug: the ally filter matched unitType.id === 'hoplite', but unit
+ * ids are collection keys ('1_sd_soldier', '2_sd_hoplite') — it never matched
+ * anything, so the ability never cast. Now it matches the caster's own unit
+ * type, which works for both the soldier and hoplite tech grants.
+ */
 class PhalanxFormationAbility extends GUTS.BaseAbility {
     static serviceDependencies = [
         ...GUTS.BaseAbility.serviceDependencies
@@ -6,155 +17,104 @@ class PhalanxFormationAbility extends GUTS.BaseAbility {
     constructor(game, abilityData = {}) {
         super(game, abilityData);
 
-        this.formationDuration      = abilityData.formationDuration      ?? 25.0;
-        this.baseArmorMultiplier    = abilityData.baseArmorMultiplier    ?? 1.15;
-        this.perHopliteBonus        = abilityData.perHopliteBonus        ?? 0.15;
-        this.maxArmorMultiplier     = abilityData.maxArmorMultiplier     ?? 2.0;
-        this.baseCounterChance      = abilityData.baseCounterChance      ?? 0.2;
-        this.perHopliteCounterBonus = abilityData.perHopliteCounterBonus ?? 0.05;
-        this.element                = this.enums.element[abilityData.element || 'physical'] ?? this.enums.element.physical;
+        this.formationDuration = abilityData.formationDuration ?? 25.0;
+        this.element           = this.enums.element[abilityData.element || 'physical'] ?? this.enums.element.physical;
     }
-    
+
     canExecute(casterEntity) {
         // Check if caster already has a phalanx buff to prevent re-casting
-        const existingBuff = this.game.getComponent(casterEntity, "buff");
         const enums = this.game.getEnums();
-        if (existingBuff && existingBuff.buffType === enums.buffTypes.phalanx) return false;
-        
-        // Must have at least one nearby hoplite ally (not counting self)
-        const nearbyHoplites = this.getNearbyHoplites(casterEntity);
-        return nearbyHoplites.length > 0;
+        if (this.hasBuff(casterEntity, enums.buffTypes.phalanx)) return false;
+
+        // Must have at least one nearby same-type ally (not counting self)
+        return this.getNearbySquadmates(casterEntity).length > 0;
     }
-    
+
     execute(casterEntity) {
         const transform = this.game.getComponent(casterEntity, "transform");
         const casterPos = transform?.position;
-        const casterUnitType = this.game.getComponent(casterEntity, "unitType");
-        
-        if (!casterPos || !casterUnitType) return null;
-        
-        const nearbyHoplites = this.getNearbyHoplites(casterEntity);
-        if (nearbyHoplites.length === 0) return null;
-        
+        if (!casterPos) return null;
+
+        const squadmates = this.getNearbySquadmates(casterEntity);
+        if (squadmates.length === 0) return null;
+
         // Show immediate cast effect
         this.playConfiguredEffects('cast', casterPos);
-        this.logAbilityUsage(casterEntity, 
-            `Hoplite begins forming phalanx with ${nearbyHoplites.length} allies...`);
-        
-        // Schedule the formation creation after cast time
+        this.logAbilityUsage(casterEntity,
+            `Forms a phalanx with ${squadmates.length} allies!`);
+
         this.game.schedulingSystem.scheduleAction(() => {
-            this.createPhalanxFormation(casterEntity, nearbyHoplites);
-        }, this.castTime, casterEntity);
+            this.createPhalanxFormation(casterEntity, squadmates);
+        }, 0, casterEntity); // payload at execute — queue already waited to the release point
     }
-    
-    createPhalanxFormation(casterEntity, nearbyHoplites) {
+
+    createPhalanxFormation(casterEntity, squadmates) {
         const transform = this.game.getComponent(casterEntity, "transform");
         const casterPos = transform?.position;
         if (!casterPos) return;
-        
-        // Sort hoplites deterministically for consistent processing
-        const sortedHoplites = nearbyHoplites.slice().sort((a, b) => a - b);
-        
-        const phalanxSize = sortedHoplites.length + 1; // Include caster
-        const armorMultiplier = Math.min(
-            this.baseArmorMultiplier + (phalanxSize * this.perHopliteBonus), 
-            this.maxArmorMultiplier
-        );
-        const counterAttackChance = this.baseCounterChance + (phalanxSize * this.perHopliteCounterBonus);
-        
-        // Create formation effect at caster position
+
+        const casterTypeId = this._unitTypeId(casterEntity);
+        if (!casterTypeId) return;
+
+        // Formation effect at caster position
         this.playConfiguredEffects('burst', casterPos);
-        
-        // Apply formation buff to all Hoplites in range (including caster)
-        const allHoplites = [casterEntity, ...sortedHoplites];
-        let formationSuccess = 0;
-        
-        // Process hoplites in deterministic order
-        allHoplites.forEach((hopliteId, index) => {
-            // Validate hoplite still exists and is a hoplite
-            const unitTypeComp = this.game.getComponent(hopliteId, "unitType");
-            const unitType = this.game.getUnitTypeDef( unitTypeComp);
-            const transform = this.game.getComponent(hopliteId, "transform");
-            const position = transform?.position;
 
-            if (!unitType || !position || unitType.id !== 'hoplite') return;
-            
-            // Apply phalanx buff
-            const currentTime = this.game.state.now || this.game.state.now || 0;
-            const endTime = currentTime + this.formationDuration;
-            const enums = this.game.getEnums();
+        // Apply the phalanx buff to caster + squadmates, deterministic order
+        const members = [casterEntity, ...squadmates.slice().sort((a, b) => a - b)];
+        const enums = this.game.getEnums();
+        const now = this.game.state.now || 0;
+        const endTime = now + this.formationDuration;
 
-            this.game.addComponent(hopliteId, "buff", {
+        members.forEach((memberId, index) => {
+            // Validate member still exists and is still the same unit type
+            const position = this.game.getComponent(memberId, "transform")?.position;
+            if (!position || this._unitTypeId(memberId) !== casterTypeId) return;
+
+            this.applyBuff(memberId, {
                 buffType: enums.buffTypes.phalanx,
                 endTime: endTime,
-                appliedTime: currentTime,
+                appliedTime: now,
                 stacks: 1,
                 sourceEntity: casterEntity
             });
-            
-            // Create phalanx effect on each member
+
             this.playConfiguredEffects('buff', position);
-            
-            // Schedule a delayed formation link effect for visual appeal
+
+            // Staggered link visual
             this.game.schedulingSystem.scheduleAction(() => {
-                const transform = this.game.getComponent(hopliteId, "transform");
-                const pos = transform?.position;
-                if (pos) {
-                    this.playConfiguredEffects('sustained', pos);
-                }
-            }, index * 0.2, hopliteId); // Staggered visual effects
-            
-            formationSuccess++;
+                const pos = this.game.getComponent(memberId, "transform")?.position;
+                if (pos) this.playConfiguredEffects('sustained', pos);
+            }, index * 0.2, memberId);
         });
-        
-        // Screen effects for dramatic formation
-        if (this.game.effectsSystem && formationSuccess > 0) {
-            this.game.effectsSystem.playScreenFlash('#4169E1', 0.4);
-        }
-    
-      
-        
-        // Schedule formation expiration warning
+
+        // Expiration warning near the end of the formation
         this.game.schedulingSystem.scheduleAction(() => {
-            this.warnFormationEnding(allHoplites);
+            this.warnFormationEnding(members);
         }, this.formationDuration - 2.0, casterEntity);
     }
-    
-    // FIXED: Deterministic nearby hoplite detection
-    getNearbyHoplites(casterEntity) {
-        const allAllies = this.getAlliesInRange(casterEntity);
-        
-        // Filter and sort hoplites deterministically
-        const hoplites = allAllies.filter(allyId => {
-            if (allyId === casterEntity) return false; // Exclude self
 
-            const unitTypeComp = this.game.getComponent(allyId, "unitType");
-            const unitType = this.game.getUnitTypeDef( unitTypeComp);
-            return unitType && unitType.id === 'hoplite';
-        });
-        
-        // Sort deterministically for consistent processing
-        return hoplites.sort((a, b) => a - b);
+    // Same-unit-type allies in range, excluding self, deterministic order
+    getNearbySquadmates(casterEntity) {
+        const casterTypeId = this._unitTypeId(casterEntity);
+        if (!casterTypeId) return [];
+
+        return this.getAlliesInRange(casterEntity)
+            .filter(allyId => allyId !== casterEntity &&
+                this._unitTypeId(allyId) === casterTypeId)
+            .sort((a, b) => a - b);
     }
-    
-    // FIXED: Formation ending warning
-    warnFormationEnding(hopliteIds) {
-        let activeFormationMembers = 0;
-        
-        const enums = this.game.getEnums();
-        hopliteIds.forEach(hopliteId => {
-            // Check if hoplite still exists and has the phalanx buff
-            const buff = this.game.getComponent(hopliteId, "buff");
-            const transform = this.game.getComponent(hopliteId, "transform");
-            const position = transform?.position;
 
-            if (!buff || buff.buffType !== enums.buffTypes.phalanx || !position) return;
-            
-            // Create warning effect
+    _unitTypeId(entityId) {
+        const unitTypeComp = this.game.getComponent(entityId, "unitType");
+        return this.game.getUnitTypeDef(unitTypeComp)?.id || null;
+    }
+
+    warnFormationEnding(memberIds) {
+        const enums = this.game.getEnums();
+        memberIds.forEach(memberId => {
+            const position = this.game.getComponent(memberId, "transform")?.position;
+            if (!position || !this.hasBuff(memberId, enums.buffTypes.phalanx)) return;
             this.playConfiguredEffects('expiration', position);
-            
-            activeFormationMembers++;
         });
-       
     }
 }

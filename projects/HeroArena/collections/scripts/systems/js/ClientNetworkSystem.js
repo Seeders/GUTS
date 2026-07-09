@@ -39,11 +39,16 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
         'submitSetSquadFormation',
         'submitBuyUpgradeNode',
         'submitPickReinforcement',
+        'submitSkipReinforcement',
         'submitEnterCampaignNode',
         'submitBuyDeploySlot',
         'submitCastCommanderSkill',
         'submitSellUnit',
         'submitGrantSingleAbility',
+        'submitEquipSquadItem',
+        'submitUnequipSquadItem',
+        'submitTakeLoan',
+        'submitBuyEliteRecruit',
         'submitSpecializeChoice',
         'submitPlaceBuilding',
         'submitMoveBuilding',
@@ -1756,6 +1761,15 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
         }, () => {});
     }
 
+    submitSkipReinforcement(onSuccess) {
+        this.networkRequest({
+            eventName: 'SKIP_REINFORCEMENT',
+            responseName: 'SKIP_REINFORCEMENT_ACK',
+            data: {},
+            onSuccess
+        }, () => {});
+    }
+
     submitCastCommanderSkill(skillId, x, z, onSuccess) {
         this.networkRequest({
             eventName: 'CAST_COMMANDER_SKILL',
@@ -1780,6 +1794,43 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
             eventName: 'GRANT_SINGLE_ABILITY',
             responseName: 'GRANT_SINGLE_ABILITY_ACK',
             data: { abilityId, rosterIndex },
+            onSuccess
+        }, () => {});
+    }
+
+    // rosterIndex < 0 cancels the equip target selection (item stays in inventory).
+    submitEquipSquadItem(itemId, rosterIndex, onSuccess) {
+        this.networkRequest({
+            eventName: 'EQUIP_SQUAD_ITEM',
+            responseName: 'EQUIP_SQUAD_ITEM_ACK',
+            data: { itemId, rosterIndex },
+            onSuccess
+        }, () => {});
+    }
+
+    submitUnequipSquadItem(rosterIndex, itemId, onSuccess) {
+        this.networkRequest({
+            eventName: 'UNEQUIP_SQUAD_ITEM',
+            responseName: 'UNEQUIP_SQUAD_ITEM_ACK',
+            data: { rosterIndex, itemId },
+            onSuccess
+        }, () => {});
+    }
+
+    submitTakeLoan(onSuccess) {
+        this.networkRequest({
+            eventName: 'TAKE_LOAN',
+            responseName: 'TAKE_LOAN_ACK',
+            data: {},
+            onSuccess
+        }, () => {});
+    }
+
+    submitBuyEliteRecruit(onSuccess) {
+        this.networkRequest({
+            eventName: 'BUY_ELITE_RECRUIT',
+            responseName: 'BUY_ELITE_RECRUIT_ACK',
+            data: {},
             onSuccess
         }, () => {});
     }

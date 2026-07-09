@@ -1,0 +1,19 @@
+{
+ "id": "pool_ab_FearAbility",
+ "title": "Fear",
+ "description": "Strike terror into an enemy, sending it fleeing for a few seconds.",
+ "cost": 21,
+ "requirements": [
+  {
+   "int": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Fear",
+  "cost": 21,
+  "description": "Strike terror into an enemy, sending it fleeing for a few seconds.",
+  "unlockAbility": "FearAbility"
+ }
+}

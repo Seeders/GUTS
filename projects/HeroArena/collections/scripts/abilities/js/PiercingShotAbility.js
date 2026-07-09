@@ -34,7 +34,7 @@ class PiercingShotAbility extends GUTS.BaseAbility {
         // Schedule the piercing shot after cast time
         this.game.schedulingSystem.scheduleAction(() => {
             this.firePiercingShot(casterEntity, casterPos, casterFacing);
-        }, this.castTime, casterEntity);
+        }, 0, casterEntity); // payload at execute — queue already waited to the release point
     }
     
     firePiercingShot(casterEntity, casterPos, casterFacing) {
@@ -85,7 +85,7 @@ class PiercingShotAbility extends GUTS.BaseAbility {
                 new THREE.Vector3(endPos.x, endPos.y + 15, endPos.z),
                 {
                     style: { color: 0x4682B4, linewidth: 4 },
-                    animation: { duration: 800, flickerCount: 2 }
+                    animation: { duration: 0.8, flickerCount: 2 }
                 }
             );
         }

@@ -10,7 +10,7 @@
     "count": 2,
     "lifetime": 1.2,
     "scale": 15,
-    "scaleMultiplier": 2.0,
+    "scaleMultiplier": 2,
     "startColor": "#666666",
     "endColor": "#333333",
     "emitterShape": "point",

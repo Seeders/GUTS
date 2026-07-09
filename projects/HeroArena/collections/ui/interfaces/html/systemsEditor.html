@@ -1,0 +1,117 @@
+<div id="systems-editor-container" class="editor-module">
+    <!-- Left Sidebar: System Lists -->
+    <div class="editor-module__sidebar editor-module__sidebar--left editor-module__scroll-y">
+        <div id="systems-status-container" class="editor-module__status-bar">
+            <span id="systems-status-message">Ready</span>
+        </div>
+
+        <div class="editor-module__section">
+            <div class="editor-module__toolbar editor-module__toolbar--vertical">
+                <button id="systems-save-btn" class="editor-module__btn editor-module__btn--success">Save</button>
+                <button id="systems-refresh-btn" class="editor-module__btn">Refresh</button>
+            </div>
+        </div>
+
+        <!-- Add System Dropdown -->
+        <div class="editor-module__section">
+            <h3 class="editor-module__section-title">Add System</h3>
+            <div class="systems-editor__add-controls">
+                <select id="systems-available-select" class="editor-module__select">
+                    <option value="">-- Select System --</option>
+                </select>
+                <select id="systems-target-select" class="editor-module__select">
+                    <option value="systems">systems</option>
+                    <option value="clientSystems">clientSystems</option>
+                    <option value="serverSystems">serverSystems</option>
+                </select>
+                <button id="systems-add-btn" class="editor-module__btn editor-module__btn--primary editor-module__btn--small">+ Add</button>
+            </div>
+        </div>
+
+        <!-- Filter -->
+        <div class="editor-module__section">
+            <input type="text" id="systems-filter-input" class="editor-module__input" placeholder="Filter systems...">
+        </div>
+
+        <!-- Systems List -->
+        <div class="editor-module__section">
+            <h3 class="editor-module__section-title systems-editor__section-header">
+                <span class="systems-editor__source-indicator systems-editor__source-indicator--systems"></span>
+                Systems (Shared)
+            </h3>
+            <div id="systems-list-systems" class="systems-editor__system-list">
+                <!-- Dynamically populated -->
+            </div>
+        </div>
+
+        <!-- Client Systems List -->
+        <div class="editor-module__section">
+            <h3 class="editor-module__section-title systems-editor__section-header">
+                <span class="systems-editor__source-indicator systems-editor__source-indicator--client"></span>
+                Client Systems
+            </h3>
+            <div id="systems-list-client" class="systems-editor__system-list">
+                <!-- Dynamically populated -->
+            </div>
+        </div>
+
+        <!-- Server Systems List -->
+        <div class="editor-module__section">
+            <h3 class="editor-module__section-title systems-editor__section-header">
+                <span class="systems-editor__source-indicator systems-editor__source-indicator--server"></span>
+                Server Systems
+            </h3>
+            <div id="systems-list-server" class="systems-editor__system-list">
+                <!-- Dynamically populated -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Center Area: Graph Canvas -->
+    <div class="editor-module__canvas-area systems-editor__graph-area">
+        <div class="editor-module__canvas-toolbar">
+            <button id="systems-zoom-in-btn" class="editor-module__btn editor-module__btn--small">+</button>
+            <span id="systems-zoom-level">100%</span>
+            <button id="systems-zoom-out-btn" class="editor-module__btn editor-module__btn--small">-</button>
+            <button id="systems-reset-layout-btn" class="editor-module__btn editor-module__btn--small">Reset Layout</button>
+            <span class="systems-editor__toolbar-divider"></span>
+            <label class="systems-editor__slider-label">
+                Row Width: <span id="systems-row-width-value">10000</span>px
+                <input type="range" id="systems-row-width" min="1000" max="50000" value="10000" class="systems-editor__slider">
+            </label>
+        </div>
+        <canvas id="systems-graph-canvas" class="systems-editor__canvas"></canvas>
+        <div class="systems-editor__legend">
+            <div class="systems-editor__legend-item">
+                <span class="systems-editor__legend-color systems-editor__legend-color--systems"></span>
+                <span>Shared</span>
+            </div>
+            <div class="systems-editor__legend-item">
+                <span class="systems-editor__legend-color systems-editor__legend-color--client"></span>
+                <span>Client</span>
+            </div>
+            <div class="systems-editor__legend-item">
+                <span class="systems-editor__legend-color systems-editor__legend-color--server"></span>
+                <span>Server</span>
+            </div>
+            <div class="systems-editor__legend-item">
+                <span class="systems-editor__legend-line systems-editor__legend-line--satisfied"></span>
+                <span>Satisfied</span>
+            </div>
+            <div class="systems-editor__legend-item">
+                <span class="systems-editor__legend-line systems-editor__legend-line--missing"></span>
+                <span>Missing</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Sidebar: System Details -->
+    <div class="editor-module__sidebar editor-module__sidebar--right editor-module__scroll-y" id="systems-details-panel">
+        <div class="editor-module__section">
+            <h3 class="editor-module__section-title">System Details</h3>
+            <div id="systems-details-content" class="systems-editor__details-content">
+                <p class="systems-editor__no-selection">Click a system node to view details</p>
+            </div>
+        </div>
+    </div>
+</div>

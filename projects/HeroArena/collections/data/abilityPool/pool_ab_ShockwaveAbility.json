@@ -1,0 +1,19 @@
+{
+ "id": "pool_ab_ShockwaveAbility",
+ "title": "Shockwave",
+ "description": "Slam the ground, knocking nearby enemies back and dealing light damage.",
+ "cost": 14,
+ "requirements": [
+  {
+   "str": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Shockwave",
+  "cost": 14,
+  "description": "Slam the ground, knocking nearby enemies back and dealing light damage.",
+  "unlockAbility": "ShockwaveAbility"
+ }
+}

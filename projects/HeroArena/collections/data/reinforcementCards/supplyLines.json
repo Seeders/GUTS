@@ -1,0 +1,12 @@
+{
+ "title": "Supply Lines",
+ "icon": "📦",
+ "kind": "income",
+ "amount": 50,
+ "description": "+50 gold every round from now on",
+ "weight": 3,
+ "minRound": 2,
+ "fileName": "supplyLines",
+ "category": "economy",
+ "maxRound": 6
+}

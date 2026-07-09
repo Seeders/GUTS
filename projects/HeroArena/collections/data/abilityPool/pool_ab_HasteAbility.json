@@ -1,0 +1,19 @@
+{
+ "id": "pool_ab_HasteAbility",
+ "title": "Haste",
+ "description": "Quicken nearby allies — more attack and move speed for a while.",
+ "cost": 15,
+ "requirements": [
+  {
+   "int": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Haste",
+  "cost": 15,
+  "description": "Quicken nearby allies — more attack and move speed for a while.",
+  "unlockAbility": "HasteAbility"
+ }
+}

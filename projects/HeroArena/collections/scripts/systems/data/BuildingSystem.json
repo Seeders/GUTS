@@ -3,10 +3,12 @@
   "fileName": "BuildingSystem",
   "services": [
     "placeBuilding",
+    "placeBuildingAuto",
     "moveBuilding",
     "cancelPendingBuilding",
     "autoSpawnTownHalls",
-    "healBuildingsForPrep",
+    "spawnCommandBuildings",
+    "autoSpawnStartingSentries",
     "cullDestroyedBuildings",
     "getOwnedBuildingIds",
     "getOwnedBuildingArchetypes",

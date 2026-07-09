@@ -9,6 +9,10 @@
   "explosionRadius": 100,
   "element": "fire",
   "trapMessage": "Explosive trap detonates!",
-  "impactParticleEffectSystems": ["explosion_fire"],
-  "expirationParticleEffectSystems": ["explosion_smoke"]
+  "impactParticleEffectSystems": [
+    "explosion_fire"
+  ],
+  "expirationParticleEffectSystems": [
+    "explosion_smoke"
+  ]
 }

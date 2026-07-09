@@ -4,8 +4,33 @@
   "value": 60,
   "icon": "fortify",
   "perUnitType": true,
-  "requirements": [ { "str": { "min": 2 }, "int": { "min": 2 } } ],
-  "target": { "str": { "min": 2 }, "int": { "min": 2 } },
-  "statModifiers": { "armor": { "add": 6 }, "maxHP": { "pct": 0.10 } },
-  "requiresBuildings": [ "barracks" ]
+  "requirements": [
+    {
+      "str": {
+        "min": 2
+      },
+      "int": {
+        "min": 2
+      }
+    }
+  ],
+  "target": {
+    "str": {
+      "min": 2
+    },
+    "int": {
+      "min": 2
+    }
+  },
+  "statModifiers": {
+    "armor": {
+      "add": 6
+    },
+    "maxHP": {
+      "pct": 0.1
+    }
+  },
+  "requiresBuildings": [
+    "barracks"
+  ]
 }

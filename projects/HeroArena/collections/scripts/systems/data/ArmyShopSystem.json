@@ -6,10 +6,18 @@
     "buyOffer",
     "rerollOffers",
     "buyUnlockedUnit",
+    "buyUnitTech",
+    "buySquadLevel",
+    "buyTierUnlock",
+    "buyUpgradeNode",
+    "buyDeploySlot",
+    "pickReinforcement",
     "getShopStateForPlayer",
     "getEligibleItems",
     "applyArmyUpgrades",
     "applyArmyAbilities",
-    "grantSingleTargetAbility"
+    "grantSingleTargetAbility",
+    "getEconomyEffects",
+    "sellUnit"
   ]
 }

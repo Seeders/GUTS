@@ -76,16 +76,18 @@ try {
         const game = window.game;
         const overlay = document.getElementById('heroSelectOverlay');
         const cards = document.querySelectorAll('#heroOptions .arena-option-card');
-        let my = null;
+        let my = null, op = null;
         for (const eid of game.getEntitiesWith('playerStats')) {
             const s = game.getComponent(eid, 'playerStats');
-            if (s.playerId === 0) my = s;
+            if (s.playerId === 0) my = s; else op = s;
         }
+        const ids = (s) => (s?.pendingReinforcement?.options || []).map(o => o.id).join(',');
         return {
             overlayShown: overlay && !overlay.classList.contains('hidden'),
             cardCount: cards.length,
             titles: [...cards].map(c => c.textContent.trim().slice(0, 30)),
             pendingOptions: my?.pendingReinforcement?.options?.length,
+            sameOffers: ids(my) === ids(op),
             goldBefore: my?.gold,
             rosterBefore: my?.heroRoster?.length || 0,
             pickedId: my?.pendingReinforcement?.options?.[0]?.id
@@ -94,6 +96,8 @@ try {
     check('reinforcement pick shows 3 cards at prep start',
         reinf.overlayShown && reinf.cardCount === 3 && reinf.pendingOptions === 3,
         reinf.titles.join(' | '));
+    check('both players are offered the SAME card set (Mechabellum)',
+        reinf.sameOffers, reinf.titles.join(' | '));
 
     const reinfPick = await page.evaluate((info) => {
         const game = window.game;
@@ -103,15 +107,18 @@ try {
             const s = game.getComponent(eid, 'playerStats');
             if (s.playerId === 0) my = s;
         }
+        // Static cards live in the collection; dynamic specific-unit cards
+        // (ids like "recruits:1_d_archer") only exist on the pending roll.
         const card = game.getCollections().reinforcementCards[info.pickedId];
         let effectOk = false;
-        if (card.kind === 'gold') effectOk = my.gold === info.goldBefore + card.amount;
-        else if (card.kind === 'freeUnits') effectOk = (my.heroRoster?.length || 0) === info.rosterBefore + card.count;
+        if (card?.kind === 'gold') effectOk = my.gold === info.goldBefore + card.amount;
+        else if (!card && info.pickedId.startsWith('recruits:'))
+            effectOk = (my.heroRoster?.length || 0) === info.rosterBefore + 2;
         else effectOk = true; // other kinds verified via service below
         return {
             picked: my.pendingReinforcement?.picked === true,
             overlayHidden: document.getElementById('heroSelectOverlay').classList.contains('hidden'),
-            kind: card.kind, effectOk,
+            kind: card?.kind || info.pickedId, effectOk,
             rePick: game.getService('pickReinforcement')(0, 0)?.reason
         };
     }, reinf);
@@ -138,7 +145,10 @@ try {
             mines: game.getEntitiesWith('goldMine').length
         };
     });
-    check('commander HP initialized at 210 for both', prep1.myHP === 210 && prep1.opHP === 210);
+    // Per-leader commander HP (Mechabellum: specialist HP compensates perk strength)
+    check('commander HP initialized in the per-leader 210-280 band for both',
+        prep1.myHP >= 210 && prep1.myHP <= 280 && prep1.opHP >= 210 && prep1.opHP <= 280,
+        `my=${prep1.myHP} op=${prep1.opHP}`);
     check('no buildings or mines on the field', prep1.townHalls === 0 && prep1.mines === 0,
         `buildings ${prep1.townHalls}, mines ${prep1.mines}`);
     check('random offers gone, shop panel hidden', prep1.offers === 0 && prep1.shopPanelHidden === true);
@@ -332,11 +342,13 @@ try {
             if (s.playerId === 0) my = s; else op = s;
         }
         return { myHP: my?.commanderHP, opHP: op?.commanderHP,
+                 myMax: my?.commanderMaxHP, opMax: op?.commanderMaxHP,
                  myRoster: my?.heroRoster?.length,
                  lockedEntries: (my?.heroRoster || []).filter(e => e.lastPosition).length };
     });
-    check('battle resolves into commander damage', resolve1.myHP < 210 || resolve1.opHP < 210,
-        `me ${resolve1.myHP}, enemy ${resolve1.opHP}`);
+    check('battle resolves into commander damage',
+        resolve1.myHP < resolve1.myMax || resolve1.opHP < resolve1.opMax,
+        `me ${resolve1.myHP}/${resolve1.myMax}, enemy ${resolve1.opHP}/${resolve1.opMax}`);
     check('army persists into round 2 with locked positions',
         resolve1.myRoster >= 2 && resolve1.lockedEntries === resolve1.myRoster,
         `${resolve1.myRoster} roster entries, ${resolve1.lockedEntries} locked`);

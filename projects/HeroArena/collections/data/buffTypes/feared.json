@@ -1,0 +1,12 @@
+{
+  "title": "Feared",
+  "damageMultiplier": 0,
+  "attackSpeedMultiplier": 0,
+  "armorMultiplier": 1,
+  "damageTakenMultiplier": 1.25,
+  "damageReduction": 0,
+  "accuracyReduction": 0,
+  "movementSpeedMultiplier": 1.4,
+  "attackDisabled": 1,
+  "castDisabled": 1
+}

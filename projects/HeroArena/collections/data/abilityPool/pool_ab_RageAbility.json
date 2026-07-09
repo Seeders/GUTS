@@ -1,0 +1,19 @@
+{
+ "id": "pool_ab_RageAbility",
+ "title": "Raging Strike",
+ "description": "Unleash primal fury with increased damage and attack speed",
+ "cost": 12,
+ "requirements": [
+  {
+   "str": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Raging Strike",
+  "cost": 12,
+  "description": "Unleash primal fury with increased damage and attack speed",
+  "unlockAbility": "RageAbility"
+ }
+}

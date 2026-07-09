@@ -4,8 +4,30 @@
   "value": 60,
   "icon": "toxic_damage",
   "perUnitType": true,
-  "requirements": [ { "dex": { "min": 2 }, "int": { "min": 2 } } ],
-  "target": { "dex": { "min": 2 }, "int": { "min": 2 } },
-  "statModifiers": { "damage": { "pct": 0.15 } },
-  "requiresBuildings": [ "fletchersHall" ]
+  "requirements": [
+    {
+      "dex": {
+        "min": 2
+      },
+      "int": {
+        "min": 2
+      }
+    }
+  ],
+  "target": {
+    "dex": {
+      "min": 2
+    },
+    "int": {
+      "min": 2
+    }
+  },
+  "statModifiers": {
+    "damage": {
+      "pct": 0.15
+    }
+  },
+  "requiresBuildings": [
+    "fletchersHall"
+  ]
 }

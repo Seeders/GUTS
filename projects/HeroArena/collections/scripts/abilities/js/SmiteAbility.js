@@ -40,7 +40,7 @@ class SmiteAbility extends GUTS.BaseAbility {
         // Schedule the holy smite after cast time
         this.game.schedulingSystem.scheduleAction(() => {
             this.performHolySmite(casterEntity, target, targetPos);
-        }, this.castTime, casterEntity);
+        }, 0, casterEntity); // payload at execute — queue already waited to the release point
     }
     
     performHolySmite(casterEntity, targetId, originalTargetPos) {

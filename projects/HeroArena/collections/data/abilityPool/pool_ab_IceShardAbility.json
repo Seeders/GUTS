@@ -1,0 +1,19 @@
+{
+ "id": "pool_ab_IceShardAbility",
+ "title": "Ice Shard",
+ "description": "Fires piercing ice shards that slow enemies",
+ "cost": 13,
+ "requirements": [
+  {
+   "int": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Ice Shard",
+  "cost": 13,
+  "description": "Fires piercing ice shards that slow enemies",
+  "unlockAbility": "IceShardAbility"
+ }
+}

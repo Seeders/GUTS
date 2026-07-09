@@ -4,10 +4,14 @@
   "name": "Bear Trap Trigger",
   "description": "Snaps shut on nearby enemies, dealing damage and stunning them",
   "trapDamage": 50,
-  "stunDuration": 3.0,
+  "stunDuration": 3,
   "isExplosive": false,
   "element": "physical",
   "trapMessage": "Bear trap snaps shut!",
-  "impactParticleEffectSystems": ["snap_trap_trigger"],
-  "expirationParticleEffectSystems": ["snap_trap_trigger"]
+  "impactParticleEffectSystems": [
+    "snap_trap_trigger"
+  ],
+  "expirationParticleEffectSystems": [
+    "snap_trap_trigger"
+  ]
 }

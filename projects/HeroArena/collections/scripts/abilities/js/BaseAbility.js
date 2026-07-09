@@ -7,6 +7,7 @@ class BaseAbility {
         'getNearbyUnits',
         'hasLineOfSight',
         'playEffectSystem',
+        'playEffect',
         'applyDamage'
     ];
 
@@ -50,6 +51,28 @@ class BaseAbility {
         // is granted with an explicit level. Used by scaledDamage() to scale the
         // ability's damage with that level. Defaults to 1.
         this.sourceItemLevel = 1;
+    }
+
+    // ---- Buff helpers (multi-buff store on BuffEffectsSystem) --------------
+    // Buffs live on dedicated buff entities so a unit can carry several at
+    // once. NEVER game.addComponent(id, 'buff', ...) directly — that's the
+    // legacy single-slot path and clobbers whatever buff the unit had.
+
+    applyBuff(targetId, buffFields) {
+        return this.game.buffEffectsSystem?.applyBuff(targetId, buffFields) ?? null;
+    }
+
+    // buffType omitted → removes ALL buffs from the target.
+    removeBuff(targetId, buffType = null) {
+        this.game.buffEffectsSystem?.removeBuff(targetId, buffType);
+    }
+
+    hasBuff(targetId, buffType) {
+        return this.game.buffEffectsSystem?.hasBuff(targetId, buffType) ?? false;
+    }
+
+    getBuff(targetId, buffType) {
+        return this.game.buffEffectsSystem?.getBuffOfType(targetId, buffType) ?? null;
     }
 
     // Scales ability damage with sourceItemLevel. Use this to multiply any base
@@ -129,8 +152,19 @@ class BaseAbility {
         if (!effects || !Array.isArray(effects) || effects.length === 0) return;
 
         const pos = new THREE.Vector3(position.x, position.y, position.z);
+        const collections = this.game.getCollections();
         effects.forEach(effectName => {
-            this.call.playEffectSystem( effectName, pos);
+            // Ability data mixes both preset kinds: multi-layer SYSTEMS and
+            // single particle EFFECTS. Route each name to the collection that
+            // actually defines it — previously every plain-effect name warned
+            // and silently no-oped, which left many abilities looking bare.
+            if (collections.particleEffectSystems?.[effectName]) {
+                this.call.playEffectSystem?.(effectName, pos);
+            } else if (collections.particleEffects?.[effectName]) {
+                this.call.playEffect?.(effectName, pos);
+            } else {
+                this.call.playEffectSystem?.(effectName, pos); // keeps the warn
+            }
         });
     }
     

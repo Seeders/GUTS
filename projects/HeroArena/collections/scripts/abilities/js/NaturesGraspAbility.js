@@ -22,7 +22,7 @@ class NaturesGraspAbility extends GUTS.BaseAbility {
 
         this.game.schedulingSystem.scheduleAction(() => {
             this.applyAoe(casterEntity);
-        }, this.castTime, casterEntity);
+        }, 0, casterEntity); // payload at execute — queue already waited to the release point
     }
 
     applyAoe(casterEntity) {
@@ -34,20 +34,14 @@ class NaturesGraspAbility extends GUTS.BaseAbility {
             if (this.damage > 0) {
                 this.dealDamageWithEffects(casterEntity, eid, this.damage, this.element);
             }
-            this.game.addComponent(eid, "buff", {
+            this.applyBuff(eid, {
                 buffType: enums.buffTypes.slowed,
                 endTime: this.game.state.now + this.duration,
                 appliedTime: this.game.state.now,
                 stacks: 1,
                 sourceEntity: casterEntity
             });
-            this.game.schedulingSystem.scheduleAction(() => {
-                if (!this.game.hasComponent(eid, "buff")) return;
-                const buff = this.game.getComponent(eid, "buff");
-                if (buff && buff.buffType === enums.buffTypes.slowed) {
-                    this.game.removeComponent(eid, "buff");
-                }
-            }, this.duration, eid);
+            // Expiry handled centrally by BuffEffectsSystem._reapExpiredBuffs.
         });
     }
 }

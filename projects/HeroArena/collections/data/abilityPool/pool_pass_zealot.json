@@ -1,0 +1,26 @@
+{
+ "id": "pool_pass_zealot",
+ "title": "Zealots Fervor",
+ "description": "+20% damage, -10% HP",
+ "cost": 14,
+ "requirements": [
+  {
+   "int": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Zealots Fervor",
+  "cost": 14,
+  "description": "+20% damage, -10% HP",
+  "statModifiers": {
+   "damage": {
+    "pct": 0.2
+   },
+   "maxHP": {
+    "pct": -0.1
+   }
+  }
+ }
+}

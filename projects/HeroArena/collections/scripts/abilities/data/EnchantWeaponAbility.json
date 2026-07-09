@@ -3,7 +3,7 @@
   "filePath": "/projects/HeroArena/collections/scripts/abilities/js/EnchantWeaponAbility.js",
   "name": "Enchant Weapon",
   "description": "Enchant ally weapons with elemental damage (does not stack, refreshes duration)",
-  "cooldown": 12.0,
+  "cooldown": 12,
   "range": 100,
   "manaCost": 35,
   "targetType": "allies",
@@ -11,11 +11,27 @@
   "priority": 5,
   "castTime": 1.5,
   "elementalDamage": 15,
-  "duration": 30.0,
-  "availableElements": ["fire", "cold", "lightning"],
-  "castParticleEffectSystems": ["holy_sparkles"],
-  "enchant_fireParticleEffectSystems": ["fire_burst_core", "fire_embers"],
-  "enchant_coldParticleEffectSystems": ["ice_shard_core", "ice_shard_sparkles"],
-  "enchant_lightningParticleEffectSystems": ["lightning_sparks"],
-  "expirationParticleEffectSystems": ["holy_sparkles"]
+  "duration": 30,
+  "availableElements": [
+    "fire",
+    "cold",
+    "lightning"
+  ],
+  "castParticleEffectSystems": [
+    "holy_sparkles"
+  ],
+  "enchant_fireParticleEffectSystems": [
+    "fire_burst_core",
+    "fire_embers"
+  ],
+  "enchant_coldParticleEffectSystems": [
+    "ice_shard_core",
+    "ice_shard_sparkles"
+  ],
+  "enchant_lightningParticleEffectSystems": [
+    "lightning_sparks"
+  ],
+  "expirationParticleEffectSystems": [
+    "holy_sparkles"
+  ]
 }

@@ -1,6 +1,10 @@
 {
   "fileName": "BaseTrapTriggerAbility",
   "filePath": "/projects/HeroArena/collections/scripts/abilities/js/BaseTrapTriggerAbility.js",
-  "impactParticleEffectSystems": ["trap_trigger"],
-  "expirationParticleEffectSystems": ["trap_destroy"]
+  "impactParticleEffectSystems": [
+    "trap_trigger"
+  ],
+  "expirationParticleEffectSystems": [
+    "trap_destroy"
+  ]
 }

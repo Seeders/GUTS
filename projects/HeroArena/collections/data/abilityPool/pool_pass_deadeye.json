@@ -1,0 +1,26 @@
+{
+ "id": "pool_pass_deadeye",
+ "title": "Deadeye Poise",
+ "description": "+30 range, +10% attack speed",
+ "cost": 14,
+ "requirements": [
+  {
+   "str": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Deadeye Poise",
+  "cost": 14,
+  "description": "+30 range, +10% attack speed",
+  "statModifiers": {
+   "range": {
+    "add": 30
+   },
+   "attackSpeed": {
+    "pct": 0.1
+   }
+  }
+ }
+}

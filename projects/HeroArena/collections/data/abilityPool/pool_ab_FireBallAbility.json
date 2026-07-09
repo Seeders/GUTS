@@ -1,0 +1,19 @@
+{
+ "id": "pool_ab_FireBallAbility",
+ "title": "Fire Ball",
+ "description": "Launch a fiery projectile that explodes on impact",
+ "cost": 16,
+ "requirements": [
+  {
+   "int": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Fire Ball",
+  "cost": 16,
+  "description": "Launch a fiery projectile that explodes on impact",
+  "unlockAbility": "FireBallAbility"
+ }
+}

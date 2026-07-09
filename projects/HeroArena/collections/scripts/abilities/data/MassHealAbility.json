@@ -3,18 +3,27 @@
   "filePath": "/projects/HeroArena/collections/scripts/abilities/js/MassHealAbility.js",
   "name": "Mass Heal",
   "description": "Heal all injured allies across the battlefield",
-  "cooldown": 15.0,
+  "cooldown": 15,
   "range": 300,
   "manaCost": 60,
   "targetType": "auto",
   "animation": "cast",
   "priority": 9,
-  "castTime": 2.0,
+  "castTime": 2,
   "autoTrigger": "low_team_health",
   "healPercent": 0.4,
   "minInjuredAllies": 1,
   "element": "holy",
-  "castParticleEffectSystems": ["holy_light", "holy_sparkles"],
-  "burstParticleEffectSystems": ["heal_burst", "holy_ring"],
-  "impactParticleEffectSystems": ["heal_glow", "heal_sparkles"]
+  "castParticleEffectSystems": [
+    "holy_light",
+    "holy_sparkles"
+  ],
+  "burstParticleEffectSystems": [
+    "heal_burst",
+    "holy_ring"
+  ],
+  "impactParticleEffectSystems": [
+    "heal_glow",
+    "heal_sparkles"
+  ]
 }

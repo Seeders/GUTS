@@ -3,10 +3,10 @@
  "techs": [
   {
    "id": "app_blink",
-   "title": "Blink",
+   "title": "Arcane Blink",
    "cost": 11,
-   "description": "Unlocks Blink: teleport out of danger",
-   "unlockAbility": "BlinkAbility"
+   "description": "Unlocks Arcane Blink: teleport away when struck",
+   "unlockAbility": "ArcaneBlinkAbility"
   },
   {
    "id": "app_iceshard",

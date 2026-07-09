@@ -1,0 +1,22 @@
+{
+ "id": "pool_tech_sk_explode",
+ "title": "Bone Blast",
+ "description": "Skeletons explode on death, burning everything nearby",
+ "cost": 22,
+ "requirements": [
+  {
+   "str": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Bone Blast",
+  "cost": 22,
+  "description": "Skeletons explode on death, burning everything nearby",
+  "onDeathExplode": {
+   "damage": 45,
+   "radius": 70
+  }
+ }
+}

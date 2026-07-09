@@ -9,6 +9,7 @@
   "value": 105,
   "hp": 865,
   "speed": 26,
+  "turnSpeed": 3,
   "damage": 63,
   "attackSpeed": 0.85,
   "element": "cold",

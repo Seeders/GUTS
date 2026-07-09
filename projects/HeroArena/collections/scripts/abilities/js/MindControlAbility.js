@@ -68,7 +68,7 @@ class MindControlAbility extends GUTS.BaseAbility {
         // DESYNC SAFE: Use scheduling system for mind control process
         this.game.schedulingSystem.scheduleAction(() => {
             this.startMindControl(casterEntity, target);
-        }, this.castTime, casterEntity);
+        }, 0, casterEntity); // payload at execute — queue already waited to the release point
     }
 
     // DESYNC SAFE: Find closest enemy deterministically
@@ -275,7 +275,7 @@ class MindControlAbility extends GUTS.BaseAbility {
             new THREE.Vector3(targetPos.x, targetPos.y + 10, targetPos.z),
             {
                 style: { color: 0x8A2BE2, linewidth: 3 },
-                animation: { duration: 2000, pulseEffect: true }
+                animation: { duration: 2, pulseEffect: true }
             }
         );
 

@@ -1,0 +1,7 @@
+{
+ "title": "Keen Whetstone",
+ "icon": "⚔️",
+ "description": "+25% damage",
+ "statModifiers": { "damage": { "pct": 0.25 } },
+ "fileName": "whetstone"
+}

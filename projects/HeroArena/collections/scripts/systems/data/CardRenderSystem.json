@@ -1,0 +1,19 @@
+{
+  "filePath": "/projects/scripts/systems/js/CardRenderSystem.js",
+  "fileName": "CardRenderSystem",
+  "description": "Global system for rendering playing cards to the DOM with suits, pips, and animations",
+  "services": [
+    "createCardElement",
+    "removeCardElement",
+    "getCardElement",
+    "updateCardPosition",
+    "flipCard",
+    "setCardFaceUp",
+    "getCardWidth",
+    "getCardHeight",
+    "getSuitSymbol",
+    "getSuitName",
+    "getRankName",
+    "isRedSuit"
+  ]
+}

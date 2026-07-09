@@ -1,0 +1,7 @@
+{
+ "title": "Runic Plating",
+ "icon": "⛨",
+ "description": "+30% HP and +8 armor",
+ "statModifiers": { "maxHP": { "pct": 0.3 }, "armor": { "add": 8 } },
+ "fileName": "runicPlating"
+}

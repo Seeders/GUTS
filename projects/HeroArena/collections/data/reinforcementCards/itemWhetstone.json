@@ -1,0 +1,12 @@
+{
+ "title": "Keen Whetstone",
+ "icon": "⚔️",
+ "kind": "squadItem",
+ "itemId": "whetstone",
+ "description": "Equip a squad: +25% damage",
+ "cost": 50,
+ "weight": 2,
+ "minRound": 3,
+ "fileName": "itemWhetstone",
+ "category": "item"
+}

@@ -1,0 +1,18 @@
+{
+ "title": "Longshot Calibration",
+ "icon": "🎯",
+ "kind": "unitModifier",
+ "modId": "longshot",
+ "prefix": "Longshot",
+ "description": "+60 range, but −25% damage and −20% attack speed",
+ "statModifiers": {
+  "range": { "add": 60 },
+  "damage": { "pct": -0.25 },
+  "attackSpeed": { "pct": -0.2 }
+ },
+ "appliesToWeapons": ["bow", "crossbow", "staff"],
+ "weight": 3,
+ "minRound": 3,
+ "fileName": "modLongshot",
+ "category": "modifier"
+}

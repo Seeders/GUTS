@@ -1,0 +1,17 @@
+{
+  "filePath": "/projects/scripts/systems/js/DamageSystem.js",
+  "fileName": "DamageSystem",
+  "services": [
+    "applyDamage",
+    "applySplashDamage",
+    "scheduleDamage",
+    "curePoison",
+    "getPoisonStacks",
+    "clearAllDamageEffects",
+    "clearAllStatusEffects",
+    "getAttackerModifiers",
+    "getBuffTypeDef",
+    "buildDamageTags"
+  ],
+  "testFilePath": "/projects/HeroArena/collections/scripts/systems/tests/DamageSystem.test.js"
+}

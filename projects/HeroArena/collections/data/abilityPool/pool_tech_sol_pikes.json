@@ -1,0 +1,19 @@
+{
+ "id": "pool_tech_sol_pikes",
+ "title": "Skyward Pikes",
+ "description": "Soldiers can strike flying units",
+ "cost": 13,
+ "requirements": [
+  {
+   "str": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Skyward Pikes",
+  "cost": 13,
+  "description": "Soldiers can strike flying units",
+  "grantAntiAir": true
+ }
+}

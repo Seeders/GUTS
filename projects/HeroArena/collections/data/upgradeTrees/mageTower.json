@@ -4,20 +4,74 @@
   "title": "Mage Tower",
   "archetype": "INT",
   "branches": [
-    { "id": "int", "label": "Sorcery", "focus": "INT", "nodes": [
-      { "upgrade": "arcaneFocus",    "requires": [] },
-      { "upgrade": "int_manaConduit","requires": ["arcaneFocus"] },
-      { "upgrade": "int_archmagery", "requires": ["int_manaConduit"] }
-    ] },
-    { "id": "intstr", "label": "Battlemage", "focus": "INT/STR", "nodes": [
-      { "upgrade": "intstr_battlemage", "requires": [] },
-      { "upgrade": "intstr_runicWard",  "requires": ["intstr_battlemage"] },
-      { "upgrade": "intstr_spellblade", "requires": ["intstr_runicWard"] }
-    ] },
-    { "id": "intdex", "label": "Spellslinger", "focus": "INT/DEX", "nodes": [
-      { "upgrade": "intdex_arcaneEdge",   "requires": [] },
-      { "upgrade": "intdex_quickCast",    "requires": ["intdex_arcaneEdge"] },
-      { "upgrade": "intdex_spellslinger", "requires": ["intdex_quickCast"] }
-    ] }
+    {
+      "id": "int",
+      "label": "Sorcery",
+      "focus": "INT",
+      "nodes": [
+        {
+          "upgrade": "arcaneFocus",
+          "requires": []
+        },
+        {
+          "upgrade": "int_manaConduit",
+          "requires": [
+            "arcaneFocus"
+          ]
+        },
+        {
+          "upgrade": "int_archmagery",
+          "requires": [
+            "int_manaConduit"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "intstr",
+      "label": "Battlemage",
+      "focus": "INT/STR",
+      "nodes": [
+        {
+          "upgrade": "intstr_battlemage",
+          "requires": []
+        },
+        {
+          "upgrade": "intstr_runicWard",
+          "requires": [
+            "intstr_battlemage"
+          ]
+        },
+        {
+          "upgrade": "intstr_spellblade",
+          "requires": [
+            "intstr_runicWard"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "intdex",
+      "label": "Spellslinger",
+      "focus": "INT/DEX",
+      "nodes": [
+        {
+          "upgrade": "intdex_arcaneEdge",
+          "requires": []
+        },
+        {
+          "upgrade": "intdex_quickCast",
+          "requires": [
+            "intdex_arcaneEdge"
+          ]
+        },
+        {
+          "upgrade": "intdex_spellslinger",
+          "requires": [
+            "intdex_quickCast"
+          ]
+        }
+      ]
+    }
   ]
 }

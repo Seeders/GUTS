@@ -1,4 +1,5 @@
 {
   "filePath": "/projects/HeroArena/collections/scripts/libraries/js/SeededRandom.js",
-  "fileName": "SeededRandom"
+  "fileName": "SeededRandom",
+  "testFilePath": "/projects/HeroArena/collections/scripts/libraries/tests/SeededRandom.test.js"
 }

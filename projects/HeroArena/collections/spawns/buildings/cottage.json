@@ -14,7 +14,7 @@
             "shapes": [
               {
                 "color": {
-                  "paletteColor": "blueDColor"
+                  "paletteColor": "Blue2Color"
                 },
                 "id": 0,
                 "model": "underConstruction"
@@ -30,7 +30,7 @@
           {
             "type": "gltf",
             "color": {
-              "paletteColor": "blueDColor"
+              "paletteColor": "Blue2Color"
             },
             "metalness": 0,
             "roughness": 1,

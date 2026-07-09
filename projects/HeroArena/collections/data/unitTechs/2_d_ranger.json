@@ -17,14 +17,10 @@
   },
   {
    "id": "ran_hawkeye",
-   "title": "Hawkeye",
+   "title": "Crippling Shot",
    "cost": 16,
-   "description": "+50 attack range",
-   "statModifiers": {
-    "range": {
-     "add": 50
-    }
-   }
+   "description": "Unlocks Crippling Shot",
+   "unlockAbility": "CripplingShotAbility"
   }
  ],
  "fileName": "2_d_ranger"

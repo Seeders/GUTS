@@ -1,0 +1,22 @@
+{
+  "filePath": "/projects/scripts/systems/js/AnimationSystem.js",
+  "fileName": "AnimationSystem",
+  "services": [
+    "triggerSinglePlayAnimation",
+    "isAnimationFinished",
+    "setCorpseAnimation",
+    "startCelebration",
+    "stopCelebration",
+    "playDeathAnimation",
+    "calculateAnimationSpeed",
+    "getEntityAnimations",
+    "setBillboardAnimation",
+    "setBillboardAnimationDirection",
+    "getBillboardCurrentAnimation",
+    "getBillboardAnimationState",
+    "getSpriteAnimationData",
+    "getSpriteAnimationDuration",
+    "startHeightAnimation"
+  ],
+  "testFilePath": "/projects/HeroArena/collections/scripts/systems/tests/AnimationSystem.test.js"
+}

@@ -1,10 +1,12 @@
 {
  "title": "Meteor Strike",
- "icon": "\u2604\ufe0f",
+ "icon": "☄️",
  "kind": "skillCharge",
  "skill": "meteor",
  "description": "A single-use Meteor Strike to cast during battle",
+ "cost": 200,
  "weight": 2,
  "minRound": 3,
- "fileName": "meteorCharge"
+ "fileName": "meteorCharge",
+ "category": "skill"
 }

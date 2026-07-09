@@ -106,6 +106,7 @@
     "EffectsSystem",
     "PlacementUISystem",
     "LobbyUISystem",
+    "DeckBuilderSystem",
     "GameUISystem",
     "ShopSystem",
     "TeamHealthSystem",
@@ -176,7 +177,13 @@
   "canvasWidth": 3472,
   "canvasHeight": 3472,
   "is3D": true,
-  "palette": "nature",
+  "palette": "main",
   "initialScene": "lobby",
-  "hideFullHealthBars": true
+  "hideFullHealthBars": true,
+  "persistentStateFields": [
+    "activeCampaignId",
+    "campaignMission",
+    "pendingMissionResults",
+    "pendingLoot"
+  ]
 }

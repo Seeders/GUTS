@@ -4,8 +4,27 @@
   "value": 90,
   "icon": "beserk",
   "perUnitType": true,
-  "requirements": [ { "str": { "min": 3 } } ],
-  "target": { "str": { "min": 3 } },
-  "statModifiers": { "damage": { "pct": 0.20 }, "maxHP": { "pct": 0.15 } },
-  "requiresBuildings": [ "barracks" ]
+  "requirements": [
+    {
+      "str": {
+        "min": 3
+      }
+    }
+  ],
+  "target": {
+    "str": {
+      "min": 3
+    }
+  },
+  "statModifiers": {
+    "damage": {
+      "pct": 0.2
+    },
+    "maxHP": {
+      "pct": 0.15
+    }
+  },
+  "requiresBuildings": [
+    "barracks"
+  ]
 }

@@ -27,7 +27,7 @@ class EnchantWeaponAbility extends GUTS.BaseAbility {
         // DESYNC SAFE: Use scheduling system for enchantment application
         this.game.schedulingSystem.scheduleAction(() => {
             this.applyWeaponEnchantments(casterEntity);
-        }, this.castTime, casterEntity);
+        }, 0, casterEntity); // payload at execute — queue already waited to the release point
     }
     
     applyWeaponEnchantments(casterEntity) {
@@ -54,19 +54,19 @@ class EnchantWeaponAbility extends GUTS.BaseAbility {
             
             // DESYNC SAFE: Check if already enchanted - don't stack enchantments
             const enums = this.game.getEnums();
-            const existingBuff = this.game.getComponent(allyId, "buff");
+            const existingBuff = this.getBuff(allyId, enums.buffTypes.enchant_weapon);
 
             // DESYNC SAFE: Select element deterministically based on ally index and game time
             const selectedElement = this.selectDeterministicElement(allyId, index);
 
-            if (existingBuff && existingBuff.buffType === enums.buffTypes.enchant_weapon) {
+            if (existingBuff) {
                 // DESYNC SAFE: Refresh duration and update element
                 existingBuff.endTime = this.game.state.now + this.duration;
                 existingBuff.appliedTime = this.game.state.now;
                 existingBuff.weaponElement = selectedElement;
             } else {
                 // Apply new weapon enchantment - modifiers from buffTypes/enchant_weapon.json
-                this.game.addComponent(allyId, "buff", {
+                this.applyBuff(allyId, {
                     buffType: enums.buffTypes.enchant_weapon,
                     endTime: this.game.state.now + this.duration,
                     appliedTime: this.game.state.now,
@@ -114,18 +114,18 @@ class EnchantWeaponAbility extends GUTS.BaseAbility {
     removeEnchantment(allyId) {
         // Check if ally still exists and has the enchantment buff
         const enums = this.game.getEnums();
-        if (this.game.hasComponent(allyId, "buff")) {
-            const buff = this.game.getComponent(allyId, "buff");
-            if (buff && buff.buffType === enums.buffTypes.enchant_weapon) {
-                this.game.removeComponent(allyId, "buff");
+        const buff = this.getBuff(allyId, enums.buffTypes.enchant_weapon);
+        if (!buff) return;
+        // Refreshed since this schedule was armed — the later expiry (or the
+        // central reaper) owns removal now.
+        if (buff.endTime - (this.game.state.now || 0) > 0.1) return;
+        this.removeBuff(allyId, enums.buffTypes.enchant_weapon);
 
-                // Visual effect when enchantment expires
-                const transform = this.game.getComponent(allyId, "transform");
-                const allyPos = transform?.position;
-                if (allyPos) {
-                    this.playConfiguredEffects('expiration', allyPos);
-                }
-            }
+        // Visual effect when enchantment expires
+        const transform = this.game.getComponent(allyId, "transform");
+        const allyPos = transform?.position;
+        if (allyPos) {
+            this.playConfiguredEffects('expiration', allyPos);
         }
     }
     

@@ -22,12 +22,12 @@
     "ParticleSystem",
     "SchedulingSystem"
   ],
-  "scene": "terrainMapEditor",
   "propertyName": "tileMap",
   "interface": "terrainEditor",
   "inputElement": "textarea",
   "inputDataType": "json",
   "loadHook": "editTileMap",
   "saveHook": "saveTileMap",
-  "unloadHook": "unloadTileMap"
+  "unloadHook": "unloadTileMap",
+  "scene": "terrainMapEditor"
 }

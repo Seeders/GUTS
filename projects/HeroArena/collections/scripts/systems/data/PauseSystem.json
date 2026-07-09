@@ -1,0 +1,10 @@
+{
+  "filePath": "/projects/scripts/systems/js/PauseSystem.js",
+  "fileName": "PauseSystem",
+  "services": [
+    "pauseGame",
+    "unpauseGame",
+    "togglePause",
+    "isPaused"
+  ]
+}

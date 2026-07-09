@@ -1,0 +1,28 @@
+{
+  "filePath": "/projects/scripts/systems/js/GridSystem.js",
+  "fileName": "GridSystem",
+  "services": [
+    "getNearbyUnits",
+    "isValidGridPlacement",
+    "reserveGridCells",
+    "releaseGridCells",
+    "getUnitGridCells",
+    "toggleSpatialGridDebug",
+    "getGridSize",
+    "getPlacementGridSize",
+    "placementGridToWorld",
+    "worldToPlacementGrid",
+    "tileToWorld",
+    "worldToTile",
+    "tileToWorldCorner",
+    "applyQuadrantOffset",
+    "tileToPixel",
+    "pixelToTile",
+    "pixelToWorld",
+    "worldToPixel",
+    "isValidTile",
+    "isValidWorldPosition",
+    "updateCoordinateConfig"
+  ],
+  "testFilePath": "/projects/HeroArena/collections/scripts/systems/tests/GridSystem.test.js"
+}

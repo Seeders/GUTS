@@ -3,7 +3,7 @@
   "filePath": "/projects/HeroArena/collections/scripts/abilities/js/DrainLifeAbility.js",
   "name": "Drain Life",
   "description": "Drains health from an enemy and heals the caster",
-  "cooldown": 5.0,
+  "cooldown": 5,
   "range": 200,
   "manaCost": 35,
   "targetType": "auto",
@@ -14,7 +14,16 @@
   "drainAmount": 40,
   "healRatio": 0.8,
   "element": "physical",
-  "castParticleEffectSystems": ["dark_energy", "dark_sparkles"],
-  "drainParticleEffectSystems": ["dark_burst", "dark_energy"],
-  "healParticleEffectSystems": ["dark_heal", "dark_sparkles"]
+  "castParticleEffectSystems": [
+    "dark_energy",
+    "dark_sparkles"
+  ],
+  "drainParticleEffectSystems": [
+    "dark_burst",
+    "dark_energy"
+  ],
+  "healParticleEffectSystems": [
+    "dark_heal",
+    "dark_sparkles"
+  ]
 }

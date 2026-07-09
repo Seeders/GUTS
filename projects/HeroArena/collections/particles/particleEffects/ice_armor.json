@@ -1,0 +1,31 @@
+{
+  "title": "Ice Armor",
+  "category": "ice",
+  "tags": [
+    "ice",
+    "buff"
+  ],
+  "particleEffectData": {
+    "count": 18,
+    "lifetime": 1.3,
+    "scale": 8,
+    "scaleMultiplier": 1.0,
+    "startColor": "#b5d6fa",
+    "endColor": "#42a4cd",
+    "emitterShape": "sphere",
+    "emitterRadius": 20,
+    "heightOffset": 10,
+    "velocityXMin": -20,
+    "velocityXMax": 20,
+    "velocityYMin": 10,
+    "velocityYMax": 50,
+    "velocityZMin": -20,
+    "velocityZMax": 20,
+    "gravity": -15,
+    "drag": 0.97,
+    "fadeOut": true,
+    "scaleOverTime": false,
+    "blending": "additive"
+  },
+  "fileName": "ice_armor"
+}

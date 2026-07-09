@@ -91,6 +91,18 @@ class ProjectileSystem extends GUTS.BaseSystem {
             return null;
         }
 
+        // Dead/dying sources can't fire. Attacks schedule their projectile release
+        // partway through the attack animation, so the shooter may die (and become
+        // a corpse) between the schedule and the release — without this check the
+        // arrow spawns from the corpse on the ground.
+        const enums = this.game.getEnums();
+        const sourceDeathState = this.game.getComponent(sourceId, "deathState");
+        if (sourceDeathState && enums.deathState &&
+            sourceDeathState.state !== enums.deathState.alive) {
+            log.trace('Projectile', `fireProjectile cancelled - source ${sourceId} is dead/dying`);
+            return null;
+        }
+
         // Calculate distance to target
         const dx = targetPos.x - sourcePos.x;
         const dz = targetPos.z - sourcePos.z;
@@ -165,6 +177,36 @@ class ProjectileSystem extends GUTS.BaseSystem {
             this.projectileCallbacks.set(projectileId, {
                 onHit: projectileData.onHit || null,
                 onTravel: projectileData.onTravel || null
+            });
+        }
+
+        // Data-driven visuals: projectile defs may name particle presets
+        //   trailEffect  — played along the flight path (throttled by
+        //                  TRAIL_UPDATE_INTERVAL via the onTravel hook)
+        //   impactEffect — played once on hit
+        // Names resolve against particleEffectSystems first, then particleEffects.
+        if (!this.game.isServer && (projectileData.trailEffect || projectileData.impactEffect)) {
+            const playPreset = (name, p) => {
+                if (!name || !p) return;
+                const c = this.game.getCollections();
+                const v = new THREE.Vector3(p.x, p.y, p.z);
+                if (c.particleEffectSystems?.[name] && this.game.hasService('playEffectSystem')) {
+                    this.game.call('playEffectSystem', name, v);
+                } else if (c.particleEffects?.[name] && this.game.hasService('playEffect')) {
+                    this.game.call('playEffect', name, v);
+                }
+            };
+            const existing = this.projectileCallbacks.get(projectileId) || { onHit: null, onTravel: null };
+            const userOnHit = existing.onHit, userOnTravel = existing.onTravel;
+            this.projectileCallbacks.set(projectileId, {
+                onHit: (p) => {
+                    if (userOnHit) userOnHit(p);
+                    playPreset(projectileData.impactEffect, p);
+                },
+                onTravel: (p) => {
+                    if (userOnTravel) userOnTravel(p);
+                    playPreset(projectileData.trailEffect, p);
+                }
             });
         }
 
@@ -455,7 +497,23 @@ class ProjectileSystem extends GUTS.BaseSystem {
         });
     }
     
+    // A homing target that died mid-flight must be dropped: corpses keep their
+    // transform but lose their health component, so the arrow would steer at
+    // the corpse forever without ever registering a hit — orbiting the corpse
+    // pile at ground level until its (200s) lifetime expires.
+    _homingTargetDead(targetId) {
+        if (!this.game.getComponent(targetId, "health")) return true;
+        const ds = this.game.getComponent(targetId, "deathState");
+        const alive = this.game.getEnums()?.deathState?.alive;
+        return !!(ds && alive !== undefined && ds.state !== alive);
+    }
+
     updateBallisticHoming(projectileId, pos, vel, projectile, homing) {
+        if (this._homingTargetDead(homing.targetId)) {
+            // Continue the ballistic arc unguided; ground impact cleans up.
+            homing.targetId = null;
+            return;
+        }
         // Get current target position
         const targetTransform = this.game.getComponent(homing.targetId, "transform");
         const targetPos = targetTransform?.position;
@@ -513,6 +571,12 @@ class ProjectileSystem extends GUTS.BaseSystem {
     }
     
     updateHomingProjectile(projectileId, pos, vel, projectile, homing) {
+        if (this._homingTargetDead(homing.targetId)) {
+            // Fly on straight; collisions with other units still apply and the
+            // lifetime component cleans up a miss.
+            homing.targetId = null;
+            return;
+        }
         // Get current target position
         const targetTransform = this.game.getComponent(homing.targetId, "transform");
         const targetPos = targetTransform?.position;

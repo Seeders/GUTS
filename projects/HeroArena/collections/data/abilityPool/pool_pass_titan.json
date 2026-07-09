@@ -1,0 +1,26 @@
+{
+ "id": "pool_pass_titan",
+ "title": "Titans Girth",
+ "description": "+30% HP, -2 armor",
+ "cost": 14,
+ "requirements": [
+  {
+   "str": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Titans Girth",
+  "cost": 14,
+  "description": "+30% HP, -2 armor",
+  "statModifiers": {
+   "maxHP": {
+    "pct": 0.3
+   },
+   "armor": {
+    "add": -2
+   }
+  }
+ }
+}

@@ -105,6 +105,10 @@
     "BlinkAbility": [
       "mobility"
     ],
+    "ArcaneBlinkAbility": [
+      "mobility",
+      "defensive"
+    ],
     "IceShardAbility": [
       "cc"
     ],
@@ -193,6 +197,10 @@
       "cc"
     ],
     "PolymorphAbility": [
+      "cc",
+      "debuff"
+    ],
+    "FearAbility": [
       "cc",
       "debuff"
     ],

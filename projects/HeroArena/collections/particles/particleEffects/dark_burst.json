@@ -1,0 +1,31 @@
+{
+  "title": "Dark Burst",
+  "category": "shadow",
+  "tags": [
+    "dark",
+    "burst"
+  ],
+  "particleEffectData": {
+    "count": 24,
+    "lifetime": 0.9,
+    "scale": 12,
+    "scaleMultiplier": 1.0,
+    "startColor": "#8e67b0",
+    "endColor": "#2a1040",
+    "emitterShape": "point",
+    "emitterRadius": 0,
+    "heightOffset": 10,
+    "velocityXMin": -90,
+    "velocityXMax": 90,
+    "velocityYMin": 40,
+    "velocityYMax": 120,
+    "velocityZMin": -90,
+    "velocityZMax": 90,
+    "gravity": -20,
+    "drag": 0.92,
+    "fadeOut": true,
+    "scaleOverTime": false,
+    "blending": "additive"
+  },
+  "fileName": "dark_burst"
+}

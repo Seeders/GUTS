@@ -1,0 +1,23 @@
+{
+ "id": "pool_tech_app_focus",
+ "title": "Arcane Focus",
+ "description": "+35% damage",
+ "cost": 12,
+ "requirements": [
+  {
+   "int": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Arcane Focus",
+  "cost": 12,
+  "description": "+35% damage",
+  "statModifiers": {
+   "damage": {
+    "pct": 0.35
+   }
+  }
+ }
+}

@@ -1,0 +1,31 @@
+{
+  "title": "Dark Heal",
+  "category": "shadow",
+  "tags": [
+    "dark",
+    "heal"
+  ],
+  "particleEffectData": {
+    "count": 16,
+    "lifetime": 1.2,
+    "scale": 8,
+    "scaleMultiplier": 1.0,
+    "startColor": "#af69bf",
+    "endColor": "#3ac065",
+    "emitterShape": "sphere",
+    "emitterRadius": 18,
+    "heightOffset": 10,
+    "velocityXMin": -20,
+    "velocityXMax": 20,
+    "velocityYMin": 40,
+    "velocityYMax": 110,
+    "velocityZMin": -20,
+    "velocityZMax": 20,
+    "gravity": -80,
+    "drag": 0.95,
+    "fadeOut": true,
+    "scaleOverTime": false,
+    "blending": "additive"
+  },
+  "fileName": "dark_heal"
+}

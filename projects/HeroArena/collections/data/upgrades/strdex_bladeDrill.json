@@ -4,8 +4,30 @@
   "value": 60,
   "icon": "speed",
   "perUnitType": true,
-  "requirements": [ { "str": { "min": 2 }, "dex": { "min": 2 } } ],
-  "target": { "str": { "min": 2 }, "dex": { "min": 2 } },
-  "statModifiers": { "attackSpeed": { "pct": 0.12 } },
-  "requiresBuildings": [ "barracks" ]
+  "requirements": [
+    {
+      "str": {
+        "min": 2
+      },
+      "dex": {
+        "min": 2
+      }
+    }
+  ],
+  "target": {
+    "str": {
+      "min": 2
+    },
+    "dex": {
+      "min": 2
+    }
+  },
+  "statModifiers": {
+    "attackSpeed": {
+      "pct": 0.12
+    }
+  },
+  "requiresBuildings": [
+    "barracks"
+  ]
 }

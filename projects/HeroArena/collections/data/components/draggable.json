@@ -1,0 +1,9 @@
+{
+  "title": "draggable",
+  "description": "Drag state for interactive elements",
+  "schema": {
+    "isDragging": 0,
+    "offsetX": 0,
+    "offsetY": 0
+  }
+}

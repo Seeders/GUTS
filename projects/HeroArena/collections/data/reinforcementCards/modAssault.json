@@ -1,0 +1,18 @@
+{
+ "title": "Assault Doctrine",
+ "icon": "⚔️",
+ "kind": "unitModifier",
+ "modId": "assault",
+ "prefix": "Assault",
+ "description": "+40% damage and +50% HP, but −30 range",
+ "statModifiers": {
+  "damage": { "pct": 0.4 },
+  "maxHP": { "pct": 0.5 },
+  "range": { "add": -30 }
+ },
+ "appliesToWeapons": ["bow", "crossbow", "staff"],
+ "weight": 3,
+ "minRound": 3,
+ "fileName": "modAssault",
+ "category": "modifier"
+}

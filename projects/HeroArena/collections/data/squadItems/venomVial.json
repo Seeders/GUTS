@@ -1,0 +1,7 @@
+{
+ "title": "Venom Vial",
+ "icon": "🧪",
+ "description": "Attacks poison their target",
+ "grantBuff": "poisoned_weapon",
+ "fileName": "venomVial"
+}

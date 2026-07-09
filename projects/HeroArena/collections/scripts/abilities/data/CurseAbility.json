@@ -3,7 +3,7 @@
   "filePath": "/projects/HeroArena/collections/scripts/abilities/js/CurseAbility.js",
   "name": "Curse",
   "description": "Curses enemies, reducing their damage and making them vulnerable",
-  "cooldown": 7.0,
+  "cooldown": 7,
   "range": 180,
   "manaCost": 50,
   "targetType": "auto",
@@ -14,8 +14,15 @@
   "curseRadius": 100,
   "damageReduction": 0.5,
   "vulnerabilityIncrease": 1.3,
-  "duration": 20.0,
-  "castParticleEffectSystems": ["dark_energy", "dark_sparkles"],
-  "debuffParticleEffectSystems": ["dark_burst"],
-  "expirationParticleEffectSystems": ["dark_sparkles"]
+  "duration": 20,
+  "castParticleEffectSystems": [
+    "dark_energy",
+    "dark_sparkles"
+  ],
+  "debuffParticleEffectSystems": [
+    "dark_burst"
+  ],
+  "expirationParticleEffectSystems": [
+    "dark_sparkles"
+  ]
 }

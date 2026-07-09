@@ -17,14 +17,10 @@
   },
   {
    "id": "kni_barding",
-   "title": "Full Barding",
+   "title": "Last Stand",
    "cost": 14,
-   "description": "+8 armor",
-   "statModifiers": {
-    "armor": {
-     "add": 8
-    }
-   }
+   "description": "Unlocks Last Stand",
+   "unlockAbility": "LastStandAbility"
   }
  ],
  "fileName": "2_sd_knight"

@@ -47,9 +47,14 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         'handleSetSquadFormation',
         'handleEnterCampaignNode',
         'handlePickReinforcement',
+        'handleSkipReinforcement',
         'handleCastCommanderSkill',
         'handleSellUnit',
         'handleGrantSingleAbility',
+        'handleEquipSquadItem',
+        'handleUnequipSquadItem',
+        'handleTakeLoan',
+        'handleBuyEliteRecruit',
         'handleSpecializeChoice',
         'handlePlaceBuilding',
         'handleMoveBuilding',
@@ -87,9 +92,14 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         'setSquadFormation',
         'enterCampaignNode',
         'pickReinforcement',
+        'skipReinforcement',
         'castCommanderSkill',
         'sellUnit',
         'grantSingleTargetAbility',
+        'equipSquadItem',
+        'unequipSquadItem',
+        'takeLoan',
+        'buyEliteRecruit',
         'applySpecializationChoice',
         'placeBuilding',
         'moveBuilding',
@@ -402,9 +412,14 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         this.game.serverEventManager.subscribe('ENTER_CAMPAIGN_NODE',   this.handleEnterCampaignNode.bind(this));
         this.game.serverEventManager.subscribe('BUY_DEPLOY_SLOT',       this.handleBuyDeploySlot.bind(this));
         this.game.serverEventManager.subscribe('PICK_REINFORCEMENT',   this.handlePickReinforcement.bind(this));
+        this.game.serverEventManager.subscribe('SKIP_REINFORCEMENT',   this.handleSkipReinforcement.bind(this));
         this.game.serverEventManager.subscribe('CAST_COMMANDER_SKILL', this.handleCastCommanderSkill.bind(this));
         this.game.serverEventManager.subscribe('SELL_UNIT',            this.handleSellUnit.bind(this));
         this.game.serverEventManager.subscribe('GRANT_SINGLE_ABILITY', this.handleGrantSingleAbility.bind(this));
+        this.game.serverEventManager.subscribe('EQUIP_SQUAD_ITEM',     this.handleEquipSquadItem.bind(this));
+        this.game.serverEventManager.subscribe('UNEQUIP_SQUAD_ITEM',   this.handleUnequipSquadItem.bind(this));
+        this.game.serverEventManager.subscribe('TAKE_LOAN',            this.handleTakeLoan.bind(this));
+        this.game.serverEventManager.subscribe('BUY_ELITE_RECRUIT', this.handleBuyEliteRecruit.bind(this));
         this.game.serverEventManager.subscribe('SPECIALIZE_CHOICE',    this.handleSpecializeChoice.bind(this));
 
         // HeroArena: buildings (instant placement + one-round move window)
@@ -1259,8 +1274,9 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         const { playerId } = eventData;
         const numericPlayerId = eventData.numericPlayerId ?? eventData.playerId;
         const entityId = eventData.data?.entityId ?? eventData.entityId;
-        const x = eventData.data?.x ?? eventData.x;
-        const z = eventData.data?.z ?? eventData.z;
+        // let: re-assigned below when snapping to the deployment grid
+        let x = eventData.data?.x ?? eventData.x;
+        let z = eventData.data?.z ?? eventData.z;
         const rotationY = eventData.data?.rotationY ?? eventData.rotationY;
 
         // Only the owning player can move their own heroes. playerStats.playerId is
@@ -1435,6 +1451,13 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         return this.respond(playerId, 'PICK_REINFORCEMENT_ACK', result ?? { success: false }, callback);
     }
 
+    handleSkipReinforcement(eventData, callback) {
+        const { playerId } = eventData;
+        const numericPlayerId = eventData.numericPlayerId ?? eventData.playerId;
+        const result = this.call.skipReinforcement(numericPlayerId);
+        return this.respond(playerId, 'SKIP_REINFORCEMENT_ACK', result ?? { success: false }, callback);
+    }
+
     handleCastCommanderSkill(eventData, callback) {
         const { playerId } = eventData;
         const numericPlayerId = eventData.numericPlayerId ?? eventData.playerId;
@@ -1459,6 +1482,38 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         const result = this.call.grantSingleTargetAbility(numericPlayerId, d.abilityId, d.rosterIndex);
         this.syncEntitiesToClients(playerId, numericPlayerId);   // replicate to the granting player only
         return this.respond(playerId, 'GRANT_SINGLE_ABILITY_ACK', result ?? { success: false }, callback);
+    }
+
+    handleEquipSquadItem(eventData, callback) {
+        const { playerId } = eventData;
+        const numericPlayerId = eventData.numericPlayerId ?? eventData.playerId;
+        const d = eventData.data || eventData;
+        const result = this.call.equipSquadItem(numericPlayerId, d.itemId, d.rosterIndex);
+        this.syncEntitiesToClients(playerId, numericPlayerId);   // item stats change the granting player's units
+        return this.respond(playerId, 'EQUIP_SQUAD_ITEM_ACK', result ?? { success: false }, callback);
+    }
+
+    handleUnequipSquadItem(eventData, callback) {
+        const { playerId } = eventData;
+        const numericPlayerId = eventData.numericPlayerId ?? eventData.playerId;
+        const d = eventData.data || eventData;
+        const result = this.call.unequipSquadItem(numericPlayerId, d.rosterIndex, d.itemId);
+        this.syncEntitiesToClients(playerId, numericPlayerId);   // squad respawns clean
+        return this.respond(playerId, 'UNEQUIP_SQUAD_ITEM_ACK', result ?? { success: false }, callback);
+    }
+
+    handleTakeLoan(eventData, callback) {
+        const { playerId } = eventData;
+        const numericPlayerId = eventData.numericPlayerId ?? eventData.playerId;
+        const result = this.call.takeLoan(numericPlayerId);
+        return this.respond(playerId, 'TAKE_LOAN_ACK', result ?? { success: false }, callback);
+    }
+
+    handleBuyEliteRecruit(eventData, callback) {
+        const { playerId } = eventData;
+        const numericPlayerId = eventData.numericPlayerId ?? eventData.playerId;
+        const result = this.call.buyEliteRecruit(numericPlayerId);
+        return this.respond(playerId, 'BUY_ELITE_RECRUIT_ACK', result ?? { success: false }, callback);
     }
 
     handleSpecializeChoice(eventData, callback) {

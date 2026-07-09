@@ -1,0 +1,23 @@
+{
+ "id": "pool_ab_TrackingMark",
+ "title": "Tracking Mark",
+ "description": "Mark an enemy for increased damage - multiple Rangers can mark the same target for stacking effect",
+ "cost": 14,
+ "requirements": [
+  {
+   "dex": {
+    "min": 1
+   },
+   "weaponType": [
+    "bow",
+    "crossbow"
+   ]
+  }
+ ],
+ "tech": {
+  "title": "Tracking Mark",
+  "cost": 14,
+  "description": "Mark an enemy for increased damage - multiple Rangers can mark the same target for stacking effect",
+  "unlockAbility": "TrackingMark"
+ }
+}

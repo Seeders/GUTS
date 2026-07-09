@@ -1,0 +1,31 @@
+{
+  "title": "Explosion Smoke",
+  "category": "fire",
+  "tags": [
+    "smoke",
+    "explosion"
+  ],
+  "particleEffectData": {
+    "count": 26,
+    "lifetime": 1.6,
+    "scale": 26,
+    "scaleMultiplier": 2.6,
+    "startColor": "#555555",
+    "endColor": "#151515",
+    "emitterShape": "sphere",
+    "emitterRadius": 14,
+    "heightOffset": 10,
+    "velocityXMin": -70,
+    "velocityXMax": 70,
+    "velocityYMin": 50,
+    "velocityYMax": 150,
+    "velocityZMin": -70,
+    "velocityZMax": 70,
+    "gravity": -40,
+    "drag": 0.94,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "normal"
+  },
+  "fileName": "explosion_smoke"
+}

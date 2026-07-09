@@ -12,7 +12,7 @@
           {
             "type": "gltf",
             "color": {
-              "paletteColor": "greyMColor"
+              "paletteColor": "Gray6Color"
             },
             "metalness": 0,
             "roughness": 1,

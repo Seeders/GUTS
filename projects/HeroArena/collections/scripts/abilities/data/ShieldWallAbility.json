@@ -2,22 +2,35 @@
   "fileName": "ShieldWallAbility",
   "filePath": "/projects/HeroArena/collections/scripts/abilities/js/ShieldWallAbility.js",
   "name": "Shield Wall",
-  "description": "Form a defensive stance, reducing damage and taunting enemies",
-  "cooldown": 12.0,
+  "description": "Lock shields: the squad shares all damage taken equally for 10s",
+  "cooldown": 12,
   "range": 0,
   "manaCost": 30,
   "targetType": "self",
   "animation": "cast",
   "priority": 4,
-  "castTime": 1.0,
-  "wallDuration": 10.0,
+  "castTime": 1,
+  "wallDuration": 10,
   "damageReduction": 0.75,
   "tauntRadius": 200,
   "element": "physical",
-  "castParticleEffectSystems": ["holy_light"],
-  "burstParticleEffectSystems": ["holy_explosion", "holy_ring"],
-  "buffParticleEffectSystems": ["holy_sparkles"],
-  "debuffParticleEffectSystems": ["fire_burst_core"],
-  "sustainedParticleEffectSystems": ["holy_sparkles"],
-  "expirationParticleEffectSystems": ["holy_sparkles"]
+  "castParticleEffectSystems": [
+    "holy_light"
+  ],
+  "burstParticleEffectSystems": [
+    "holy_explosion",
+    "holy_ring"
+  ],
+  "buffParticleEffectSystems": [
+    "holy_sparkles"
+  ],
+  "debuffParticleEffectSystems": [
+    "fire_burst_core"
+  ],
+  "sustainedParticleEffectSystems": [
+    "holy_sparkles"
+  ],
+  "expirationParticleEffectSystems": [
+    "holy_sparkles"
+  ]
 }

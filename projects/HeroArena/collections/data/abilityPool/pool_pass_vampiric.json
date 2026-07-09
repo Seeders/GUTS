@@ -1,0 +1,23 @@
+{
+ "id": "pool_pass_vampiric",
+ "title": "Vampiric Edge",
+ "description": "+12% life leech",
+ "cost": 14,
+ "requirements": [
+  {
+   "dex": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Vampiric Edge",
+  "cost": 14,
+  "description": "+12% life leech",
+  "statModifiers": {
+   "lifeLeech": {
+    "add": 0.12
+   }
+  }
+ }
+}

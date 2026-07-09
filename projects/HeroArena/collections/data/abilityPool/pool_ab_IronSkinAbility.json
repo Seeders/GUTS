@@ -1,0 +1,19 @@
+{
+ "id": "pool_ab_IronSkinAbility",
+ "title": "Iron Skin",
+ "description": "Harden the body — massive armor boost but slower attacks.",
+ "cost": 17,
+ "requirements": [
+  {
+   "str": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Iron Skin",
+  "cost": 17,
+  "description": "Harden the body — massive armor boost but slower attacks.",
+  "unlockAbility": "IronSkinAbility"
+ }
+}

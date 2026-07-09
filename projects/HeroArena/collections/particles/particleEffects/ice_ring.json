@@ -1,0 +1,32 @@
+{
+  "title": "Ice Ring",
+  "category": "ice",
+  "tags": [
+    "ice",
+    "ring",
+    "ground"
+  ],
+  "particleEffectData": {
+    "count": 28,
+    "lifetime": 0.9,
+    "scale": 10,
+    "scaleMultiplier": 1.0,
+    "startColor": "#b5d6fa",
+    "endColor": "#3e73be",
+    "emitterShape": "ring",
+    "emitterRadius": 40,
+    "heightOffset": 6,
+    "velocityXMin": -12,
+    "velocityXMax": 12,
+    "velocityYMin": 15,
+    "velocityYMax": 60,
+    "velocityZMin": -12,
+    "velocityZMax": 12,
+    "gravity": -20,
+    "drag": 0.96,
+    "fadeOut": true,
+    "scaleOverTime": false,
+    "blending": "additive"
+  },
+  "fileName": "ice_ring"
+}

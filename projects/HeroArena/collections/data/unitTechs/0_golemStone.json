@@ -17,14 +17,10 @@
   },
   {
    "id": "gst_monolith",
-   "title": "Monolith",
+   "title": "Spiked Carapace",
    "cost": 16,
-   "description": "+50% max HP",
-   "statModifiers": {
-    "maxHP": {
-     "pct": 0.5
-    }
-   }
+   "description": "Unlocks Spiked Carapace",
+   "unlockAbility": "ThornsAuraAbility"
   }
  ],
  "fileName": "0_golemStone"

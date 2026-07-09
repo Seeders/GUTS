@@ -6,8 +6,16 @@
   "maxTraps": 2,
   "trapComponentName": "trap",
   "placementMessage": "Scout sets a bear trap!",
-  "castParticleEffectSystems": ["dust_burst"],
-  "targetParticleEffectSystems": ["dust_burst"],
-  "impactParticleEffectSystems": ["dust_burst"],
-  "expirationParticleEffectSystems": ["dust_burst"]
+  "castParticleEffectSystems": [
+    "trap_placement"
+  ],
+  "targetParticleEffectSystems": [
+    "dust_burst"
+  ],
+  "impactParticleEffectSystems": [
+    "dust_burst"
+  ],
+  "expirationParticleEffectSystems": [
+    "dust_burst"
+  ]
 }

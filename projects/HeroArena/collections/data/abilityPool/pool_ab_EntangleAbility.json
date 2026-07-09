@@ -1,0 +1,19 @@
+{
+ "id": "pool_ab_EntangleAbility",
+ "title": "Entangle",
+ "description": "Roots an enemy in place with vines.",
+ "cost": 15,
+ "requirements": [
+  {
+   "dex": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Entangle",
+  "cost": 15,
+  "description": "Roots an enemy in place with vines.",
+  "unlockAbility": "EntangleAbility"
+ }
+}

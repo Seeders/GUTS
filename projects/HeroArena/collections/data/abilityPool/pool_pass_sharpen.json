@@ -1,0 +1,23 @@
+{
+ "id": "pool_pass_sharpen",
+ "title": "Whetted Edge",
+ "description": "+8 flat damage",
+ "cost": 14,
+ "requirements": [
+  {
+   "int": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Whetted Edge",
+  "cost": 14,
+  "description": "+8 flat damage",
+  "statModifiers": {
+   "damage": {
+    "add": 8
+   }
+  }
+ }
+}

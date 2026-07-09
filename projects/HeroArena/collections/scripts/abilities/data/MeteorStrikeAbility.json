@@ -3,23 +3,40 @@
   "filePath": "/projects/HeroArena/collections/scripts/abilities/js/MeteorStrikeAbility.js",
   "name": "Meteor Strike",
   "description": "Devastating strike on the densest enemy formation",
-  "cooldown": 9.0,
+  "cooldown": 9,
   "range": 300,
   "manaCost": 70,
   "targetType": "enemy",
   "animation": "cast",
   "priority": 10,
-  "castTime": 1.0,
+  "castTime": 1,
   "damage": 80,
   "splashRadius": 120,
-  "delay": 2.0,
+  "delay": 2,
   "minTargets": 0,
   "meteorHeight": 500,
   "element": "fire",
-  "castParticleEffectSystems": ["fire_burst_core"],
-  "warningParticleEffectSystems": ["meteor_warning"],
-  "trailParticleEffectSystems": ["meteor_trail", "smoke_trail"],
-  "meteorParticleEffectSystems": ["meteor_core", "meteor_flame"],
-  "impactParticleEffectSystems": ["fire_burst_core", "fire_burst_secondary", "rock_debris", "fire_embers"],
-  "targetParticleEffectSystems": ["fire_burst_secondary"]
+  "castParticleEffectSystems": [
+    "fire_burst_core"
+  ],
+  "warningParticleEffectSystems": [
+    "meteor_warning"
+  ],
+  "trailParticleEffectSystems": [
+    "meteor_trail",
+    "smoke_trail"
+  ],
+  "meteorParticleEffectSystems": [
+    "meteor_core",
+    "meteor_flame"
+  ],
+  "impactParticleEffectSystems": [
+    "fire_burst_core",
+    "fire_burst_secondary",
+    "rock_debris",
+    "fire_embers"
+  ],
+  "targetParticleEffectSystems": [
+    "fire_burst_secondary"
+  ]
 }

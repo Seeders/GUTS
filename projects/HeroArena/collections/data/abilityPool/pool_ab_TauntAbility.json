@@ -1,0 +1,19 @@
+{
+ "id": "pool_ab_TauntAbility",
+ "title": "Taunt",
+ "description": "Force nearby enemies to focus on you.",
+ "cost": 17,
+ "requirements": [
+  {
+   "str": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Taunt",
+  "cost": 17,
+  "description": "Force nearby enemies to focus on you.",
+  "unlockAbility": "TauntAbility"
+ }
+}

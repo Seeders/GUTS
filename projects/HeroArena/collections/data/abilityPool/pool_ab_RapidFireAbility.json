@@ -1,0 +1,23 @@
+{
+ "id": "pool_ab_RapidFireAbility",
+ "title": "Rapid Fire",
+ "description": "Drastically increased attack speed for a short time.",
+ "cost": 14,
+ "requirements": [
+  {
+   "dex": {
+    "min": 1
+   },
+   "weaponType": [
+    "bow",
+    "crossbow"
+   ]
+  }
+ ],
+ "tech": {
+  "title": "Rapid Fire",
+  "cost": 14,
+  "description": "Drastically increased attack speed for a short time.",
+  "unlockAbility": "RapidFireAbility"
+ }
+}

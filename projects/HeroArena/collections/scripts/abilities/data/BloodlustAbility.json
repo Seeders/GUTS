@@ -3,19 +3,28 @@
   "filePath": "/projects/HeroArena/collections/scripts/abilities/js/BloodlustAbility.js",
   "name": "Bloodlust",
   "description": "Heal when dealing damage and gain stacking damage bonuses",
-  "cooldown": 5.0,
+  "cooldown": 5,
   "range": 0,
   "manaCost": 0,
   "targetType": "self",
   "animation": "cast",
   "priority": 7,
-  "castTime": 1.0,
+  "castTime": 1,
   "lifeStealAmount": 0.3,
   "damagePerKill": 5,
   "maxStacks": 10,
-  "duration": 30.0,
-  "castParticleEffectSystems": ["dark_energy"],
-  "buffParticleEffectSystems": ["dark_burst", "dark_sparkles"],
-  "stackParticleEffectSystems": ["dark_sparkles"],
-  "expirationParticleEffectSystems": ["dark_sparkles"]
+  "duration": 30,
+  "castParticleEffectSystems": [
+    "dark_energy"
+  ],
+  "buffParticleEffectSystems": [
+    "dark_burst",
+    "dark_sparkles"
+  ],
+  "stackParticleEffectSystems": [
+    "dark_sparkles"
+  ],
+  "expirationParticleEffectSystems": [
+    "dark_sparkles"
+  ]
 }

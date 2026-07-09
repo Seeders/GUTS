@@ -1,0 +1,21 @@
+{
+  "cooldown": 16,
+  "range": 300,
+  "manaCost": 0,
+  "targetType": "enemy",
+  "animation": "cast",
+  "priority": 6,
+  "castTime": 0.3,
+  "castParticleEffectSystems": [
+    "holy_light"
+  ],
+  "trailParticleEffectSystems": [],
+  "impactParticleEffectSystems": [
+    "holy_sparkles"
+  ],
+  "expirationParticleEffectSystems": [],
+  "fileName": "TrueSightAbility",
+  "filePath": "/projects/HeroArena/collections/scripts/abilities/js/TrueSightAbility.js",
+  "name": "True Sight",
+  "description": "Arcane detection — expose nearby cloaked and invisible enemies for the team."
+}

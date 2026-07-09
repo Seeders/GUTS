@@ -1,0 +1,23 @@
+{
+ "id": "pool_pass_lucky",
+ "title": "Lucky Strikes",
+ "description": "+15% critical chance",
+ "cost": 14,
+ "requirements": [
+  {
+   "str": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Lucky Strikes",
+  "cost": 14,
+  "description": "+15% critical chance",
+  "statModifiers": {
+   "criticalChance": {
+    "add": 0.15
+   }
+  }
+ }
+}

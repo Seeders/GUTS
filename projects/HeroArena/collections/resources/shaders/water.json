@@ -25,9 +25,15 @@
       "value": 1
     },
     "ambientLightColor": {
-      "value": [1, 1, 1]
+      "value": [
+        1,
+        1,
+        1
+      ]
     }
   },
-  "vectors": ["ambientLightColor"],
+  "vectors": [
+    "ambientLightColor"
+  ],
   "texture": "water_overlay"
 }

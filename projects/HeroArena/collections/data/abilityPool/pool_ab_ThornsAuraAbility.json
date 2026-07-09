@@ -1,0 +1,19 @@
+{
+ "id": "pool_ab_ThornsAuraAbility",
+ "title": "Thorns Aura",
+ "description": "Damage attackers when they strike you.",
+ "cost": 16,
+ "requirements": [
+  {
+   "str": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Thorns Aura",
+  "cost": 16,
+  "description": "Damage attackers when they strike you.",
+  "unlockAbility": "ThornsAuraAbility"
+ }
+}

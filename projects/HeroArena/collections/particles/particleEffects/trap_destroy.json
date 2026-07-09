@@ -1,0 +1,31 @@
+{
+  "title": "Trap Destroy",
+  "category": "physical",
+  "tags": [
+    "trap",
+    "break"
+  ],
+  "particleEffectData": {
+    "count": 14,
+    "lifetime": 0.6,
+    "scale": 9,
+    "scaleMultiplier": 1.0,
+    "startColor": "#957453",
+    "endColor": "#4f3b3e",
+    "emitterShape": "point",
+    "emitterRadius": 0,
+    "heightOffset": 10,
+    "velocityXMin": -100,
+    "velocityXMax": 100,
+    "velocityYMin": 60,
+    "velocityYMax": 150,
+    "velocityZMin": -100,
+    "velocityZMax": 100,
+    "gravity": 200,
+    "drag": 0.9,
+    "fadeOut": true,
+    "scaleOverTime": false,
+    "blending": "normal"
+  },
+  "fileName": "trap_destroy"
+}

@@ -1,0 +1,22 @@
+{
+ "id": "pool_ab_ShadowStrikeAbility",
+ "title": "Shadow Strike",
+ "description": "Teleport behind an enemy and deal critical damage",
+ "cost": 20,
+ "requirements": [
+  {
+   "dex": {
+    "min": 1
+   },
+   "weaponType": [
+    "dagger"
+   ]
+  }
+ ],
+ "tech": {
+  "title": "Shadow Strike",
+  "cost": 20,
+  "description": "Teleport behind an enemy and deal critical damage",
+  "unlockAbility": "ShadowStrikeAbility"
+ }
+}

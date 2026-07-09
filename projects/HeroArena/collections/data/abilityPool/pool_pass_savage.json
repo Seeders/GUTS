@@ -1,0 +1,26 @@
+{
+ "id": "pool_pass_savage",
+ "title": "Savage Blows",
+ "description": "+30% damage, -3 armor",
+ "cost": 14,
+ "requirements": [
+  {
+   "dex": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Savage Blows",
+  "cost": 14,
+  "description": "+30% damage, -3 armor",
+  "statModifiers": {
+   "damage": {
+    "pct": 0.3
+   },
+   "armor": {
+    "add": -3
+   }
+  }
+ }
+}

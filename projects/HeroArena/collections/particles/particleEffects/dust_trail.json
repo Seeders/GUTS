@@ -1,0 +1,31 @@
+{
+  "title": "Dust Trail",
+  "category": "physical",
+  "tags": [
+    "dust",
+    "trail"
+  ],
+  "particleEffectData": {
+    "count": 6,
+    "lifetime": 0.6,
+    "scale": 12,
+    "scaleMultiplier": 1.0,
+    "startColor": "#b09a78",
+    "endColor": "#5a4a38",
+    "emitterShape": "point",
+    "emitterRadius": 0,
+    "heightOffset": 5,
+    "velocityXMin": -25,
+    "velocityXMax": 25,
+    "velocityYMin": 10,
+    "velocityYMax": 50,
+    "velocityZMin": -25,
+    "velocityZMax": 25,
+    "gravity": 40,
+    "drag": 0.9,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "normal"
+  },
+  "fileName": "dust_trail"
+}

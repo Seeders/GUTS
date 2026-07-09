@@ -9,10 +9,17 @@
   "targetType": "ally",
   "animation": "cast",
   "priority": 8,
-  "castTime": 1.0,
+  "castTime": 1,
   "autoTrigger": "injured_ally",
   "healAmount": 80,
   "element": "holy",
-  "castParticleEffectSystems": ["holy_light", "holy_sparkles"],
-  "impactParticleEffectSystems": ["heal_glow", "heal_sparkles", "heal_burst"]
+  "castParticleEffectSystems": [
+    "holy_light",
+    "holy_sparkles"
+  ],
+  "impactParticleEffectSystems": [
+    "heal_glow",
+    "heal_sparkles",
+    "heal_burst"
+  ]
 }

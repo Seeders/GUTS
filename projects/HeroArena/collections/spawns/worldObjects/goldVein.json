@@ -8,19 +8,19 @@
             "shapes": [
               {
                 "color": {
-                  "paletteColor": "greenDColor"
+                  "paletteColor": "Green1Color"
                 },
                 "id": 1
               },
               {
                 "color": {
-                  "paletteColor": "greenDColor"
+                  "paletteColor": "Green1Color"
                 },
                 "id": 2
               },
               {
                 "color": {
-                  "paletteColor": "greenDColor"
+                  "paletteColor": "Green1Color"
                 },
                 "id": 3
               }

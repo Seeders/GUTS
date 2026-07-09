@@ -1,4 +1,5 @@
 {
   "filePath": "/projects/HeroArena/collections/scripts/systems/js/RoundSystem.js",
-  "fileName": "RoundSystem"
+  "fileName": "RoundSystem",
+  "testFilePath": "/projects/HeroArena/collections/scripts/systems/tests/RoundSystem.test.js"
 }

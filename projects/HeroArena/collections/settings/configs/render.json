@@ -1,5 +1,8 @@
 {
   "title": "Render Settings",
-  "renderTypes": ["spriteAnimationSet", "render"],
+  "renderTypes": [
+    "spriteAnimationSet",
+    "render"
+  ],
   "fileName": "render"
 }

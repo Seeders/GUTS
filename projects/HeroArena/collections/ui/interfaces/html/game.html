@@ -58,9 +58,13 @@
             </div>
         </div>
 
-        <!-- Bottom-left: selection panel (when units are selected) above the
-             unit re-buy panel (prep only) -->
+        <!-- Bottom-left: building upgrades (when a building is selected),
+             selection panel (when units are selected), unit re-buy panel -->
         <div id="bottomLeftStack">
+            <div id="buildingTreePanel" class="hidden">
+                <div class="panel-title" id="buildingTreeTitle">Upgrades</div>
+                <div id="buildingTreeBody" class="building-tree-body"></div>
+            </div>
             <div id="selectionPanel" class="hidden">
                 <div class="panel-title" id="selectionTitle">Selection</div>
                 <div id="selectionCards" class="selection-cards"></div>
@@ -68,9 +72,6 @@
                     <button id="formationBtn" title="Cycle the selected squad's formation (rows vs columns)">⬦ Formation</button>
                     <button id="levelUpBtn" title="Level up the selected squad(s) — stats scale with each level">⬆ Level Up</button>
                     <button id="sellUnitBtn" title="Sell the selected unit(s) for a partial gold refund">💰 Sell</button>
-                </div>
-                <div id="buildingActions" class="selection-actions hidden">
-                    <button id="buildingUpgradesBtn" title="View this building's upgrade tree">🔬 Upgrades</button>
                 </div>
                 <div id="selectionHint" class="selection-hint hidden">Left-click the terrain to set the target — Esc cancels</div>
             </div>
@@ -127,7 +128,7 @@
     </div>
 </div>
 
-<!-- Building Upgrade Tree (read-only — purchases happen in the shop) -->
+<!-- Unit technologies overlay (building upgrades live inline in #buildingTreePanel) -->
 <div id="techTreeOverlay" class="arena-overlay hidden">
     <div class="arena-overlay-panel tech-tree-panel">
         <h2 class="arena-overlay-title" id="techTreeTitle">Upgrades</h2>

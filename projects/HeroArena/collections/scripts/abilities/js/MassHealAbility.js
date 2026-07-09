@@ -35,7 +35,7 @@ class MassHealAbility extends GUTS.BaseAbility {
         // Schedule the mass heal to trigger after cast time
         this.game.schedulingSystem.scheduleAction(() => {
             this.performMassHeal(casterEntity, injuredAllies);
-        }, this.castTime, casterEntity);
+        }, 0, casterEntity); // payload at execute — queue already waited to the release point
     }
     
     performMassHeal(casterEntity, targetAllies) {

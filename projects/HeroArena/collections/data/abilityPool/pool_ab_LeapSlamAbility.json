@@ -1,0 +1,25 @@
+{
+ "id": "pool_ab_LeapSlamAbility",
+ "title": "Leap Slam",
+ "description": "Leap into the air and slam down, dealing AoE damage",
+ "cost": 20,
+ "requirements": [
+  {
+   "str": {
+    "min": 1
+   },
+   "weaponType": [
+    "sword",
+    "axe",
+    "dagger",
+    "mace"
+   ]
+  }
+ ],
+ "tech": {
+  "title": "Leap Slam",
+  "cost": 20,
+  "description": "Leap into the air and slam down, dealing AoE damage",
+  "unlockAbility": "LeapSlamAbility"
+ }
+}

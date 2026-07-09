@@ -1,0 +1,31 @@
+{
+  "title": "Blood Burst",
+  "category": "physical",
+  "tags": [
+    "blood",
+    "impact"
+  ],
+  "particleEffectData": {
+    "count": 18,
+    "lifetime": 0.7,
+    "scale": 8,
+    "scaleMultiplier": 1.0,
+    "startColor": "#c01818",
+    "endColor": "#500808",
+    "emitterShape": "point",
+    "emitterRadius": 0,
+    "heightOffset": 18,
+    "velocityXMin": -120,
+    "velocityXMax": 120,
+    "velocityYMin": 60,
+    "velocityYMax": 160,
+    "velocityZMin": -120,
+    "velocityZMax": 120,
+    "gravity": 220,
+    "drag": 0.9,
+    "fadeOut": true,
+    "scaleOverTime": false,
+    "blending": "normal"
+  },
+  "fileName": "blood_burst"
+}

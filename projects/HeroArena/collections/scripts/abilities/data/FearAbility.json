@@ -1,0 +1,25 @@
+{
+  "cooldown": 18,
+  "range": 200,
+  "manaCost": 0,
+  "targetType": "enemy",
+  "animation": "attack",
+  "priority": 5,
+  "castTime": 0.6,
+  "castParticleEffectSystems": [
+    "curse_purple_energy"
+  ],
+  "trailParticleEffectSystems": [],
+  "impactParticleEffectSystems": [
+    "dark_burst",
+    "curse_symbols"
+  ],
+  "expirationParticleEffectSystems": [
+    "shadow_wisps"
+  ],
+  "fileName": "FearAbility",
+  "filePath": "/projects/HeroArena/collections/scripts/abilities/js/FearAbility.js",
+  "name": "Fear",
+  "description": "Strike terror into an enemy, sending it fleeing for a few seconds.",
+  "duration": 4
+}

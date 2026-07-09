@@ -1,0 +1,31 @@
+{
+  "title": "Trap Trigger",
+  "category": "physical",
+  "tags": [
+    "trap",
+    "impact"
+  ],
+  "particleEffectData": {
+    "count": 20,
+    "lifetime": 0.7,
+    "scale": 12,
+    "scaleMultiplier": 1.0,
+    "startColor": "#f2d598",
+    "endColor": "#7d3a49",
+    "emitterShape": "point",
+    "emitterRadius": 0,
+    "heightOffset": 10,
+    "velocityXMin": -110,
+    "velocityXMax": 110,
+    "velocityYMin": 60,
+    "velocityYMax": 160,
+    "velocityZMin": -110,
+    "velocityZMax": 110,
+    "gravity": 180,
+    "drag": 0.9,
+    "fadeOut": true,
+    "scaleOverTime": false,
+    "blending": "additive"
+  },
+  "fileName": "trap_trigger"
+}

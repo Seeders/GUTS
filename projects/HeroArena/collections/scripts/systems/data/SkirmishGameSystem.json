@@ -3,5 +3,6 @@
   "fileName": "SkirmishGameSystem",
   "services": [
     "startSkirmishGame"
-  ]
+  ],
+  "testFilePath": "/projects/HeroArena/collections/scripts/systems/tests/SkirmishGameSystem.test.js"
 }

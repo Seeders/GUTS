@@ -1,0 +1,23 @@
+{
+  "cooldown": 8,
+  "range": 200,
+  "manaCost": 0,
+  "targetType": "self",
+  "animation": "cast",
+  "priority": 9,
+  "castTime": 0.1,
+  "castParticleEffectSystems": [
+    "holy_sparkles"
+  ],
+  "trailParticleEffectSystems": [],
+  "impactParticleEffectSystems": [
+    "holy_sparkles"
+  ],
+  "expirationParticleEffectSystems": [],
+  "fileName": "ArcaneBlinkAbility",
+  "filePath": "/projects/HeroArena/collections/scripts/abilities/js/ArcaneBlinkAbility.js",
+  "name": "Arcane Blink",
+  "description": "When struck, teleport away from the attacker.",
+  "blinkDistance": 150,
+  "reactWindow": 1.0
+}

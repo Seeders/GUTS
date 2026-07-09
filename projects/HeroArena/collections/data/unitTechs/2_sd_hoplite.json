@@ -10,21 +10,17 @@
   },
   {
    "id": "hop_pikes",
-   "title": "Sky-Piercing Pikes",
+   "title": "Armor Breaker",
    "cost": 15,
-   "description": "Hoplites can strike flying units",
-   "grantAntiAir": true
+   "description": "Unlocks Armor Breaker",
+   "unlockAbility": "SunderArmorAbility"
   },
   {
    "id": "hop_wall",
-   "title": "Living Wall",
+   "title": "Shield Wall",
    "cost": 14,
-   "description": "+40% max HP",
-   "statModifiers": {
-    "maxHP": {
-     "pct": 0.4
-    }
-   }
+   "description": "Unlocks Shield Wall",
+   "unlockAbility": "ShieldWallAbility"
   }
  ],
  "fileName": "2_sd_hoplite"

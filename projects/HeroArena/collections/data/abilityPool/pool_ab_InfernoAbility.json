@@ -1,0 +1,19 @@
+{
+ "id": "pool_ab_InfernoAbility",
+ "title": "Inferno",
+ "description": "Creates a blazing inferno that damages all enemies in a large area",
+ "cost": 16,
+ "requirements": [
+  {
+   "int": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Inferno",
+  "cost": 16,
+  "description": "Creates a blazing inferno that damages all enemies in a large area",
+  "unlockAbility": "InfernoAbility"
+ }
+}

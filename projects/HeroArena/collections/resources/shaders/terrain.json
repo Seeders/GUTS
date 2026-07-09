@@ -4,8 +4,14 @@
   "vertexScript": "varying vec2 vUv;\n#include <common>\n#include <fog_pars_vertex>\n\nvoid main() {\n    vUv = uv;\n    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);\n    gl_Position = projectionMatrix * mvPosition;\n    #include <fog_vertex>\n}",
   "uniforms": {
     "ambientLightColor": {
-      "value": [1, 1, 1]
+      "value": [
+        1,
+        1,
+        1
+      ]
     }
   },
-  "vectors": ["ambientLightColor"]
+  "vectors": [
+    "ambientLightColor"
+  ]
 }

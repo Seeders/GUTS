@@ -1,0 +1,19 @@
+{
+ "id": "pool_ab_ConsecrationAbility",
+ "title": "Consecration",
+ "description": "Sanctify the ground, creating a zone that damages undead and heals the living",
+ "cost": 15,
+ "requirements": [
+  {
+   "str": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Consecration",
+  "cost": 15,
+  "description": "Sanctify the ground, creating a zone that damages undead and heals the living",
+  "unlockAbility": "ConsecrationAbility"
+ }
+}

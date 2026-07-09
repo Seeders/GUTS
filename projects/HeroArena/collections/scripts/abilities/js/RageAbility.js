@@ -14,9 +14,8 @@ class RageAbility extends GUTS.BaseAbility {
         if (enemies.length === 0) return false;
         
         // Don't stack rage buffs - check if already raged
-        const existingBuff = this.game.getComponent(casterEntity, "buff");
         const enums = this.game.getEnums();
-        if (existingBuff && existingBuff.buffType === enums.buffTypes.rage) return false;
+        if (this.hasBuff(casterEntity, enums.buffTypes.rage)) return false;
         
         return true;
     }
@@ -33,7 +32,7 @@ class RageAbility extends GUTS.BaseAbility {
         // Schedule the rage activation after cast time
         this.game.schedulingSystem.scheduleAction(() => {
             this.activateRage(casterEntity);
-        }, this.castTime, casterEntity);
+        }, 0, casterEntity); // payload at execute — queue already waited to the release point
     }
     
     activateRage(casterEntity) {
@@ -49,7 +48,7 @@ class RageAbility extends GUTS.BaseAbility {
         const endTime = currentTime + this.rageDuration;
 
         const enums = this.game.getEnums();
-        this.game.addComponent(casterEntity, "buff", {
+        this.applyBuff(casterEntity, {
             buffType: enums.buffTypes.rage,
             endTime: endTime,
             appliedTime: currentTime,
@@ -76,9 +75,8 @@ class RageAbility extends GUTS.BaseAbility {
         const casterPos = transform?.position;
         
         // Check if entity still exists and has the buff
-        const buff = this.game.getComponent(casterEntity, "buff");
         const enums = this.game.getEnums();
-        if (!buff || buff.buffType !== enums.buffTypes.rage) return;
+        if (!this.hasBuff(casterEntity, enums.buffTypes.rage)) return;
 
         if (casterPos) {
             // Create fading effect

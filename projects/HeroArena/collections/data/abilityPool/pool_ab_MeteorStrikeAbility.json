@@ -1,0 +1,19 @@
+{
+ "id": "pool_ab_MeteorStrikeAbility",
+ "title": "Meteor Strike",
+ "description": "Devastating strike on the densest enemy formation",
+ "cost": 18,
+ "requirements": [
+  {
+   "int": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Meteor Strike",
+  "cost": 18,
+  "description": "Devastating strike on the densest enemy formation",
+  "unlockAbility": "MeteorStrikeAbility"
+ }
+}

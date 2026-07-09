@@ -32,7 +32,7 @@ class BashAbility extends GUTS.BaseAbility {
         // Schedule the bash impact
         this.game.schedulingSystem.scheduleAction(() => {
             this.performBash(casterEntity, target);
-        }, this.castTime, casterEntity);
+        }, 0, casterEntity); // payload at execute — queue already waited to the release point
     }
 
     findClosestEnemy(casterEntity, enemies) {
@@ -82,7 +82,7 @@ class BashAbility extends GUTS.BaseAbility {
 
         // Apply stun using buff system
         const enums = this.game.getEnums();
-        this.game.addComponent(targetId, "buff", {
+        this.applyBuff(targetId, {
             buffType: enums.buffTypes.stunned,
             endTime: this.game.state.now + this.stunDuration,
             appliedTime: this.game.state.now,
@@ -102,18 +102,14 @@ class BashAbility extends GUTS.BaseAbility {
     }
 
     removeStun(targetId) {
+        // Expiry handled centrally by BuffEffectsSystem._reapExpiredBuffs.
         const enums = this.game.getEnums();
-        if (this.game.hasComponent(targetId, "buff")) {
-            const buff = this.game.getComponent(targetId, "buff");
-            if (buff && buff.buffType === enums.buffTypes.stunned) {
-                this.game.removeComponent(targetId, "buff");
-
-                // Visual effect when stun expires
-                const transform = this.game.getComponent(targetId, "transform");
-                const targetPos = transform?.position;
-                if (targetPos) {
-                    this.playConfiguredEffects('expiration', targetPos);
-                }
+        if (this.hasBuff(targetId, enums.buffTypes.stunned)) {
+            // Visual effect when stun expires
+            const transform = this.game.getComponent(targetId, "transform");
+            const targetPos = transform?.position;
+            if (targetPos) {
+                this.playConfiguredEffects('expiration', targetPos);
             }
         }
     }

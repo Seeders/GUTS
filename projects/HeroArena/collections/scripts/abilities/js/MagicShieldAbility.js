@@ -7,8 +7,7 @@ class MagicShieldAbility extends GUTS.BaseAbility {
     canExecute(casterEntity) {
         if (!this._meetsWeaponRequirement(casterEntity)) return false;
         const enums = this.game.getEnums();
-        const buff = this.game.getComponent(casterEntity, "buff");
-        return !(buff && buff.buffType === enums.buffTypes.magic_shield);
+        return !this.hasBuff(casterEntity, enums.buffTypes.magic_shield);
     }
 
     execute(casterEntity) {
@@ -20,42 +19,41 @@ class MagicShieldAbility extends GUTS.BaseAbility {
         this.logAbilityUsage(casterEntity, "Wraps in arcane shielding!");
 
         this.game.schedulingSystem.scheduleAction(() => {
-            this.applyBuff(casterEntity);
-        }, this.castTime, casterEntity);
+            this.applyMagicShieldBuff(casterEntity);
+        }, 0, casterEntity); // payload at execute — queue already waited to the release point
     }
 
-    applyBuff(casterEntity) {
+    // Renamed from applyBuff to avoid shadowing the BaseAbility buff-store helper.
+    applyMagicShieldBuff(casterEntity) {
         const enums = this.game.getEnums();
-        const existing = this.game.getComponent(casterEntity, "buff");
-        if (existing && existing.buffType === enums.buffTypes.magic_shield) {
-            existing.endTime = this.game.state.now + this.duration;
-            existing.appliedTime = this.game.state.now;
-            return;
-        }
-        this.game.addComponent(casterEntity, "buff", {
+        const refreshing = this.hasBuff(casterEntity, enums.buffTypes.magic_shield);
+        this.applyBuff(casterEntity, {
             buffType: enums.buffTypes.magic_shield,
             endTime: this.game.state.now + this.duration,
             appliedTime: this.game.state.now,
             stacks: 1,
             sourceEntity: casterEntity
         });
+        if (refreshing) return; // refreshed in place — no new visual or expiration schedule
         const transform = this.game.getComponent(casterEntity, "transform");
         if (transform?.position) this.playConfiguredEffects('buff', transform.position);
 
         this.game.schedulingSystem.scheduleAction(() => {
-            this.removeBuff(casterEntity);
+            this.expireMagicShield(casterEntity);
         }, this.duration, casterEntity);
     }
 
-    removeBuff(casterEntity) {
+    // Renamed from removeBuff to avoid shadowing the BaseAbility buff-store helper.
+    expireMagicShield(casterEntity) {
         const enums = this.game.getEnums();
-        if (!this.game.hasComponent(casterEntity, "buff")) return;
-        const buff = this.game.getComponent(casterEntity, "buff");
-        if (buff && buff.buffType === enums.buffTypes.magic_shield) {
-            this.game.removeComponent(casterEntity, "buff");
-            const t = this.game.getComponent(casterEntity, "transform");
-            if (t?.position) this.playConfiguredEffects('expiration', t.position);
-        }
+        const buff = this.getBuff(casterEntity, enums.buffTypes.magic_shield);
+        if (!buff) return;
+        // Refreshed since this schedule was armed — the later expiry (or the
+        // central reaper) owns removal now.
+        if (buff.endTime - (this.game.state.now || 0) > 0.1) return;
+        this.removeBuff(casterEntity, enums.buffTypes.magic_shield);
+        const t = this.game.getComponent(casterEntity, "transform");
+        if (t?.position) this.playConfiguredEffects('expiration', t.position);
     }
 }
 

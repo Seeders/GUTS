@@ -31,7 +31,7 @@ class FireStormAbility extends GUTS.BaseAbility {
         // Schedule the firestorm to hit after cast time
         this.game.schedulingSystem.scheduleAction(() => {
             this.performFirestorm(casterEntity, clusterPos);
-        }, this.castTime, casterEntity);
+        }, 0, casterEntity); // payload at execute — queue already waited to the release point
     }
     
     performFirestorm(casterEntity, targetPos) {

@@ -4,8 +4,33 @@
   "value": 90,
   "icon": "warcry",
   "perUnitType": true,
-  "requirements": [ { "str": { "min": 2 }, "int": { "min": 2 } } ],
-  "target": { "str": { "min": 2 }, "int": { "min": 2 } },
-  "statModifiers": { "damage": { "pct": 0.18 }, "maxHP": { "pct": 0.12 } },
-  "requiresBuildings": [ "barracks" ]
+  "requirements": [
+    {
+      "str": {
+        "min": 2
+      },
+      "int": {
+        "min": 2
+      }
+    }
+  ],
+  "target": {
+    "str": {
+      "min": 2
+    },
+    "int": {
+      "min": 2
+    }
+  },
+  "statModifiers": {
+    "damage": {
+      "pct": 0.18
+    },
+    "maxHP": {
+      "pct": 0.12
+    }
+  },
+  "requiresBuildings": [
+    "barracks"
+  ]
 }

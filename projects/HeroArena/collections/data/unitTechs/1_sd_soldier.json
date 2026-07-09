@@ -5,7 +5,7 @@
    "id": "sol_shieldwall",
    "title": "Shield Wall",
    "cost": 13,
-   "description": "Unlocks Shield Wall: brace against damage",
+   "description": "Unlocks Shield Wall: the squad links shields and shares damage",
    "unlockAbility": "ShieldWallAbility"
   },
   {

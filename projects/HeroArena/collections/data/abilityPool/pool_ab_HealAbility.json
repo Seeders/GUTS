@@ -1,0 +1,19 @@
+{
+ "id": "pool_ab_HealAbility",
+ "title": "Heal",
+ "description": "Restores health to the most injured ally",
+ "cost": 12,
+ "requirements": [
+  {
+   "int": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Heal",
+  "cost": 12,
+  "description": "Restores health to the most injured ally",
+  "unlockAbility": "HealAbility"
+ }
+}

@@ -44,6 +44,7 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
         'townhallLevel',
         'getPlacementsForSide',
         'applySquadTargetPosition',
+        'applyUnitTargetPosition',
         'scheduleAction',
         'reapplyStandingOrders',
         'autoSpawnGoldMines',
@@ -56,10 +57,12 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
         'placeBuildingAuto'
     ];
 
-    // Commander HP: each surviving enemy unit deals its shop value x level as
-    // damage after every battle. First commander at 0 loses. Sized like the
-    // Mechabellum HQ (~15 rounds of base income) for ~10-14 round matches.
-    static COMMANDER_HP = 210;
+    // Commander HP: each surviving enemy unit deals its deployment supply cost as
+    // damage after every battle. First commander at 0 loses. Sized in raw
+    // Mechabellum supply — starting tower HP there runs ~4100-5000 (base +
+    // specialist + unit set); our median sits ~3500. Each leader overrides it via
+    // LEADERS[].hp — strong perks bring less HP, weak ones more (3000-4000).
+    static COMMANDER_HP = 3500;
 
     // AI prep-phase formation for NEWLY BOUGHT units (veterans hold their spots).
     static FORM_SPACING = 48;        // gap between units along a row
@@ -119,7 +122,29 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
         ));
         this.pendingLeaderSelections = {};
         this.game.state.phase = this.enums.gamePhase.leaderSelect;
-        const payload = { options: AutobattlerRoundSystem.LEADERS };
+
+        // Draft: each player is offered 3 random commanders (not all 9), and each
+        // commander comes with 2 random tier-1 starting squads shown on its card.
+        // The draft is stored per player so confirm can grant the chosen squads.
+        const draftRng = this.game.rng.strand('leaderDraft');
+        draftRng.reseed(GUTS.SeededRandom.combineSeed(
+            this.game.state.gameSeed || 1,
+            GUTS.SeededRandom.hashString('leaderDraft')
+        ));
+        const draftsByPlayer = {};
+        for (const entityId of this.call.getPlayerEntities()) {
+            const stats = this.game.getComponent(entityId, 'playerStats');
+            if (!stats) continue;
+            // Seed the player's chosen deck (loadout) for the whole match. Null ⇒ no
+            // deck ⇒ full global content (pre-deck behavior). Read here because
+            // skirmishConfig is set by now and every downstream reader runs after.
+            stats.deck = this.game.state.skirmishConfig?.decks?.[stats.playerId] || null;
+            const draft = this._rollLeaderDraft(draftRng, stats);
+            stats.leaderDraft = draft;
+            draftsByPlayer[stats.playerId] = draft;
+        }
+
+        const payload = { draftsByPlayer };
         this.call.broadcastToRoom(null, 'LEADER_SELECT_START', payload);
         // Direct trigger for same-instance delivery (local mode + server-side in multiplayer)
         this.game.triggerEvent('onLeaderSelectStart', payload);
@@ -127,11 +152,36 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
         // setTimeout: the headless run loop is a tight await chain that starves
         // wall-clock timers, and game-time delays keep replays deterministic.
         for (const pid of this.getAIPlayerIds()) {
+            const draft = draftsByPlayer[pid] || [];
+            // Forced pick only honored if it survived the deck's ban filter (in the draft).
             const forced = this.game.state.skirmishConfig?.leaders?.[pid];
-            const leader = AutobattlerRoundSystem.LEADERS.find(l => l.id === forced)
-                || this.game.rng.strand('ai').pick(AutobattlerRoundSystem.LEADERS);
-            this.call.scheduleAction(() => this.confirmLeaderSelection(pid, leader.id), 0.1, null);
+            const pick = (forced && draft.find(d => d.id === forced) && forced)
+                || draft[Math.floor(this.game.rng.strand('ai').next() * draft.length)]?.id
+                || draft[0]?.id
+                || AutobattlerRoundSystem.LEADERS[0]?.id;
+            this.call.scheduleAction(() => this.confirmLeaderSelection(pid, pick), 0.1, null);
         }
+    }
+
+    // Roll a 4-commander draft: 4 distinct random leaders, each carrying 2 random
+    // tier-1 starting squads. Deterministic given the strand's seed. The player's
+    // deck (if any) bans commanders from the pool (units are never restricted).
+    _rollLeaderDraft(rng, stats = null) {
+        const banned = new Set(stats?.deck?.bannedCommanders || []);
+        const pool = AutobattlerRoundSystem.LEADERS.filter(l => !banned.has(l.id));
+        const units = this.collections.units || {};
+        const t1 = Object.keys(units).filter(id =>
+            GUTS.ArmyShopSystem.unitTier(id) === 1 && !GUTS.ArmyShopSystem.NOT_OFFERED?.has?.(id));
+        const draft = [];
+        for (let i = 0; i < 4 && pool.length; i++) {
+            const l = pool.splice(Math.floor(rng.next() * pool.length), 1)[0];
+            const squads = [], sp = t1.slice();
+            for (let j = 0; j < 2 && sp.length; j++) {
+                squads.push(sp.splice(Math.floor(rng.next() * sp.length), 1)[0]);
+            }
+            draft.push({ id: l.id, label: l.label, bonus: l.bonus, hp: l.hp, startingSquads: squads });
+        }
+        return draft;
     }
 
     // Numeric player ids controlled by the built-in AI.
@@ -158,16 +208,40 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
         }
         const leaderDef = AutobattlerRoundSystem.LEADERS.find(l => l.id === leaderId);
         if (!leaderDef) return { success: false, reason: 'invalid_leader' };
+        // Reject a commander the player's deck bans.
+        for (const eid of this.call.getPlayerEntities()) {
+            const st = this.game.getComponent(eid, 'playerStats');
+            if (st?.playerId !== numericPlayerId) continue;
+            if ((st.deck?.bannedCommanders || []).includes(leaderId)) {
+                return { success: false, reason: 'commander_banned' };
+            }
+            break;
+        }
 
         this.pendingLeaderSelections[numericPlayerId] = leaderId;
         this.call.selectLeader(numericPlayerId, leaderId);
 
+        // Queue the chosen commander's two starting squads (granted round 1 in
+        // ArmyShopSystem._applyLeaderRoundPerks). Only the drafted pick carries them.
+        for (const entityId of this.call.getPlayerEntities()) {
+            const stats = this.game.getComponent(entityId, 'playerStats');
+            if (stats?.playerId !== numericPlayerId) continue;
+            const entry = (stats.leaderDraft || []).find(d => d.id === leaderId);
+            stats.pendingStartingSquads = entry?.startingSquads ? [...entry.startingSquads] : [];
+            break;
+        }
+
         if (Object.keys(this.pendingLeaderSelections).length >= 2) {
-            // Initialize commander HP for both players, then straight to prep
+            // Initialize commander HP for both players — per-leader (Mechabellum:
+            // specialist HP compensates perk strength) — then straight to prep
             // (the building pick is gone — units gate on tier unlocks instead).
             for (const entityId of this.call.getPlayerEntities()) {
                 const stats = this.game.getComponent(entityId, 'playerStats');
-                if (stats) stats.commanderHP = AutobattlerRoundSystem.COMMANDER_HP;
+                if (!stats) continue;
+                const leaderDef = AutobattlerRoundSystem.LEADERS.find(l => l.id === stats.leaderId);
+                const hp = leaderDef?.hp || AutobattlerRoundSystem.COMMANDER_HP;
+                stats.commanderHP = hp;
+                stats.commanderMaxHP = hp;
             }
             // Campaign: the run system owns the flow from here (map screen,
             // node entry, resume) — no immediate prep.
@@ -181,16 +255,45 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
     }
 
     // The attribute buildings a player may still pick (not already owned).
-    _availableBuildingIds(numericPlayerId) {
-        const owned = new Set(this.call.getOwnedBuildingIds?.(numericPlayerId) || []);
-        return AutobattlerRoundSystem.ATTRIBUTE_BUILDINGS.filter(id => !owned.has(id));
+    _statsFor(numericPlayerId) {
+        for (const eid of this.call.getPlayerEntities()) {
+            const s = this.game.getComponent(eid, 'playerStats');
+            if (s?.playerId === numericPlayerId) return s;
+        }
+        return null;
     }
 
-    // Option cards for the select overlay: all three attribute buildings (already-owned
-    // picks are rejected server-side in confirmHeroSelection, so one broadcast is valid
-    // even when players own different buildings at a milestone).
-    _buildingSelectOptions() {
-        return AutobattlerRoundSystem.ATTRIBUTE_BUILDINGS.map(id => {
+    // Attribute buildings this player's deck permits (deck ⇒ intersect with the deck's
+    // buildings; no deck ⇒ all three).
+    _attributeBuildingsFor(numericPlayerId) {
+        const deck = this._statsFor(numericPlayerId)?.deck;
+        const base = AutobattlerRoundSystem.ATTRIBUTE_BUILDINGS;
+        // No deck, or an incomplete deck with no building ⇒ all buildings (don't brick
+        // the building pick). A deck with a building restricts to it.
+        if (!deck || !Array.isArray(deck.buildings) || !deck.buildings.length) return base;
+        const allow = new Set(deck.buildings.map(b => b.buildingId));
+        return base.filter(id => allow.has(id));
+    }
+
+    // The local human player id (non-AI), used to build the shared select overlay.
+    _humanPid() {
+        const ai = new Set(this.getAIPlayerIds());
+        for (const eid of this.call.getPlayerEntities()) {
+            const s = this.game.getComponent(eid, 'playerStats');
+            if (s && !ai.has(s.playerId)) return s.playerId;
+        }
+        return 0;
+    }
+
+    _availableBuildingIds(numericPlayerId) {
+        const owned = new Set(this.call.getOwnedBuildingIds?.(numericPlayerId) || []);
+        return this._attributeBuildingsFor(numericPlayerId).filter(id => !owned.has(id));
+    }
+
+    // Option cards for the select overlay, built for the local human's deck (already-owned
+    // picks are rejected server-side in confirmHeroSelection, so one broadcast is valid).
+    _buildingSelectOptions(numericPlayerId = this._humanPid()) {
+        return this._attributeBuildingsFor(numericPlayerId).map(id => {
             const def = this.collections.buildings?.[id] || {};
             return { id, label: def.title || id, archetype: (def.archetype || '').toUpperCase() };
         });
@@ -246,7 +349,7 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
         }
 
         const def = this.collections.buildings?.[buildingId];
-        if (!AutobattlerRoundSystem.ATTRIBUTE_BUILDINGS.includes(buildingId) || def?.buyable !== true) {
+        if (!this._attributeBuildingsFor(numericPlayerId).includes(buildingId) || def?.buyable !== true) {
             return { success: false, reason: 'invalid_building' };
         }
         if ((this.call.getOwnedBuildingIds?.(numericPlayerId) || []).includes(buildingId)) {
@@ -339,18 +442,47 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
             if (enemyStats) damageToTeam[enemyStats.team] = 0;
         }
 
+        // Compute (but DON'T apply yet) each side's commander damage: the HP
+        // pool drains visually as the orbs land, so the real subtraction
+        // happens when the volley finishes (end of the hold below) — the bar
+        // never snaps down and refills.
         const hpReport = [];
+        const pendingDamage = [];
         for (const entityId of this.call.getPlayerEntities()) {
             const stats = this.game.getComponent(entityId, 'playerStats');
             if (!stats) continue;
             const dmg = damageToTeam[stats.team] || 0;
-            stats.commanderHP = Math.max(0,
+            const hpAfter = Math.max(0,
                 (stats.commanderHP ?? AutobattlerRoundSystem.COMMANDER_HP) - dmg);
+            pendingDamage.push({ stats, hpAfter });
             hpReport.push({ playerId: stats.playerId, team: stats.team,
-                damage: dmg, commanderHP: stats.commanderHP });
+                damage: dmg, commanderHP: hpAfter });
         }
+        const applyCommanderDamage = () => {
+            for (const p of pendingDamage) p.stats.commanderHP = p.hpAfter;
+        };
 
-        const roundResult = { round: this.game.state.round, winningTeam, report: hpReport };
+        // Per-survivor orb data for the client damage-orb effect (Mechabellum):
+        // each surviving squad member launches an orb from its battlefield
+        // position at the victim's commander HP bar. Integer damages sum
+        // exactly to the report's damage, so the bar drain matches orb-by-orb.
+        const orbs = [];
+        const addOrbs = (survivors, victimTeam) => {
+            if (!(damageToTeam[victimTeam] > 0)) return;   // campaign zeroes the enemy side
+            let acc = 0, given = 0;
+            for (const { eid, raw } of this._survivorDamageBreakdown(survivors)) {
+                acc += raw;
+                const dmg = Math.round(acc) - given;
+                given += dmg;
+                const pos = this.game.getComponent(eid, 'transform')?.position;
+                if (!pos || dmg <= 0) continue;
+                orbs.push({ x: pos.x, y: pos.y || 0, z: pos.z, damage: dmg, victimTeam });
+            }
+        };
+        addOrbs(rightSurvivors, this.enums.team.left);
+        addOrbs(leftSurvivors, this.enums.team.right);
+
+        const roundResult = { round: this.game.state.round, winningTeam, report: hpReport, orbs };
         this.call.broadcastToRoom(null, 'ROUND_RESULT', roundResult);
         this.game.triggerEvent('onRoundResult', roundResult);
 
@@ -358,6 +490,8 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
             // Campaign node resolution: hand the result to the run system
             // (map return / reward / replay / run end). Skip streaks, the
             // dual-commander game-over check, and the skirmish round loop.
+            // No orb hold here — damage lands immediately.
+            applyCommanderDamage();
             this.call.despawnBattleHeroes();
             const playerTeam = (() => {
                 for (const eid of this.call.getPlayerEntities()) {
@@ -373,49 +507,94 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
         // Update win/loss streaks (leader bonuses key off these).
         this._updateStreaks(winningTeam);
 
-        // Check game over (a commander at 0 HP)
-        if (this._checkGameOver()) return;
+        // Hold the battlefield for a beat so the client damage-orb effect can
+        // play over the surviving armies, then resolve the round for real.
+        const holdSecs = orbs.length ? 2.5 : 0.5;
+        this.call.scheduleAction(() => {
+            // The battlefield stayed frozen (battleIntermission) with the
+            // battle-end guard held through the hold; prep re-opens normally.
+            this.game.state.battleIntermission = false;
 
-        // Despawn this round's entities before next round
-        this.call.despawnBattleHeroes();
+            // The orb volley has landed: NOW the commander damage is real.
+            applyCommanderDamage();
 
-        // Advance round counter
-        this.game.state.round += 1;
-        this.startPrep();
+            // Check game over (a commander at 0 HP)
+            if (this._checkGameOver()) return;
+
+            // Despawn this round's entities before next round
+            this.call.despawnBattleHeroes();
+
+            // Advance round counter
+            this.game.state.round += 1;
+            this.startPrep();
+        }, holdSecs, null);
     }
 
-    // Total commander damage dealt by a list of surviving units: each unit's
-    // shop value × its level — matching the stat scaling, where a rank-N squad
-    // is N× as powerful (and N× as expensive) as a fresh one.
-    _survivorDamage(survivorIds) {
-        let total = 0;
+    // Survivor damage scale. Mechabellum-exact is 1.0 (survivors deal their
+    // deployment cost) — but Mechabellum's pacing relies on close 1v1s where
+    // only a fraction of an army survives a round. Against our AI, one-sided
+    // rounds leave the WHOLE army standing every round, and cumulative-army
+    // damage grows quadratically (dead by round 4). Half cost restores the
+    // intended pacing: total stomps end ~round 5-6, close games 10-14.
+    static SURVIVOR_DAMAGE_SCALE = 0.5;
+
+    // Commander damage carried by each surviving unit: its squad's DEPLOYMENT
+    // price (scaled), split across members — no level/rank multiplier, and
+    // giants deal slightly less than cost (Mechabellum: 400-supply Fortress
+    // deals 350 → ×0.875 on tiers 3-4).
+    _survivorDamageBreakdown(survivorIds) {
+        const Shop = this.game.armyShopSystem?.constructor;
+        const scale = AutobattlerRoundSystem.SURVIVOR_DAMAGE_SCALE;
+        const out = [];
         for (const eid of survivorIds) {
             const unitTypeComp = this.game.getComponent(eid, 'unitType');
             const def = this.game.getUnitTypeDef?.(unitTypeComp);
-            const squadPrice = Math.max(1, Math.ceil((def?.value || 25) / 5)); // shop-cost scale
+            const squadPrice = Shop?.unitPrice
+                ? Shop.unitPrice(def?.id, def)
+                : (Shop?.shopCost ? Shop.shopCost(def?.value || 25)
+                    : Math.max(1, Math.ceil((def?.value || 25) / 5 * (100 / 7)))); // supply scale
             const members = Math.max(1, (def?.squadWidth || 1) * (def?.squadHeight || 1));
-            const level = this.game.getComponent(eid, 'heroRosterInfo')?.level || 1;
-            total += (squadPrice / members) * level;   // each member carries its share
+            const giantFactor = (Shop?.unitTier?.(def?.id) >= 3) ? 0.875 : 1;
+            out.push({ eid, raw: (squadPrice / members) * giantFactor * scale });   // each member carries its share
         }
-        return Math.round(total);
+        return out;
+    }
+
+    _survivorDamage(survivorIds) {
+        return Math.round(this._survivorDamageBreakdown(survivorIds)
+            .reduce((s, u) => s + u.raw, 0));
     }
 
     // Battles are fully automatic (no player orders): at battle start EVERY
     // squad on BOTH teams gets a single attack-move at the enemy's base. Units
     // engage whatever they meet on the way; tactics live in deployment.
     onBattleStart() {
+        // NOTE: no server/local gate — battle orders and ability lists are
+        // deterministic sim state that multiplayer clients must apply too.
         const teams = [this.enums.team.left, this.enums.team.right];
         for (const team of teams) {
             this._issueBattleOrders(team);
         }
         this._nextRetargetAt = (this.game.state.now || 0) + AutobattlerRoundSystem.RETARGET_INTERVAL;
+
+        // Rebuild every roster unit's ability list from owned techs. Spawn-time
+        // def abilities can land AFTER the prep-phase rebuild (post-creation
+        // setup is async), which silently gave respawned units their full def
+        // ability list for free — making ability techs look like they did
+        // nothing. By battle start all setup is done, so this pass is final.
+        for (const eid of this.game.getEntitiesWith('heroRosterInfo')) {
+            if (this.game.entityAlive?.[eid] !== 1) continue;
+            this.call.applyArmyAbilities?.(eid);
+        }
     }
 
-    // Mechabellum target flow: the MARCH objective is always a structure —
-    // each squad advances on its nearest living enemy building (then the
-    // base when none stand), fighting whatever units enter vision along the
-    // way (the order tree yields to combat). When a building falls, squads
-    // roll on to the next nearest one instead of idling at the rubble.
+    // March flow: each squad advances on its nearest living enemy PRESENCE —
+    // units and structures compete on pure distance — fighting whatever enters
+    // vision along the way (the order tree yields to combat). Units count as
+    // march objectives so a fast flyer with an empty vision bubble turns
+    // toward the closest enemy squad instead of beelining across the map to a
+    // building; structures still get attacked when they're the nearest thing
+    // left standing.
     static RETARGET_INTERVAL = 2;
 
     update() {
@@ -426,15 +605,18 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
         this._nextRetargetAt = now + AutobattlerRoundSystem.RETARGET_INTERVAL;
 
         for (const team of [this.enums.team.left, this.enums.team.right]) {
-            // March on buildings while any stand; once both are rubble, hunt
-            // down the nearest enemy units to finish the round.
-            let targets = this._livingEnemyBuildingPositions(team);
-            if (targets.length === 0) targets = this._livingEnemyUnitPositions(team);
+            // Nearest enemy presence wins — units and buildings on equal
+            // footing, matching in-vision combat targeting.
+            const targets = this._livingEnemyBuildingPositions(team)
+                .concat(this._livingEnemyUnitPositions(team));
             if (targets.length === 0) continue;
             for (const s of this._movableSquadsForTeam(team)) {
                 const anchor = s.pos;
                 let best = null, bestD = Infinity;
                 for (const t of targets) {
+                    // Never march at something the squad can't attack — a
+                    // ground-only squad chasing a fairy just stands under it.
+                    if (t.isFlying && !s.canHitAir) continue;
                     const d = (t.x - anchor.x) ** 2 + (t.z - anchor.z) ** 2;
                     if (d < bestD) { bestD = d; best = t; }
                 }
@@ -443,7 +625,43 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
                         { x: best.x, z: best.z }, { isMoveOrder: true }, now);
                 }
             }
+            // Summons (raised/reassembled skeletons, wolves, …) belong to no
+            // placement, so the squad loop above never reaches them — without
+            // their own march order they idle once nearby enemies are dead.
+            for (const eid of this._movableSummonsForTeam(team)) {
+                const anchor = this.game.getComponent(eid, 'transform')?.position;
+                if (!anchor) continue;
+                const summonHitsAir = this._canHitAir(eid);
+                let best = null, bestD = Infinity;
+                for (const t of targets) {
+                    if (t.isFlying && !summonHitsAir) continue;
+                    const d = (t.x - anchor.x) ** 2 + (t.z - anchor.z) ** 2;
+                    if (d < bestD) { bestD = d; best = t; }
+                }
+                if (best) {
+                    this.call.applyUnitTargetPosition(eid,
+                        { x: best.x, z: best.z }, { isMoveOrder: true }, now);
+                }
+            }
         }
+    }
+
+    // Living, mobile summons on `team` (no placement — see retarget loop).
+    _movableSummonsForTeam(team) {
+        const out = [];
+        for (const eid of this.game.getEntitiesWith('summoned')) {
+            if (this.game.entityAlive?.[eid] !== 1) continue;
+            const t = this.game.getComponent(eid, 'team');
+            if (!t || t.team !== team) continue;
+            if (this.game.getComponent(eid, 'buildingOwner')) continue;
+            const hp = this.game.getComponent(eid, 'health');
+            if (!hp || hp.current <= 0) continue;
+            const ds = this.game.getComponent(eid, 'deathState');
+            if (ds && ds.state !== this.enums.deathState.alive) continue;
+            out.push(eid);
+        }
+        out.sort((a, b) => a - b);
+        return out;
     }
 
     // On-death unit-tech mechanics (Mechabellum-style). Rules:
@@ -465,8 +683,11 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
         if (!stats) return;
         const ownedTechs = stats.unitTechs?.[def.id];
         if (!ownedTechs?.length) return;
-        const techs = (this.collections.unitTechs?.[def.id]?.techs || [])
-            .filter(t => ownedTechs.includes(t.id));
+        // Deck-aware: the effective tech list may be customized by the player's deck.
+        const catalog = this.game.armyShopSystem?._unitTechsFor
+            ? this.game.armyShopSystem._unitTechsFor(stats, def.id)
+            : (this.collections.unitTechs?.[def.id]?.techs || []);
+        const techs = catalog.filter(t => ownedTechs.includes(t.id));
         const pos = this.game.getComponent(entityId, 'transform')?.position;
         if (!pos) return;
 
@@ -568,9 +789,19 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
             const ds = this.game.getComponent(eid, 'deathState');
             if (ds && ds.state !== this.enums.deathState.alive) continue;
             const pos = this.game.getComponent(eid, 'transform')?.position;
-            if (pos) out.push({ x: pos.x, z: pos.z });
+            if (!pos) continue;
+            const def = this.game.getUnitTypeDef(this.game.getComponent(eid, 'unitType'));
+            out.push({ x: pos.x, z: pos.z, isFlying: !!def?.isFlying });
         }
         return out;
+    }
+
+    // Whether this unit can attack flying targets: def flags, or the
+    // tech-granted heroRosterInfo.canTargetAir (Skyward Pikes etc.).
+    _canHitAir(eid) {
+        const def = this.game.getUnitTypeDef(this.game.getComponent(eid, 'unitType'));
+        if (def?.canTargetAir || def?.isFlying) return true;
+        return !!this.game.getComponent(eid, 'heroRosterInfo')?.canTargetAir;
     }
 
     // Positions of every living enemy BUILDING of `team` (march objectives).
@@ -634,12 +865,14 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
                 !this.game.getComponent(uid, 'buildingOwner'));
             if (units.length === 0) continue;
             let sx = 0, sz = 0, n = 0;
+            let canHitAir = false;
             for (const uid of units) {
                 const pos = this.game.getComponent(uid, 'transform')?.position;
                 if (pos) { sx += pos.x; sz += pos.z; n++; }
+                if (!canHitAir && this._canHitAir(uid)) canHitAir = true;
             }
             if (n === 0) continue;
-            squads.push({ placementId: p.placementId, count: units.length, pos: { x: sx / n, z: sz / n } });
+            squads.push({ placementId: p.placementId, count: units.length, pos: { x: sx / n, z: sz / n }, canHitAir });
         }
         return squads;
     }

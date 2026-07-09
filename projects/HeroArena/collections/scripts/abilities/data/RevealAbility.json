@@ -1,0 +1,21 @@
+{
+  "cooldown": 14,
+  "range": 240,
+  "manaCost": 0,
+  "targetType": "enemy",
+  "animation": "cast",
+  "priority": 6,
+  "castTime": 0.3,
+  "castParticleEffectSystems": [
+    "holy_sparkles"
+  ],
+  "trailParticleEffectSystems": [],
+  "impactParticleEffectSystems": [
+    "impact_flash"
+  ],
+  "expirationParticleEffectSystems": [],
+  "fileName": "RevealAbility",
+  "filePath": "/projects/HeroArena/collections/scripts/abilities/js/RevealAbility.js",
+  "name": "Reveal",
+  "description": "Expose nearby hidden enemies so your whole team can target them."
+}

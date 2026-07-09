@@ -1,10 +1,11 @@
 {
  "title": "Rich Vein",
- "icon": "\u26cf\ufe0f",
+ "icon": "⛏️",
  "kind": "gold",
- "amount": 26,
- "description": "+26 gold now",
+ "amount": 350,
+ "description": "+350 gold now",
  "weight": 2,
- "minRound": 4,
- "fileName": "richVein"
+ "minRound": 7,
+ "fileName": "richVein",
+ "category": "economy"
 }

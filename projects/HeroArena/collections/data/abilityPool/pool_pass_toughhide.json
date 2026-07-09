@@ -1,0 +1,23 @@
+{
+ "id": "pool_pass_toughhide",
+ "title": "Toughened Hide",
+ "description": "+15% max HP",
+ "cost": 14,
+ "requirements": [
+  {
+   "str": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Toughened Hide",
+  "cost": 14,
+  "description": "+15% max HP",
+  "statModifiers": {
+   "maxHP": {
+    "pct": 0.15
+   }
+  }
+ }
+}

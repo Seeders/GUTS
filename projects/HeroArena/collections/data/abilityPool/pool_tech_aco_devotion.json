@@ -1,0 +1,23 @@
+{
+ "id": "pool_tech_aco_devotion",
+ "title": "Devotion",
+ "description": "+40% max HP",
+ "cost": 12,
+ "requirements": [
+  {
+   "str": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Devotion",
+  "cost": 12,
+  "description": "+40% max HP",
+  "statModifiers": {
+   "maxHP": {
+    "pct": 0.4
+   }
+  }
+ }
+}

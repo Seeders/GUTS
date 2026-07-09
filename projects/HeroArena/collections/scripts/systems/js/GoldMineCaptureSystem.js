@@ -43,7 +43,7 @@ class GoldMineCaptureSystem extends GUTS.BaseSystem {
     // Mirrored corners of the two starting locations (forest level).
     static MINE_TILES = [{ x: 56, z: 7 }, { x: 7, z: 56 }];
     static CAPTURE_RADIUS = 300;   // ~6 tiles around the vein — "holding" range
-    static MINE_INCOME = 5;        // gold per standing mine per round (base round income is 10; tunable)
+    static MINE_INCOME = 70;       // supply per standing mine per round (Mechabellum-scale; round-1 income is 200)
     static GUARDIAN_UNIT = 'dragon_red';   // hostile creep guarding each vein
     static GUARDIAN_OFFSET = 130;          // spawn this far map-center-ward of the vein
     static MINE_OCCUPY_RADIUS = 60;        // a mine within this range of a vein counts as "on" it (visibility)

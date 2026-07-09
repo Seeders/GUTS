@@ -3,14 +3,20 @@
   "filePath": "/projects/HeroArena/collections/scripts/abilities/js/SummonWolfAbility.js",
   "name": "Summon Wolf",
   "description": "Call forth a loyal wolf companion (max 1 per Beast Master)",
-  "cooldown": 0.0,
+  "cooldown": 0,
   "range": 0,
   "manaCost": 50,
   "targetType": "self",
   "animation": "cast",
   "priority": 5,
-  "castTime": 1.0,
+  "castTime": 1,
   "summonId": "0_skeleton",
-  "castParticleEffectSystems": ["holy_light", "holy_sparkles"],
-  "summonParticleEffectSystems": ["holy_explosion", "holy_sparkles"]
+  "castParticleEffectSystems": [
+    "holy_light",
+    "holy_sparkles"
+  ],
+  "summonParticleEffectSystems": [
+    "holy_explosion",
+    "holy_sparkles"
+  ]
 }

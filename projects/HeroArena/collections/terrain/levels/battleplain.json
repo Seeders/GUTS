@@ -4835,7 +4835,7 @@
     "extensionTerrainType": 5,
     "extensionHeight": 2,
     "terrainBGColor": {
-      "paletteColor": "greenMColor"
+      "paletteColor": "Green4Color"
     },
     "levelEntities": [
       {

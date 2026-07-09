@@ -1,0 +1,32 @@
+{
+  "title": "Fire Ring",
+  "category": "fire",
+  "tags": [
+    "fire",
+    "ring",
+    "ground"
+  ],
+  "particleEffectData": {
+    "count": 32,
+    "lifetime": 0.9,
+    "scale": 12,
+    "scaleMultiplier": 1.0,
+    "startColor": "#f6ad1f",
+    "endColor": "#a41105",
+    "emitterShape": "ring",
+    "emitterRadius": 45,
+    "heightOffset": 6,
+    "velocityXMin": -15,
+    "velocityXMax": 15,
+    "velocityYMin": 20,
+    "velocityYMax": 80,
+    "velocityZMin": -15,
+    "velocityZMax": 15,
+    "gravity": -30,
+    "drag": 0.95,
+    "fadeOut": true,
+    "scaleOverTime": false,
+    "blending": "additive"
+  },
+  "fileName": "fire_ring"
+}

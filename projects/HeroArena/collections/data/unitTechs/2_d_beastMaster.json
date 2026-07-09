@@ -17,14 +17,10 @@
   },
   {
    "id": "bea_alpha",
-   "title": "Alpha Bond",
+   "title": "Hunter’s Mark",
    "cost": 14,
-   "description": "+30% damage",
-   "statModifiers": {
-    "damage": {
-     "pct": 0.3
-    }
-   }
+   "description": "Unlocks Hunter’s Mark",
+   "unlockAbility": "TrackingMark"
   }
  ],
  "fileName": "2_d_beastMaster"

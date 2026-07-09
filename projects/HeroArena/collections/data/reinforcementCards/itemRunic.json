@@ -1,0 +1,12 @@
+{
+ "title": "Runic Plating",
+ "icon": "⛨",
+ "kind": "squadItem",
+ "itemId": "runicPlating",
+ "description": "Equip a squad: +30% HP and +8 armor",
+ "cost": 100,
+ "weight": 2,
+ "minRound": 3,
+ "fileName": "itemRunic",
+ "category": "item"
+}

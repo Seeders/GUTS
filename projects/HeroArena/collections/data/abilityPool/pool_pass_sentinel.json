@@ -1,0 +1,26 @@
+{
+ "id": "pool_pass_sentinel",
+ "title": "Sentinel",
+ "description": "+7 armor, +8% HP",
+ "cost": 14,
+ "requirements": [
+  {
+   "dex": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Sentinel",
+  "cost": 14,
+  "description": "+7 armor, +8% HP",
+  "statModifiers": {
+   "armor": {
+    "add": 7
+   },
+   "maxHP": {
+    "pct": 0.08
+   }
+  }
+ }
+}

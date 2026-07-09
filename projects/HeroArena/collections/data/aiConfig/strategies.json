@@ -1,0 +1,75 @@
+{
+ "fileName": "strategies",
+ "comment": "AI strategy profiles. Each template is an army plan: `units` is the priority buy order (first = core), `unlockPlan` the tier unlocks it saves for (in order), `techAffinity`/`levelAffinity` the per-pass chance it spends on techs/promotions, `wide: true` buys extra deploy slots to field more squads per round. `leaders` maps each commander to the strategies it may open with — one is picked per game (seeded).",
+ "templates": {
+  "swarm": {
+   "name": "Endless Horde",
+   "units": ["0_skeleton", "1_s_barbarian", "1_sd_soldier", "1_di_scout"],
+   "unlockPlan": ["fairy"],
+   "techAffinity": 0.35,
+   "levelAffinity": 0.15,
+   "wide": true
+  },
+  "rangedBall": {
+   "name": "Ranged Deathball",
+   "units": ["1_d_archer", "2_sd_crossbowman", "2_d_ranger", "1_di_scout", "ballista", "1_s_barbarian"],
+   "unlockPlan": ["2_sd_crossbowman", "2_d_ranger", "ballista"],
+   "techAffinity": 0.5,
+   "levelAffinity": 0.5
+  },
+  "tankWall": {
+   "name": "Iron Wall",
+   "units": ["1_s_barbarian", "2_sd_hoplite", "2_is_paladin", "1_is_acolyte", "0_golemStone", "1_d_archer"],
+   "unlockPlan": ["2_sd_hoplite", "2_is_paladin", "0_golemStone"],
+   "techAffinity": 0.45,
+   "levelAffinity": 0.55
+  },
+  "giants": {
+   "name": "March of Giants",
+   "units": ["0_golemStone", "0_golemFire", "dragon_red", "1_is_acolyte", "1_s_barbarian", "1_d_archer"],
+   "unlockPlan": ["0_golemStone", "0_golemFire", "dragon_red"],
+   "techAffinity": 0.4,
+   "levelAffinity": 0.6
+  },
+  "casters": {
+   "name": "Arcane Battery",
+   "units": ["1_i_apprentice", "2_i_elementalist", "2_i_necromancer", "1_is_acolyte", "2_i_enchanter", "1_s_barbarian"],
+   "unlockPlan": ["2_i_elementalist", "2_i_necromancer", "2_i_enchanter"],
+   "techAffinity": 0.55,
+   "levelAffinity": 0.4
+  },
+  "airForce": {
+   "name": "Air Superiority",
+   "units": ["fairy", "1_d_archer", "1_i_apprentice", "2_i_enchanter", "dragon_red"],
+   "unlockPlan": ["fairy", "2_i_enchanter", "dragon_red"],
+   "techAffinity": 0.5,
+   "levelAffinity": 0.4
+  },
+  "assassins": {
+   "name": "Shadow Strike",
+   "units": ["1_di_scout", "2_di_shadowAssassin", "2_s_berserker", "2_di_trickster", "1_s_barbarian"],
+   "unlockPlan": ["2_di_shadowAssassin", "2_s_berserker", "2_di_trickster"],
+   "techAffinity": 0.45,
+   "levelAffinity": 0.45,
+   "wide": true
+  },
+  "balanced": {
+   "name": "Combined Arms",
+   "units": ["1_sd_soldier", "1_d_archer", "1_is_acolyte", "2_sd_knight", "2_d_ranger", "1_i_apprentice"],
+   "unlockPlan": ["2_sd_knight", "2_d_ranger"],
+   "techAffinity": 0.4,
+   "levelAffinity": 0.4
+  }
+ },
+ "leaders": {
+  "supply": ["balanced", "rangedBall", "casters"],
+  "quickSupply": ["swarm", "assassins", "balanced"],
+  "costControl": ["swarm", "balanced", "tankWall"],
+  "heavyArmor": ["tankWall", "balanced", "giants"],
+  "speed": ["assassins", "swarm", "balanced"],
+  "giant": ["giants", "tankWall"],
+  "sniper": ["rangedBall", "balanced", "assassins"],
+  "golem": ["giants", "casters", "tankWall"],
+  "aerial": ["airForce", "casters"]
+ }
+}

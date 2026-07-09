@@ -1,0 +1,12 @@
+{
+ "title": "Fairy Swarm",
+ "icon": "🧚",
+ "kind": "skillCharge",
+ "skill": "summonFairies",
+ "description": "A single-use Fairy Swarm — summon flying fairies mid-battle",
+ "cost": 100,
+ "weight": 2,
+ "minRound": 4,
+ "fileName": "fairySwarmCharge",
+ "category": "skill"
+}

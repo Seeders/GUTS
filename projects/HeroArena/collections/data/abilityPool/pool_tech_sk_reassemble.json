@@ -1,0 +1,19 @@
+{
+ "id": "pool_tech_sk_reassemble",
+ "title": "Reassemble",
+ "description": "Each skeleton rebuilds itself once per battle",
+ "cost": 25,
+ "requirements": [
+  {
+   "str": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Reassemble",
+  "cost": 25,
+  "description": "Each skeleton rebuilds itself once per battle",
+  "onDeathReassemble": true
+ }
+}

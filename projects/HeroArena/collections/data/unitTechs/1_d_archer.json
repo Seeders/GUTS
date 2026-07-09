@@ -5,7 +5,7 @@
    "id": "arc_multishot",
    "title": "Multi-Shot",
    "cost": 15,
-   "description": "Unlocks Multi-Shot: volley several arrows",
+   "description": "Passive: every attack fires arrows at up to 3 targets, each arrow at 65% damage",
    "unlockAbility": "MultiShotAbility"
   },
   {

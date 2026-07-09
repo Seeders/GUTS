@@ -1,10 +1,12 @@
 {
  "title": "Frost Nova",
- "icon": "\u2744\ufe0f",
+ "icon": "❄️",
  "kind": "skillCharge",
  "skill": "frostNova",
  "description": "A single-use Frost Nova to cast during battle",
+ "cost": 150,
  "weight": 2,
  "minRound": 3,
- "fileName": "novaCharge"
+ "fileName": "novaCharge",
+ "category": "skill"
 }

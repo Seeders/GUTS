@@ -1,0 +1,25 @@
+{
+ "title": "Mass Production",
+ "icon": "🏭",
+ "kind": "unitModifier",
+ "modId": "massProduced",
+ "prefix": "Mass-Produced",
+ "description": "recruit cost -100 gold, but -30% damage and -30% HP",
+ "statModifiers": {
+  "damage": {
+   "pct": -0.3
+  },
+  "maxHP": {
+   "pct": -0.3
+  }
+ },
+ "costDelta": -100,
+ "appliesToTiers": [
+  3,
+  4
+ ],
+ "weight": 3,
+ "minRound": 3,
+ "fileName": "modMassProduced",
+ "category": "modifier"
+}

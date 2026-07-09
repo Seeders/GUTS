@@ -1,0 +1,19 @@
+{
+ "id": "pool_ab_TrueSightAbility",
+ "title": "True Sight",
+ "description": "Arcane detection — expose nearby cloaked and invisible enemies for the team.",
+ "cost": 15,
+ "requirements": [
+  {
+   "int": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "True Sight",
+  "cost": 15,
+  "description": "Arcane detection — expose nearby cloaked and invisible enemies for the team.",
+  "unlockAbility": "TrueSightAbility"
+ }
+}

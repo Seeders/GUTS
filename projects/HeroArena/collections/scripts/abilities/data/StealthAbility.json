@@ -1,0 +1,21 @@
+{
+  "cooldown": 18,
+  "range": 0,
+  "manaCost": 0,
+  "targetType": "self",
+  "animation": "cast",
+  "priority": 6,
+  "castTime": 0.3,
+  "castParticleEffectSystems": [
+    "smoke_burst"
+  ],
+  "trailParticleEffectSystems": [],
+  "impactParticleEffectSystems": [
+    "smoke_burst"
+  ],
+  "expirationParticleEffectSystems": [],
+  "fileName": "StealthAbility",
+  "filePath": "/projects/HeroArena/collections/scripts/abilities/js/StealthAbility.js",
+  "name": "Stealth",
+  "description": "Slip into stealth — untargetable (even while attacking) until revealed."
+}

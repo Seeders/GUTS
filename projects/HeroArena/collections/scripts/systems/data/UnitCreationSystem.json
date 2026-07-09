@@ -1,0 +1,12 @@
+{
+  "filePath": "/projects/scripts/systems/js/UnitCreationSystem.js",
+  "fileName": "UnitCreationSystem",
+  "services": [
+    "createPlacement",
+    "createUnit",
+    "createEntityFromPrefab",
+    "getTerrainHeight",
+    "incrementSquadsCreated"
+  ],
+  "testFilePath": "/projects/HeroArena/collections/scripts/systems/tests/UnitCreationSystem.test.js"
+}

@@ -1,0 +1,19 @@
+{
+ "id": "pool_ab_SunderArmorAbility",
+ "title": "Sunder Armor",
+ "description": "Shatter nearby enemies' armor for a while, so all your hits land harder.",
+ "cost": 15,
+ "requirements": [
+  {
+   "str": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Sunder Armor",
+  "cost": 15,
+  "description": "Shatter nearby enemies' armor for a while, so all your hits land harder.",
+  "unlockAbility": "SunderArmorAbility"
+ }
+}

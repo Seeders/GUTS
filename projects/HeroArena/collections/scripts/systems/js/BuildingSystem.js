@@ -139,27 +139,16 @@ class BuildingSystem extends GUTS.BaseSystem {
             if (this.game.entityAlive?.[id] !== 1) continue;
             const info = this.game.getComponent(id, 'heroRosterInfo');
             if (info?.playerId !== owner.playerId) continue;
-            const existing = this.game.getComponent(id, 'buff');
-            if (existing && existing.buffType === buffType) {
+            const existing = this.game.buffEffectsSystem?.getBuffOfType(id, buffType);
+            if (existing) {
                 // Second building: durations ADD (Mechabellum), effects don't stack
                 existing.endTime = Math.max(existing.endTime, now) + dur;
             } else {
-                this.game.addComponent(id, 'buff', {
+                this.game.buffEffectsSystem?.applyBuff(id, {
                     buffType, endTime: now + dur, appliedTime: now, stacks: 1
                 });
             }
-            const cleanup = () => {
-                const b = this.game.getComponent(id, 'buff');
-                if (!b || b.buffType !== buffType) return;
-                if (this.game.state.now >= b.endTime) {
-                    this.game.removeComponent(id, 'buff');
-                } else {
-                    // Extended by a second building loss — check again at the new end
-                    this.game.schedulingSystem?.scheduleAction(cleanup,
-                        b.endTime - this.game.state.now, id);
-                }
-            };
-            this.game.schedulingSystem?.scheduleAction(cleanup, dur, id);
+            // Expiry handled centrally by BuffEffectsSystem._reapExpiredBuffs.
         }
         this.call.broadcastToRoom?.(null, 'MORALE_BROKEN', { playerId: owner.playerId, buildingId: bid });
     }

@@ -1,4 +1,8 @@
 {
   "title": "Dragon Actions",
-  "actions": ["move", "hold", "transformToFlying"]
+  "actions": [
+    "move",
+    "hold",
+    "transformToFlying"
+  ]
 }

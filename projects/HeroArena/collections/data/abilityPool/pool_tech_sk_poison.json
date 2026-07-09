@@ -1,0 +1,19 @@
+{
+ "id": "pool_tech_sk_poison",
+ "title": "Venomous Claws",
+ "description": "Skeleton hits poison their victims",
+ "cost": 13,
+ "requirements": [
+  {
+   "str": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Venomous Claws",
+  "cost": 13,
+  "description": "Skeleton hits poison their victims",
+  "grantBuff": "poisoned_weapon"
+ }
+}

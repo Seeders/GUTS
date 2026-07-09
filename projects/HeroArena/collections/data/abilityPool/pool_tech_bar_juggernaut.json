@@ -1,0 +1,23 @@
+{
+ "id": "pool_tech_bar_juggernaut",
+ "title": "Juggernaut",
+ "description": "+50% max HP",
+ "cost": 12,
+ "requirements": [
+  {
+   "str": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Juggernaut",
+  "cost": 12,
+  "description": "+50% max HP",
+  "statModifiers": {
+   "maxHP": {
+    "pct": 0.5
+   }
+  }
+ }
+}

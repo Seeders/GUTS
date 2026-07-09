@@ -1,0 +1,31 @@
+{
+  "title": "Dark Sparkles",
+  "category": "shadow",
+  "tags": [
+    "dark",
+    "sparkles"
+  ],
+  "particleEffectData": {
+    "count": 12,
+    "lifetime": 1.0,
+    "scale": 5,
+    "scaleMultiplier": 1.0,
+    "startColor": "#eaa5ff",
+    "endColor": "#49326c",
+    "emitterShape": "sphere",
+    "emitterRadius": 25,
+    "heightOffset": 10,
+    "velocityXMin": -35,
+    "velocityXMax": 35,
+    "velocityYMin": 10,
+    "velocityYMax": 60,
+    "velocityZMin": -35,
+    "velocityZMax": 35,
+    "gravity": -30,
+    "drag": 0.97,
+    "fadeOut": true,
+    "scaleOverTime": false,
+    "blending": "additive"
+  },
+  "fileName": "dark_sparkles"
+}

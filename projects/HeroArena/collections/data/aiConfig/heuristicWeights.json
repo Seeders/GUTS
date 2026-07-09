@@ -7,22 +7,22 @@
     "speedWeight": 0.1
   },
   "decisionScoring": {
-    "counterBonusWeight": 2.0,
+    "counterBonusWeight": 2,
     "compositionBalancePenalty": 0.7,
     "maxDuplicateUnits": 4,
     "valueEfficiencyWeight": 1.5,
     "unitPriorityBonus": 15
   },
   "buildingScoring": {
-    "supplyWeight": 2.0,
+    "supplyWeight": 2,
     "unitDiversityWeight": 1.5,
     "duplicatePenalty": 0.3,
-    "firstBuildingBonus": 5.0
+    "firstBuildingBonus": 5
   },
   "strategyThresholds": {
     "economyRoundLimit": 1,
-    "defenseStrengthRatio": 2.0,
-    "aggressionStrengthRatio": 1.0,
+    "defenseStrengthRatio": 2,
+    "aggressionStrengthRatio": 1,
     "minArmyValueForAggression": 50
   },
   "moveOrders": {

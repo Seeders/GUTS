@@ -4,8 +4,33 @@
   "value": 90,
   "icon": "multiple_shot",
   "perUnitType": true,
-  "requirements": [ { "dex": { "min": 2 }, "str": { "min": 2 } } ],
-  "target": { "dex": { "min": 2 }, "str": { "min": 2 } },
-  "statModifiers": { "damage": { "pct": 0.18 }, "armor": { "add": 6 } },
-  "requiresBuildings": [ "fletchersHall" ]
+  "requirements": [
+    {
+      "dex": {
+        "min": 2
+      },
+      "str": {
+        "min": 2
+      }
+    }
+  ],
+  "target": {
+    "dex": {
+      "min": 2
+    },
+    "str": {
+      "min": 2
+    }
+  },
+  "statModifiers": {
+    "damage": {
+      "pct": 0.18
+    },
+    "armor": {
+      "add": 6
+    }
+  },
+  "requiresBuildings": [
+    "fletchersHall"
+  ]
 }

@@ -616,6 +616,9 @@ class LobbyUISystem extends GUTS.BaseSystem {
         // Populate level selector
         this.populateSkirmishLevelSelector();
 
+        // Populate deck selector (saved decks + a "no deck" default = full content)
+        this.populateSkirmishDeckSelector();
+
         // Setup team selector
         this.setupTeamSelector();
 
@@ -663,6 +666,18 @@ class LobbyUISystem extends GUTS.BaseSystem {
         this._populateLevelSelect('skirmishLevelSelect', (value) => {
             this.skirmishSelectedLevel = value;
         });
+    }
+
+    // Deck dropdown: "Default (all content)" (value '') + each saved deck.
+    populateSkirmishDeckSelector() {
+        const sel = document.getElementById('skirmishDeckSelect');
+        if (!sel) return;
+        const decks = this.game.deckBuilderSystem?.listDecks?.() || [];
+        sel.innerHTML = `<option value="">Default (all content)</option>` +
+            decks.map(d => `<option value="${d.id}">${d.name}${d.valid ? '' : ' (incomplete)'}</option>`).join('');
+        this.skirmishSelectedDeckId = this.skirmishSelectedDeckId || '';
+        sel.value = this.skirmishSelectedDeckId;
+        sel.onchange = (e) => { this.skirmishSelectedDeckId = e.target.value; };
     }
 
     setupSkirmishEventListeners() {
@@ -759,6 +774,12 @@ class LobbyUISystem extends GUTS.BaseSystem {
             // HeroArena: players start with 0 gold; per-round income handles the rest.
             startingGold: this.skirmishMode?.startingGold ?? 0
         };
+
+        // Chosen deck (loadout) for the human (player 0). Empty ⇒ no deck ⇒ full
+        // content. AI (player 1) has no deck for now → full content.
+        const deck = this.skirmishSelectedDeckId
+            ? this.game.deckBuilderSystem?.getDeck?.(this.skirmishSelectedDeckId) : null;
+        if (deck) skirmishConfig.decks = { 0: deck };
 
         // Store game mode
         this.game.state.gameMode = {

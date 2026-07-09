@@ -1,6 +1,6 @@
 {
   "title": "Hero Arena Skirmish Scene",
-  "description": "Local single-machine game \u2014 both players or vs AI on same client",
+  "description": "Local single-machine game — both players or vs AI on same client",
   "interface": "game",
   "loader": "GameLoader",
   "systems": [

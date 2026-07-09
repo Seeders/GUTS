@@ -16,11 +16,11 @@
    "unlockAbility": "WindShieldAbility"
   },
   {
-   "id": "fai_polymorph",
+   "id": "fai_fear",
    "title": "Fey Mischief",
    "cost": 21,
-   "description": "Unlocks Polymorph: turn a threat into a sheep",
-   "unlockAbility": "PolymorphAbility"
+   "description": "Unlocks Fear: send a threat fleeing in terror",
+   "unlockAbility": "FearAbility"
   }
  ],
  "fileName": "fairy"

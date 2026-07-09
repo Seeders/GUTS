@@ -48,7 +48,7 @@ class DrainLifeAbility extends GUTS.BaseAbility {
                 new THREE.Vector3(targetPos.x, targetPos.y + 10, targetPos.z),
                 {
                     style: { color: 0x8B008B, linewidth: 4 },
-                    animation: { duration: 1000, pulseEffect: true }
+                    animation: { duration: 1, pulseEffect: true }
                 }
             );
         }
@@ -62,7 +62,7 @@ class DrainLifeAbility extends GUTS.BaseAbility {
             if (currentTargetPos) {
                 this.performDrain(casterEntity, target, currentTargetPos);
             }
-        }, this.castTime, casterEntity);
+        }, 0, casterEntity); // payload at execute — queue already waited to the release point
     }
     
     performDrain(casterEntity, targetId, targetPos) {

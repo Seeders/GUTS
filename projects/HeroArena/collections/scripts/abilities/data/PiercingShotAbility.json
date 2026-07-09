@@ -3,7 +3,7 @@
   "filePath": "/projects/HeroArena/collections/scripts/abilities/js/PiercingShotAbility.js",
   "name": "Piercing Shot",
   "description": "Fire a bolt that pierces through multiple enemies in a line",
-  "cooldown": 6.0,
+  "cooldown": 6,
   "range": 200,
   "manaCost": 25,
   "targetType": "line",
@@ -14,8 +14,18 @@
   "piercingDamage": 30,
   "lineWidth": 20,
   "element": "physical",
-  "castParticleEffectSystems": ["ice_shards"],
-  "launchParticleEffectSystems": ["ice_shards", "ice_sparkles"],
-  "trailParticleEffectSystems": ["ice_shards"],
-  "impactParticleEffectSystems": ["ice_shards", "ice_sparkles"]
+  "castParticleEffectSystems": [
+    "ice_shards"
+  ],
+  "launchParticleEffectSystems": [
+    "ice_shards",
+    "ice_sparkles"
+  ],
+  "trailParticleEffectSystems": [
+    "ice_shards"
+  ],
+  "impactParticleEffectSystems": [
+    "ice_shards",
+    "ice_sparkles"
+  ]
 }

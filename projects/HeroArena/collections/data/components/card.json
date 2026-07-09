@@ -1,0 +1,9 @@
+{
+  "title": "card",
+  "description": "Standard playing card with suit and rank",
+  "schema": {
+    "suit": 0,
+    "rank": 0,
+    "faceUp": 0
+  }
+}

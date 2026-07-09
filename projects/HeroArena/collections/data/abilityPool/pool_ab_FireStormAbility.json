@@ -1,0 +1,19 @@
+{
+ "id": "pool_ab_FireStormAbility",
+ "title": "Fire Storm",
+ "description": "Rain fire on the largest enemy cluster",
+ "cost": 26,
+ "requirements": [
+  {
+   "int": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Fire Storm",
+  "cost": 26,
+  "description": "Rain fire on the largest enemy cluster",
+  "unlockAbility": "FireStormAbility"
+ }
+}

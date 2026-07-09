@@ -7,8 +7,7 @@ class RapidFireAbility extends GUTS.BaseAbility {
     canExecute(casterEntity) {
         if (!this._meetsWeaponRequirement(casterEntity)) return false;
         const enums = this.game.getEnums();
-        const buff = this.game.getComponent(casterEntity, "buff");
-        return !(buff && buff.buffType === enums.buffTypes.rapid_fire);
+        return !this.hasBuff(casterEntity, enums.buffTypes.rapid_fire);
     }
 
     execute(casterEntity) {
@@ -20,19 +19,19 @@ class RapidFireAbility extends GUTS.BaseAbility {
         this.logAbilityUsage(casterEntity, "Unleashes a flurry of shots!");
 
         this.game.schedulingSystem.scheduleAction(() => {
-            this.applyBuff(casterEntity);
-        }, this.castTime, casterEntity);
+            this.applyRapidFireBuff(casterEntity);
+        }, 0, casterEntity); // payload at execute — queue already waited to the release point
     }
 
-    applyBuff(casterEntity) {
+    applyRapidFireBuff(casterEntity) {
         const enums = this.game.getEnums();
-        const existing = this.game.getComponent(casterEntity, "buff");
-        if (existing && existing.buffType === enums.buffTypes.rapid_fire) {
+        const existing = this.getBuff(casterEntity, enums.buffTypes.rapid_fire);
+        if (existing) {
             existing.endTime = this.game.state.now + this.duration;
             existing.appliedTime = this.game.state.now;
             return;
         }
-        this.game.addComponent(casterEntity, "buff", {
+        this.applyBuff(casterEntity, {
             buffType: enums.buffTypes.rapid_fire,
             endTime: this.game.state.now + this.duration,
             appliedTime: this.game.state.now,
@@ -43,16 +42,15 @@ class RapidFireAbility extends GUTS.BaseAbility {
         if (transform?.position) this.playConfiguredEffects('buff', transform.position);
 
         this.game.schedulingSystem.scheduleAction(() => {
-            this.removeBuff(casterEntity);
+            this.expireRapidFireBuff(casterEntity);
         }, this.duration, casterEntity);
     }
 
-    removeBuff(casterEntity) {
+    // Expiry handled centrally by BuffEffectsSystem._reapExpiredBuffs.
+    // This schedule only plays the expiration visual.
+    expireRapidFireBuff(casterEntity) {
         const enums = this.game.getEnums();
-        if (!this.game.hasComponent(casterEntity, "buff")) return;
-        const buff = this.game.getComponent(casterEntity, "buff");
-        if (buff && buff.buffType === enums.buffTypes.rapid_fire) {
-            this.game.removeComponent(casterEntity, "buff");
+        if (this.hasBuff(casterEntity, enums.buffTypes.rapid_fire)) {
             const t = this.game.getComponent(casterEntity, "transform");
             if (t?.position) this.playConfiguredEffects('expiration', t.position);
         }

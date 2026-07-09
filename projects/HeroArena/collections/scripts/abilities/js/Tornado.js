@@ -32,7 +32,7 @@ class Tornado extends GUTS.BaseAbility {
         
         this.game.schedulingSystem.scheduleAction(() => {
             this.applyCurses(casterEntity, enemies);
-        }, this.castTime, casterEntity);
+        }, 0, casterEntity); // payload at execute — queue already waited to the release point
     }
     
     applyCurses(casterEntity, enemies) {

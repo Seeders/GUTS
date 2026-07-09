@@ -1,0 +1,26 @@
+{
+ "id": "pool_pass_brute",
+ "title": "Brute Strength",
+ "description": "+5 damage, +80 HP",
+ "cost": 14,
+ "requirements": [
+  {
+   "dex": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Brute Strength",
+  "cost": 14,
+  "description": "+5 damage, +80 HP",
+  "statModifiers": {
+   "damage": {
+    "add": 5
+   },
+   "maxHP": {
+    "add": 80
+   }
+  }
+ }
+}

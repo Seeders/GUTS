@@ -1,0 +1,21 @@
+{
+  "cooldown": 16,
+  "range": 0,
+  "manaCost": 0,
+  "targetType": "self",
+  "animation": "cast",
+  "priority": 5,
+  "castTime": 0.4,
+  "castParticleEffectSystems": [
+    "battle_cry"
+  ],
+  "trailParticleEffectSystems": [],
+  "impactParticleEffectSystems": [
+    "battle_cry_burst"
+  ],
+  "expirationParticleEffectSystems": [],
+  "fileName": "LastStandAbility",
+  "filePath": "/projects/HeroArena/collections/scripts/abilities/js/LastStandAbility.js",
+  "name": "Last Stand",
+  "description": "When badly hurt, dig in: heavy damage reduction and a damage boost for a few seconds."
+}

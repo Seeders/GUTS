@@ -7,9 +7,9 @@
   ],
   "particleEffectData": {
     "count": 45,
-    "lifetime": 1.0,
+    "lifetime": 1,
     "scale": 45,
-    "scaleMultiplier": 2.0,
+    "scaleMultiplier": 2,
     "startColor": "#ff8800",
     "endColor": "#ff2200",
     "emitterShape": "sphere",

@@ -17,14 +17,10 @@
   },
   {
    "id": "gla_champion",
-   "title": "Champion",
+   "title": "Arena Slam",
    "cost": 14,
-   "description": "+40% max HP",
-   "statModifiers": {
-    "maxHP": {
-     "pct": 0.4
-    }
-   }
+   "description": "Unlocks Arena Slam",
+   "unlockAbility": "ShockwaveAbility"
   }
  ],
  "fileName": "2_s_gladiator"

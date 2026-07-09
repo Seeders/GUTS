@@ -1,0 +1,14 @@
+{
+  "filePath": "/projects/scripts/systems/js/VisionSystem.js",
+  "fileName": "VisionSystem",
+  "services": [
+    "hasLineOfSight",
+    "canSeePosition",
+    "getVisibleEnemiesInRange",
+    "findNearestVisibleEnemy",
+    "findWeakestVisibleEnemy",
+    "isEntityVisibleToTeam",
+    "isVisibleAt"
+  ],
+  "testFilePath": "/projects/HeroArena/collections/scripts/systems/tests/VisionSystem.test.js"
+}

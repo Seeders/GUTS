@@ -15,7 +15,8 @@ class CommanderSkillSystem extends GUTS.BaseSystem {
     static serviceDependencies = [
         'getPlayerEntities',
         'applyDamage',
-        'broadcastToRoom'
+        'broadcastToRoom',
+        'summonUnitsForTeamAt'
     ];
 
     constructor(game) {
@@ -55,6 +56,15 @@ class CommanderSkillSystem extends GUTS.BaseSystem {
     }
 
     _applySkill(stats, def, x, z) {
+        // Summon skills spawn throwaway units for the caster at the target point
+        // (Mechabellum "Underground Threat" / "Wasp Swarm") — no area target scan.
+        if (def.summon) {
+            this.call.summonUnitsForTeamAt?.(
+                def.summon.unit, def.summon.count || 3, stats.team, x, z);
+            this._playEffect(def, x, z);
+            return;
+        }
+
         const radius = def.radius || 120;
         const radiusSq = radius * radius;
 

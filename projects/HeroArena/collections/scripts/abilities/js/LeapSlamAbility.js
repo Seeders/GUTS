@@ -49,7 +49,7 @@ class LeapSlamAbility extends GUTS.BaseAbility {
         // Start the leap
         this.game.schedulingSystem.scheduleAction(() => {
             this.initiateLeap(casterEntity, landingPos);
-        }, this.castTime, casterEntity);
+        }, 0, casterEntity); // payload at execute — queue already waited to the release point
     }
 
     findClosestEnemy(casterEntity, enemies) {

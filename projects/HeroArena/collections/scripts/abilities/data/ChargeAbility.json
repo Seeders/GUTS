@@ -3,7 +3,7 @@
   "filePath": "/projects/HeroArena/collections/scripts/abilities/js/ChargeAbility.js",
   "name": "Charge",
   "description": "Rush forward dealing damage and stunning enemies",
-  "cooldown": 5.0,
+  "cooldown": 5,
   "range": 150,
   "manaCost": 0,
   "targetType": "enemy",
@@ -13,9 +13,18 @@
   "chargeDamage": 30,
   "chargeSpeed": 300,
   "chargeDuration": 0.8,
-  "stunDuration": 2.0,
-  "castParticleEffectSystems": ["dust_burst"],
-  "trailParticleEffectSystems": ["dust_trail"],
-  "impactParticleEffectSystems": ["rock_debris", "dust_burst"],
-  "expirationParticleEffectSystems": ["holy_sparkles"]
+  "stunDuration": 2,
+  "castParticleEffectSystems": [
+    "dust_burst"
+  ],
+  "trailParticleEffectSystems": [
+    "dust_trail"
+  ],
+  "impactParticleEffectSystems": [
+    "rock_debris",
+    "dust_burst"
+  ],
+  "expirationParticleEffectSystems": [
+    "holy_sparkles"
+  ]
 }

@@ -1,0 +1,19 @@
+{
+ "id": "pool_ab_EnchantWeaponAbility",
+ "title": "Enchant Weapon",
+ "description": "Enchant ally weapons with elemental damage (does not stack, refreshes duration)",
+ "cost": 15,
+ "requirements": [
+  {
+   "int": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Enchant Weapon",
+  "cost": 15,
+  "description": "Enchant ally weapons with elemental damage (does not stack, refreshes duration)",
+  "unlockAbility": "EnchantWeaponAbility"
+ }
+}

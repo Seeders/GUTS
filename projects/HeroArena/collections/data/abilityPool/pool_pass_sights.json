@@ -1,0 +1,23 @@
+{
+ "id": "pool_pass_sights",
+ "title": "Extended Sights",
+ "description": "+40 range",
+ "cost": 14,
+ "requirements": [
+  {
+   "int": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Extended Sights",
+  "cost": 14,
+  "description": "+40 range",
+  "statModifiers": {
+   "range": {
+    "add": 40
+   }
+  }
+ }
+}

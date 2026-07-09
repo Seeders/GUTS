@@ -212,6 +212,16 @@ class DamageSystem extends GUTS.BaseSystem {
             damage *= (1 + moreValue);
         }
 
+        // STEP 5.5: Attacker buff outgoing-damage multiplier
+        // (e.g. moraleBroken — army hits for 10% after losing a command building)
+        const sourceBuff = this.game.getComponent(sourceId, "buff");
+        if (sourceBuff && (!sourceBuff.endTime || (this.game.state.now || 0) <= sourceBuff.endTime)) {
+            const sourceBuffDef = this.getBuffTypeDef(sourceBuff.buffType);
+            if (sourceBuffDef?.damageMultiplier != null && sourceBuffDef.damageMultiplier !== 1) {
+                damage *= sourceBuffDef.damageMultiplier;
+            }
+        }
+
         // STEP 6: Apply critical hit multiplier
         if (options.isCritical) {
             const critMultiplier = options.criticalMultiplier || 2.0;
@@ -685,7 +695,16 @@ class DamageSystem extends GUTS.BaseSystem {
                 const targetHealth = this.game.getComponent(event.targetId, "health");
                 const targetDeathState = this.game.getComponent(event.targetId, "deathState");
 
-                if (targetHealth && targetHealth.current > 0 && (!targetDeathState || targetDeathState.state === this.enums.deathState.alive)) {
+                // Melee swings land partway through the attack animation — if the
+                // attacker died before impact, the blow never connects. Non-melee
+                // delayed damage (poison ticks, timed effects) still applies after
+                // the source's death.
+                const sourceDeathState = event.options?.isMelee
+                    ? this.game.getComponent(event.sourceId, "deathState")
+                    : null;
+                const sourceDead = sourceDeathState && sourceDeathState.state !== this.enums.deathState.alive;
+
+                if (!sourceDead && targetHealth && targetHealth.current > 0 && (!targetDeathState || targetDeathState.state === this.enums.deathState.alive)) {
                     // Apply the delayed damage via game.call for logging
                      this.call.applyDamage( event.sourceId, event.targetId, event.damage, event.element, {
                         ...event.options,

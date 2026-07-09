@@ -34,7 +34,7 @@ class ArenaPresenceAbility extends GUTS.BaseAbility {
         // Schedule the intimidation after cast time
         this.game.schedulingSystem.scheduleAction(() => {
             this.unleashArenaPresence(casterEntity, enemies);
-        }, this.castTime, casterEntity);
+        }, 0, casterEntity); // payload at execute — queue already waited to the release point
     }
     
     unleashArenaPresence(casterEntity, targetEnemies) {
@@ -97,30 +97,30 @@ class ArenaPresenceAbility extends GUTS.BaseAbility {
         
         // Check if already intimidated - don't stack multiple intimidations
         const enums = this.game.getEnums();
-        const existingBuff = this.game.getComponent(enemyId, "buff");
+        const existingBuff = this.getBuff(enemyId, enums.buffTypes.intimidated);
         const currentTime = this.game.state.now || this.game.state.now || 0;
         const endTime = currentTime + this.intimidationDuration;
 
-        if (existingBuff && existingBuff.buffType === enums.buffTypes.intimidated) {
+        if (existingBuff) {
             // Refresh duration instead of stacking
             existingBuff.endTime = endTime;
             existingBuff.appliedTime = currentTime;
-            
-         
-            
+
+
+
             return { success: true, wasRefreshed: true };
         } else {
             // Apply new intimidation buff
-            this.game.addComponent(enemyId, "buff", {
+            this.applyBuff(enemyId, {
                 buffType: enums.buffTypes.intimidated,
                 endTime: endTime,
                 appliedTime: currentTime,
                 stacks: 1,
                 sourceEntity: casterEntity
             });
-            
-       
-            
+
+
+
             return { success: true, wasRefreshed: false };
         }
     }
@@ -149,9 +149,9 @@ class ArenaPresenceAbility extends GUTS.BaseAbility {
     // Helper method to get current intimidation status
     getIntimidationStatus(enemyId) {
         const enums = this.game.getEnums();
-        const buff = this.game.getComponent(enemyId, "buff");
+        const buff = this.getBuff(enemyId, enums.buffTypes.intimidated);
 
-        if (!buff || buff.buffType !== enums.buffTypes.intimidated) {
+        if (!buff) {
             return { isIntimidated: false };
         }
         

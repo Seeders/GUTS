@@ -1,0 +1,19 @@
+{
+ "id": "pool_ab_RetaliateAbility",
+ "title": "Retaliate",
+ "description": "Reflect a portion of damage taken back to attackers.",
+ "cost": 14,
+ "requirements": [
+  {
+   "str": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Retaliate",
+  "cost": 14,
+  "description": "Reflect a portion of damage taken back to attackers.",
+  "unlockAbility": "RetaliateAbility"
+ }
+}

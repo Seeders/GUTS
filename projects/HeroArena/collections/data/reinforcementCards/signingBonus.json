@@ -1,10 +1,12 @@
 {
  "title": "Signing Bonus",
- "icon": "\ud83e\ude99",
+ "icon": "🪙",
  "kind": "gold",
- "amount": 8,
- "description": "+8 gold now",
+ "amount": 100,
+ "description": "+100 gold now",
  "weight": 2,
  "minRound": 1,
- "fileName": "signingBonus"
+ "fileName": "signingBonus",
+ "category": "economy",
+ "maxRound": 3
 }

@@ -1,0 +1,19 @@
+{
+ "id": "pool_ab_PhalanxFormationAbility",
+ "title": "Phalanx Formation",
+ "description": "Link shields with nearby squadmates: +50% armor, -20% damage taken for 25s",
+ "cost": 20,
+ "requirements": [
+  {
+   "str": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Phalanx Formation",
+  "cost": 20,
+  "description": "Link shields with nearby squadmates: +50% armor, -20% damage taken for 25s",
+  "unlockAbility": "PhalanxFormationAbility"
+ }
+}

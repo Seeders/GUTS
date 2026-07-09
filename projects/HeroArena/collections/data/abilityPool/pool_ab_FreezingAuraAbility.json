@@ -1,0 +1,19 @@
+{
+ "id": "pool_ab_FreezingAuraAbility",
+ "title": "Freezing Aura",
+ "description": "Emanate freezing cold",
+ "cost": 26,
+ "requirements": [
+  {
+   "int": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Freezing Aura",
+  "cost": 26,
+  "description": "Emanate freezing cold",
+  "unlockAbility": "FreezingAuraAbility"
+ }
+}

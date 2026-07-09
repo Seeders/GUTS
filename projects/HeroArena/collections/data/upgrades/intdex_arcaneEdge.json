@@ -4,8 +4,30 @@
   "value": 40,
   "icon": "stab",
   "perUnitType": true,
-  "requirements": [ { "int": { "min": 2 }, "dex": { "min": 2 } } ],
-  "target": { "int": { "min": 2 }, "dex": { "min": 2 } },
-  "statModifiers": { "damage": { "pct": 0.12 } },
-  "requiresBuildings": [ "mageTower" ]
+  "requirements": [
+    {
+      "int": {
+        "min": 2
+      },
+      "dex": {
+        "min": 2
+      }
+    }
+  ],
+  "target": {
+    "int": {
+      "min": 2
+    },
+    "dex": {
+      "min": 2
+    }
+  },
+  "statModifiers": {
+    "damage": {
+      "pct": 0.12
+    }
+  },
+  "requiresBuildings": [
+    "mageTower"
+  ]
 }

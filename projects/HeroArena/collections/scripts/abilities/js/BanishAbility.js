@@ -26,7 +26,7 @@ class BanishAbility extends GUTS.BaseAbility {
 
         this.game.schedulingSystem.scheduleAction(() => {
             this.applyDebuff(casterEntity, target);
-        }, this.castTime, casterEntity);
+        }, 0, casterEntity); // payload at execute — queue already waited to the release point
     }
 
     applyDebuff(casterEntity, targetId) {
@@ -41,7 +41,7 @@ class BanishAbility extends GUTS.BaseAbility {
         }
 
         const enums = this.game.getEnums();
-        this.game.addComponent(targetId, "buff", {
+        this.applyBuff(targetId, {
             buffType: enums.buffTypes.banished,
             endTime: this.game.state.now + this.duration,
             appliedTime: this.game.state.now,
@@ -55,11 +55,9 @@ class BanishAbility extends GUTS.BaseAbility {
     }
 
     removeDebuff(targetId) {
+        // Expiry handled centrally by BuffEffectsSystem._reapExpiredBuffs.
         const enums = this.game.getEnums();
-        if (!this.game.hasComponent(targetId, "buff")) return;
-        const buff = this.game.getComponent(targetId, "buff");
-        if (buff && buff.buffType === enums.buffTypes.banished) {
-            this.game.removeComponent(targetId, "buff");
+        if (this.hasBuff(targetId, enums.buffTypes.banished)) {
             const t = this.game.getComponent(targetId, "transform");
             if (t?.position) this.playConfiguredEffects('expiration', t.position);
         }

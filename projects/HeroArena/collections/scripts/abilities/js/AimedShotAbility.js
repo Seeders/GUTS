@@ -26,7 +26,7 @@ class AimedShotAbility extends GUTS.BaseAbility {
             const t = this.game.getComponent(target, "transform");
             if (t?.position) this.playConfiguredEffects('impact', t.position);
             this.dealDamageWithEffects(casterEntity, target, this.damage, this.element, { isMelee: true });
-        }, this.castTime, casterEntity);
+        }, 0, casterEntity); // payload at execute — queue already waited to the release point
     }
 
     findClosestEnemy(casterEntity, enemies) {

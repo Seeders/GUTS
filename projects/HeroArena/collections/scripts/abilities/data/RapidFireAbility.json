@@ -7,7 +7,7 @@
   "priority": 5,
   "castTime": 0.2,
   "castParticleEffectSystems": [
-    "dust_burst"
+    "piercing_muzzle_flash"
   ],
   "trailParticleEffectSystems": [],
   "impactParticleEffectSystems": [],

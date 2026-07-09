@@ -1,0 +1,19 @@
+{
+ "id": "pool_pass_frostguard",
+ "title": "Frostguard",
+ "description": "Permanent ice armor - a frost ward",
+ "cost": 14,
+ "requirements": [
+  {
+   "int": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Frostguard",
+  "cost": 14,
+  "description": "Permanent ice armor - a frost ward",
+  "grantBuff": "ice_armor"
+ }
+}

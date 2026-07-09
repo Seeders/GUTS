@@ -38,7 +38,7 @@ class TrackingMark extends GUTS.BaseAbility {
         // Schedule the mark application after cast time
         this.game.schedulingSystem.scheduleAction(() => {
             this.applyTrackingMark(casterEntity, target);
-        }, this.castTime, casterEntity);
+        }, 0, casterEntity); // payload at execute — queue already waited to the release point
     }
     
     applyTrackingMark(casterEntity, targetId) {
@@ -86,9 +86,9 @@ class TrackingMark extends GUTS.BaseAbility {
         const maxStacks = buffTypeDef?.maxStacks || this.maxMarks;
         const damagePerStack = buffTypeDef?.damagePerStack || this.markDamageIncrease;
 
-        let existingMark = this.game.getComponent(targetId, "buff");
+        let existingMark = this.getBuff(targetId, enums.buffTypes.marked);
 
-        if (existingMark && existingMark.buffType === enums.buffTypes.marked) {
+        if (existingMark) {
             // Stack the mark up to the maximum
             if (existingMark.stacks < maxStacks) {
                 existingMark.stacks++;
@@ -117,7 +117,7 @@ class TrackingMark extends GUTS.BaseAbility {
             }
         } else {
             // Apply new tracking mark - modifiers from buffTypes/marked.json
-            this.game.addComponent(targetId, "buff", {
+            this.applyBuff(targetId, {
                 buffType: enums.buffTypes.marked,
                 endTime: endTime,
                 appliedTime: currentTime,
@@ -147,7 +147,7 @@ class TrackingMark extends GUTS.BaseAbility {
                 new THREE.Vector3(targetPos.x, targetPos.y + 10, targetPos.z),
                 {
                     style: { color: 0xFF6347, linewidth: 3 },
-                    animation: { duration: 600, flickerCount: 2 }
+                    animation: { duration: 0.6, flickerCount: 2 }
                 }
             );
         }
@@ -168,8 +168,7 @@ class TrackingMark extends GUTS.BaseAbility {
         // Priority 1: Unmarked enemies (new marks are more valuable)
         const enums = this.game.getEnums();
         const unmarkedEnemies = sortedEnemies.filter(enemyId => {
-            const buff = this.game.getComponent(enemyId, "buff");
-            return !buff || buff.buffType !== enums.buffTypes.marked;
+            return !this.hasBuff(enemyId, enums.buffTypes.marked);
         });
 
         if (unmarkedEnemies.length > 0) {
@@ -179,8 +178,8 @@ class TrackingMark extends GUTS.BaseAbility {
 
         // Priority 2: Marked enemies that can be stacked further
         const stackableEnemies = sortedEnemies.filter(enemyId => {
-            const buff = this.game.getComponent(enemyId, "buff");
-            return buff && buff.buffType === enums.buffTypes.marked && buff.stacks < this.maxMarks;
+            const buff = this.getBuff(enemyId, enums.buffTypes.marked);
+            return buff && buff.stacks < this.maxMarks;
         });
         
         if (stackableEnemies.length > 0) {
@@ -226,8 +225,8 @@ class TrackingMark extends GUTS.BaseAbility {
 
         const enums = this.game.getEnums();
         enemies.forEach(enemyId => {
-            const buff = this.game.getComponent(enemyId, "buff");
-            if (!buff || buff.buffType !== enums.buffTypes.marked) return;
+            const buff = this.getBuff(enemyId, enums.buffTypes.marked);
+            if (!buff) return;
             
             // Use >= for consistent tie-breaking (first in sorted order wins)
             if (buff.stacks >= highestStacks) {

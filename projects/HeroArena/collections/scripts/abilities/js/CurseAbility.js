@@ -28,7 +28,7 @@ class CurseAbility extends GUTS.BaseAbility {
         
         this.game.schedulingSystem.scheduleAction(() => {
             this.applyCurses(casterEntity, enemies);
-        }, this.castTime, casterEntity);
+        }, 0, casterEntity); // payload at execute — queue already waited to the release point
     }
     
     applyCurses(casterEntity, enemies) {
@@ -61,7 +61,7 @@ class CurseAbility extends GUTS.BaseAbility {
 
                 // DESYNC SAFE: Use buff system instead of directly modifying stats
                 const enums = this.game.getEnums();
-                this.game.addComponent(enemyId, "buff", {
+                this.applyBuff(enemyId, {
                     buffType: enums.buffTypes.curse,
                     endTime: this.game.state.now + this.duration,
                     appliedTime: this.game.state.now,
@@ -98,18 +98,18 @@ class CurseAbility extends GUTS.BaseAbility {
     removeCurse(enemyId) {
         // Check if enemy still exists and has the curse buff
         const enums = this.game.getEnums();
-        if (this.game.hasComponent(enemyId, "buff")) {
-            const buff = this.game.getComponent(enemyId, "buff");
-            if (buff && buff.buffType === enums.buffTypes.curse) {
-                this.game.removeComponent(enemyId, "buff");
+        const buff = this.getBuff(enemyId, enums.buffTypes.curse);
+        if (!buff) return;
+        // Refreshed since this schedule was armed — the later expiry (or the
+        // central reaper) owns removal now.
+        if (buff.endTime - (this.game.state.now || 0) > 0.1) return;
+        this.removeBuff(enemyId, enums.buffTypes.curse);
 
-                // Visual effect when curse expires
-                const transform = this.game.getComponent(enemyId, "transform");
-                const enemyPos = transform?.position;
-                if (enemyPos) {
-                    this.playConfiguredEffects('expiration', enemyPos);
-                }
-            }
+        // Visual effect when curse expires
+        const transform = this.game.getComponent(enemyId, "transform");
+        const enemyPos = transform?.position;
+        if (enemyPos) {
+            this.playConfiguredEffects('expiration', enemyPos);
         }
     }
 }

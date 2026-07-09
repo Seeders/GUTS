@@ -169,116 +169,20 @@ class ChainLightningAbility extends GUTS.BaseAbility {
         return closest;
     }
     
+    // The ONE lightning look lives in EffectsSystem's 'lightning' line config —
+    // no hand-rolled geometry/animation here (the old local version drew its
+    // own bolt and leaked lines when the game clock reset mid-animation).
     createLightningArc(fromPos, toPos) {
-        const scene = this.call.getWorldScene();
-        if (!scene) return;
+        if (!this.game.effectsSystem?.createLightningBolt) return;
+        this.game.effectsSystem.createLightningBolt(
+            new THREE.Vector3(fromPos.x, fromPos.y + 10, fromPos.z),
+            new THREE.Vector3(toPos.x, toPos.y + 10, toPos.z)
+        );
 
-        // Create lightning bolt geometry with deterministic path (no random)
-        const points = this.generateDeterministicLightningPath(fromPos, toPos);
-        const geometry = new THREE.BufferGeometry().setFromPoints(points);
-
-        // Create lightning material
-        const material = new THREE.LineBasicMaterial({
-            color: 0x00ddff,
-            linewidth: 3,
-            transparent: true,
-            opacity: 1.0,
-            blending: THREE.AdditiveBlending
-        });
-
-        // Create the lightning line
-        const lightningLine = new THREE.Line(geometry, material);
-        scene.add(lightningLine);
-        
-        // Animate the lightning arc
-        this.animateLightningArc(lightningLine, material);
-        
         // Add bright points at connection points
         this.createLightningPoints(fromPos, toPos);
     }
-    
-    // DESYNC SAFE: Generate deterministic lightning path (no random)
-    generateDeterministicLightningPath(fromPos, toPos) {
-        const points = [];
-        const segments = 3; // Number of lightning segments
-        
-        points.push(new THREE.Vector3(
-            fromPos.x,
-            fromPos.y + 10,
-            fromPos.z
-        ));
-        
-        // Create jagged lightning path using deterministic values
-        for (let i = 1; i < segments; i++) {
-            const progress = i / segments;
-            
-            // Linear interpolation between start and end
-            const baseX = fromPos.x + (toPos.x - fromPos.x) * progress;
-            const baseY = fromPos.y + (toPos.y - fromPos.y) * progress + 10;
-            const baseZ = fromPos.z + (toPos.z - fromPos.z) * progress;
-            
-            // Add deterministic jagged deviation based on segment index
-            const deviation = 15; // Maximum deviation from straight line
-            const jaggedX = baseX + (((i * 37) % 100) / 100 - 0.5) * deviation; // Deterministic "random"
-            const jaggedY = baseY + (((i * 73) % 100) / 100 - 0.5) * deviation * 0.5;
-            const jaggedZ = baseZ + (((i * 91) % 100) / 100 - 0.5) * deviation;
-            
-            points.push(new THREE.Vector3(
-                jaggedX,
-                jaggedY,
-                jaggedZ
-            ));
-        }
-        
-        points.push(new THREE.Vector3(
-            toPos.x,
-            toPos.y + 10,
-            toPos.z
-        ));
-        
-        return points;
-    }
-    
-    animateLightningArc(lightningLine, material) {
-        // Use game time for deterministic animation instead of real time
-        const startTime = this.game.state.now;
-        const animationDuration = 0.48; // 480ms in game time
-        const flickerInterval = 0.08; // 80ms in game time
-        
-        // DESYNC SAFE: Use scheduling system for animation frames
-        const animateFrame = (frameIndex) => {
-            const currentTime = this.game.state.now;
-            const elapsed = currentTime - startTime;
-            
-            if (elapsed >= animationDuration) {
-                // Fade out and remove
-                this.fadeLightningArc(lightningLine, material);
-                return;
-            }
-            
-            // Deterministic flicker effect based on frame index
-            material.opacity = 0.2 + 0.6 * ((frameIndex % 3) / 2); // Cycles between 0.2, 0.5, 0.8
-            material.color.setHex((frameIndex % 2) === 0 ? 0x00ddff : 0x88aaff);
-            
-            // Schedule next frame
-            this.game.schedulingSystem.scheduleAction(() => {
-                animateFrame(frameIndex + 1);
-            }, flickerInterval, null);
-        };
-        
-        animateFrame(0);
-    }
-    
-    fadeLightningArc(lightningLine, material) {
-        // Quick cleanup instead of complex fade animation for multiplayer safety
-        const scene = this.call.getWorldScene();
-        if (scene && lightningLine.parent) {
-            scene.remove(lightningLine);
-            lightningLine.geometry.dispose();
-            lightningLine.material.dispose();
-        }
-    }
-    
+
     createLightningPoints(fromPos, toPos) {
         // Create bright particle effects at connection points using presets
         if (!this.game.isServer) {

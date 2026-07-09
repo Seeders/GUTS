@@ -17,21 +17,17 @@
   },
   {
    "id": "sco_cripple",
-   "title": "Crippling Shot",
+   "title": "Stealth",
    "cost": 13,
-   "description": "Unlocks Crippling Shot: slow fleeing prey",
-   "unlockAbility": "CripplingShotAbility"
+   "description": "Unlocks Stealth",
+   "unlockAbility": "StealthAbility"
   },
   {
    "id": "sco_venom",
-   "title": "Concentrated Venom",
+   "title": "Blinding Powder",
    "cost": 12,
-   "description": "+35% damage (poison ignores armor)",
-   "statModifiers": {
-    "damage": {
-     "pct": 0.35
-    }
-   }
+   "description": "Unlocks Blinding Powder",
+   "unlockAbility": "BlindingShotAbility"
   }
  ],
  "fileName": "1_di_scout"

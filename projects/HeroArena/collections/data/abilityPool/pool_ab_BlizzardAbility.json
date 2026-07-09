@@ -1,0 +1,19 @@
+{
+ "id": "pool_ab_BlizzardAbility",
+ "title": "Blizzard",
+ "description": "Summons a devastating blizzard of ice shards that freezes enemies in an area",
+ "cost": 16,
+ "requirements": [
+  {
+   "int": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Blizzard",
+  "cost": 16,
+  "description": "Summons a devastating blizzard of ice shards that freezes enemies in an area",
+  "unlockAbility": "BlizzardAbility"
+ }
+}

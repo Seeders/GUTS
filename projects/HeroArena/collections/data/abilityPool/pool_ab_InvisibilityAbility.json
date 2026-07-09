@@ -1,0 +1,19 @@
+{
+ "id": "pool_ab_InvisibilityAbility",
+ "title": "Invisibility",
+ "description": "Vanish completely — attack without revealing yourself; only true sight exposes you.",
+ "cost": 15,
+ "requirements": [
+  {
+   "int": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Invisibility",
+  "cost": 15,
+  "description": "Vanish completely — attack without revealing yourself; only true sight exposes you.",
+  "unlockAbility": "InvisibilityAbility"
+ }
+}

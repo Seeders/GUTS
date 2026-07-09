@@ -1,10 +1,12 @@
 {
  "title": "Mending Wave",
- "icon": "\ud83d\udc9a",
+ "icon": "💚",
  "kind": "skillCharge",
  "skill": "massHeal",
  "description": "A single-use army heal to cast during battle",
+ "cost": 100,
  "weight": 2,
  "minRound": 4,
- "fileName": "healCharge"
+ "fileName": "healCharge",
+ "category": "skill"
 }

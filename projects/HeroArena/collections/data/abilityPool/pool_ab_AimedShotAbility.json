@@ -1,0 +1,23 @@
+{
+ "id": "pool_ab_AimedShotAbility",
+ "title": "Aimed Shot",
+ "description": "A long-aimed shot dealing massive damage.",
+ "cost": 13,
+ "requirements": [
+  {
+   "dex": {
+    "min": 1
+   },
+   "weaponType": [
+    "bow",
+    "crossbow"
+   ]
+  }
+ ],
+ "tech": {
+  "title": "Aimed Shot",
+  "cost": 13,
+  "description": "A long-aimed shot dealing massive damage.",
+  "unlockAbility": "AimedShotAbility"
+ }
+}

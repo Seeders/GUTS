@@ -1,0 +1,19 @@
+{
+ "id": "pool_ab_RendAbility",
+ "title": "Rend",
+ "description": "Open a deep wound on a tough enemy, bleeding it for damage over time.",
+ "cost": 15,
+ "requirements": [
+  {
+   "dex": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Rend",
+  "cost": 15,
+  "description": "Open a deep wound on a tough enemy, bleeding it for damage over time.",
+  "unlockAbility": "RendAbility"
+ }
+}

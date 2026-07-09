@@ -1,0 +1,19 @@
+{
+ "id": "pool_ab_LastStandAbility",
+ "title": "Last Stand",
+ "description": "When badly hurt, dig in: heavy damage reduction and a damage boost for a few seconds.",
+ "cost": 14,
+ "requirements": [
+  {
+   "str": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Last Stand",
+  "cost": 14,
+  "description": "When badly hurt, dig in: heavy damage reduction and a damage boost for a few seconds.",
+  "unlockAbility": "LastStandAbility"
+ }
+}

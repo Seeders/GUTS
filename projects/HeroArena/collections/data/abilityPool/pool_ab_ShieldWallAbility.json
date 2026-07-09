@@ -1,0 +1,19 @@
+{
+ "id": "pool_ab_ShieldWallAbility",
+ "title": "Shield Wall",
+ "description": "Lock shields: the squad shares all damage taken equally for 10s",
+ "cost": 13,
+ "requirements": [
+  {
+   "str": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Shield Wall",
+  "cost": 13,
+  "description": "Lock shields: the squad shares all damage taken equally for 10s",
+  "unlockAbility": "ShieldWallAbility"
+ }
+}

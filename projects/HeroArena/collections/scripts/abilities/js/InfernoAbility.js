@@ -39,7 +39,7 @@ class InfernoAbility extends GUTS.BaseAbility {
         // Schedule the inferno to start after cast time
         this.game.schedulingSystem.scheduleAction(() => {
             this.createInferno(casterEntity, infernoCenter);
-        }, this.castTime, casterEntity);
+        }, 0, casterEntity); // payload at execute — queue already waited to the release point
     }
     
     createInferno(casterEntity, centerPos) {

@@ -67,9 +67,14 @@ class PlacementUISystem extends GUTS.BaseSystem {
         'submitSetSquadFormation',
         'submitBuyUpgradeNode',
         'submitPickReinforcement',
+        'submitSkipReinforcement',
         'submitCastCommanderSkill',
         'submitSellUnit',
         'submitGrantSingleAbility',
+        'submitEquipSquadItem',
+        'submitUnequipSquadItem',
+        'submitTakeLoan',
+        'submitBuyEliteRecruit',
         'submitSpecializeChoice',
         'submitPlaceBuilding',
         'submitMoveBuilding',
@@ -314,8 +319,6 @@ class PlacementUISystem extends GUTS.BaseSystem {
         this.elements.selectionHint  = document.getElementById('selectionHint');
         this.elements.selectionTitle = document.getElementById('selectionTitle');
         this.elements.selectionActions = document.getElementById('selectionActions');
-        this.elements.buildingActions = document.getElementById('buildingActions');
-        this.elements.buildingUpgradesBtn = document.getElementById('buildingUpgradesBtn');
         if (this.elements.attackMoveBtn) {
             this._track(this.elements.attackMoveBtn, 'click', () => this._toggleOrderTargetMode());
         }
@@ -330,9 +333,6 @@ class PlacementUISystem extends GUTS.BaseSystem {
         }
         if (this.elements.sellUnitBtn) {
             this._track(this.elements.sellUnitBtn, 'click', () => this._sellSelectedUnits());
-        }
-        if (this.elements.buildingUpgradesBtn) {
-            this._track(this.elements.buildingUpgradesBtn, 'click', () => this._openUpgradeTree());
         }
         const techTreeClose = document.getElementById('techTreeCloseBtn');
         if (techTreeClose) this._track(techTreeClose, 'click', () => this._closeUpgradeTree());
@@ -371,6 +371,30 @@ class PlacementUISystem extends GUTS.BaseSystem {
             if (this._placingBuildingId) this._cancelBuildingPlacement();
             else this._cancelAbilityTarget();
         });
+        // Item equip: after clicking an inventory item, the next left-click on one
+        // of your squads in the WORLD equips it there. (Capture so it beats the
+        // normal selection/drag handlers when a squad is actually hit.)
+        this._track(document, 'mousedown', (e) => {
+            if (!this._itemTargeting || e.button !== 0) return;
+            if (e.target !== this.canvas) return;
+            const worldPos = this.getWorldPositionFromMouse(e.clientX, e.clientY, false);
+            if (!worldPos) return;
+            const rosterIndex = this._pickOwnedSquadAt(worldPos);
+            if (rosterIndex == null) return;   // missed a squad — stay in targeting, let the click pass
+            const itemId = this._itemTargeting;
+            this._exitItemTargetMode();
+            this.call.submitEquipSquadItem(itemId, rosterIndex, (res) => {
+                if (res?.success === false && res?.reason) {
+                    GUTS.NotificationSystem?.show?.(`Cannot equip: ${res.reason}`, 'error');
+                }
+                this._renderShop(res?.state || res);
+                this._refreshSelectionPanel?.();
+            });
+            e.stopPropagation();
+        });
+        this._track(document, 'keydown', (e) => {
+            if (e.key === 'Escape' && this._itemTargeting) this._exitItemTargetMode();
+        });
         this._shopWired = true;
     }
 
@@ -381,13 +405,21 @@ class PlacementUISystem extends GUTS.BaseSystem {
         if (!overlay || !grid) return;
 
         grid.innerHTML = '';
-        const leaders = data?.options || [];
+        const myId = this.game.clientNetworkManager?.numericPlayerId ?? 0;
+        const leaders = data?.draftsByPlayer?.[myId] || data?.options || [];
+        const unitName = (id) => this.collections.units?.[id]?.title || id;
         leaders.forEach(leader => {
+            const squads = leader.startingSquads || [];
+            const squadLine = squads.length
+                ? `<div class="arena-option-squads">🛡️ Starts with: ${squads.map(unitName).join(' + ')}</div>`
+                : '';
             const card = document.createElement('div');
             card.className = 'arena-option-card';
             card.innerHTML = `
                 <div class="arena-option-name">${leader.label}</div>
-                <div class="arena-option-desc">${leader.bonus}</div>`;
+                <div class="arena-option-desc">${leader.bonus}</div>
+                ${squadLine}
+                <div class="arena-option-tag">❤️ ${leader.hp || ''} commander HP</div>`;
             card.addEventListener('click', () => {
                 this.call.submitLeaderSelection(leader.id);
                 overlay.classList.add('hidden');
@@ -411,6 +443,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
 
     // Round resolution feedback: how much commander damage each side took.
     onRoundResult(data) {
+        this._hideSpeedButton();
         const myId = this.game.clientNetworkManager?.numericPlayerId ?? 0;
         const mine = (data?.report || []).find(r => r.playerId === myId);
         const theirs = (data?.report || []).find(r => r.playerId !== myId);
@@ -422,6 +455,140 @@ class PlacementUISystem extends GUTS.BaseSystem {
         GUTS.NotificationSystem?.show?.(
             `Round ${data.round}: ${parts.join(', ')}.`,
             mine.damage > theirs.damage ? 'error' : 'success', 6000);
+        this._playCommanderDamageOrbs(data);
+    }
+
+    // ─── Commander damage orbs (Mechabellum end-of-round cue) ─────────────────
+    //
+    // Every surviving squad member fires an orb from its battlefield position
+    // at the victim's commander HP bar; the bar only drains as orbs land, so
+    // you SEE which units hurt you and by how much. The server holds the real
+    // subtraction until the volley finishes (AutobattlerRoundSystem's hold),
+    // so the bar drains monotonically — it never dips and refills. _hpAnim
+    // tracks landed damage per victim, floored at the round's final value.
+
+    static ORB_CAP = 40;             // visual cap — damage beyond it lands with the last orbs
+    static ORB_FLIGHT_MS = 850;
+    static ORB_STAGGER_MS = 90;
+
+    _playCommanderDamageOrbs(data) {
+        const orbs = data?.orbs || [];
+        const report = data?.report || [];
+        if (!orbs.length) return;
+        // One volley per round, ever — a duplicate ROUND_RESULT must not re-fire.
+        if (this._orbsPlayedRound === data.round) return;
+        this._orbsPlayedRound = data.round;
+        const myId = this.game.clientNetworkManager?.numericPlayerId ?? 0;
+        const teamToPlayer = {};
+        for (const r of report) teamToPlayer[r.team] = r.playerId;
+
+        // Per-victim drain animation: `landed` grows as orbs hit, `final` is
+        // the round's end value from the report (the server applies the real
+        // subtraction only after the volley, so bars never dip early).
+        this._hpAnim = {};
+        for (const r of report) {
+            if (r.damage > 0) this._hpAnim[r.playerId] = { landed: 0, final: r.commanderHP };
+        }
+        clearTimeout(this._hpAnimTimer);
+        this._hpAnimTimer = setTimeout(() => { this._hpAnim = null; }, 6000);
+
+        // Cap the orb count; fold the overflow's damage into the kept orbs
+        // (round-robin) so the bar still drains by the full amount.
+        let shown = orbs;
+        if (orbs.length > PlacementUISystem.ORB_CAP) {
+            shown = orbs.slice(0, PlacementUISystem.ORB_CAP).map(o => ({ ...o }));
+            orbs.slice(PlacementUISystem.ORB_CAP).forEach((o, i) => {
+                shown[i % shown.length].damage += o.damage;
+            });
+        }
+
+        const perVictimIndex = {};
+        for (const orb of shown) {
+            const victimId = teamToPlayer[orb.victimTeam];
+            if (victimId == null) continue;
+            const barEl = victimId === myId ? this.elements.playerHPBar : this.elements.opponentHPBar;
+            if (!barEl) continue;
+            const idx = perVictimIndex[victimId] = (perVictimIndex[victimId] ?? -1) + 1;
+            this._launchOrb(orb, victimId, victimId === myId, barEl,
+                idx * PlacementUISystem.ORB_STAGGER_MS);
+        }
+    }
+
+    // Game over: the HUD tick stops once the game pauses, so a bar frozen
+    // mid-orb-drain would show stale HP forever. Drop the drain animation,
+    // remove in-flight orbs, and render the true final values one last time.
+    onGameEnd() {
+        this._hpAnim = null;
+        clearTimeout(this._hpAnimTimer);
+        document.querySelectorAll('.cmdr-orb').forEach(el => el.remove());
+        this.updateHUD();
+    }
+
+    _launchOrb(orb, victimId, hitsMe, barEl, delayMs) {
+        const start = this._worldToScreenPx(orb.x, orb.y || 0, orb.z)
+            || { x: window.innerWidth / 2, y: window.innerHeight / 2 };
+        const rect = (barEl.parentElement || barEl).getBoundingClientRect();
+        const end = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+        // Arced flight: control point above the midpoint, with lateral jitter.
+        const ctrl = {
+            x: (start.x + end.x) / 2 + (Math.random() - 0.5) * 160,
+            y: Math.min(start.y, end.y) - 90 - Math.random() * 120
+        };
+
+        const size = Math.round(10 + Math.min(14, orb.damage * 2));
+        const color = hitsMe ? '255,90,90' : '255,215,90';
+        const el = document.createElement('div');
+        el.className = 'cmdr-orb';
+        el.style.cssText = `position:fixed; left:0; top:0; width:${size}px; height:${size}px;
+            margin:${-size / 2}px 0 0 ${-size / 2}px; border-radius:50%; z-index:3000;
+            pointer-events:none; opacity:0;
+            background:radial-gradient(circle at 35% 35%, #fff, rgb(${color}) 55%, rgba(${color},0) 75%);
+            box-shadow:0 0 ${size}px rgba(${color},0.9);`;
+        document.body.appendChild(el);
+
+        const flight = PlacementUISystem.ORB_FLIGHT_MS + Math.random() * 250;
+        let startTime = null;
+        const step = (now) => {
+            if (!el.isConnected) return;   // removed externally (game ended)
+            if (startTime == null) startTime = now + delayMs;
+            const t = (now - startTime) / flight;
+            if (t < 0) { requestAnimationFrame(step); return; }
+            if (t >= 1) { el.remove(); this._orbLanded(victimId, orb.damage, barEl); return; }
+            const u = 1 - t;
+            el.style.opacity = t < 0.1 ? String(t / 0.1) : '1';
+            el.style.transform = `translate(
+                ${u * u * start.x + 2 * u * t * ctrl.x + t * t * end.x}px,
+                ${u * u * start.y + 2 * u * t * ctrl.y + t * t * end.y}px)`;
+            requestAnimationFrame(step);
+        };
+        requestAnimationFrame(step);
+    }
+
+    _orbLanded(victimId, damage, barEl) {
+        const anim = this._hpAnim?.[victimId];
+        if (anim) anim.landed += damage;
+        // Impact flash on the HP bar.
+        const section = barEl.parentElement || barEl;
+        section.style.transition = 'none';
+        section.style.filter = 'brightness(2)';
+        requestAnimationFrame(() => {
+            section.style.transition = 'filter 0.25s';
+            section.style.filter = '';
+        });
+    }
+
+    // World → viewport pixel coords (null if behind the camera).
+    _worldToScreenPx(x, y, z) {
+        const camera = this.call.getCamera?.();
+        const canvas = this.canvas || this.game.canvas;
+        if (!camera || !canvas) return null;
+        const v = new THREE.Vector3(x, y, z).project(camera);
+        if (v.z > 1) return null;
+        const rect = canvas.getBoundingClientRect();
+        return {
+            x: rect.left + (v.x + 1) / 2 * rect.width,
+            y: rect.top + (-v.y + 1) / 2 * rect.height
+        };
     }
 
     // ─── Commander skills (battle actives) ───────────────────────────────────
@@ -518,13 +685,13 @@ class PlacementUISystem extends GUTS.BaseSystem {
         this._speedBtn.textContent = `⏩ ${this.game.state.battleSpeed || 1}×`;
     }
 
-    onBattleStart() {
+    _showSpeedButton() {
         this._ensureSpeedButton();
         if (this._speedBtn) this._speedBtn.style.display = 'block';
         this._updateSpeedButton();
     }
 
-    onRoundResult() {
+    _hideSpeedButton() {
         // Speed always resets at the end of the round.
         this.game.state.battleSpeed = 1;
         if (this._speedBtn) this._speedBtn.style.display = 'none';
@@ -542,24 +709,45 @@ class PlacementUISystem extends GUTS.BaseSystem {
         const subtitle = document.getElementById('heroSelectSubtitle');
         if (!overlay || !grid) return;
 
+        const skipGold = GUTS.ArmyShopSystem?.SKIP_REINFORCEMENT_GOLD ?? 50;
         if (title)    title.textContent = `Reinforcements — Round ${this.game.state.round || 1}`;
-        if (subtitle) subtitle.textContent = 'Choose one';
+        if (subtitle) subtitle.textContent = `Choose one — or skip for +${skipGold} supply`;
 
         grid.innerHTML = '';
+        const gold = this._shopState?.gold ?? 0;
         (data.options || []).forEach((option, index) => {
+            const cost = option.cost || 0;
+            const affordable = cost === 0 || gold >= cost;
             const card = document.createElement('div');
-            card.className = 'arena-option-card';
+            card.className = `arena-option-card ${affordable ? '' : 'arena-option-poor'}`;
             card.innerHTML = `
                 <div class="arena-option-name">${option.icon || '🎁'} ${option.title}</div>
-                <div class="arena-option-desc">${option.description || ''}</div>`;
+                <div class="arena-option-desc">${option.description || ''}</div>
+                <div class="arena-option-tag">${cost > 0 ? `${cost}g` : 'Free'}</div>`;
             card.addEventListener('click', () => {
+                if (!affordable) { GUTS.NotificationSystem?.show?.('Not enough supply', 'error'); return; }
                 this.call.submitPickReinforcement(index, (res) => {
+                    if (res?.success === false && res?.reason === 'insufficient_gold') {
+                        GUTS.NotificationSystem?.show?.('Not enough supply', 'error');
+                    }
+                    // Item cards drop into the commander inventory — equip later.
                     this._renderShop(res?.state || res);
                 });
                 overlay.classList.add('hidden');
             });
             grid.appendChild(card);
         });
+        // Mechabellum: decline the card for extra supply.
+        const skip = document.createElement('div');
+        skip.className = 'arena-option-card arena-option-skip';
+        skip.innerHTML = `
+            <div class="arena-option-name">⏭ Skip</div>
+            <div class="arena-option-desc">Take +${skipGold} supply instead</div>`;
+        skip.addEventListener('click', () => {
+            this.call.submitSkipReinforcement((res) => this._renderShop(res?.state || res));
+            overlay.classList.add('hidden');
+        });
+        grid.appendChild(skip);
         overlay.classList.remove('hidden');
     }
 
@@ -651,15 +839,26 @@ class PlacementUISystem extends GUTS.BaseSystem {
 
         // The HUD health bars show each side's COMMANDER HP — surviving enemy
         // units chip it down after every battle; 0 loses the match.
-        const COMMANDER_HP_MAX = this.game.autobattlerRoundSystem?.constructor?.COMMANDER_HP || 1000;
+        const FALLBACK_HP_MAX = this.game.autobattlerRoundSystem?.constructor?.COMMANDER_HP || 1000;
+        // Max HP is per-player (leaders bring different commander HP).
+        const maxHP = (stats) => stats.commanderMaxHP || FALLBACK_HP_MAX;
+        // End-of-round orbs: the server holds the real subtraction until the
+        // volley lands, so during the volley the bar is commanderHP (still
+        // pre-damage) minus what has landed so far — floored at the round's
+        // final value so it can only ever go DOWN (_playCommanderDamageOrbs).
+        const shownHP = (stats) => {
+            const hp = stats.commanderHP ?? maxHP(stats);
+            const anim = this._hpAnim?.[stats.playerId];
+            return anim ? Math.max(anim.final, hp - anim.landed) : hp;
+        };
         if (myStats) {
             this._renderTownHallBar(
-                { current: myStats.commanderHP ?? COMMANDER_HP_MAX, max: COMMANDER_HP_MAX },
+                { current: shownHP(myStats), max: maxHP(myStats) },
                 this.elements.playerHPBar, this.elements.playerHPValue);
         }
         if (opStats) {
             this._renderTownHallBar(
-                { current: opStats.commanderHP ?? COMMANDER_HP_MAX, max: COMMANDER_HP_MAX },
+                { current: shownHP(opStats), max: maxHP(opStats) },
                 this.elements.opponentHPBar, this.elements.opponentHPValue);
         }
 
@@ -670,7 +869,8 @@ class PlacementUISystem extends GUTS.BaseSystem {
         // Battle countdown — counts down to the round deadline (incl. the siege
         // window extension, which the server publishes via state/broadcast).
         if (this.elements.battleTimer) {
-            const inBattle = this.game.state.phase === this.enums.gamePhase.battle;
+            const inBattle = this.game.state.phase === this.enums.gamePhase.battle
+                && !this.game.state.battleIntermission;
             if (inBattle && this.game.state.battleEndsAt != null) {
                 const remaining = Math.max(0, this.game.state.battleEndsAt - (this.game.state.now || 0));
                 this.elements.battleTimer.textContent = `⏳ ${Math.ceil(remaining)}s`;
@@ -1161,7 +1361,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
             || buildingId === 'townHall' || buildingId === 'keep' || buildingId === 'castle')) {
             buildingId = 'townHall';
         }
-        const tree = buildingId ? this.collections?.upgradeTrees?.[buildingId] : null;
+        const tree = buildingId ? this._deckTree(buildingId) : null;
         return {
             entityId: id,
             buildingId,
@@ -1174,22 +1374,20 @@ class PlacementUISystem extends GUTS.BaseSystem {
         const panel = this.elements.selectionPanel;
         if (!panel) return;
 
-        // Building mode: a single owned building → show the panel; the Upgrades button
-        // only appears when the building actually has an upgrade tree.
+        // Building mode: selecting an owned building shows its upgrade tree
+        // inline in the bottom-left stack (no modal, no drill-in button); the
+        // squad selection panel stays hidden.
         const building = this._selectedOwnBuilding();
         if (building) {
             this._selectedBuildingId = building.hasTree ? building.buildingId : null;
-            panel.classList.remove('hidden');
-            if (this.elements.selectionCards) this.elements.selectionCards.innerHTML = '';
-            this.elements.selectionActions?.classList.add('hidden');
-            this.elements.buildingActions?.classList.toggle('hidden', !building.hasTree);
-            if (this.elements.selectionTitle) this.elements.selectionTitle.textContent = building.title;
+            panel.classList.add('hidden');
+            this._renderBuildingTreePanel(building);
             return;
         }
 
         // Unit mode.
         this._selectedBuildingId = null;
-        this.elements.buildingActions?.classList.add('hidden');
+        this._hideBuildingTreePanel();
         this.elements.selectionActions?.classList.remove('hidden');
         if (this.elements.selectionTitle) this.elements.selectionTitle.textContent = 'Selection';
 
@@ -1263,7 +1461,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
             const maxLevel = hx?.constructor?.MAX_LEVEL || 9;
 
             const tags = this._unitTags(def, unitId);
-            const techsAll = this.collections.unitTechs?.[unitId]?.techs || [];
+            const techsAll = this._deckUnitTechs(unitId);
             const owned = new Set(
                 (s.unitTechs?.[unitId]) || (this._myStats()?.unitTechs?.[unitId]) || []);
             const ownedTechs = techsAll.filter(t => owned.has(t.id));
@@ -1282,8 +1480,13 @@ class PlacementUISystem extends GUTS.BaseSystem {
                 <div class="sq-head">
                     ${this._iconImg(def, 'sq-img')}
                     <div class="sq-title">
-                        <div class="sq-name">${def.title || unitId} <span class="sq-level">Lv ${level}${level >= maxLevel ? ' MAX' : ''}</span></div>
+                        <div class="sq-name">${this._unitModPrefix(unitId, s)}${def.title || unitId} <span class="sq-level">Lv ${level}${level >= maxLevel ? ' MAX' : ''}</span></div>
                         <div class="sq-tags">${tags.map(t => `<span class="ut-tag">${t}</span>`).join('')}</div>
+                        ${(entry?.items?.length) ? `<div class="sq-items">${entry.items.map(id => {
+                            const it = this.collections.squadItems?.[id] || {};
+                            return `<span class="sq-item" data-unequip-item="${id}" data-unequip-roster="${info?.rosterIndex ?? ''}"
+                                title="${it.title || id}: ${it.description || ''} — click to unequip">${it.icon || '◈'}</span>`;
+                        }).join('')}</div>` : ''}
                     </div>
                 </div>
                 ${level < maxLevel ? `<div class="sq-xp" title="Combat XP — full bar allows promotion">
@@ -1296,9 +1499,9 @@ class PlacementUISystem extends GUTS.BaseSystem {
                     <div class="sq-techlist-head">⚙ Technologies ${ownedTechs.length}/${techsAll.length}</div>
                     ${techsAll.map(t => {
                         const isOwned = owned.has(t.id);
-                        const escalation = Math.min(70, 14 * owned.size);
+                        const escalation = GUTS.ArmyShopSystem.techEscalation(owned.size);
                         const discount = s.techDiscount || 0;
-                        const price = Math.max(1, Math.ceil(((t.cost || 10) + escalation) * (1 - discount)));
+                        const price = Math.max(1, Math.ceil((GUTS.ArmyShopSystem.techBaseCost(t.cost) + escalation) * (1 - discount)));
                         const affordable = (s.gold ?? 0) >= price;
                         const cls = isOwned ? 'owned' : affordable ? 'buyable' : 'poor';
                         const action = isOwned
@@ -1306,10 +1509,12 @@ class PlacementUISystem extends GUTS.BaseSystem {
                             : affordable
                                 ? `<button class="sq-tech-buy" data-buy-tech="${t.id}" data-tech-unit-id="${unitId}">BUY ${price}g</button>`
                                 : `<span class="sq-tech-cant">${price}g</span>`;
-                        return `<div class="sq-techrow ${cls}" title="${t.description || ''}">
+                        const ab = t.unlockAbility ? this._abilityBlurb(t.unlockAbility) : null;
+                        return `<div class="sq-techrow ${cls}" title="${t.description || ''}${ab ? ` — ${ab.name}: ${ab.text}` : ''}">
                             <span class="sq-techrow-name">${t.title}</span>
                             <span class="sq-techrow-desc">${t.description || ''}</span>
                             ${action}
+                            ${ab ? `<div class="sq-techrow-ability">⚡ ${ab.name} — ${ab.text}</div>` : ''}
                         </div>`;
                     }).join('')}
                 </div>` : ''}
@@ -1320,10 +1525,39 @@ class PlacementUISystem extends GUTS.BaseSystem {
         return `<div class="sq-multi">${squads.length} squads selected</div>` + one(squads[0]);
     }
 
+    // One-line ability summary for tech rows, so "Unlocks X" techs explain
+    // what X actually does: the ability's authored description + key numbers.
+    _abilityBlurb(abilityId) {
+        const a = this.collections.abilities?.[abilityId];
+        if (!a) return null;
+        const bits = [];
+        if (a.damage) bits.push(`${a.damage} dmg`);
+        if (a.drainPerSecond) bits.push(`${a.drainPerSecond}/s drain`);
+        if (a.stunDuration) bits.push(`${a.stunDuration}s stun`);
+        if (a.duration) bits.push(`${a.duration}s duration`);
+        if (a.cooldown) bits.push(`${a.cooldown}s cooldown`);
+        if (a.range) bits.push(`range ${a.range}`);
+        return {
+            name: a.name || abilityId.replace(/Ability$/, ''),
+            text: `${a.description || ''}${bits.length ? ` (${bits.join(' · ')})` : ''}`
+        };
+    }
+
     _wireSelectionTechButton() {
         if (this._selTechWired || !this.elements.selectionCards) return;
         this._selTechWired = true;
         this.elements.selectionCards.addEventListener('click', (e) => {
+            // Click an equipped item chip → unequip it back to the commander inventory.
+            const chip = e.target.closest('[data-unequip-item]');
+            if (chip) {
+                const ri = parseInt(chip.dataset.unequipRoster, 10);
+                if (Number.isNaN(ri)) return;
+                this.call.submitUnequipSquadItem(ri, chip.dataset.unequipItem, (res) => {
+                    this._renderShop(res?.state || res);
+                    this._refreshSelectionPanel();
+                });
+                return;
+            }
             const row = e.target.closest('button[data-buy-tech]');
             if (!row) return;
             this.call.submitBuyUnitTech(row.dataset.techUnitId, row.dataset.buyTech, (res) => {
@@ -1343,6 +1577,20 @@ class PlacementUISystem extends GUTS.BaseSystem {
             if (st?.playerId === myId) return st;
         }
         return null;
+    }
+
+    // Deck-aware effective tech list / building tree for the local player. Routes
+    // through ArmyShopSystem's deck helpers (local skirmish/campaign share the game
+    // instance); falls back to the raw global collections if unavailable.
+    _deckUnitTechs(unitId) {
+        const shop = this.game.armyShopSystem, st = this._myStats();
+        if (shop?._unitTechsFor && st) return shop._unitTechsFor(st, unitId);
+        return this.collections.unitTechs?.[unitId]?.techs || [];
+    }
+    _deckTree(buildingId) {
+        const shop = this.game.armyShopSystem, st = this._myStats();
+        if (shop?._treeFor && st) return shop._treeFor(st, buildingId);
+        return this.collections?.upgradeTrees?.[buildingId] || null;
     }
 
     // Total cost to level every selected own squad once (client-side estimate
@@ -1369,8 +1617,9 @@ class PlacementUISystem extends GUTS.BaseSystem {
             const isReady = entry && hx?.isLevelReady?.(entry);
             if (!isReady) continue;
             ready = true;
-            // Mechabellum: flat 50% of the unit's base recruitment price
-            const base = Math.max(1, Math.ceil((def.value || 0) / 5));
+            // Mechabellum: flat 50% of the unit's base (tiered) recruitment price —
+            // must match ArmyShopSystem.squadLevelCost on the server.
+            const base = GUTS.ArmyShopSystem.unitPrice(def.id, def);
             total += Math.max(1, Math.ceil(base / 2));
         }
         return { cost: total, ready, allMaxed: unitIds.length > 0 && leveable === 0 };
@@ -1485,83 +1734,135 @@ class PlacementUISystem extends GUTS.BaseSystem {
         return new Set(Array.isArray(fromShop) ? fromShop : []);
     }
 
-    _openUpgradeTree() {
-        const tree = this.collections?.upgradeTrees?.[this._selectedBuildingId];
-        if (!tree) return;
-        this._renderUpgradeTree(tree);
-        document.getElementById('techTreeOverlay')?.classList.remove('hidden');
-    }
-
+    // The unit-tech overlay's close (Esc / backdrop / Close button).
     _closeUpgradeTree() {
         document.getElementById('techTreeOverlay')?.classList.add('hidden');
     }
 
-    // Draw the building's tree: a column per branch, nodes top→bottom with connectors.
-    // Each node is owned / available (can roll in the shop now) / locked. Read-only.
-    _renderUpgradeTree(tree) {
-        const container = document.getElementById('techTreeBranches');
-        const titleEl = document.getElementById('techTreeTitle');
-        if (!container) return;
-        if (titleEl) titleEl.textContent = `${tree.title || 'Building'} — Upgrades`;
+    // ─── Building upgrade panel (inline, bottom-left stack — no modal) ──────────
+    //
+    // Selecting an owned building shows its upgrade tree as a regular
+    // left-side panel next to the other menus. Branches stack vertically;
+    // each node is a compact row: step number, icon, name + description, and
+    // a live BUY button (or ✔ owned / 🔒 locked). Re-rendered on every shop
+    // broadcast so gold/ownership stay current while the building is selected.
 
+    _renderBuildingTreePanel(building) {
+        const panelEl = document.getElementById('buildingTreePanel');
+        if (!panelEl) return;
+        const tree = building?.hasTree ? this._deckTree(building.buildingId) : null;
+        if (!tree) { panelEl.classList.add('hidden'); return; }
+
+        const titleEl = document.getElementById('buildingTreeTitle');
+        if (titleEl) titleEl.textContent = `🔬 ${tree.title || building.title} — Upgrades`;
+
+        const body = document.getElementById('buildingTreeBody');
+        if (!body) return;
         const owned = this._myOwnedUpgrades();
         const upgrades = this.collections?.upgrades || {};
         const icons = this.collections?.icons || {};
+        const gold = this._shopState?.gold ?? 0;
+        const notPrep = this.game.state.phase !== this.enums.gamePhase.placement;
         const cost = (v) => Math.max(1, Math.ceil((v || 0) / 5)); // mirrors ArmyShopSystem.shopCost
         const stateOf = (node) => {
             if (owned.has(node.upgrade)) return 'owned';
             return (node.requires || []).every(r => owned.has(r)) ? 'available' : 'locked';
         };
 
-        container.innerHTML = (tree.branches || []).map(branch => {
-            const nodes = (branch.nodes || []).map((node, i) => {
+        // Per-round Command Center economy actions (Town Hall / ECON tree only):
+        // Loan, Elite Recruitment toggle, Extra Deploy Slot.
+        const s = this._shopState || {};
+        const econActions = (tree.archetype === 'ECON') ? `
+            <div class="bt-branch">
+                <div class="bt-branch-head">Command Center
+                    <span class="bt-branch-focus">This round</span></div>
+                <div class="bt-node ${s.loanTaken ? 'bt-owned' : 'bt-available'}"
+                     title="Borrow gold now, repay more next round">
+                    <span class="bt-step">💰</span>
+                    <span class="bt-info"><span class="bt-name">Loan</span>
+                        <span class="bt-desc">+${s.loanGold ?? 200}g now, −${s.loanRepay ?? 300}g next round</span></span>
+                    ${s.loanTaken ? '<span class="bt-owned">✔ taken</span>'
+                        : notPrep ? '<span class="bt-price">—</span>'
+                        : '<button class="bt-buy" data-econ-action="loan">TAKE</button>'}
+                </div>
+                <div class="bt-node ${s.eliteRecruit ? 'bt-owned' : 'bt-available'}"
+                     title="One-time purchase — stays active the rest of the round; every recruit arrives at level 2">
+                    <span class="bt-step">⭐</span>
+                    <span class="bt-info"><span class="bt-name">Elite Recruitment</span>
+                        <span class="bt-desc">Recruits arrive at Lv 2 this round</span></span>
+                    ${s.eliteRecruit ? '<span class="bt-owned">✔ active</span>'
+                        : notPrep ? '<span class="bt-price">—</span>'
+                        : `<button class="bt-buy" data-econ-action="elite">BUY ${s.eliteRecruitCost ?? 100}g</button>`}
+                </div>
+                <div class="bt-node bt-available"
+                     title="One more squad you can recruit from the menu this round">
+                    <span class="bt-step">🎖</span>
+                    <span class="bt-info"><span class="bt-name">Extra Deploy Slot</span>
+                        <span class="bt-desc">Deploys ${s.deploysUsed ?? 0}/${s.deploySlots ?? 2} — +1 this round</span></span>
+                    ${notPrep ? '<span class="bt-price">—</span>'
+                        : `<button class="bt-buy" data-econ-action="deploy">+1 (${s.nextSlotCost ?? 100}g)</button>`}
+                </div>
+            </div>` : '';
+
+        body.innerHTML = econActions + (tree.branches || []).map(branch => {
+            const rows = (branch.nodes || []).map((node, i) => {
                 const def = upgrades[node.upgrade] || {};
                 const state = stateOf(node);
+                const price = cost(def.value);
                 const imagePath = icons[def.icon]?.imagePath;
                 const img = imagePath
-                    ? `<img class="tt-node-img" src="./resources/${imagePath}" alt="">`
-                    : `<span class="tt-node-img tt-node-fallback">★</span>`;
-                const badge = state === 'owned' ? '✔ Owned'
-                    : state === 'available' ? '🛒 Buy' : '🔒 Locked';
-                const edge = i > 0 ? `<div class="tt-edge tt-edge-${state}"></div>` : '';
-                return `${edge}
-                    <div class="tt-node tt-${state}" ${state === 'available' ? `data-upgrade-id="${node.upgrade}"` : ''}>
-                        ${img}
-                        <div class="tt-node-body">
-                            <div class="tt-node-name">${def.title || node.upgrade}</div>
-                            <div class="tt-node-desc">${def.description || ''}</div>
-                            <div class="tt-node-meta">
-                                <span class="tt-node-cost">💰 ${cost(def.value)}</span>
-                                <span class="tt-node-badge">${badge}</span>
-                            </div>
-                        </div>
-                    </div>`;
+                    ? `<img class="bt-icon" src="./resources/${imagePath}" alt="">`
+                    : `<span class="bt-icon bt-icon-fallback">★</span>`;
+                const right = state === 'owned' ? '<span class="bt-owned">✔</span>'
+                    : state === 'locked' ? `<span class="bt-price">🔒 ${price}g</span>`
+                    : (gold >= price && !notPrep)
+                        ? `<button class="bt-buy" data-upgrade-id="${node.upgrade}">BUY ${price}g</button>`
+                        : `<span class="bt-price">${price}g</span>`;
+                return `<div class="bt-node bt-${state}" title="${def.description || ''}">
+                    <span class="bt-step">${i + 1}</span>
+                    ${img}
+                    <span class="bt-info">
+                        <span class="bt-name">${def.title || node.upgrade}</span>
+                        <span class="bt-desc">${def.description || ''}</span>
+                    </span>
+                    ${right}
+                </div>`;
             }).join('');
-            return `<div class="tt-branch" data-focus="${branch.focus || ''}">
-                <div class="tt-branch-head">
-                    <span class="tt-branch-name">${branch.label || branch.id}</span>
-                    <span class="tt-branch-focus">${branch.focus || ''}</span>
-                </div>
-                ${nodes}
+            return `<div class="bt-branch">
+                <div class="bt-branch-head">${branch.label || branch.id}
+                    <span class="bt-branch-focus">${branch.focus || ''}</span></div>
+                ${rows}
             </div>`;
         }).join('');
 
-        // Buy on click (Mechabellum tower tech): available nodes are live buttons.
-        if (!container._upgradeWired) {
-            container._upgradeWired = true;
-            container.addEventListener('click', (e) => {
-                const nodeEl = e.target.closest('[data-upgrade-id]');
-                if (!nodeEl) return;
-                this.call.submitBuyUpgradeNode(nodeEl.dataset.upgradeId, (res) => {
+        if (!body._buyWired) {
+            body._buyWired = true;
+            body.addEventListener('click', (e) => {
+                const done = (res) => {
                     if (res?.success === false && res?.reason === 'insufficient_gold') {
                         GUTS.NotificationSystem?.show?.('Not enough gold', 'error');
                     }
                     this._renderShop(res?.state || res);
-                    const tree = this.collections?.upgradeTrees?.[this._selectedBuildingId];
-                    if (tree) this._renderUpgradeTree(tree);
-                });
+                    this._refreshSelectionPanel();   // rows re-render with new gold/ownership
+                };
+                const act = e.target.closest('[data-econ-action]');
+                if (act) {
+                    const a = act.dataset.econAction;
+                    if (a === 'loan') this.call.submitTakeLoan(done);
+                    else if (a === 'elite') this.call.submitBuyEliteRecruit(done);
+                    else if (a === 'deploy') this.call.submitBuyDeploySlot(done);
+                    return;
+                }
+                const btn = e.target.closest('[data-upgrade-id]');
+                if (!btn) return;
+                this.call.submitBuyUpgradeNode(btn.dataset.upgradeId, done);
             });
         }
+        panelEl.classList.remove('hidden');
+    }
+
+    _hideBuildingTreePanel() {
+        document.getElementById('buildingTreePanel')?.classList.add('hidden');
     }
 
     // Cancel the selected squads' orders: they hold position (and the cleared
@@ -1664,56 +1965,11 @@ class PlacementUISystem extends GUTS.BaseSystem {
         this._orderVizFp = '';
     }
 
+    // Order-destination markers were removed from HeroArena (attack-move orders
+    // are legacy here). Kept as a no-op that tears down any stale viz so the
+    // remaining callers stay valid.
     _updateOrderViz() {
-        if (typeof THREE === 'undefined') return;
-        const scene = this.call.getWorldScene?.();
-        if (!scene) return;
-
-        const entries = [];
-        for (const id of this._selectedOwnUnits()) {
-            const order = this._unitOrderInfo(id);
-            if (order.type !== 'attackMove') continue;
-            const pos = this.game.getComponent(id, 'transform')?.position;
-            if (!pos) continue;
-            entries.push({ id, from: { x: pos.x, z: pos.z }, to: order.target });
-        }
-
-        const fp = entries.map(e =>
-            `${e.id}:${e.from.x | 0},${e.from.z | 0}>${e.to.x | 0},${e.to.z | 0}`).join(';');
-        if (fp === this._orderVizFp) return;
         this._clearOrderViz();
-        this._orderVizFp = fp;
-        if (entries.length === 0) return;
-
-        const group = new THREE.Group();
-        for (const e of entries) {
-            const y1 = (this.call.getTerrainHeight?.(e.from.x, e.from.z) ?? 0) + 3;
-            const y2 = (this.call.getTerrainHeight?.(e.to.x, e.to.z) ?? 0) + 3;
-
-            const lineGeo = new THREE.BufferGeometry().setFromPoints([
-                new THREE.Vector3(e.from.x, y1, e.from.z),
-                new THREE.Vector3(e.to.x, y2, e.to.z)
-            ]);
-            const line = new THREE.Line(lineGeo, new THREE.LineDashedMaterial({
-                color: 0xffc857, dashSize: 14, gapSize: 9, transparent: true, opacity: 0.85
-            }));
-            line.computeLineDistances();
-            group.add(line);
-
-            const ring = new THREE.Mesh(
-                new THREE.RingGeometry(18, 24, 32),
-                new THREE.MeshBasicMaterial({
-                    color: 0xffc857, side: THREE.DoubleSide, transparent: true, opacity: 0.9,
-                    depthTest: false
-                })
-            );
-            ring.rotation.x = -Math.PI / 2;
-            ring.position.set(e.to.x, y2 + 1, e.to.z);
-            ring.renderOrder = 999;
-            group.add(ring);
-        }
-        scene.add(group);
-        this._orderVizGroup = group;
     }
 
     _titleCase(s) {
@@ -1722,6 +1978,15 @@ class PlacementUISystem extends GUTS.BaseSystem {
 
     _unitDisplayName(spawnType) {
         return spawnType ? (this.collections?.units?.[spawnType]?.title || null) : null;
+    }
+
+    // Card-modifier prefixes owned for a unit type, as a "Longshot " / "Fortified
+    // Longshot " lead-in (empty string when none). Reads the shop state (defaults
+    // to the last dock state) which carries stats.unitModifiers.
+    _unitModPrefix(unitId, s) {
+        const mods = (s || this._dockState)?.unitModifiers?.[unitId] || [];
+        const px = mods.map(m => m.prefix).filter(Boolean);
+        return px.length ? px.join(' ') + ' ' : '';
     }
 
     // ==================== ARMY SHOP ====================
@@ -1738,11 +2003,10 @@ class PlacementUISystem extends GUTS.BaseSystem {
         if (!this._isMyShopState(state)) return;
         this._shopState = state;
         this._renderShop(state);
-        // Keep the upgrade-tree modal current if it's open (a shop buy may have unlocked nodes).
-        const overlay = document.getElementById('techTreeOverlay');
-        if (overlay && !overlay.classList.contains('hidden') && this._selectedBuildingId) {
-            const tree = this.collections?.upgradeTrees?.[this._selectedBuildingId];
-            if (tree) this._renderUpgradeTree(tree);
+        // Keep the inline building panel current (gold/ownership changed).
+        const panel = document.getElementById('buildingTreePanel');
+        if (panel && !panel.classList.contains('hidden')) {
+            this._renderBuildingTreePanel(this._selectedOwnBuilding());
         }
     }
 
@@ -1827,24 +2091,31 @@ class PlacementUISystem extends GUTS.BaseSystem {
     _renderUnlockedUnits(s) {
         if (!this.elements.unlockedUnitsCards) return;
         this._renderDeploySlots(s);
+        this._renderItemInventory(s);
         this._dockState = s;
         const fielded = new Set(s.ownedUnitTypes || []);
 
         const card = (u, locked) => {
             const def = this.collections.units?.[u.id] || {};
-            const techs = this.collections.unitTechs?.[u.id]?.techs || [];
+            const techs = this._deckUnitTechs(u.id);
             const ownedTechs = (s.unitTechs?.[u.id] || []).length;
-            const affordable = (s.gold ?? 0) >= (locked ? u.unlockCost : u.cost);
+            const lockUsed = locked && s.unlockedThisRound;   // one unlock per round
+            const affordable = (s.gold ?? 0) >= (locked ? u.unlockCost : u.cost) && !lockUsed;
             const tier = GUTS.ArmyShopSystem.unitTier(u.id) || 1;
             const pips = techs.length && fielded.has(u.id)
                 ? `<span class="ud-pips">${'●'.repeat(ownedTechs)}${'○'.repeat(Math.max(0, techs.length - ownedTechs))}</span>` : '';
+            const mods = s.unitModifiers?.[u.id] || [];
+            const modBadge = mods.length
+                ? `<span class="ud-mod" title="${mods.map(m => m.prefix).join(', ')} — reinforcement modifier">✦</span>` : '';
+            const eliteBadge = (!locked && s.eliteRecruit)
+                ? '<span class="ud-elite" title="Elite Recruitment: arrives at level 2">⭐2</span>' : '';
             const techBtn = '';
-            return `<div class="ud-card tier-${tier} ${locked ? 'ud-locked' : ''} ${affordable ? '' : 'ud-poor'}"
+            return `<div class="ud-card tier-${tier} ${locked ? 'ud-locked' : ''} ${lockUsed ? 'ud-unlock-used' : ''} ${affordable ? '' : 'ud-poor'}"
                 data-${locked ? 'locked-id' : 'unit-id'}="${u.id}" data-hover-id="${u.id}">
                 ${this._iconImg(def, 'ud-img')}
                 ${locked ? '<span class="ud-lock">🔒</span>' : ''}
                 <span class="ud-price">${locked ? `${u.unlockCost}g` : `${u.cost}g`}</span>
-                ${pips}${techBtn}
+                ${eliteBadge}${modBadge}${pips}${techBtn}
             </div>`;
         };
 
@@ -1878,7 +2149,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
         const def = this.collections.units?.[unitId] || {};
         const tip = this._ensureTooltip();
         const tags = this._unitTags(def, unitId);
-        const techs = this.collections.unitTechs?.[unitId]?.techs || [];
+        const techs = this._deckUnitTechs(unitId);
         const owned = new Set(s.unitTechs?.[unitId] || []);
         const tier = GUTS.ArmyShopSystem.unitTier(unitId) || 1;
         const locked = (s.locked || []).find(l => l.id === unitId);
@@ -1887,15 +2158,18 @@ class PlacementUISystem extends GUTS.BaseSystem {
             <div class="ut-head">
                 ${this._iconImg(def, 'ut-img')}
                 <div>
-                    <div class="ut-name">${def.title || unitId}</div>
+                    <div class="ut-name">${this._unitModPrefix(unitId, s)}${def.title || unitId}</div>
                     <div class="ut-sub">Tier ${tier}${locked ? ` — 🔒 unlock ${locked.unlockCost}g` : ''}</div>
                     <div class="ut-tags">${tags.map(t => `<span class="ut-tag">${t}</span>`).join('')}</div>
                 </div>
             </div>
             <div class="ut-stats">${this._statRows(def).map(([k, v]) =>
                 `<span class="ut-k">${k}</span><span class="ut-v">${v}</span>`).join('')}</div>
-            ${techs.length ? `<div class="ut-techs">${techs.map(t =>
-                `<div class="ut-tech ${owned.has(t.id) ? 'owned' : ''}">${owned.has(t.id) ? '✔' : '○'} ${t.title} <span class="ut-tech-d">${t.description || ''}</span></div>`).join('')}</div>` : ''}
+            ${techs.length ? `<div class="ut-techs">${techs.map(t => {
+                const ab = t.unlockAbility ? this._abilityBlurb(t.unlockAbility) : null;
+                return `<div class="ut-tech ${owned.has(t.id) ? 'owned' : ''}">${owned.has(t.id) ? '✔' : '○'} ${t.title} <span class="ut-tech-d">${t.description || ''}</span>${
+                    ab ? `<div class="ut-tech-ability">⚡ ${ab.name} — ${ab.text}</div>` : ''}</div>`;
+            }).join('')}</div>` : ''}
             <div class="ut-hint">${locked ? 'Click to unlock' : 'Click to recruit'}</div>`;
         const r = anchorEl.getBoundingClientRect();
         tip.style.display = 'block';
@@ -1909,6 +2183,37 @@ class PlacementUISystem extends GUTS.BaseSystem {
     }
 
     // "Deploys 1/2  [+slot 7g]" header — Mechabellum recruitment allowance.
+    // Commander inventory bar: held items not yet equipped. Click a chip to enter
+    // the pick-a-squad banner and equip it (Diablo-style deferred equipment).
+    _renderItemInventory(s) {
+        let bar = document.getElementById('commanderInventoryBar');
+        if (!bar) {
+            const host = this.elements.unlockedUnitsCards?.parentElement;
+            if (!host) return;
+            bar = document.createElement('div');
+            bar.id = 'commanderInventoryBar';
+            bar.style.cssText = 'display:flex; align-items:center; flex-wrap:wrap; gap:6px; padding:2px 4px 6px; font-size:0.8rem; color:#e6b8ff;';
+            host.insertBefore(bar, this.elements.unlockedUnitsCards);
+            bar.addEventListener('click', (e) => {
+                const chip = e.target.closest('[data-inv-item]');
+                if (!chip) return;
+                // Click to arm; click the same chip again to cancel.
+                if (this._itemTargeting === chip.dataset.invItem) this._exitItemTargetMode();
+                else this._enterItemTargetMode(chip.dataset.invItem);
+            });
+        }
+        const inv = s.itemInventory || [];
+        if (!inv.length) { bar.innerHTML = ''; bar.style.display = 'none'; return; }
+        bar.style.display = 'flex';
+        bar.innerHTML = `<span title="Items your commander is holding — click one, then click a squad in the world to equip it">🎒 Inventory</span>`
+            + inv.map(id => {
+                const it = this.collections.squadItems?.[id] || {};
+                const sel = this._itemTargeting === id ? ' selected' : '';
+                return `<span class="inv-item${sel}" data-inv-item="${id}"
+                    title="${it.title || id}: ${it.description || ''} — click, then click a squad">${it.icon || '◈'} ${it.title || id}</span>`;
+            }).join('');
+    }
+
     _renderDeploySlots(s) {
         let bar = document.getElementById('deploySlotsBar');
         if (!bar) {
@@ -1933,7 +2238,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
         bar.innerHTML = `<span title="New squads you can recruit from the menu this round (free card units don't count)">🎖 Deploys ${used}/${slots}</span>
             <button id="buyDeploySlotBtn" style="padding:1px 8px; font-size:0.72rem; background:rgba(216,180,90,0.15);
                 border:1px solid rgba(216,180,90,0.5); border-radius:3px; color:#e8d9a0; cursor:pointer;"
-                title="Extra recruitment: +1 deploy slot this round">+1 slot (${s.nextSlotCost ?? 7}g)</button>`;
+                title="Extra recruitment: +1 deploy slot this round">+1 slot (${s.nextSlotCost ?? 100}g)</button>`;
     }
 
     _onUnlockedUnitClick(event) {
@@ -1943,12 +2248,20 @@ class PlacementUISystem extends GUTS.BaseSystem {
             this._openUnitTechPanel(techBtn.dataset.techUnit);
             return;
         }
-        // Locked card: one-time tier unlock (Mechabellum: T2 4g / T3 7g / T4 14g)
+        // Locked card: one-time unit unlock (T1 free / T2 50 / T3 200 / T4 350),
+        // limited to ONE unlock per round.
         const lockCard = event.target.closest('[data-locked-id]');
         if (lockCard) {
+            if (this._shopState?.unlockedThisRound) {
+                GUTS.NotificationSystem?.show?.('Only one unit unlock per round', 'error');
+                return;
+            }
             this.call.submitBuyTierUnlock(lockCard.dataset.lockedId, (res) => {
-                if (res?.success === false && res?.reason === 'insufficient_gold') {
-                    GUTS.NotificationSystem?.show?.('Not enough gold to unlock', 'error');
+                if (res?.success === false) {
+                    const msg = res.reason === 'insufficient_gold' ? 'Not enough gold to unlock'
+                        : res.reason === 'unlock_used' ? 'Only one unit unlock per round'
+                        : 'Cannot unlock that unit';
+                    GUTS.NotificationSystem?.show?.(msg, 'error');
                 }
                 this._renderShop(res?.state || res);
             });
@@ -1983,14 +2296,14 @@ class PlacementUISystem extends GUTS.BaseSystem {
         if (!body) return;
 
         const unitDef = this.collections.units?.[unitId] || {};
-        const techs = this.collections.unitTechs?.[unitId]?.techs || [];
+        const techs = this._deckUnitTechs(unitId);
         const s = this._shopState || {};
         const owned = new Set(s.unitTechs?.[unitId] || []);
         const gold = s.gold ?? 0;
-        // Mechabellum escalation: owned techs inflate the rest (+14g each, cap +70)
-        const escalation = Math.min(70, 14 * owned.size);
+        // Mechabellum escalation: owned techs inflate the rest (+200 supply each, cap +1000)
+        const escalation = GUTS.ArmyShopSystem.techEscalation(owned.size);
         const discount = s.techDiscount || 0;
-        const priceOf = (t) => Math.max(1, Math.ceil(((t.cost || 10) + escalation) * (1 - discount)));
+        const priceOf = (t) => Math.max(1, Math.ceil((GUTS.ArmyShopSystem.techBaseCost(t.cost) + escalation) * (1 - discount)));
 
         if (title) title.textContent = `${unitDef.title || unitId} — Technologies`;
         const subtitle = document.querySelector('#techTreeOverlay .arena-overlay-subtitle');
@@ -2002,11 +2315,13 @@ class PlacementUISystem extends GUTS.BaseSystem {
             const affordable = gold >= price;
             const kind = t.unlockAbility ? 'Ability' : (t.unlockUnit ? 'Unlock' : 'Upgrade');
             const cls = `unit-tech-row ${isOwned ? 'owned' : (affordable ? 'buyable' : 'unaffordable')}`;
+            const ab = t.unlockAbility ? this._abilityBlurb(t.unlockAbility) : null;
             return `<div class="${cls}" data-tech-id="${t.id}">
                 <span class="unit-tech-kind">${kind}</span>
                 <span class="unit-tech-info">
                     <span class="unit-tech-title">${t.title}</span>
                     <span class="unit-tech-desc">${t.description || ''}</span>
+                    ${ab ? `<span class="ut-tech-ability">⚡ ${ab.name} — ${ab.text}</span>` : ''}
                 </span>
                 <span class="unit-tech-cost">${isOwned ? '✔ Owned' : `${price}g`}</span>
             </div>`;
@@ -2113,6 +2428,38 @@ class PlacementUISystem extends GUTS.BaseSystem {
             this._exitAbilityTargetMode();
             this._renderShop(res?.state || res);
         });
+    }
+
+    // ── Squad-item equip: click an inventory item, then a squad in the world ──
+    _enterItemTargetMode(itemId) {
+        this._itemTargeting = itemId;
+        document.body.style.cursor = 'crosshair';
+        const item = this.collections.squadItems?.[itemId] || {};
+        GUTS.NotificationSystem?.show?.(
+            `Click one of your squads to equip ${item.icon || ''} ${item.title || 'the item'} (Esc to cancel)`, 'info');
+        if (this._shopState) this._renderItemInventory(this._shopState);   // highlight the picked chip
+    }
+
+    _exitItemTargetMode() {
+        this._itemTargeting = null;
+        document.body.style.cursor = 'default';
+        if (this._shopState) this._renderItemInventory(this._shopState);
+    }
+
+    // Roster index of the player's own squad nearest a world point (null if the
+    // click didn't land on one of their units).
+    _pickOwnedSquadAt(worldPos) {
+        const myId = this.game.clientNetworkManager?.numericPlayerId ?? 0;
+        let best = null, bestD = Infinity;
+        for (const eid of (this.game.getEntitiesWith?.('heroRosterInfo', 'transform') || [])) {
+            const info = this.game.getComponent(eid, 'heroRosterInfo');
+            if (!info || info.playerId !== myId) continue;
+            const p = this.game.getComponent(eid, 'transform')?.position;
+            if (!p) continue;
+            const d = (p.x - worldPos.x) ** 2 + (p.z - worldPos.z) ** 2;
+            if (d < bestD) { bestD = d; best = info.rosterIndex; }
+        }
+        return (best != null && bestD < 90 * 90) ? best : null;
     }
 
     _getMyPlayerStats() {
@@ -2395,6 +2742,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
 
     // Hide the prep panels when leaving placement phase
     onBattleStart() {
+        this._showSpeedButton();
         // Orders can't be issued mid-battle; the selection panel stays (read-only).
         this._cancelOrderTargetMode();
         this._refreshSelectionPanel();

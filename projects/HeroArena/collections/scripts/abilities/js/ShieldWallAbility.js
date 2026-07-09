@@ -1,183 +1,105 @@
+/**
+ * ShieldWallAbility - squad damage link (Mechabellum "Damage Sharing" on
+ * linked Sledgehammers).
+ * Applies the shield_wall buff to the caster AND every living member of the
+ * caster's squad for wallDuration seconds. While ≥2 linked members are alive,
+ * damage dealt to any one of them is dispersed EQUALLY across the whole link —
+ * see DamageSystem STEP 2.5 (_getDamageShareGroup). Each member mitigates its
+ * own share with its own armor/resists.
+ */
 class ShieldWallAbility extends GUTS.BaseAbility {
     static serviceDependencies = [
-        ...GUTS.BaseAbility.serviceDependencies,
-        'setBehaviorMeta',
-        'clearEntityPath'
+        ...GUTS.BaseAbility.serviceDependencies
     ];
 
     constructor(game, abilityData = {}) {
         super(game, abilityData);
 
-        this.wallDuration            = abilityData.wallDuration    ?? 10.0;
-        this.damageReduction         = abilityData.damageReduction ?? 0.75;
-        this.tauntRadius             = abilityData.tauntRadius     ?? 200;
-        this.originalArmorMultiplier = 1.0;
-        this.element                 = this.enums.element[abilityData.element || 'physical'] ?? this.enums.element.physical;
+        this.wallDuration = abilityData.wallDuration ?? 10.0;
+        this.engageRadius = abilityData.tauntRadius  ?? 200; // legacy field name: "enemies close enough to brace for"
+        this.element      = this.enums.element[abilityData.element || 'physical'] ?? this.enums.element.physical;
     }
-    
+
     canExecute(casterEntity) {
-        // Check if already has shield wall to prevent stacking
-        const existingWall = this.game.getComponent(casterEntity, "shieldWall");
-        if (existingWall && existingWall.isActive) return false;
-        
-        // Use when enemies are nearby and threatening
-        const enemies = this.getEnemiesInRange(casterEntity, this.tauntRadius);
-        return enemies.length > 0;
+        // Don't re-link while the buff is still up.
+        const enums = this.game.getEnums();
+        if (this.hasBuff(casterEntity, enums.buffTypes.shield_wall)) return false;
+
+        // A link needs at least one living squadmate besides the caster.
+        if (this.getLivingSquadmates(casterEntity).length === 0) return false;
+
+        // Only worth linking when enemies are actually bearing down.
+        return this.getEnemiesInRange(casterEntity, this.engageRadius).length > 0;
     }
-    
+
     execute(casterEntity) {
         const transform = this.game.getComponent(casterEntity, "transform");
         const casterPos = transform?.position;
         if (!casterPos) return null;
-        
-        // Show immediate cast effect
+
         this.playConfiguredEffects('cast', casterPos);
-        this.logAbilityUsage(casterEntity, `Soldier prepares to form a shield wall...`);
-        
-        // Schedule the shield wall formation after cast time
+        this.logAbilityUsage(casterEntity, `Soldiers lock shields — the line holds as one!`);
+
         this.game.schedulingSystem.scheduleAction(() => {
             this.formShieldWall(casterEntity);
-        }, this.castTime, casterEntity);
+        }, 0, casterEntity); // payload at execute — queue already waited to the release point
     }
-    
+
     formShieldWall(casterEntity) {
         const transform = this.game.getComponent(casterEntity, "transform");
         const casterPos = transform?.position;
-        const casterCombat = this.game.getComponent(casterEntity, "combat");
-        
         if (!casterPos) return;
-        
-        // Create shield formation effect
-        this.playConfiguredEffects('burst', casterPos);
-        
-        // Store original armor for restoration later
-        const originalArmor = casterCombat ? casterCombat.armor : 0;
-        
-        // Apply shield wall component with proper timing
-        const currentTime = this.game.state.now || this.game.state.now || 0;
-        const endTime = currentTime + this.wallDuration;
 
-        this.game.addComponent(casterEntity, "shieldWall", {
-            damageReduction: this.damageReduction,
-            endTime: endTime,
-            tauntRadius: this.tauntRadius,
-            originalArmor: originalArmor,
-            isActive: 1
+        this.playConfiguredEffects('burst', casterPos);
+
+        const enums = this.game.getEnums();
+        const now = this.game.state.now || 0;
+        const endTime = now + this.wallDuration;
+
+        // Link the whole squad: caster + every living squadmate.
+        const members = [casterEntity, ...this.getLivingSquadmates(casterEntity)];
+        members.forEach((memberId, index) => {
+            this.applyBuff(memberId, {
+                buffType: enums.buffTypes.shield_wall,
+                endTime: endTime,
+                appliedTime: now,
+                stacks: 1,
+                sourceEntity: casterEntity
+            });
+
+            // Staggered link visual across the line.
+            this.game.schedulingSystem.scheduleAction(() => {
+                const t = this.game.getComponent(memberId, "transform");
+                if (t?.position) this.playConfiguredEffects('buff', t.position);
+            }, index * 0.1, memberId);
         });
-        
-        // Schedule defensive stance visual effect
+
+        // Expiration visual when the link drops (buff removal itself is
+        // handled centrally by BuffEffectsSystem._reapExpiredBuffs).
         this.game.schedulingSystem.scheduleAction(() => {
-            const transform = this.game.getComponent(casterEntity, "transform");
-            const pos = transform?.position;
-            if (pos) {
-                this.playConfiguredEffects('buff', pos);
-            }
-        }, 0.5, casterEntity);
-        
-        // Apply taunt effect to nearby enemies
-        this.applyTauntToEnemies(casterEntity);
-        
-        // Screen effects for dramatic formation (client only)
-        if (!this.game.isServer && this.game.effectsSystem) {
-            this.game.effectsSystem.playScreenShake(0.3, 1);
-        }
-        
-    
-      
-        
-        // Schedule shield wall expiration warning
-        this.game.schedulingSystem.scheduleAction(() => {
-            this.warnShieldWallEnding(casterEntity);
-        }, this.wallDuration - 1.5, casterEntity);
-        
-        // Schedule shield wall removal (failsafe)
-        this.game.schedulingSystem.scheduleAction(() => {
-            this.removeShieldWall(casterEntity);
+            const t = this.game.getComponent(casterEntity, "transform");
+            if (t?.position) this.playConfiguredEffects('expiration', t.position);
         }, this.wallDuration, casterEntity);
     }
-    
-    applyTauntToEnemies(casterEntity) {
-        const enemies = this.getEnemiesInRange(casterEntity, this.tauntRadius);
-        if (enemies.length === 0) return;
-        
-        // Sort enemies deterministically for consistent processing
-        const sortedEnemies = enemies.slice().sort((a, b) => a - b);
-        
-        let tauntedCount = 0;
-        
-        sortedEnemies.forEach((enemyId, index) => {
-            const enemyTransform = this.game.getComponent(enemyId, "transform");
-            const enemyPos = enemyTransform?.position;
-            const enemyAI = this.game.getComponent(enemyId, "aiState");
-            
-            if (!enemyPos || !enemyAI) return;
-            
-            // Apply taunt component
-            const currentTime = this.game.state.now || this.game.state.now || 0;
-            const tauntEndTime = currentTime + (this.wallDuration * 0.8); // Taunt lasts 80% of shield wall
 
-            this.game.addComponent(enemyId, "taunt", {
-                taunter: casterEntity,
-                endTime: tauntEndTime,
-                radius: this.tauntRadius,
-                isTaunted: 1
-            });
-            
-            // Force AI to target the shield wall user via behavior state
-            const casterTransform = this.game.getComponent(casterEntity, "transform");
-            this.call.setBehaviorMeta( enemyId, {
-                target: casterEntity,
-                targetPosition: casterTransform?.position
-            });
-            this.call.clearEntityPath( enemyId);
-        
-            // Schedule staggered taunt effects for visual appeal
-            this.game.schedulingSystem.scheduleAction(() => {
-                const pos = enemyTransform?.position;
-                if (pos) {
-                    this.playConfiguredEffects('debuff', pos);
-                }
-            }, index * 0.1, enemyId);
-            
-            tauntedCount++;
-        });
-        
-        if (tauntedCount > 0) {
-            this.logAbilityUsage(casterEntity, 
-                `Shield wall taunts ${tauntedCount} enemies to attack!`);
+    // Living members of the caster's squad, excluding the caster, in
+    // deterministic entity-id order. Empty for solo units (no squad, no link).
+    getLivingSquadmates(casterEntity) {
+        const squad = this.game.getComponent(casterEntity, 'squadMember');
+        if (!squad || squad.squadId == null) return [];
+
+        const aliveState = this.enums.deathState?.alive;
+        const mates = [];
+        for (const eid of this.game.getEntitiesWith('squadMember', 'health')) {
+            if (eid === casterEntity) continue;
+            const sm = this.game.getComponent(eid, 'squadMember');
+            if (!sm || sm.squadId !== squad.squadId) continue;
+            const hp = this.game.getComponent(eid, 'health');
+            if (!hp || hp.current <= 0) continue;
+            const ds = this.game.getComponent(eid, 'deathState');
+            if (ds && aliveState != null && ds.state !== aliveState) continue;
+            mates.push(eid);
         }
-    }
-    
-    // FIXED: Shield wall ending warning
-    warnShieldWallEnding(casterEntity) {
-        const shieldWall = this.game.getComponent(casterEntity, "shieldWall");
-        const transform = this.game.getComponent(casterEntity, "transform");
-        const casterPos = transform?.position;
-        
-        // Check if shield wall still exists and is active
-        if (!shieldWall || !shieldWall.isActive || !casterPos) return;
-        
-        // Create warning effect
-        this.playConfiguredEffects('sustained', casterPos);
-     
-    }
-    
-    // FIXED: Proper shield wall removal
-    removeShieldWall(casterEntity) {
-        const shieldWall = this.game.getComponent(casterEntity, "shieldWall");
-        const transform = this.game.getComponent(casterEntity, "transform");
-        const casterPos = transform?.position;
-        
-        if (!shieldWall) return;
-        
-        // Create dissolution effect
-        if (casterPos) {
-            this.playConfiguredEffects('expiration', casterPos);
-        }
-        
-        // Remove shield wall component
-        this.game.removeComponent(casterEntity, "shieldWall");
-        
-       
+        return mates.sort((a, b) => a - b);
     }
 }

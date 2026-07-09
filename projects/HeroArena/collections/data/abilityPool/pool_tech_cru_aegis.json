@@ -1,0 +1,23 @@
+{
+ "id": "pool_tech_cru_aegis",
+ "title": "Aegis",
+ "description": "+8 armor",
+ "cost": 14,
+ "requirements": [
+  {
+   "str": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Aegis",
+  "cost": 14,
+  "description": "+8 armor",
+  "statModifiers": {
+   "armor": {
+    "add": 8
+   }
+  }
+ }
+}

@@ -17,14 +17,10 @@
   },
   {
    "id": "gfi_core",
-   "title": "Molten Core",
+   "title": "Fireball",
    "cost": 16,
-   "description": "+30% damage",
-   "statModifiers": {
-    "damage": {
-     "pct": 0.3
-    }
-   }
+   "description": "Unlocks Fireball",
+   "unlockAbility": "FireBallAbility"
   }
  ],
  "fileName": "0_golemFire"

@@ -1,6 +1,6 @@
 {
   "title": "Hero Arena Headless Scene",
-  "description": "Server-side battle simulation without rendering \u2014 used for AI pre-computation and testing",
+  "description": "Server-side battle simulation without rendering — used for AI pre-computation and testing",
   "systems": [
     "HeadlessSimulationSystem",
     "BaseNetworkSystem",

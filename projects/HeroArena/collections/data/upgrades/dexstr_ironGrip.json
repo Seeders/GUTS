@@ -4,8 +4,30 @@
   "value": 60,
   "icon": "stab",
   "perUnitType": true,
-  "requirements": [ { "dex": { "min": 2 }, "str": { "min": 2 } } ],
-  "target": { "dex": { "min": 2 }, "str": { "min": 2 } },
-  "statModifiers": { "damage": { "add": 10 } },
-  "requiresBuildings": [ "fletchersHall" ]
+  "requirements": [
+    {
+      "dex": {
+        "min": 2
+      },
+      "str": {
+        "min": 2
+      }
+    }
+  ],
+  "target": {
+    "dex": {
+      "min": 2
+    },
+    "str": {
+      "min": 2
+    }
+  },
+  "statModifiers": {
+    "damage": {
+      "add": 10
+    }
+  },
+  "requiresBuildings": [
+    "fletchersHall"
+  ]
 }

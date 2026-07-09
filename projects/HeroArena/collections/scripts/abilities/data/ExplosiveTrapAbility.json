@@ -6,8 +6,18 @@
   "maxTraps": 2,
   "trapComponentName": "explosiveTrap",
   "placementMessage": "Trapper sets an explosive trap!",
-  "castParticleEffectSystems": ["dust_burst"],
-  "targetParticleEffectSystems": ["dust_burst"],
-  "impactParticleEffectSystems": ["fire_burst_core", "fire_burst_secondary", "smoke_burst"],
-  "expirationParticleEffectSystems": ["dust_burst"]
+  "castParticleEffectSystems": [
+    "dust_burst"
+  ],
+  "targetParticleEffectSystems": [
+    "dust_burst"
+  ],
+  "impactParticleEffectSystems": [
+    "fire_burst_core",
+    "fire_burst_secondary",
+    "smoke_burst"
+  ],
+  "expirationParticleEffectSystems": [
+    "dust_burst"
+  ]
 }

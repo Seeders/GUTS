@@ -1,0 +1,19 @@
+{
+ "id": "pool_ab_BloodlustAbility",
+ "title": "Bloodlust",
+ "description": "Heal when dealing damage and gain stacking damage bonuses",
+ "cost": 20,
+ "requirements": [
+  {
+   "str": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Bloodlust",
+  "cost": 20,
+  "description": "Heal when dealing damage and gain stacking damage bonuses",
+  "unlockAbility": "BloodlustAbility"
+ }
+}

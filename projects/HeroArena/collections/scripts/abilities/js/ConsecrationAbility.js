@@ -32,7 +32,7 @@ class ConsecrationAbility extends GUTS.BaseAbility {
         // DESYNC SAFE: Use scheduling system for consecration creation
         this.game.schedulingSystem.scheduleAction(() => {
             this.createConsecration(casterEntity, pos);
-        }, this.castTime, casterEntity);
+        }, 0, casterEntity); // payload at execute — queue already waited to the release point
     }
 
     createConsecration(casterEntity, consecrationPos) {

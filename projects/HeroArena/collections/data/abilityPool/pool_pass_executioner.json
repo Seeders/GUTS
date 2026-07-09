@@ -1,0 +1,23 @@
+{
+ "id": "pool_pass_executioner",
+ "title": "Executioner",
+ "description": "+0.5 critical multiplier",
+ "cost": 14,
+ "requirements": [
+  {
+   "dex": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Executioner",
+  "cost": 14,
+  "description": "+0.5 critical multiplier",
+  "statModifiers": {
+   "criticalMultiplier": {
+    "add": 0.5
+   }
+  }
+ }
+}

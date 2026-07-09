@@ -1,0 +1,6 @@
+{
+  "title": "Editor Camera Controller",
+  "description": "Shared camera controls for editor modules with scene/game modes",
+  "filePath": "/projects/scripts/libraries/js/EditorCameraController.js",
+  "fileName": "EditorCameraController"
+}

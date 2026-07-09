@@ -1,0 +1,9 @@
+{
+  "title": "Terrain Editor",
+  "modals": [
+    "addTerrainType",
+    "generateIsoSprites"
+  ],
+  "fileName": "terrainEditor",
+  "filePath": "/projects/ui/interfaces/html/terrainEditor.html"
+}

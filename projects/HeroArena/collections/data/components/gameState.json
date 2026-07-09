@@ -1,0 +1,7 @@
+{
+  "title": "gameState",
+  "description": "Singleton component holding the authoritative game.state object. Registered on a reserved entity by BaseECSGame; game.state is an alias to this component's data. Excluded from wholesale sync (curated flows own state replication).",
+  "schema": {
+    "_storage": "objectData"
+  }
+}

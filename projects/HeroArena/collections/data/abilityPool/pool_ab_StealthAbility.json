@@ -1,0 +1,19 @@
+{
+ "id": "pool_ab_StealthAbility",
+ "title": "Stealth",
+ "description": "Slip into stealth — untargetable (even while attacking) until revealed.",
+ "cost": 13,
+ "requirements": [
+  {
+   "dex": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Stealth",
+  "cost": 13,
+  "description": "Slip into stealth — untargetable (even while attacking) until revealed.",
+  "unlockAbility": "StealthAbility"
+ }
+}

@@ -28,7 +28,7 @@ class WindShieldAbility extends GUTS.BaseAbility {
 
         this.game.schedulingSystem.scheduleAction(() => {
             this.createWindShields(casterEntity);
-        }, this.castTime, casterEntity);
+        }, 0, casterEntity); // payload at execute — queue already waited to the release point
     }
 
     createWindShields(casterEntity) {
@@ -43,7 +43,7 @@ class WindShieldAbility extends GUTS.BaseAbility {
 
             // DESYNC SAFE: Add shield component using scheduling system for duration
             const enums = this.game.getEnums();
-            this.game.addComponent(allyId, "buff", {
+            this.applyBuff(allyId, {
                 buffType: enums.buffTypes.wind_shield,
                 endTime: this.game.state.now + this.shieldDuration,
                 appliedTime: this.game.state.now,
@@ -59,21 +59,21 @@ class WindShieldAbility extends GUTS.BaseAbility {
             // DESYNC SAFE: Schedule shield removal
             this.game.schedulingSystem.scheduleAction(() => {
                 const enums = this.game.getEnums();
-                if (this.game.hasComponent(allyId, "buff")) {
-                    const buff = this.game.getComponent(allyId, "buff");
-                    if (buff && buff.buffType === enums.buffTypes.wind_shield) {
-                        this.game.removeComponent(allyId, "buff");
+                const buff = this.getBuff(allyId, enums.buffTypes.wind_shield);
+                if (!buff) return;
+                // Refreshed since this schedule was armed — the later expiry (or the
+                // central reaper) owns removal now.
+                if (buff.endTime - (this.game.state.now || 0) > 0.1) return;
+                this.removeBuff(allyId, enums.buffTypes.wind_shield);
 
-                        // Stop the tornado effect and play disperse effect
-                        this.stopTornadoEffect(allyId);
+                // Stop the tornado effect and play disperse effect
+                this.stopTornadoEffect(allyId);
 
-                        // Play disperse effect at current position
-                        const transform = this.game.getComponent(allyId, "transform");
-                        const currentPos = transform?.position;
-                        if (currentPos) {
-                            this.playConfiguredEffects('expiration', currentPos);
-                        }
-                    }
+                // Play disperse effect at current position
+                const transform = this.game.getComponent(allyId, "transform");
+                const currentPos = transform?.position;
+                if (currentPos) {
+                    this.playConfiguredEffects('expiration', currentPos);
                 }
             }, this.shieldDuration, allyId);
         });
@@ -108,10 +108,9 @@ class WindShieldAbility extends GUTS.BaseAbility {
                 return;
             }
 
-            const buff = this.game.getComponent(entityId, "buff");
             const enums = this.game.getEnums();
 
-            if (!buff || buff.buffType !== enums.buffTypes?.wind_shield) {
+            if (!this.hasBuff(entityId, enums.buffTypes?.wind_shield)) {
                 this.activeTornadoEffects.delete(entityId);
                 return;
             }

@@ -4,6 +4,6 @@
   "attackSpeedMultiplier": 1,
   "armorMultiplier": 1.5,
   "damageTakenMultiplier": 0.8,
-  "damageReduction": 5,
+  "damageReduction": 0,
   "accuracyReduction": 0
 }

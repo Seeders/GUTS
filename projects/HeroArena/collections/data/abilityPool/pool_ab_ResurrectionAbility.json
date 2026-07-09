@@ -1,0 +1,19 @@
+{
+ "id": "pool_ab_ResurrectionAbility",
+ "title": "Resurrection",
+ "description": "Revive a fallen ally with partial health.",
+ "cost": 20,
+ "requirements": [
+  {
+   "int": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Resurrection",
+  "cost": 20,
+  "description": "Revive a fallen ally with partial health.",
+  "unlockAbility": "ResurrectionAbility"
+ }
+}

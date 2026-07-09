@@ -1,0 +1,8 @@
+{
+  "filePath": "/projects/scripts/systems/js/BaseCameraSystem.js",
+  "services": [
+    "getZoomLevel",
+    "positionCameraAtStart"
+  ],
+  "fileName": "BaseCameraSystem"
+}

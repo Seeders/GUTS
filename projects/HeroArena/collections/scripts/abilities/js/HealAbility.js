@@ -42,7 +42,7 @@ class HealAbility extends GUTS.BaseAbility {
             if (targetPos) {
                 this.performHeal(casterEntity, target, targetPos);
             }
-        }, this.castTime, casterEntity);
+        }, 0, casterEntity); // payload at execute — queue already waited to the release point
     }
     
     performHeal(casterEntity, targetId, targetPos) {

@@ -3,7 +3,7 @@
   "filePath": "/projects/HeroArena/collections/scripts/abilities/js/ChainLightningAbility.js",
   "name": "Chain Lightning",
   "description": "Lightning that jumps between multiple enemies",
-  "cooldown": 4.0,
+  "cooldown": 4,
   "range": 250,
   "manaCost": 40,
   "targetType": "enemy",
@@ -15,6 +15,11 @@
   "jumpRange": 70,
   "damageReduction": 0.8,
   "element": "lightning",
-  "castParticleEffectSystems": ["lightning_flash"],
-  "chainParticleEffectSystems": ["lightning_sparks", "lightning_arc"]
+  "castParticleEffectSystems": [
+    "lightning_flash"
+  ],
+  "chainParticleEffectSystems": [
+    "lightning_sparks",
+    "lightning_arc"
+  ]
 }

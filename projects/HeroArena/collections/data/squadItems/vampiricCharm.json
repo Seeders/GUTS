@@ -1,0 +1,7 @@
+{
+ "title": "Vampiric Charm",
+ "icon": "🩸",
+ "description": "Heals for 25% of damage dealt (lifesteal)",
+ "statModifiers": { "lifeLeech": { "add": 0.25 } },
+ "fileName": "vampiricCharm"
+}

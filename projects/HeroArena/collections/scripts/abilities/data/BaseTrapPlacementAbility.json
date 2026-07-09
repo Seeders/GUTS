@@ -1,5 +1,7 @@
 {
   "fileName": "BaseTrapPlacementAbility",
   "filePath": "/projects/HeroArena/collections/scripts/abilities/js/BaseTrapPlacementAbility.js",
-  "targetParticleEffectSystems": ["trap_placement"]
+  "targetParticleEffectSystems": [
+    "trap_placement"
+  ]
 }

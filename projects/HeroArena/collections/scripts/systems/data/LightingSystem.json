@@ -1,0 +1,11 @@
+{
+  "filePath": "/projects/scripts/systems/js/LightingSystem.js",
+  "fileName": "LightingSystem",
+  "services": [
+    "addPointLight",
+    "removePointLight",
+    "setLightIntensity",
+    "setLightColor",
+    "setLightEffect"
+  ]
+}

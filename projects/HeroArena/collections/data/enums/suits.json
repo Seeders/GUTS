@@ -1,0 +1,10 @@
+{
+  "title": "suits",
+  "description": "Standard playing card suits",
+  "values": [
+    "hearts",
+    "diamonds",
+    "clubs",
+    "spades"
+  ]
+}

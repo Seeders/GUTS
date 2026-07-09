@@ -1,0 +1,14 @@
+{
+  "filePath": "/projects/scripts/systems/js/MusicSystem.js",
+  "fileName": "MusicSystem",
+  "services": [
+    "playTrack",
+    "stopTrack",
+    "pauseTrack",
+    "resumeTrack",
+    "isPlaying",
+    "setMusicVolume",
+    "getMusicVolume",
+    "getCurrentTrack"
+  ]
+}

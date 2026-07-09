@@ -4,8 +4,27 @@
   "value": 90,
   "icon": "meteor_shower",
   "perUnitType": true,
-  "requirements": [ { "int": { "min": 3 } } ],
-  "target": { "int": { "min": 3 } },
-  "statModifiers": { "damage": { "pct": 0.30 }, "range": { "add": 20 } },
-  "requiresBuildings": [ "mageTower" ]
+  "requirements": [
+    {
+      "int": {
+        "min": 3
+      }
+    }
+  ],
+  "target": {
+    "int": {
+      "min": 3
+    }
+  },
+  "statModifiers": {
+    "damage": {
+      "pct": 0.3
+    },
+    "range": {
+      "add": 20
+    }
+  },
+  "requiresBuildings": [
+    "mageTower"
+  ]
 }

@@ -8,6 +8,9 @@
     "showVictoryScreen",
     "showDefeatScreen",
     "showGameModeSelect",
+    "showCampaignSelect",
+    "showCampaignHomeBase",
+    "showMissionResults",
     "pauseScreen",
     "resumeScreen"
   ]

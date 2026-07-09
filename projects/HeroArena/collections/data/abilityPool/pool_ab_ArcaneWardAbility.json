@@ -1,0 +1,19 @@
+{
+ "id": "pool_ab_ArcaneWardAbility",
+ "title": "Arcane Ward",
+ "description": "Shield your most wounded nearby ally, cutting the damage it takes.",
+ "cost": 15,
+ "requirements": [
+  {
+   "int": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Arcane Ward",
+  "cost": 15,
+  "description": "Shield your most wounded nearby ally, cutting the damage it takes.",
+  "unlockAbility": "ArcaneWardAbility"
+ }
+}

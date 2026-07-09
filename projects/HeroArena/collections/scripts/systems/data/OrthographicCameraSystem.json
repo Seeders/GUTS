@@ -1,0 +1,10 @@
+{
+  "filePath": "/projects/scripts/systems/js/OrthographicCameraSystem.js",
+  "fileName": "OrthographicCameraSystem",
+  "services": [
+    "cameraLookAt",
+    "rotateCamera",
+    "toggleCameraFollow",
+    "getCameraFollowTarget"
+  ]
+}

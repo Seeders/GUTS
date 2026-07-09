@@ -1,0 +1,19 @@
+{
+ "id": "pool_ab_BattleCryAbility",
+ "title": "Battle Cry",
+ "description": "Rally nearby allies, boosting their damage and morale (does not stack)",
+ "cost": 13,
+ "requirements": [
+  {
+   "str": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Battle Cry",
+  "cost": 13,
+  "description": "Rally nearby allies, boosting their damage and morale (does not stack)",
+  "unlockAbility": "BattleCryAbility"
+ }
+}

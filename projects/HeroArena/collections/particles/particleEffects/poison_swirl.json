@@ -1,0 +1,31 @@
+{
+  "title": "Poison Swirl",
+  "category": "poison",
+  "tags": [
+    "poison",
+    "aura"
+  ],
+  "particleEffectData": {
+    "count": 16,
+    "lifetime": 1.4,
+    "scale": 10,
+    "scaleMultiplier": 1.0,
+    "startColor": "#96c641",
+    "endColor": "#2e5137",
+    "emitterShape": "sphere",
+    "emitterRadius": 20,
+    "heightOffset": 10,
+    "velocityXMin": -30,
+    "velocityXMax": 30,
+    "velocityYMin": 20,
+    "velocityYMax": 70,
+    "velocityZMin": -30,
+    "velocityZMax": 30,
+    "gravity": -40,
+    "drag": 0.96,
+    "fadeOut": true,
+    "scaleOverTime": false,
+    "blending": "additive"
+  },
+  "fileName": "poison_swirl"
+}

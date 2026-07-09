@@ -1,0 +1,23 @@
+{
+ "id": "pool_tech_bal_rapid",
+ "title": "Autoloader",
+ "description": "+30% attack speed",
+ "cost": 16,
+ "requirements": [
+  {
+   "dex": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Autoloader",
+  "cost": 16,
+  "description": "+30% attack speed",
+  "statModifiers": {
+   "attackSpeed": {
+    "pct": 0.3
+   }
+  }
+ }
+}

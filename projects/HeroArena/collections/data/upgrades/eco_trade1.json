@@ -1,6 +1,0 @@
-{
-  "title": "Merchant Guild",
-  "description": "Rerolls cost 1 less gold, and units sell for +15% more.",
-  "value": 50,
-  "economy": { "rerollDiscount": 1, "sellRefundPct": 0.15 }
-}

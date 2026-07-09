@@ -1,0 +1,23 @@
+{
+ "id": "pool_pass_evasive",
+ "title": "Evasive",
+ "description": "+12 evasion",
+ "cost": 14,
+ "requirements": [
+  {
+   "str": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Evasive",
+  "cost": 14,
+  "description": "+12 evasion",
+  "statModifiers": {
+   "evasion": {
+    "add": 12
+   }
+  }
+ }
+}

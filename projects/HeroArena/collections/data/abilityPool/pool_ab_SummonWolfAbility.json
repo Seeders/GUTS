@@ -1,0 +1,19 @@
+{
+ "id": "pool_ab_SummonWolfAbility",
+ "title": "Summon Wolf",
+ "description": "Call forth a loyal wolf companion (max 1 per Beast Master)",
+ "cost": 19,
+ "requirements": [
+  {
+   "dex": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Summon Wolf",
+  "cost": 19,
+  "description": "Call forth a loyal wolf companion (max 1 per Beast Master)",
+  "unlockAbility": "SummonWolfAbility"
+ }
+}

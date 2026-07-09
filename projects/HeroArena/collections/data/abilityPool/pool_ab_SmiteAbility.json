@@ -1,0 +1,19 @@
+{
+ "id": "pool_ab_SmiteAbility",
+ "title": "Holy Smite",
+ "description": "Calls down holy wrath upon the strongest enemy",
+ "cost": 13,
+ "requirements": [
+  {
+   "int": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Holy Smite",
+  "cost": 13,
+  "description": "Calls down holy wrath upon the strongest enemy",
+  "unlockAbility": "SmiteAbility"
+ }
+}

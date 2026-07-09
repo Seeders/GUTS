@@ -1,0 +1,31 @@
+{
+  "title": "Dust Burst",
+  "category": "physical",
+  "tags": [
+    "dust",
+    "burst"
+  ],
+  "particleEffectData": {
+    "count": 22,
+    "lifetime": 0.7,
+    "scale": 18,
+    "scaleMultiplier": 2.0,
+    "startColor": "#b09a78",
+    "endColor": "#5a4a38",
+    "emitterShape": "point",
+    "emitterRadius": 0,
+    "heightOffset": 10,
+    "velocityXMin": -90,
+    "velocityXMax": 90,
+    "velocityYMin": 30,
+    "velocityYMax": 110,
+    "velocityZMin": -90,
+    "velocityZMax": 90,
+    "gravity": 120,
+    "drag": 0.9,
+    "fadeOut": true,
+    "scaleOverTime": true,
+    "blending": "normal"
+  },
+  "fileName": "dust_burst"
+}

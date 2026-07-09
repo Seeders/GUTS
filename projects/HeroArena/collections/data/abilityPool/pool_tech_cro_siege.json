@@ -1,0 +1,23 @@
+{
+ "id": "pool_tech_cro_siege",
+ "title": "Siege Bolts",
+ "description": "+60 attack range",
+ "cost": 16,
+ "requirements": [
+  {
+   "dex": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Siege Bolts",
+  "cost": 16,
+  "description": "+60 attack range",
+  "statModifiers": {
+   "range": {
+    "add": 60
+   }
+  }
+ }
+}

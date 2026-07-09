@@ -7,8 +7,7 @@ class SprintAbility extends GUTS.BaseAbility {
     canExecute(casterEntity) {
         if (!this._meetsWeaponRequirement(casterEntity)) return false;
         const enums = this.game.getEnums();
-        const buff = this.game.getComponent(casterEntity, "buff");
-        return !(buff && buff.buffType === enums.buffTypes.sprinting);
+        return !this.hasBuff(casterEntity, enums.buffTypes.sprinting);
     }
 
     execute(casterEntity) {
@@ -20,19 +19,19 @@ class SprintAbility extends GUTS.BaseAbility {
         this.logAbilityUsage(casterEntity, "Sprints forward!");
 
         this.game.schedulingSystem.scheduleAction(() => {
-            this.applyBuff(casterEntity);
-        }, this.castTime, casterEntity);
+            this._applySprintBuff(casterEntity);
+        }, 0, casterEntity); // payload at execute — queue already waited to the release point
     }
 
-    applyBuff(casterEntity) {
+    _applySprintBuff(casterEntity) {
         const enums = this.game.getEnums();
-        const existing = this.game.getComponent(casterEntity, "buff");
-        if (existing && existing.buffType === enums.buffTypes.sprinting) {
+        const existing = this.getBuff(casterEntity, enums.buffTypes.sprinting);
+        if (existing) {
             existing.endTime = this.game.state.now + this.duration;
             existing.appliedTime = this.game.state.now;
             return;
         }
-        this.game.addComponent(casterEntity, "buff", {
+        this.applyBuff(casterEntity, {
             buffType: enums.buffTypes.sprinting,
             endTime: this.game.state.now + this.duration,
             appliedTime: this.game.state.now,
@@ -43,19 +42,20 @@ class SprintAbility extends GUTS.BaseAbility {
         if (transform?.position) this.playConfiguredEffects('buff', transform.position);
 
         this.game.schedulingSystem.scheduleAction(() => {
-            this.removeBuff(casterEntity);
+            this._expireSprintBuff(casterEntity);
         }, this.duration, casterEntity);
     }
 
-    removeBuff(casterEntity) {
+    _expireSprintBuff(casterEntity) {
         const enums = this.game.getEnums();
-        if (!this.game.hasComponent(casterEntity, "buff")) return;
-        const buff = this.game.getComponent(casterEntity, "buff");
-        if (buff && buff.buffType === enums.buffTypes.sprinting) {
-            this.game.removeComponent(casterEntity, "buff");
-            const t = this.game.getComponent(casterEntity, "transform");
-            if (t?.position) this.playConfiguredEffects('expiration', t.position);
-        }
+        const buff = this.getBuff(casterEntity, enums.buffTypes.sprinting);
+        if (!buff) return;
+        // Refreshed since this schedule was armed — the later expiry (or the
+        // central reaper) owns removal now.
+        if (buff.endTime - (this.game.state.now || 0) > 0.1) return;
+        this.removeBuff(casterEntity, enums.buffTypes.sprinting);
+        const t = this.game.getComponent(casterEntity, "transform");
+        if (t?.position) this.playConfiguredEffects('expiration', t.position);
     }
 }
 

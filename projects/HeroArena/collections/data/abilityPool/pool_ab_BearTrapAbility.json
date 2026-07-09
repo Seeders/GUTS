@@ -1,0 +1,19 @@
+{
+ "id": "pool_ab_BearTrapAbility",
+ "title": "Bear Trap",
+ "description": "Place a hidden trap that snares enemies",
+ "cost": 15,
+ "requirements": [
+  {
+   "dex": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Bear Trap",
+  "cost": 15,
+  "description": "Place a hidden trap that snares enemies",
+  "unlockAbility": "BearTrapAbility"
+ }
+}

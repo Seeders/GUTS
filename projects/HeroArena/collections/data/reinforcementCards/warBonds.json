@@ -1,0 +1,11 @@
+{
+ "title": "War Bonds",
+ "icon": "🏦",
+ "kind": "income",
+ "amount": 100,
+ "description": "+100 gold every round from now on",
+ "weight": 2,
+ "minRound": 4,
+ "fileName": "warBonds",
+ "category": "economy"
+}

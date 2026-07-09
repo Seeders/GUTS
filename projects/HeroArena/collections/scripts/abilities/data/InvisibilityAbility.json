@@ -1,0 +1,21 @@
+{
+  "cooldown": 20,
+  "range": 0,
+  "manaCost": 0,
+  "targetType": "self",
+  "animation": "cast",
+  "priority": 6,
+  "castTime": 0.3,
+  "castParticleEffectSystems": [
+    "dark_sparkles"
+  ],
+  "trailParticleEffectSystems": [],
+  "impactParticleEffectSystems": [
+    "dark_sparkles"
+  ],
+  "expirationParticleEffectSystems": [],
+  "fileName": "InvisibilityAbility",
+  "filePath": "/projects/HeroArena/collections/scripts/abilities/js/InvisibilityAbility.js",
+  "name": "Invisibility",
+  "description": "Vanish completely — attack without revealing yourself; only true sight exposes you."
+}

@@ -5,9 +5,14 @@
     "spawnHeroesForRound",
     "spawnPurchasedUnit",
     "respawnRosterEntry",
+    "removeRosterEntry",
     "despawnBattleHeroes",
     "getHeroEntityId",
+    "getHeroEntityIds",
     "getRosterEntryForEntity",
-    "snapshotHeroPositions"
+    "snapshotHeroPositions",
+    "reapplyStandingOrders",
+    "isUnitLocked",
+    "setSquadFormation"
   ]
 }

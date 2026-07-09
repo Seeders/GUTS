@@ -63,6 +63,20 @@ class GameModeSystem extends GUTS.BaseSystem {
                 onStart: (mode) => {
                     this.call.showSkirmishLobby( mode);
                 }
+            },
+            decks: {
+                id: 'decks',
+                title: 'Decks',
+                icon: '🃏',
+                description: 'Build and edit loadouts — units, abilities, buildings, commander bans',
+                difficulty: 'Loadouts',
+                difficultyClass: 'pve',
+                isMultiplayer: false,
+                maxPlayers: 1,
+                startingGold: 0,
+                onStart: () => {
+                    this.game.deckBuilderSystem?.openDeckBuilder();
+                }
             }
         };
     }

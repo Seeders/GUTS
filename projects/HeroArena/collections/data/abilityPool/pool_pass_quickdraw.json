@@ -1,0 +1,23 @@
+{
+ "id": "pool_pass_quickdraw",
+ "title": "Quickdraw",
+ "description": "+20% attack speed",
+ "cost": 14,
+ "requirements": [
+  {
+   "int": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Quickdraw",
+  "cost": 14,
+  "description": "+20% attack speed",
+  "statModifiers": {
+   "attackSpeed": {
+    "pct": 0.2
+   }
+  }
+ }
+}

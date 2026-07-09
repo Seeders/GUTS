@@ -1,0 +1,31 @@
+{
+  "title": "Trap Placement",
+  "category": "physical",
+  "tags": [
+    "trap",
+    "place"
+  ],
+  "particleEffectData": {
+    "count": 10,
+    "lifetime": 0.6,
+    "scale": 10,
+    "scaleMultiplier": 1.0,
+    "startColor": "#b09a78",
+    "endColor": "#5a4a38",
+    "emitterShape": "ring",
+    "emitterRadius": 18,
+    "heightOffset": 4,
+    "velocityXMin": -20,
+    "velocityXMax": 20,
+    "velocityYMin": 10,
+    "velocityYMax": 50,
+    "velocityZMin": -20,
+    "velocityZMax": 20,
+    "gravity": 80,
+    "drag": 0.92,
+    "fadeOut": true,
+    "scaleOverTime": false,
+    "blending": "normal"
+  },
+  "fileName": "trap_placement"
+}

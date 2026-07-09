@@ -19,27 +19,30 @@ class LeaderSystem extends GUTS.BaseSystem {
     // spawn; leaders with neither (alchemist/warlord) are gold effects handled by the
     // economy system. mods spec mirrors ArmyShopSystem upgrade statModifiers:
     // { <combatField>: { add?, pct? } }, with maxHP routed to the health component.
+    // Commander HP varies by specialist (Mechabellum: starting HP = base +
+    // specialist HP) — the stronger/more scalable the perk, the LESS HP it
+    // brings, so weak or situational picks are compensated.
     static LEADERS = [
-        { id: 'supply',      label: 'Supply Specialist',       archetype: 'int',
-          bonus: '+4 gold every round' },
-        { id: 'quickSupply', label: 'Quick Supply Specialist', archetype: 'int',
-          bonus: '+14 extra gold in round 1' },
-        { id: 'costControl', label: 'Cost Control Specialist', archetype: 'int',
-          bonus: '+7 gold every round, but all units -13% damage and HP',
+        { id: 'supply',      label: 'Supply Specialist',       archetype: 'int', hp: 3000,
+          bonus: '+50 supply every round' },
+        { id: 'quickSupply', label: 'Quick Supply Specialist', archetype: 'int', hp: 4000,
+          bonus: '+200 extra supply in round 1' },
+        { id: 'costControl', label: 'Cost Control Specialist', archetype: 'int', hp: 3200,
+          bonus: '+100 supply every round, but all units -13% damage and HP',
           allUnits: true, mods: { damage: { pct: -0.13 }, maxHP: { pct: -0.13 } } },
-        { id: 'heavyArmor',  label: 'Heavy Armor Specialist',  archetype: 'str',
+        { id: 'heavyArmor',  label: 'Heavy Armor Specialist',  archetype: 'str', hp: 3500,
           bonus: 'All units +17% HP',
           allUnits: true, mods: { maxHP: { pct: 0.17 } } },
-        { id: 'speed',       label: 'Speed Specialist',        archetype: 'dex',
+        { id: 'speed',       label: 'Speed Specialist',        archetype: 'dex', hp: 3500,
           bonus: 'All units +15% move speed',
           allUnits: true, speedPct: 0.15 },
-        { id: 'giant',       label: 'Giant Specialist',        archetype: 'str',
+        { id: 'giant',       label: 'Giant Specialist',        archetype: 'str', hp: 3300,
           bonus: 'Tier 3 and 4 units unlock for free' },
-        { id: 'sniper',      label: 'Marksman Specialist',     archetype: 'dex',
+        { id: 'sniper',      label: 'Marksman Specialist',     archetype: 'dex', hp: 3800,
           bonus: 'Start with a free level-3 Crossbowman' },
-        { id: 'golem',       label: 'Golem Specialist',        archetype: 'str',
+        { id: 'golem',       label: 'Golem Specialist',        archetype: 'str', hp: 3650,
           bonus: 'A free level-2 Stone Golem arrives on round 4' },
-        { id: 'aerial',      label: 'Aerial Specialist',       archetype: 'int',
+        { id: 'aerial',      label: 'Aerial Specialist',       archetype: 'int', hp: 3650,
           bonus: 'Flying units unlock for free and gain +15 range' }
     ];
 

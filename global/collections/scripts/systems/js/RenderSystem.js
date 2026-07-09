@@ -399,17 +399,22 @@ class RenderSystem extends GUTS.BaseSystem {
                 // Mark as spawned immediately to prevent race condition with async spawn
                 this.spawnedEntities.add(entityId);
 
-                // Spawn new entity using numeric indices (reuse object to avoid allocation)
-                this._spawnData.objectType = objectType;
-                this._spawnData.spawnType = spawnType;
-                this._spawnData.position.x = pos.x;
-                this._spawnData.position.y = pos.y;
-                this._spawnData.position.z = pos.z;
-                this._spawnData.rotation = angle;
-                this._spawnData.transform = transform;
-                this._spawnData.velocity = velocity;
+                // Spawn new entity using numeric indices.
+                // MUST be a fresh object per spawn: spawnEntity awaits texture/model
+                // loads, and a later update() tick would mutate a shared object while
+                // this spawn is still in flight — the resumed spawn then reads the
+                // OTHER entity's objectType/spawnType and wires the billboard to the
+                // wrong sprite animation set (misaligned UV crops of the wrong sheet).
+                const spawnData = {
+                    objectType,
+                    spawnType,
+                    position: { x: pos.x, y: pos.y, z: pos.z },
+                    rotation: angle,
+                    transform,
+                    velocity
+                };
                 const tint = renderable.tint;
-                await this.spawnEntity(entityId, this._spawnData, opacity, tint);
+                await this.spawnEntity(entityId, spawnData, opacity, tint);
                 // Cache initial position - reuse existing cache object if available
                 let posCache = this._entityPositionCache.get(entityId);
                 if (!posCache) {
@@ -479,6 +484,12 @@ class RenderSystem extends GUTS.BaseSystem {
         // Debug: Check if this is the player
         const isPlayer = this.game.getComponent(entityId, 'playerController');
 
+        // Capture indices before awaiting — `data` may be shared/mutated by callers
+        // while the spawn is in flight, and the billboardSpawned event below must
+        // describe THIS entity's def, not whatever was spawned next.
+        const objectType = data.objectType;
+        const spawnType = data.spawnType;
+
         const spawned = await this.entityRenderer.spawnEntity(entityId, data);
         if (isPlayer) {
             console.log(`[RenderSystem] spawnEntity result for player ${entityId}: spawned=${spawned}`);
@@ -499,8 +510,8 @@ class RenderSystem extends GUTS.BaseSystem {
             }
 
             // Trigger billboard spawn event for AnimationSystem
-            // Use EntityRenderer's indexed lookup (data.collection/type are resolved by EntityRenderer)
-            const entityDef = this.entityRenderer.getEntityDefByIndex(data.objectType, data.spawnType);
+            // Use EntityRenderer's indexed lookup (indices captured before the await)
+            const entityDef = this.entityRenderer.getEntityDefByIndex(objectType, spawnType);
             if (isPlayer) {
                 console.log(`[RenderSystem] Player entityDef:`, entityDef?.spriteAnimationSet);
             }

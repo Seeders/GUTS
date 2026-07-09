@@ -1,0 +1,26 @@
+{
+ "id": "pool_pass_stoneskin",
+ "title": "Stoneskin",
+ "description": "+9 armor, +5% HP",
+ "cost": 14,
+ "requirements": [
+  {
+   "int": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Stoneskin",
+  "cost": 14,
+  "description": "+9 armor, +5% HP",
+  "statModifiers": {
+   "armor": {
+    "add": 9
+   },
+   "maxHP": {
+    "pct": 0.05
+   }
+  }
+ }
+}

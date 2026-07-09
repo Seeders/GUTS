@@ -36,7 +36,7 @@ class SummonWolfAbility extends GUTS.BaseAbility {
         // DESYNC SAFE: Use scheduling system for summoning
         this.game.schedulingSystem.scheduleAction(() => {
             this.performSummon(casterEntity, pos, team);
-        }, this.castTime, casterEntity);
+        }, 0, casterEntity); // payload at execute — queue already waited to the release point
     }
     
     performSummon(casterEntity, summonPos, team) {

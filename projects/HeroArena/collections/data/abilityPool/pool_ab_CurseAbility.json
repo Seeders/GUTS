@@ -1,0 +1,19 @@
+{
+ "id": "pool_ab_CurseAbility",
+ "title": "Curse",
+ "description": "Curses enemies, reducing their damage and making them vulnerable",
+ "cost": 14,
+ "requirements": [
+  {
+   "int": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Curse",
+  "cost": 14,
+  "description": "Curses enemies, reducing their damage and making them vulnerable",
+  "unlockAbility": "CurseAbility"
+ }
+}

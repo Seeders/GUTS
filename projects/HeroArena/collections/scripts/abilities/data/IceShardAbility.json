@@ -3,7 +3,7 @@
   "filePath": "/projects/HeroArena/collections/scripts/abilities/js/IceShardAbility.js",
   "name": "Ice Shard",
   "description": "Fires piercing ice shards that slow enemies",
-  "cooldown": 3.0,
+  "cooldown": 3,
   "range": 280,
   "manaCost": 25,
   "targetType": "auto",
@@ -13,10 +13,20 @@
   "autoTrigger": "enemy_in_range",
   "damage": 18,
   "shardCount": 3,
-  "slowDuration": 3.0,
+  "slowDuration": 3,
   "element": "cold",
-  "castParticleEffectSystems": ["ice_shard_core", "ice_shard_glow"],
-  "launchParticleEffectSystems": ["ice_shards"],
-  "trailParticleEffectSystems": ["ice_trail"],
-  "impactParticleEffectSystems": ["ice_shatter", "frost_ring"]
+  "castParticleEffectSystems": [
+    "ice_shard_core",
+    "ice_shard_glow"
+  ],
+  "launchParticleEffectSystems": [
+    "ice_shards"
+  ],
+  "trailParticleEffectSystems": [
+    "ice_trail"
+  ],
+  "impactParticleEffectSystems": [
+    "ice_shatter",
+    "frost_ring"
+  ]
 }

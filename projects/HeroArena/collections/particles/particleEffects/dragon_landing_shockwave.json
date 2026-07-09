@@ -23,7 +23,7 @@
     "velocityZMin": -200,
     "velocityZMax": 200,
     "gravity": 40,
-    "drag": 0.80,
+    "drag": 0.8,
     "fadeOut": true,
     "scaleOverTime": true,
     "blending": "normal"

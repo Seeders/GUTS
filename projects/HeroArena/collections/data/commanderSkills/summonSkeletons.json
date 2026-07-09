@@ -1,0 +1,9 @@
+{
+ "title": "Raise Dead",
+ "icon": "💀",
+ "radius": 120,
+ "summon": { "unit": "0_skeleton", "count": 5 },
+ "effect": "magic",
+ "description": "Summon 5 skeletons at the target point for this battle",
+ "fileName": "summonSkeletons"
+}

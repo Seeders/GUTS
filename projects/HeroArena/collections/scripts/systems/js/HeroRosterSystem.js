@@ -30,7 +30,8 @@ class HeroRosterSystem extends GUTS.BaseSystem {
         'applyLevelScaling',
         'applySquadTargetPosition',
         'getStartingLocationsFromLevel',
-        'tileToWorld'
+        'tileToWorld',
+        'getTerrainHeight'
     ];
 
     static CLASS_SPAWN_MAP = {
@@ -117,6 +118,11 @@ class HeroRosterSystem extends GUTS.BaseSystem {
                 ok++;
                 const level = entry.level || this._calcLevel(entry.roundsPlayed || 0);
                 this._tagHeroEntity(newId, numericPlayerId, rosterIndex, level);
+                // replaceUnit preserves the OLD unit's Y — a ground unit
+                // transforming into a flyer (dragon's Take Flight) would sit
+                // on the ground until the battle sim first hovers it. Settle
+                // to the new def's altitude (flyers up, landers down).
+                this._settleAltitude(newId, newSpawnType);
                 // replaceUnit reuses the same id, so the battle-hero mapping still holds;
                 // guard in case a future impl returns a fresh id.
                 if (!this._entityToRoster.has(newId)) {
@@ -128,6 +134,18 @@ class HeroRosterSystem extends GUTS.BaseSystem {
         }
         // Not on the field (or replaceUnit unavailable) → spawn a fresh copy.
         return this.spawnPurchasedUnit(numericPlayerId, rosterIndex);
+    }
+
+    // Snap an entity's Y to its def's resting altitude: terrain + flyHeight
+    // for flyers, terrain for ground units. Prep-phase only concern — during
+    // battle BaseMovementSystem hovers/grounds units every tick anyway.
+    _settleAltitude(entityId, spawnType) {
+        const def = this.collections.units?.[spawnType];
+        const transform = this.game.getComponent(entityId, 'transform');
+        if (!transform?.position) return;
+        const ground = this.call.getTerrainHeight?.(transform.position.x, transform.position.z);
+        if (ground == null) return;
+        transform.position.y = ground + (def?.isFlying ? (def.flyHeight || 80) : 0);
     }
 
     // Apply hero-specific components/bonuses to a (re)created hero entity.
@@ -325,10 +343,11 @@ class HeroRosterSystem extends GUTS.BaseSystem {
     snapshotHeroPositions() {
         if (!this.game.isServer && !this.game.state?.isLocalGame) return;
 
-        // A squad's saved anchor is its FIRST member's position — member 0 has
-        // offset (0,0), so next round's respawn reproduces the exact layout on
-        // the same grid cells. (A centroid lands on cell BOUNDARIES for even
-        // member counts, drifting units off their selection squares.)
+        // Save each squad's ANCHOR — its first member's position with member 0's
+        // formation offset removed. Respawn re-adds that offset, so the anchor
+        // must exclude it; otherwise wide/deep formations (where member 0 sits a
+        // whole cell off the anchor) drift one cell per round. Anchors stay
+        // cell-centered (offsets are whole cells), so the layout reproduces exactly.
         const seen = new Set();
         for (const { entityId, playerId, rosterIndex } of this.battleHeroEntities) {
             const key = `${playerId}:${rosterIndex}`;
@@ -338,7 +357,12 @@ class HeroRosterSystem extends GUTS.BaseSystem {
             seen.add(key);
             const stats = this._statsByPlayerId(playerId);
             const entry = stats?.heroRoster?.[rosterIndex];
-            if (entry) entry.lastPosition = { x: pos.x, z: pos.z };
+            if (!entry) continue;
+            const def = this.collections.units?.[HeroRosterSystem.resolveSpawnType(entry)] || {};
+            const fw = entry.formation?.w || def.squadWidth || 1;
+            const fh = entry.formation?.h || def.squadHeight || 1;
+            const off0 = HeroRosterSystem.memberOffset(0, fw, fh, this.formationBasis(stats.team));
+            entry.lastPosition = { x: pos.x - off0.x, z: pos.z - off0.z };
         }
     }
 

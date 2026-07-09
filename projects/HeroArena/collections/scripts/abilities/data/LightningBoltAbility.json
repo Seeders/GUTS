@@ -3,7 +3,7 @@
   "filePath": "/projects/HeroArena/collections/scripts/abilities/js/LightningBoltAbility.js",
   "name": "Lightning Bolt",
   "description": "Instantly strikes an enemy with pure lightning",
-  "cooldown": 2.0,
+  "cooldown": 2,
   "range": 350,
   "manaCost": 30,
   "targetType": "auto",
@@ -14,6 +14,11 @@
   "damage": 22,
   "criticalChance": 0.3,
   "element": "lightning",
-  "castParticleEffectSystems": ["lightning_flash"],
-  "impactParticleEffectSystems": ["lightning_sparks", "lightning_arc"]
+  "castParticleEffectSystems": [
+    "lightning_flash"
+  ],
+  "impactParticleEffectSystems": [
+    "lightning_sparks",
+    "lightning_arc"
+  ]
 }

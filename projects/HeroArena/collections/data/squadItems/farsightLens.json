@@ -1,0 +1,7 @@
+{
+ "title": "Farsight Lens",
+ "icon": "🔭",
+ "description": "+50 attack range",
+ "statModifiers": { "range": { "add": 50 } },
+ "fileName": "farsightLens"
+}

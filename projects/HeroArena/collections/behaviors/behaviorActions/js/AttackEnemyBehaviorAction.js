@@ -14,7 +14,8 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
         'triggerSinglePlayAnimation',
         'scheduleDamage',
         'getEntityAbilities',
-        'fireProjectile'
+        'fireProjectile',
+        'getVisibleEnemiesInRange'
     ];
 
     // Anti-building damage scaling by attacker shop tier (ArmyShopSystem.unitTier).
@@ -23,6 +24,10 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
     // (melee + projectile) against entities with a buildingOwner component.
     static BUILDING_DAMAGE_MULT = { 1: 0.25, 2: 1.0, 3: 4.0 };
     static BUILDING_DAMAGE_MULT_DEFAULT = 0.5; // summons/specials with no shop tier
+
+    // Mechabellum turn speed: units rotate toward their target at
+    // combat.turnSpeed rad/s and may only fire once facing within this cone.
+    static FIRE_CONE = 0.35; // rad (~20°)
 
     execute(entityId, game) {
         const log = GUTS.HeadlessLogger;
@@ -39,7 +44,8 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
         // if another node handed it one — drop the target and report failure.
         if (targetId != null) {
             const targetDefAir = game.getUnitTypeDef(game.getComponent(targetId, 'unitType'));
-            if (targetDefAir?.isFlying && !unitDef?.canTargetAir && !unitDef?.isFlying) {
+            const techAntiAir = game.getComponent(entityId, 'heroRosterInfo')?.canTargetAir;
+            if (targetDefAir?.isFlying && !unitDef?.canTargetAir && !unitDef?.isFlying && !techAntiAir) {
                 shared[targetKey] = null;
                 return this.failure();
             }
@@ -69,6 +75,25 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
             const v = game.getComponent(entityId, 'velocity');
             if (v) { v.vx = 0; v.vz = 0; }
             return this.running({ target: targetId, attacking: false, ccLocked: true });
+        }
+
+        // Fear: the unit can't attack and runs AWAY from its target. Hand the
+        // movement system a flee target (behaviorMeta.targetPosition) directly away
+        // from the threat, and don't attack. Hard CC above takes priority.
+        if (game.buffEffectsSystem?.isFeared?.(entityId)) {
+            const myPos = game.getComponent(entityId, 'transform')?.position;
+            const threatPos = game.getComponent(targetId, 'transform')?.position;
+            if (myPos && threatPos) {
+                const dx = myPos.x - threatPos.x;
+                const dz = myPos.z - threatPos.z;
+                const d = Math.sqrt(dx * dx + dz * dz) || 1;
+                const FLEE_DIST = 300;
+                return this.running({
+                    attacking: false, feared: true,
+                    targetPosition: { x: myPos.x + (dx / d) * FLEE_DIST, z: myPos.z + (dz / d) * FLEE_DIST }
+                });
+            }
+            return this.running({ attacking: false, feared: true });
         }
 
         // Taunt: if this entity is taunted, force the target to be the taunt's
@@ -115,19 +140,47 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
     }
 
     performAttack(attackerId, targetId, game, combat, log, unitName, teamName) {
+        // Casting blocks basic attacks: a queued (non-passive) ability owns
+        // the attack slot until it executes — an apprentice mid-cast must not
+        // also throw its basic projectile in the same moment. Passives never
+        // queue, so they're unaffected.
+        const queuedAbility = game.getComponent(attackerId, 'abilityQueue');
+        if (queuedAbility && (queuedAbility.abilityId != null || queuedAbility.abilityStringId)) {
+            return;
+        }
+
         // Face the target
         const attackerTransform = game.getComponent(attackerId, 'transform');
         const attackerPos = attackerTransform?.position;
         const targetTransform = game.getComponent(targetId, 'transform');
         const targetPos = targetTransform?.position;
 
-        // Skip rotation for anchored units (buildings)
+        // Mechabellum turn speed: rotate toward the target at combat.turnSpeed
+        // rad/s and HOLD FIRE until facing within FIRE_CONE. Anchored units
+        // (buildings/towers) skip rotation and fire in any direction.
         const velocity = game.getComponent(attackerId, 'velocity');
         if (attackerPos && targetPos && attackerTransform && !velocity?.anchored) {
             const dx = targetPos.x - attackerPos.x;
             const dz = targetPos.z - attackerPos.z;
             if (!attackerTransform.rotation) attackerTransform.rotation = { x: 0, y: 0, z: 0 };
-            attackerTransform.rotation.y = Math.atan2(dz, dx);
+            const desired = Math.atan2(dz, dx);
+            const current = attackerTransform.rotation.y || 0;
+            let diff = desired - current;
+            while (diff > Math.PI) diff -= 2 * Math.PI;
+            while (diff < -Math.PI) diff += 2 * Math.PI;
+            const turnSpeed = combat.turnSpeed || 10;
+            const maxStep = turnSpeed * (game.deltaTime || 0.05);
+            const remaining = Math.abs(diff) - maxStep;
+            if (remaining <= 0) {
+                attackerTransform.rotation.y = Math.round(desired * 1000000) / 1000000;
+            } else {
+                let next = current + Math.sign(diff) * maxStep;
+                if (next > Math.PI) next -= 2 * Math.PI;
+                if (next < -Math.PI) next += 2 * Math.PI;
+                attackerTransform.rotation.y = Math.round(next * 1000000) / 1000000;
+            }
+            // Still swinging around — can't fire yet (applies to abilities too).
+            if (remaining > AttackEnemyBehaviorAction.FIRE_CONE) return;
         }
 
         // Note: projectile index 0 is valid (first alphabetically sorted projectile like "arrow")
@@ -187,7 +240,20 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
             // Schedule projectile to fire at 50% through the attack animation (release point)
             const projectileDelay = effectiveAttackSpeed > 0 ? (1 / combat.attackSpeed) * 0.5 : 0;
             game.schedulingSystem.scheduleAction(() => {
-                this.fireProjectile(attackerId, targetId, game, combat, totalDamage);
+                // A cast queued between swing start and the release point
+                // ABORTS the swing — otherwise the unit visibly casts (one
+                // animation) yet its basic projectile still comes out an
+                // instant later.
+                const q = game.getComponent(attackerId, 'abilityQueue');
+                if (q && (q.abilityId != null || q.abilityStringId)) return;
+
+                // Multi-Shot passive: every attack fires at up to maxTargets
+                // distinct enemies, and ALL arrows (primary too) take the
+                // damage penalty — the specialization tradeoff.
+                const ms = this._multishotAbility(attackerId);
+                const arrowDamage = ms ? totalDamage * (ms.arrowDamageMult ?? 1) : totalDamage;
+                this.fireProjectile(attackerId, targetId, game, combat, arrowDamage);
+                if (ms) this.fireMultishotExtras(attackerId, targetId, game, combat, arrowDamage, ms);
             }, projectileDelay, attackerId);
         } else if (combat.damage > 0) {
             const damageDelay = effectiveAttackSpeed > 0 ? (1 / combat.attackSpeed) * 0.5 : 0;
@@ -224,10 +290,9 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
     // Bloodlust stacks grant flat bonus damage per stack (damagePerKill field).
     // Stacks are awarded by BuffEffectsSystem when an enemy dies.
     _getBloodlustBonusDamage(attackerId, game) {
-        const buff = game.getComponent(attackerId, 'buff');
-        if (!buff) return 0;
         const enums = game.getEnums();
-        if (buff.buffType !== enums.buffTypes?.bloodlust) return 0;
+        const buff = game.buffEffectsSystem?.getBuffOfType(attackerId, enums.buffTypes?.bloodlust);
+        if (!buff) return 0;
         const buffTypeDef = this._getBuffDefByIndex(game, buff.buffType);
         if (!buffTypeDef) return 0;
         const perStack = buffTypeDef.damagePerKill ?? 0;
@@ -247,6 +312,52 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
         if (availableAbilities.length > 0) {
             // Pass targetId directly as a number - ECS components require numeric values
             game.abilitySystem.useAbility(attackerId, availableAbilities[0].id, targetId);
+        }
+    }
+
+    _multishotAbility(attackerId) {
+        const abilities = this.call.getEntityAbilities?.(attackerId);
+        if (!abilities || abilities.length === 0) return null;
+        return abilities.find(a => a.id === 'MultiShotAbility') || null;
+    }
+
+    // Multi-Shot passive (unit tech): fire arrows at OTHER enemies in attack
+    // range — one per distinct target, closest first, up to maxTargets total
+    // arrows (primary included). Deterministic: distance sort, entity-id
+    // tiebreak. `arrowDamage` arrives pre-penalized (see the release callback).
+    fireMultishotExtras(attackerId, primaryTargetId, game, combat, arrowDamage, ms) {
+        if (!ms) return;
+        const extraCount = Math.max(0, (ms.maxTargets ?? 3) - 1);
+        if (extraCount === 0) return;
+
+        const myPos = game.getComponent(attackerId, 'transform')?.position;
+        if (!myPos) return;
+        const myDef = game.getUnitTypeDef(game.getComponent(attackerId, 'unitType'));
+        const canHitAir = !!(myDef?.canTargetAir || myDef?.isFlying ||
+            game.getComponent(attackerId, 'heroRosterInfo')?.canTargetAir);
+
+        const range = combat.range || 100;
+        const candidates = this.call.getVisibleEnemiesInRange?.(attackerId, range) || [];
+
+        const scored = [];
+        for (const eid of candidates) {
+            if (eid === primaryTargetId) continue;
+            const hp = game.getComponent(eid, 'health');
+            if (!hp || hp.current <= 0) continue;
+            if (!canHitAir) {
+                const def = game.getUnitTypeDef(game.getComponent(eid, 'unitType'));
+                if (def?.isFlying) continue;
+            }
+            const pos = game.getComponent(eid, 'transform')?.position;
+            if (!pos) continue;
+            const d = Math.hypot(pos.x - myPos.x, pos.z - myPos.z);
+            scored.push({ eid, d });
+        }
+        scored.sort((a, b) =>
+            Math.abs(a.d - b.d) < 0.001 ? a.eid - b.eid : a.d - b.d);
+
+        for (const { eid } of scored.slice(0, extraCount)) {
+            this.fireProjectile(attackerId, eid, game, combat, arrowDamage);
         }
     }
 
@@ -291,11 +402,9 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
     // When projectileReflection is enabled on the buff, deflection also schedules
     // damage back at the attacker for the projectile's damage value.
     _tryDeflectProjectile(attackerId, targetId, game, projectileDamage) {
-        const targetBuff = game.getComponent(targetId, 'buff');
-        if (!targetBuff) return false;
-
         const enums = game.getEnums();
-        if (targetBuff.buffType !== enums.buffTypes?.wind_shield) return false;
+        const targetBuff = game.buffEffectsSystem?.getBuffOfType(targetId, enums.buffTypes?.wind_shield);
+        if (!targetBuff) return false;
 
         const buffTypeDef = this._getBuffDefByIndex(game, targetBuff.buffType);
         if (!buffTypeDef) return false;

@@ -3,19 +3,28 @@
   "filePath": "/projects/HeroArena/collections/scripts/abilities/js/ArenaPresenceAbility.js",
   "name": "Arena Presence",
   "description": "Intimidate nearby enemies, reducing their damage and accuracy (does not stack)",
-  "cooldown": 10.0,
+  "cooldown": 10,
   "range": 120,
   "manaCost": 25,
   "targetType": "area",
   "animation": "cast",
   "priority": 5,
   "castTime": 1.2,
-  "intimidationDuration": 15.0,
+  "intimidationDuration": 15,
   "damageReduction": 0.25,
   "accuracyReduction": 0.2,
   "element": "psychological",
-  "castParticleEffectSystems": ["fire_burst_core"],
-  "auraParticleEffectSystems": ["fire_burst_core", "dark_energy"],
-  "burstParticleEffectSystems": ["fire_ring"],
-  "debuffParticleEffectSystems": ["dark_sparkles"]
+  "castParticleEffectSystems": [
+    "fire_burst_core"
+  ],
+  "auraParticleEffectSystems": [
+    "fire_burst_core",
+    "dark_energy"
+  ],
+  "burstParticleEffectSystems": [
+    "fire_ring"
+  ],
+  "debuffParticleEffectSystems": [
+    "dark_sparkles"
+  ]
 }

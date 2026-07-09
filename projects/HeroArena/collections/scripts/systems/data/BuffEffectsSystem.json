@@ -1,0 +1,11 @@
+{
+  "filePath": "/projects/HeroArena/collections/scripts/systems/js/BuffEffectsSystem.js",
+  "fileName": "BuffEffectsSystem",
+  "services": [
+    "applyBuff",
+    "removeBuff",
+    "getBuffs",
+    "getBuffOfType",
+    "hasBuff"
+  ]
+}

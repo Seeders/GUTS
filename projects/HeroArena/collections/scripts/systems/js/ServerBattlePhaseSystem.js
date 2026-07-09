@@ -56,6 +56,10 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
             // Record battle start time (use global game time like client does)
             this.battleStartTime = this.game.state.now || 0;
             this._siegeDeadline = null;
+            // Re-arm the battle-end detector (held true through the post-battle
+            // orb-effect hold — see _completeBattleEnd).
+            this.endBattlePending = false;
+            this.game.state.battleIntermission = false;
             // Published battle deadline for the HUD countdown. Clients set the same
             // initial value themselves at battle start; extensions (siege window)
             // are pushed via the BATTLE_DEADLINE broadcast.
@@ -273,9 +277,12 @@ class ServerBattlePhaseSystem extends GUTS.BaseSystem {
     }
 
     _completeBattleEnd() {
-        this.endBattlePending = false;
+        // endBattlePending stays TRUE and the intermission freeze stays on:
+        // resolveRound holds the battlefield (damage-orb effect) with the phase
+        // still 'battle', so clearing the guard here would let checkForBattleEnd
+        // re-trigger endBattle every tick until the next prep starts. Both are
+        // reset by startBattle / the round system's prep handoff.
         this.endBattleAt = null;
-        this.game.state.battleIntermission = false;
         const survivingByTeam = this._pendingSurvivingByTeam || {};
         this._pendingSurvivingByTeam = null;
 

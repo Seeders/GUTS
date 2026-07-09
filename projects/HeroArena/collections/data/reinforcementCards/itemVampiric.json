@@ -1,0 +1,12 @@
+{
+ "title": "Vampiric Charm",
+ "icon": "🩸",
+ "kind": "squadItem",
+ "itemId": "vampiricCharm",
+ "description": "Equip a squad: lifesteal 25% of damage dealt",
+ "cost": 100,
+ "weight": 2,
+ "minRound": 3,
+ "fileName": "itemVampiric",
+ "category": "item"
+}

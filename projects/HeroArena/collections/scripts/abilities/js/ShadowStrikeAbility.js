@@ -38,7 +38,7 @@ class ShadowStrikeAbility extends GUTS.BaseAbility {
         // DESYNC SAFE: Use scheduling system for teleport and attack
         this.game.schedulingSystem.scheduleAction(() => {
             this.performShadowStrike(casterEntity, target);
-        }, this.castTime, casterEntity);
+        }, 0, casterEntity); // payload at execute — queue already waited to the release point
     }
     
     // DESYNC SAFE: Find closest enemy deterministically

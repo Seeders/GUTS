@@ -1,0 +1,19 @@
+{
+ "id": "pool_ab_ArenaPresenceAbility",
+ "title": "Arena Presence",
+ "description": "Intimidate nearby enemies, reducing their damage and accuracy (does not stack)",
+ "cost": 15,
+ "requirements": [
+  {
+   "str": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Arena Presence",
+  "cost": 15,
+  "description": "Intimidate nearby enemies, reducing their damage and accuracy (does not stack)",
+  "unlockAbility": "ArenaPresenceAbility"
+ }
+}

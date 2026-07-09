@@ -13,6 +13,7 @@
     "lightningResistance": 0,
     "poisonResistance": 0,
     "visionRange": 300,
+    "turnSpeed": 10,
     "stealth": 0,
     "awareness": 50,
     "accuracy": 100,

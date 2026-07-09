@@ -1,10 +1,21 @@
-// Per-tick handler for buff effects that aren't consumed by the shared
-// global DamageSystem. Specifically:
-//   * regenerating:       heals buff holders each second (healPerSecond)
-//   * bloodlust:          credits a kill stack to the killer when an enemy dies
-//   * poisoned_weapon:    applies poison-DoT when the attacker lands a hit
-//   * enchant_weapon:     deals a bonus elemental hit when the attacker lands a hit
-//   * bloodlust:          heals attacker for lifeSteal% of damage dealt
+// Buff store + per-tick handler for buff effects that aren't consumed by the
+// shared global DamageSystem.
+//
+// MULTI-BUFF: each applied buff lives on its OWN entity (a bare entity holding
+// just a `buff` component whose `targetEntity` field points at the buffed
+// unit), so a unit can carry any number of simultaneous buffs. All reads go
+// through the query API below (getBuffs / getBuffOfType / hasBuff), which
+// iterates buff entities in entity-id order — deterministic for lockstep.
+// This is the ONLY buff representation: never addComponent(unit, 'buff', ...)
+// — a buff component belongs on a dedicated buff entity, nothing else.
+//
+// Per-tick effects handled here:
+//   * expiry reaper:       destroys buff entities whose endTime passed or whose target died
+//   * regenerating:        heals buff holders each second (healPerSecond)
+//   * bloodlust:           credits a kill stack to the killer when an enemy dies
+//   * poisoned_weapon:     applies poison-DoT when the attacker lands a hit
+//   * enchant_weapon:      deals a bonus elemental hit when the attacker lands a hit
+//   * bloodlust:           heals attacker for lifeSteal% of damage dealt
 //   * thorns_aura/retaliation: reflects damage back to the attacker
 //
 // On-hit / on-take-damage effects are driven by watching combatState.lastAttackTime
@@ -15,7 +26,13 @@
 // same hit), and wind_shield deflection is handled there too (pre-fire check).
 class BuffEffectsSystem extends GUTS.BaseSystem {
 
-    static services = [];
+    static services = [
+        'applyBuff',
+        'removeBuff',
+        'getBuffs',
+        'getBuffOfType',
+        'hasBuff'
+    ];
 
     static serviceDependencies = [
         'getBuffTypeDef',
@@ -26,7 +43,6 @@ class BuffEffectsSystem extends GUTS.BaseSystem {
     constructor(game) {
         super(game);
         this.game.buffEffectsSystem = this;
-        console.log('[BuffFx] BuffEffectsSystem instantiated');
 
         this._regenAccumulator = 0;
         this._aliveLastTick = new Set();
@@ -42,12 +58,111 @@ class BuffEffectsSystem extends GUTS.BaseSystem {
         this._ccBaselines = new Map(); // entityId -> { maxSpeed, attackSpeed }
     }
 
-    // End-of-round teardown. Buff expiry normally runs off scheduled actions,
-    // which ServerBattlePhaseSystem clears at battle end — and buff.endTime is
-    // compared against the battle clock, which RESETS each round. A leftover
-    // buff/poison on an entity that persists across rounds (buildings) would
-    // therefore zombie-reactivate next battle. Restore CC-modified stats, strip
-    // the components, and reset per-battle tracking.
+    // ---- Buff store API ----------------------------------------------------
+
+    // Applies a buff to targetId on its own buff entity. Re-applying a type the
+    // target already has REFRESHES that buff in place (endTime/appliedTime/
+    // sourceEntity/stacks overwritten with the incoming values) instead of
+    // creating a second instance of the same type. Returns the buff entity id.
+    applyBuff(targetId, { buffType, endTime, appliedTime, stacks, sourceEntity, weaponElement } = {}) {
+        if (targetId == null || buffType == null) return null;
+        const now = this.game.state.now || 0;
+
+        const existingId = this._buffEntityOfType(targetId, buffType);
+        if (existingId != null) {
+            const buff = this.game.getComponent(existingId, 'buff');
+            buff.endTime      = endTime ?? buff.endTime;
+            buff.appliedTime  = appliedTime ?? now;
+            buff.stacks       = stacks ?? buff.stacks ?? 1;
+            if (sourceEntity !== undefined) buff.sourceEntity = sourceEntity;
+            if (weaponElement !== undefined) buff.weaponElement = weaponElement;
+            return existingId;
+        }
+
+        const buffEntity = this.game.createEntity();
+        this.game.addComponent(buffEntity, 'buff', {
+            buffType: buffType,
+            endTime: endTime ?? 0,
+            appliedTime: appliedTime ?? now,
+            stacks: stacks ?? 1,
+            sourceEntity: sourceEntity ?? null,
+            weaponElement: weaponElement ?? null,
+            targetEntity: targetId
+        });
+        return buffEntity;
+    }
+
+    // Removes all buffs of `buffType` from targetId.
+    // Pass buffType == null to strip everything.
+    removeBuff(targetId, buffType = null) {
+        for (const buffEntity of [...this.game.getEntitiesWith('buff')]) {
+            const buff = this.game.getComponent(buffEntity, 'buff');
+            if (!buff || buff.targetEntity !== targetId) continue;
+            if (buffType != null && buff.buffType !== buffType) continue;
+            this.game.destroyEntity(buffEntity);
+        }
+    }
+
+    // All ACTIVE (unexpired) buffs on targetId, in deterministic order.
+    // Returns buff component proxies — callers may mutate fields (e.g. stacks).
+    getBuffs(targetId) {
+        const now = this.game.state.now || 0;
+        const result = [];
+        for (const buffEntity of this.game.getEntitiesWith('buff')) {
+            const buff = this.game.getComponent(buffEntity, 'buff');
+            if (!buff || buff.targetEntity !== targetId) continue;
+            if (buff.endTime && now > buff.endTime) continue;
+            result.push(buff);
+        }
+        return result;
+    }
+
+    getBuffOfType(targetId, buffType) {
+        const buffs = this.getBuffs(targetId);
+        for (const buff of buffs) {
+            if (buff.buffType === buffType) return buff;
+        }
+        return null;
+    }
+
+    hasBuff(targetId, buffType) {
+        return this.getBuffOfType(targetId, buffType) !== null;
+    }
+
+    // Buff entity id (not proxy) holding `buffType` on targetId, or null.
+    _buffEntityOfType(targetId, buffType) {
+        for (const buffEntity of this.game.getEntitiesWith('buff')) {
+            const buff = this.game.getComponent(buffEntity, 'buff');
+            if (buff && buff.targetEntity === targetId && buff.buffType === buffType) {
+                return buffEntity;
+            }
+        }
+        return null;
+    }
+
+    // Destroys buff entities whose duration ended or whose target is gone.
+    // Central expiry — abilities no longer need their own scheduled removals
+    // (their scheduled EFFECTS/visuals are unaffected).
+    _reapExpiredBuffs() {
+        const now = this.game.state.now || 0;
+        for (const buffEntity of [...this.game.getEntitiesWith('buff')]) {
+            const buff = this.game.getComponent(buffEntity, 'buff');
+            if (!buff) continue;
+            // No target = malformed/orphaned buff entity — reap it too.
+            const orphaned = buff.targetEntity == null;
+            const expired = buff.endTime && now > buff.endTime;
+            const targetGone = !orphaned && !this.game.entityAlive?.[buff.targetEntity];
+            if (orphaned || expired || targetGone) this.game.destroyEntity(buffEntity);
+        }
+    }
+
+    // ---- Lifecycle -----------------------------------------------------------
+
+    // End-of-round teardown. buff.endTime is compared against the battle clock,
+    // which RESETS each round — a leftover buff on an entity that persists
+    // across rounds (buildings) would zombie-reactivate next battle. Restore
+    // CC-modified stats, destroy all buff entities, and reset per-battle
+    // tracking.
     onBattleEnd() {
         for (const [entityId, baseline] of this._ccBaselines.entries()) {
             const vel    = this.game.getComponent(entityId, 'velocity');
@@ -58,7 +173,7 @@ class BuffEffectsSystem extends GUTS.BaseSystem {
         this._ccBaselines.clear();
 
         for (const entityId of [...this.game.getEntitiesWith('buff')]) {
-            this.game.removeComponent(entityId, 'buff');
+            this.game.destroyEntity(entityId); // buffs only live on dedicated buff entities
         }
         for (const entityId of [...this.game.getEntitiesWith('poison')]) {
             this.game.removeComponent(entityId, 'poison');
@@ -72,16 +187,9 @@ class BuffEffectsSystem extends GUTS.BaseSystem {
     }
 
     update() {
-        if (!this._loggedFirstUpdate) {
-            console.log('[BuffFx] First update() call', {
-                isServer: this.game.isServer,
-                isLocalGame: this.game.state?.isLocalGame,
-                phase: this.game.state?.phase
-            });
-            this._loggedFirstUpdate = true;
-        }
         // Gameplay logic is server-authoritative (local-machine 2-player counts).
         if (this.game.isServer || this.game.state?.isLocalGame) {
+            this._reapExpiredBuffs();
             this._tickRegeneration();
             this._tickKillDetection();
             this._tickOnHitEffects();
@@ -95,20 +203,24 @@ class BuffEffectsSystem extends GUTS.BaseSystem {
         this._tickPoisonDamageNumbers();
     }
 
+    // ---- Per-tick effects ------------------------------------------------------
+
     // Applies movement / attack-speed modifiers from active CC buffs each tick.
-    // Stores the entity's pre-debuff baseline so we can restore it when the buff
-    // expires. The other CC dimensions (action prevention for stun / freeze /
-    // polymorph / silence) are handled inline by the gating code in
+    // Multipliers from MULTIPLE simultaneous buffs multiply together. Stores the
+    // entity's pre-debuff baseline so we can restore it when the buffs expire.
+    // The other CC dimensions (action prevention for stun / freeze / polymorph /
+    // silence) are handled inline by the gating code in
     // AttackEnemyBehaviorAction.execute and AbilitySystem.useAbility — those
     // call BuffEffectsSystem.isHardCC()/isSilenced() to check.
     _tickCCEffects() {
-        const now = this.enums ? this.game.state.now : 0;
-        const entities = this.game.getEntitiesWith('buff', 'combat');
+        const now = this.game.state.now || 0;
 
-        const stillBuffed = new Set();
-        for (const entityId of entities) {
-            const buff = this.game.getComponent(entityId, 'buff');
-            if (!buff) continue;
+        // Aggregate combined move/attack multipliers per buffed target.
+        const combined = new Map(); // targetId -> { moveMult, atkMult }
+        for (const buffEntity of this.game.getEntitiesWith('buff')) {
+            const buff = this.game.getComponent(buffEntity, 'buff');
+            if (!buff || buff.targetEntity == null) continue;
+            const targetId = buff.targetEntity;
             if (buff.endTime && now > buff.endTime) continue;
 
             const buffTypeDef = this.call.getBuffTypeDef(buff.buffType);
@@ -127,8 +239,13 @@ class BuffEffectsSystem extends GUTS.BaseSystem {
             const atkActive  = (atkMult  != null && atkMult  !== 1);
             if (!moveActive && !atkActive) continue;
 
-            stillBuffed.add(entityId);
+            let agg = combined.get(targetId);
+            if (!agg) { agg = { moveMult: 1, atkMult: 1 }; combined.set(targetId, agg); }
+            if (moveActive) agg.moveMult *= moveMult;
+            if (atkActive)  agg.atkMult  *= atkMult;
+        }
 
+        for (const [entityId, agg] of combined.entries()) {
             // Cache original values once, then apply the modified ones each tick.
             if (!this._ccBaselines.has(entityId)) {
                 const vel    = this.game.getComponent(entityId, 'velocity');
@@ -141,20 +258,20 @@ class BuffEffectsSystem extends GUTS.BaseSystem {
             const baseline = this._ccBaselines.get(entityId);
             const vel    = this.game.getComponent(entityId, 'velocity');
             const combat = this.game.getComponent(entityId, 'combat');
-            if (vel && baseline.maxSpeed != null && moveActive) {
-                vel.maxSpeed = baseline.maxSpeed * moveMult;
+            if (vel && baseline.maxSpeed != null && agg.moveMult !== 1) {
+                vel.maxSpeed = baseline.maxSpeed * agg.moveMult;
                 // Hard stop: zero current velocity too so the unit halts immediately,
                 // not after gradual deceleration through the movement system.
-                if (moveMult === 0) { vel.vx = 0; vel.vz = 0; }
+                if (agg.moveMult === 0) { vel.vx = 0; vel.vz = 0; }
             }
-            if (combat && baseline.attackSpeed != null && atkActive) {
-                combat.attackSpeed = baseline.attackSpeed * atkMult;
+            if (combat && baseline.attackSpeed != null && agg.atkMult !== 1) {
+                combat.attackSpeed = baseline.attackSpeed * agg.atkMult;
             }
         }
 
         // Restore baselines for entities no longer under speed-modifying CC.
-        for (const entityId of this._ccBaselines.keys()) {
-            if (stillBuffed.has(entityId)) continue;
+        for (const entityId of [...this._ccBaselines.keys()]) {
+            if (combined.has(entityId)) continue;
             const baseline = this._ccBaselines.get(entityId);
             const vel    = this.game.getComponent(entityId, 'velocity');
             const combat = this.game.getComponent(entityId, 'combat');
@@ -165,42 +282,49 @@ class BuffEffectsSystem extends GUTS.BaseSystem {
     }
 
     // True if the entity is under a hard-CC buff (can't attack/move).
-    // Used by AttackEnemyBehaviorAction to early-out. Doesn't check buff expiry
-    // because the schedulingSystem actions added by the CC abilities themselves
-    // remove the buff when its duration ends — defense in depth via endTime.
+    // Used by AttackEnemyBehaviorAction to early-out.
     isHardCC(entityId) {
-        const buff = this.game.getComponent(entityId, 'buff');
-        if (!buff) return false;
-        if (buff.endTime && this.game.state.now > buff.endTime) return false;
         const t = this.enums.buffTypes || {};
-        return buff.buffType === t.stunned
-            || buff.buffType === t.frozen
-            || buff.buffType === t.polymorphed
-            || buff.buffType === t.banished;
+        for (const buff of this.getBuffs(entityId)) {
+            if (buff.buffType === t.stunned
+                || buff.buffType === t.frozen
+                || buff.buffType === t.polymorphed
+                || buff.buffType === t.banished) return true;
+        }
+        return false;
+    }
+
+    // Feared: not hard CC (the unit keeps moving) — it flees instead of attacking.
+    // AttackEnemyBehaviorAction reads this to redirect the unit away from its target.
+    isFeared(entityId) {
+        const feared = this.enums.buffTypes?.feared;
+        if (feared == null) return false;
+        for (const buff of this.getBuffs(entityId)) {
+            if (buff.buffType === feared) return true;
+        }
+        return false;
     }
 
     isSilenced(entityId) {
-        const buff = this.game.getComponent(entityId, 'buff');
-        if (!buff) return false;
-        if (buff.endTime && this.game.state.now > buff.endTime) return false;
         const t = this.enums.buffTypes || {};
-        if (buff.buffType === t.silenced)    return true;
-        if (buff.buffType === t.polymorphed) return true; // polymorphed can't cast either
-        // Anything with `abilitiesDisabled` or `castDisabled` set in its buff type
-        // def (e.g. disrupted, frozen, polymorphed) also blocks ability use.
-        const def = this.call.getBuffTypeDef(buff.buffType);
-        return !!(def?.abilitiesDisabled || def?.castDisabled);
+        for (const buff of this.getBuffs(entityId)) {
+            if (buff.buffType === t.silenced)    return true;
+            if (buff.buffType === t.polymorphed) return true; // polymorphed can't cast either
+            // Anything with `abilitiesDisabled` or `castDisabled` set in its buff type
+            // def (e.g. disrupted, frozen, polymorphed) also blocks ability use.
+            const def = this.call.getBuffTypeDef(buff.buffType);
+            if (def?.abilitiesDisabled || def?.castDisabled) return true;
+        }
+        return false;
     }
 
     // If the entity is taunted, returns the entity they're forced to attack
     // (the taunt's sourceEntity). Returns null when not taunted, the source
     // is invalid, or the source is dead. Called by AttackEnemyBehaviorAction
-    // to override target selection.
+    // and FindNearestEnemyBehaviorAction to override target selection.
     getTauntForcedTarget(entityId) {
-        const buff = this.game.getComponent(entityId, 'buff');
+        const buff = this.getBuffOfType(entityId, this.enums.buffTypes?.taunted);
         if (!buff) return null;
-        if (buff.endTime && this.game.state.now > buff.endTime) return null;
-        if (buff.buffType !== this.enums.buffTypes?.taunted) return null;
 
         const def = this.call.getBuffTypeDef(buff.buffType);
         if (!def?.forcedTarget) return null;
@@ -223,20 +347,20 @@ class BuffEffectsSystem extends GUTS.BaseSystem {
         if (now - this._regenAccumulator < 1.0) return;
         this._regenAccumulator = now;
 
-        const enums = this.enums;
-        const regenBuffType = enums.buffTypes?.regenerating;
+        const regenBuffType = this.enums.buffTypes?.regenerating;
         if (regenBuffType == null) return;
 
-        const entities = this.game.getEntitiesWith('buff', 'health');
-        for (const entityId of entities) {
-            const buff = this.game.getComponent(entityId, 'buff');
+        for (const buffEntity of this.game.getEntitiesWith('buff')) {
+            const buff = this.game.getComponent(buffEntity, 'buff');
             if (!buff || buff.buffType !== regenBuffType) continue;
             if (buff.endTime && now > buff.endTime) continue;
+            const targetId = buff.targetEntity;
+            if (targetId == null) continue;
 
             const buffTypeDef = this.call.getBuffTypeDef(buff.buffType);
             if (!buffTypeDef?.healPerSecond) continue;
 
-            const health = this.game.getComponent(entityId, 'health');
+            const health = this.game.getComponent(targetId, 'health');
             if (!health || health.current <= 0 || health.current >= health.max) continue;
 
             health.current = Math.min(health.max, health.current + buffTypeDef.healPerSecond);
@@ -247,11 +371,10 @@ class BuffEffectsSystem extends GUTS.BaseSystem {
     // when they have the buff active. Uses deathState transition (alive -> not-alive)
     // and reads `combatState.lastAttacker` to identify the killer.
     _tickKillDetection() {
-        const enums = this.enums;
-        const bloodlustBuffType = enums.buffTypes?.bloodlust;
+        const bloodlustBuffType = this.enums.buffTypes?.bloodlust;
         if (bloodlustBuffType == null) return;
 
-        const aliveState = enums.deathState?.alive;
+        const aliveState = this.enums.deathState?.alive;
         const allWithHealth = this.game.getEntitiesWith('health', 'deathState');
 
         const stillAlive = new Set();
@@ -274,8 +397,8 @@ class BuffEffectsSystem extends GUTS.BaseSystem {
         const killerId = combatState?.lastAttacker;
         if (killerId == null || killerId < 0) return;
 
-        const killerBuff = this.game.getComponent(killerId, 'buff');
-        if (!killerBuff || killerBuff.buffType !== bloodlustBuffType) return;
+        const killerBuff = this.getBuffOfType(killerId, bloodlustBuffType);
+        if (!killerBuff) return;
 
         const buffTypeDef = this.call.getBuffTypeDef(killerBuff.buffType);
         const maxStacks = buffTypeDef?.maxStacks ?? 10;
@@ -285,16 +408,10 @@ class BuffEffectsSystem extends GUTS.BaseSystem {
     }
 
     // Watches combatState.lastAttackTime per tick to detect newly-landed hits and
-    // fires on-hit effects from the attacker's buff and target-side reflect from
-    // the target's buff. Works for melee, projectiles, and ability damage alike.
+    // fires on-hit effects from the attacker's buffs and target-side reflect from
+    // the target's buffs. Works for melee, projectiles, and ability damage alike.
     _tickOnHitEffects() {
-        const enums = this.enums;
         const entities = this.game.getEntitiesWith('combatState', 'health');
-
-        if (!this._loggedEntityCount && entities.length > 0) {
-            console.log('[BuffFx] On-hit watcher seeing', entities.length, 'combatState entities');
-            this._loggedEntityCount = true;
-        }
 
         for (const entityId of entities) {
             const combatState = this.game.getComponent(entityId, 'combatState');
@@ -318,13 +435,6 @@ class BuffEffectsSystem extends GUTS.BaseSystem {
             const damageDealt = prevHealth != null ? Math.max(0, prevHealth - currHealth) : 0;
             if (damageDealt <= 0) continue;
 
-            // Diagnostic: log only when attacker has a buff (signal the on-hit hook is firing).
-            const atkBuff = this.game.getComponent(attackerId, 'buff');
-            if (atkBuff) {
-                const buffName = this.reverseEnums?.buffTypes?.[atkBuff.buffType] ?? atkBuff.buffType;
-                console.log('[BuffFx] On-hit triggered:', { attackerId, targetId: entityId, damageDealt, attackerBuff: buffName });
-            }
-
             this._applyAttackerOnHit(attackerId, entityId, damageDealt);
             this._applyTargetReflect(attackerId, entityId, damageDealt);
         }
@@ -332,62 +442,62 @@ class BuffEffectsSystem extends GUTS.BaseSystem {
         this._gcStaleTrackers(entities);
     }
 
+    // On-hit effects from EVERY active attacker buff — poisoned_weapon,
+    // enchant_weapon, and bloodlust lifesteal can all fire off the same hit
+    // now that they can coexist.
     _applyAttackerOnHit(attackerId, targetId, damageDealt) {
-        const buff = this.game.getComponent(attackerId, 'buff');
-        if (!buff) return;
-
         const enums = this.enums;
-        const buffTypeDef = this.call.getBuffTypeDef(buff.buffType);
-        if (!buffTypeDef) return;
+        for (const buff of this.getBuffs(attackerId)) {
+            const buffTypeDef = this.call.getBuffTypeDef(buff.buffType);
+            if (!buffTypeDef) continue;
 
-        if (buff.buffType === enums.buffTypes?.poisoned_weapon) {
-            const attackerCombat = this.game.getComponent(attackerId, 'combat');
-            const baseDmg = attackerCombat?.damage || damageDealt;
-            const multiplier = buffTypeDef.poisonDamageMultiplier ?? 0.4;
-            const duration   = buffTypeDef.poisonDuration ?? 4;
-            const poisonDmg  = Math.max(1, Math.round(baseDmg * multiplier));
-            console.log('[BuffFx] Scheduling poison damage', { attackerId, targetId, poisonDmg, duration });
-            this.call.scheduleDamage(attackerId, targetId, poisonDmg, enums.element.poison, 0, { duration });
-            return;
-        }
-
-        if (buff.buffType === enums.buffTypes?.enchant_weapon) {
-            const elementalDamage = buffTypeDef.elementalDamage ?? 0;
-            if (elementalDamage > 0) {
-                const element = buff.weaponElement ?? enums.element?.fire ?? enums.element?.physical;
-                this.call.scheduleDamage(attackerId, targetId, elementalDamage, element, 0, {});
+            if (buff.buffType === enums.buffTypes?.poisoned_weapon) {
+                const attackerCombat = this.game.getComponent(attackerId, 'combat');
+                const baseDmg = attackerCombat?.damage || damageDealt;
+                const multiplier = buffTypeDef.poisonDamageMultiplier ?? 0.4;
+                const duration   = buffTypeDef.poisonDuration ?? 4;
+                const poisonDmg  = Math.max(1, Math.round(baseDmg * multiplier));
+                this.call.scheduleDamage(attackerId, targetId, poisonDmg, enums.element.poison, 0, { duration });
+                continue;
             }
-            return;
-        }
 
-        if (buff.buffType === enums.buffTypes?.bloodlust) {
-            const lifeStealPct = buffTypeDef.lifeSteal ?? 0;
-            if (lifeStealPct > 0) {
-                const healAmount = Math.max(1, Math.round(damageDealt * lifeStealPct));
-                const attackerHealth = this.game.getComponent(attackerId, 'health');
-                if (attackerHealth && attackerHealth.current > 0) {
-                    attackerHealth.current = Math.min(attackerHealth.max, attackerHealth.current + healAmount);
+            if (buff.buffType === enums.buffTypes?.enchant_weapon) {
+                const elementalDamage = buffTypeDef.elementalDamage ?? 0;
+                if (elementalDamage > 0) {
+                    const element = buff.weaponElement ?? enums.element?.fire ?? enums.element?.physical;
+                    this.call.scheduleDamage(attackerId, targetId, elementalDamage, element, 0, {});
                 }
+                continue;
             }
-            return;
+
+            if (buff.buffType === enums.buffTypes?.bloodlust) {
+                const lifeStealPct = buffTypeDef.lifeSteal ?? 0;
+                if (lifeStealPct > 0) {
+                    const healAmount = Math.max(1, Math.round(damageDealt * lifeStealPct));
+                    const attackerHealth = this.game.getComponent(attackerId, 'health');
+                    if (attackerHealth && attackerHealth.current > 0) {
+                        attackerHealth.current = Math.min(attackerHealth.max, attackerHealth.current + healAmount);
+                    }
+                }
+                continue;
+            }
         }
     }
 
     _applyTargetReflect(attackerId, targetId, damageDealt) {
-        const targetBuff = this.game.getComponent(targetId, 'buff');
-        if (!targetBuff) return;
-
         const enums = this.enums;
-        const isThorns = targetBuff.buffType === enums.buffTypes?.thorns_aura
-                      || targetBuff.buffType === enums.buffTypes?.retaliation;
-        if (!isThorns) return;
+        for (const buff of this.getBuffs(targetId)) {
+            const isThorns = buff.buffType === enums.buffTypes?.thorns_aura
+                          || buff.buffType === enums.buffTypes?.retaliation;
+            if (!isThorns) continue;
 
-        const buffTypeDef = this.call.getBuffTypeDef(targetBuff.buffType);
-        const pct = buffTypeDef?.thornsPercent ?? 0;
-        if (pct <= 0) return;
+            const buffTypeDef = this.call.getBuffTypeDef(buff.buffType);
+            const pct = buffTypeDef?.thornsPercent ?? 0;
+            if (pct <= 0) continue;
 
-        const reflectDmg = Math.max(1, Math.round(damageDealt * pct));
-        this.call.scheduleDamage(targetId, attackerId, reflectDmg, enums.element.physical, 0, {});
+            const reflectDmg = Math.max(1, Math.round(damageDealt * pct));
+            this.call.scheduleDamage(targetId, attackerId, reflectDmg, enums.element.physical, 0, {});
+        }
     }
 
     // Emit floating damage numbers for poison DoT ticks. Global DamageSystem
@@ -395,22 +505,10 @@ class BuffEffectsSystem extends GUTS.BaseSystem {
     // for poison (the element early-returns from applyDamage). We watch
     // poison.lastTickTime per entity and emit the tick damage when it advances.
     _tickPoisonDamageNumbers() {
-        const hasService = this.game.hasService?.('showDamageNumber');
-        if (!hasService) {
-            if (!this._loggedNoShowService) {
-                console.warn('[BuffFx] showDamageNumber service NOT registered — poison numbers disabled');
-                this._loggedNoShowService = true;
-            }
-            return;
-        }
+        if (!this.game.hasService?.('showDamageNumber')) return;
 
         const poisonElement = this.enums.element?.poison;
         const entities = this.game.getEntitiesWith('poison', 'transform');
-
-        if (entities.length > 0 && !this._loggedFirstPoisoned) {
-            console.log('[BuffFx] First poisoned entity detected:', entities[0]);
-            this._loggedFirstPoisoned = true;
-        }
 
         const live = new Set();
 
@@ -435,7 +533,6 @@ class BuffEffectsSystem extends GUTS.BaseSystem {
             const unitType = this.game.getUnitTypeDef?.(unitTypeComp);
             const yOffset = unitType?.height || 50;
 
-            // console.log('[BuffFx] Poison tick number', { entityId, tickDamage, stacks: poison.stacks });
             this.call.showDamageNumber(pos.x, pos.y + yOffset, pos.z, tickDamage, poisonElement);
         }
 

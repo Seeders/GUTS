@@ -89,10 +89,9 @@ class FreezingAuraAbility extends GUTS.BaseAbility {
             if (distance <= this.range) {
                 // Check if already has empowerment buff
                 const enums = this.game.getEnums();
-                const existingBuff = this.game.getComponent(allyId, "buff");
 
-                if (!existingBuff || existingBuff.buffType !== enums.buffTypes.ice_armor) {
-                    this.game.addComponent(allyId, "buff", {
+                if (!this.hasBuff(allyId, enums.buffTypes.ice_armor)) {
+                    this.applyBuff(allyId, {
                         buffType: enums.buffTypes.ice_armor,
                         endTime: this.game.state.now + 3.0,
                         appliedTime: this.game.state.now,

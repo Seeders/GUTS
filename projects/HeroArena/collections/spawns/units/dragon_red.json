@@ -9,6 +9,7 @@
   "value": 140,
   "hp": 990,
   "speed": 32,
+  "turnSpeed": 4,
   "damage": 61,
   "attackSpeed": 0.9,
   "element": "fire",

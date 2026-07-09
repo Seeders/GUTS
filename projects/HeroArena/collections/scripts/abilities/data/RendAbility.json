@@ -1,0 +1,21 @@
+{
+  "cooldown": 14,
+  "range": 220,
+  "manaCost": 0,
+  "targetType": "enemy",
+  "animation": "cast",
+  "priority": 5,
+  "castTime": 0.4,
+  "castParticleEffectSystems": [
+    "blood_spray"
+  ],
+  "trailParticleEffectSystems": [],
+  "impactParticleEffectSystems": [
+    "blood_burst"
+  ],
+  "expirationParticleEffectSystems": [],
+  "fileName": "RendAbility",
+  "filePath": "/projects/HeroArena/collections/scripts/abilities/js/RendAbility.js",
+  "name": "Rend",
+  "description": "Open a deep wound on a tough enemy, bleeding it for damage over time."
+}

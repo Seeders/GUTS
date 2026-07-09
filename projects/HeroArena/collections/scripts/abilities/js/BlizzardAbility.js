@@ -32,7 +32,7 @@ class BlizzardAbility extends GUTS.BaseAbility {
         // Schedule blizzard start after cast time
         this.game.schedulingSystem.scheduleAction(() => {
             this.createBlizzard(casterEntity, targetPos);
-        }, this.castTime, casterEntity);
+        }, 0, casterEntity); // payload at execute — queue already waited to the release point
     }
 
     createBlizzard(casterEntity, targetPos) {

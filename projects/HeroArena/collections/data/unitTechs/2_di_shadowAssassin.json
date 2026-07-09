@@ -16,11 +16,11 @@
    "unlockAbility": "ShadowStrikeAbility"
   },
   {
-   "id": "sha_blink",
-   "title": "Shadowstep",
+   "id": "sha_smoke",
+   "title": "Smoke Bomb",
    "cost": 13,
-   "description": "Unlocks Blink",
-   "unlockAbility": "BlinkAbility"
+   "description": "Unlocks Smoke Bomb: vanish in smoke for massive evasion",
+   "unlockAbility": "SmokeBombAbility"
   }
  ],
  "fileName": "2_di_shadowAssassin"

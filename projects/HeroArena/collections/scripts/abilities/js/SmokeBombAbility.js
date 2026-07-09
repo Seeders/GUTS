@@ -7,8 +7,7 @@ class SmokeBombAbility extends GUTS.BaseAbility {
     canExecute(casterEntity) {
         if (!this._meetsWeaponRequirement(casterEntity)) return false;
         const enums = this.game.getEnums();
-        const buff = this.game.getComponent(casterEntity, "buff");
-        return !(buff && buff.buffType === enums.buffTypes.smoke_screen);
+        return !this.hasBuff(casterEntity, enums.buffTypes.smoke_screen);
     }
 
     execute(casterEntity) {
@@ -20,19 +19,19 @@ class SmokeBombAbility extends GUTS.BaseAbility {
         this.logAbilityUsage(casterEntity, "Disappears in a cloud of smoke!");
 
         this.game.schedulingSystem.scheduleAction(() => {
-            this.applyBuff(casterEntity);
-        }, this.castTime, casterEntity);
+            this._applySmokeScreenBuff(casterEntity);
+        }, 0, casterEntity); // payload at execute — queue already waited to the release point
     }
 
-    applyBuff(casterEntity) {
+    _applySmokeScreenBuff(casterEntity) {
         const enums = this.game.getEnums();
-        const existing = this.game.getComponent(casterEntity, "buff");
-        if (existing && existing.buffType === enums.buffTypes.smoke_screen) {
+        const existing = this.getBuff(casterEntity, enums.buffTypes.smoke_screen);
+        if (existing) {
             existing.endTime = this.game.state.now + this.duration;
             existing.appliedTime = this.game.state.now;
             return;
         }
-        this.game.addComponent(casterEntity, "buff", {
+        this.applyBuff(casterEntity, {
             buffType: enums.buffTypes.smoke_screen,
             endTime: this.game.state.now + this.duration,
             appliedTime: this.game.state.now,
@@ -43,19 +42,20 @@ class SmokeBombAbility extends GUTS.BaseAbility {
         if (transform?.position) this.playConfiguredEffects('buff', transform.position);
 
         this.game.schedulingSystem.scheduleAction(() => {
-            this.removeBuff(casterEntity);
+            this._expireSmokeScreenBuff(casterEntity);
         }, this.duration, casterEntity);
     }
 
-    removeBuff(casterEntity) {
+    _expireSmokeScreenBuff(casterEntity) {
         const enums = this.game.getEnums();
-        if (!this.game.hasComponent(casterEntity, "buff")) return;
-        const buff = this.game.getComponent(casterEntity, "buff");
-        if (buff && buff.buffType === enums.buffTypes.smoke_screen) {
-            this.game.removeComponent(casterEntity, "buff");
-            const t = this.game.getComponent(casterEntity, "transform");
-            if (t?.position) this.playConfiguredEffects('expiration', t.position);
-        }
+        const buff = this.getBuff(casterEntity, enums.buffTypes.smoke_screen);
+        if (!buff) return;
+        // Refreshed since this schedule was armed — the later expiry (or the
+        // central reaper) owns removal now.
+        if (buff.endTime - (this.game.state.now || 0) > 0.1) return;
+        this.removeBuff(casterEntity, enums.buffTypes.smoke_screen);
+        const t = this.game.getComponent(casterEntity, "transform");
+        if (t?.position) this.playConfiguredEffects('expiration', t.position);
     }
 }
 

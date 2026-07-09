@@ -33,12 +33,12 @@ class MeteorStrikeAbility extends GUTS.BaseAbility {
         this.game.schedulingSystem.scheduleAction(() => {
             this.createMeteorWarning(targetPos);
             this.spawnFallingMeteor(casterEntity, targetPos);
-        }, this.castTime, casterEntity);
+        }, 0, casterEntity); // payload at execute — queue already waited to the release point
 
         // Schedule meteor impact after cast time + delay
         this.game.schedulingSystem.scheduleAction(() => {
             this.meteorImpact(casterEntity, targetPos);
-        }, this.castTime + this.delay, casterEntity);
+        }, this.delay, casterEntity); // warning delay only — queue already waited to the release point
     }
 
     createMeteorWarning(position) {

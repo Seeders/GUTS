@@ -26,7 +26,7 @@ class SilenceAbility extends GUTS.BaseAbility {
 
         this.game.schedulingSystem.scheduleAction(() => {
             this.applyDebuff(casterEntity, target);
-        }, this.castTime, casterEntity);
+        }, 0, casterEntity); // payload at execute — queue already waited to the release point
     }
 
     applyDebuff(casterEntity, targetId) {
@@ -41,7 +41,7 @@ class SilenceAbility extends GUTS.BaseAbility {
         }
 
         const enums = this.game.getEnums();
-        this.game.addComponent(targetId, "buff", {
+        this.applyBuff(targetId, {
             buffType: enums.buffTypes.silenced,
             endTime: this.game.state.now + this.duration,
             appliedTime: this.game.state.now,
@@ -56,13 +56,14 @@ class SilenceAbility extends GUTS.BaseAbility {
 
     removeDebuff(targetId) {
         const enums = this.game.getEnums();
-        if (!this.game.hasComponent(targetId, "buff")) return;
-        const buff = this.game.getComponent(targetId, "buff");
-        if (buff && buff.buffType === enums.buffTypes.silenced) {
-            this.game.removeComponent(targetId, "buff");
-            const t = this.game.getComponent(targetId, "transform");
-            if (t?.position) this.playConfiguredEffects('expiration', t.position);
-        }
+        const buff = this.getBuff(targetId, enums.buffTypes.silenced);
+        if (!buff) return;
+        // Refreshed since this schedule was armed — the later expiry (or the
+        // central reaper) owns removal now.
+        if (buff.endTime - (this.game.state.now || 0) > 0.1) return;
+        this.removeBuff(targetId, enums.buffTypes.silenced);
+        const t = this.game.getComponent(targetId, "transform");
+        if (t?.position) this.playConfiguredEffects('expiration', t.position);
     }
 
     findClosestEnemy(casterEntity, enemies) {

@@ -1,0 +1,23 @@
+{
+ "id": "pool_pass_plate",
+ "title": "Reinforced Plate",
+ "description": "+6 armor",
+ "cost": 14,
+ "requirements": [
+  {
+   "int": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Reinforced Plate",
+  "cost": 14,
+  "description": "+6 armor",
+  "statModifiers": {
+   "armor": {
+    "add": 6
+   }
+  }
+ }
+}

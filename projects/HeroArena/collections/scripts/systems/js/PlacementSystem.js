@@ -30,6 +30,7 @@ class PlacementSystem extends GUTS.BaseSystem {
         'spawnStartingUnitsForTeam',
         'spawnGoldMineForTeam',
         'spawnHeroUnitsForTeam',
+        'summonUnitsForTeamAt',
         'moveHero'
     ];
 
@@ -810,6 +811,37 @@ class PlacementSystem extends GUTS.BaseSystem {
         });
 
         return this._spawnStartingUnitsForTeamInternal(prefabs, team, basePos, null);
+    }
+
+    // Summon `count` throwaway units of one type for `team` at a world point
+    // (x,z) — used by summon commander skills (Mechabellum "Underground Threat" /
+    // "Wasp Swarm"). Each unit is tagged `summoned` so it's cleared at round end
+    // (HeroRosterSystem.despawnBattleHeroes). Spiral-placed around the point so
+    // they don't stack. Returns the spawned entity ids.
+    summonUnitsForTeamAt(spawnType, count, team, x, z) {
+        const basePos = { x, y: 0, z };
+        const taken = [];
+        const prefabs = [];
+        for (let i = 0; i < (count || 1); i++) {
+            const spot = this._findOpenSpawnPosition(basePos, taken);
+            taken.push(spot);
+            prefabs.push({
+                collection: 'units',
+                spawnType,
+                components: {
+                    transform: { position: { x: spot.x - basePos.x, y: 0, z: spot.z - basePos.z } }
+                }
+            });
+        }
+        const res = this._spawnStartingUnitsForTeamInternal(prefabs, team, basePos, null);
+        const ids = [];
+        for (const u of (res?.units || [])) {
+            for (const eid of (u.squadUnits || [])) {
+                this.game.addComponent(eid, 'summoned', { ownerId: eid });
+                ids.push(eid);
+            }
+        }
+        return { success: true, units: ids };
     }
 
     // Deterministic square-spiral offsets: (0,0), then ring 1, ring 2, …

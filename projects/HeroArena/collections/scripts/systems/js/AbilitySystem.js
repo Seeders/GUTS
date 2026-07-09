@@ -56,9 +56,10 @@ class AbilitySystem extends GUTS.BaseSystem {
             }
         });
 
-        if (unitAbilities.length > 0) {
-            this.entityAbilities.set(entityId, unitAbilities);
-        }
+        // Always set — an empty list must CLEAR previously granted abilities
+        // (ArmyShopSystem rebuilds the whole list; unteched units end up with
+        // none by design, so def abilities granted at spawn must not survive).
+        this.entityAbilities.set(entityId, unitAbilities);
     }
 
     update() {
@@ -105,13 +106,20 @@ class AbilitySystem extends GUTS.BaseSystem {
                     if (ability) {
                         // targetData is null when no target
                         const targetData = queuedAbility.targetData;
+                        // The completed cast consumed the attack slot: the next
+                        // basic attack waits a full attack period from cast END,
+                        // so ability and attack never look simultaneous.
+                        const combat = this.game.getComponent(entityId, 'combat');
+                        if (combat && !ability.isPassive) {
+                            combat.lastAttack = this.game.state.now;
+                        }
                         // Execute ability and get potential callback
                         const abilityAction = ability.execute(entityId, targetData);
 
-                        // If ability returns a callback, schedule it deterministically
+                        // If ability returns a callback, run it deterministically
+                        // at the release point (the queue already waited for it)
                         if (typeof abilityAction === 'function') {
-                            // Add to a delayed effects queue
-                            this.scheduleAbilityAction(abilityAction, ability.castTime);
+                            this.scheduleAbilityAction(abilityAction, 0);
                         }
                     }
                 }
@@ -222,11 +230,22 @@ class AbilitySystem extends GUTS.BaseSystem {
             abilityId: abilityIndex !== undefined ? abilityIndex : null,
             abilityStringId: abilityId, // Store string ID as fallback
             targetData: targetData ?? null,
-            executeTime: this.game.state.now + ability.castTime
+            // Release at 25% through the cast animation (tuned by feel — 50%
+            // still read as delayed). The animation itself still spans the
+            // full castTime (minAnimationTime).
+            executeTime: this.game.state.now + ability.castTime * 0.25
         });
 
         // Cooldown includes cast time so it doesn't expire until after the ability executes
         this.setCooldown(entityId, abilityId, ability.castTime + ability.cooldown);
+
+        // The cast CONSUMES the attack slot: treat it like an attack swing so
+        // the next basic attack waits a full attack period from cast start
+        // (AttackEnemyBehaviorAction also skips attacks while a cast is queued).
+        const combat = this.game.getComponent(entityId, 'combat');
+        if (combat && !ability.isPassive) {
+            combat.lastAttack = this.game.state.now;
+        }
         ability.logAbilityUsage(entityId);
 
         // Notify listeners (combat log UI, etc.) — runs on every system with an

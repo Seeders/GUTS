@@ -1,0 +1,12 @@
+{
+ "title": "Farsight Lens",
+ "icon": "🔭",
+ "kind": "squadItem",
+ "itemId": "farsightLens",
+ "description": "Equip a squad: +50 attack range",
+ "cost": 50,
+ "weight": 2,
+ "minRound": 3,
+ "fileName": "itemFarsight",
+ "category": "item"
+}

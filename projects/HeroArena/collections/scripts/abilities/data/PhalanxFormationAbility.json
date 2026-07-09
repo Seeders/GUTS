@@ -2,24 +2,30 @@
   "fileName": "PhalanxFormationAbility",
   "filePath": "/projects/HeroArena/collections/scripts/abilities/js/PhalanxFormationAbility.js",
   "name": "Phalanx Formation",
-  "description": "Link with nearby Hoplites - more Hoplites = stronger formation bonus",
-  "cooldown": 2.0,
+  "description": "Link shields with nearby squadmates: +50% armor, -20% damage taken for 25s",
+  "cooldown": 8,
   "range": 80,
   "manaCost": 0,
   "targetType": "allies",
   "animation": "cast",
   "priority": 7,
   "castTime": 1.2,
-  "formationDuration": 25.0,
-  "baseArmorMultiplier": 1.15,
-  "perHopliteBonus": 0.15,
-  "maxArmorMultiplier": 2.0,
-  "baseCounterChance": 0.2,
-  "perHopliteCounterBonus": 0.05,
+  "formationDuration": 25,
   "element": "physical",
-  "castParticleEffectSystems": ["holy_light"],
-  "burstParticleEffectSystems": ["holy_explosion", "holy_ring"],
-  "buffParticleEffectSystems": ["holy_sparkles"],
-  "sustainedParticleEffectSystems": ["holy_sparkles"],
-  "expirationParticleEffectSystems": ["holy_sparkles"]
+  "castParticleEffectSystems": [
+    "holy_light"
+  ],
+  "burstParticleEffectSystems": [
+    "holy_explosion",
+    "holy_ring"
+  ],
+  "buffParticleEffectSystems": [
+    "holy_sparkles"
+  ],
+  "sustainedParticleEffectSystems": [
+    "holy_sparkles"
+  ],
+  "expirationParticleEffectSystems": [
+    "holy_sparkles"
+  ]
 }

@@ -1,0 +1,19 @@
+{
+ "id": "pool_ab_BlindingShotAbility",
+ "title": "Blinding Shot",
+ "description": "Blind an enemy so its attacks miss for a short time.",
+ "cost": 12,
+ "requirements": [
+  {
+   "dex": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Blinding Shot",
+  "cost": 12,
+  "description": "Blind an enemy so its attacks miss for a short time.",
+  "unlockAbility": "BlindingShotAbility"
+ }
+}

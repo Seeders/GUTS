@@ -1,0 +1,9 @@
+{
+ "title": "Fairy Swarm",
+ "icon": "🧚",
+ "radius": 120,
+ "summon": { "unit": "fairy", "count": 4 },
+ "effect": "magic",
+ "description": "Summon 4 fairies at the target point for this battle",
+ "fileName": "summonFairies"
+}

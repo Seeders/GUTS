@@ -1,0 +1,19 @@
+{
+ "id": "pool_ab_DisruptionBombAbility",
+ "title": "Disruption Bomb",
+ "description": "Throw a bomb that disables enemy abilities and equipment (effects do not stack)",
+ "cost": 24,
+ "requirements": [
+  {
+   "dex": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Disruption Bomb",
+  "cost": 24,
+  "description": "Throw a bomb that disables enemy abilities and equipment (effects do not stack)",
+  "unlockAbility": "DisruptionBombAbility"
+ }
+}

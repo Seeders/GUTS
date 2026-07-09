@@ -8,7 +8,7 @@
   ],
   "particleEffectData": {
     "count": 40,
-    "lifetime": 1.0,
+    "lifetime": 1,
     "scale": 35,
     "scaleMultiplier": 2.5,
     "startColor": "#b09070",
@@ -23,7 +23,7 @@
     "velocityZMin": -120,
     "velocityZMax": 120,
     "gravity": 120,
-    "drag": 0.90,
+    "drag": 0.9,
     "fadeOut": true,
     "scaleOverTime": true,
     "blending": "normal"

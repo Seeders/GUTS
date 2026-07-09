@@ -4,7 +4,6 @@
   "services": [
     "canAffordLevelUp",
     "applySpecialization",
-    "levelUpSquad",
     "getLevelUpCost",
     "initializeSquad",
     "removeSquad",
@@ -14,6 +13,8 @@
     "getCurrentUnitType",
     "getSquadInfo",
     "setSquadInfo",
-    "resetSquadExperience"
-  ]
+    "resetSquadExperience",
+    "grantCombatExperience"
+  ],
+  "testFilePath": "/projects/HeroArena/collections/scripts/systems/tests/SquadExperienceSystem.test.js"
 }

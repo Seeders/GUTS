@@ -38,7 +38,7 @@ class ChargeAbility extends GUTS.BaseAbility {
         // DESYNC SAFE: Use scheduling system for charge execution
         this.game.schedulingSystem.scheduleAction(() => {
             this.initiateCharge(casterEntity, target);
-        }, this.castTime, casterEntity);
+        }, 0, casterEntity); // payload at execute — queue already waited to the release point
     }
     
     // DESYNC SAFE: Find closest enemy deterministically
@@ -157,7 +157,7 @@ class ChargeAbility extends GUTS.BaseAbility {
 
             // DESYNC SAFE: Apply stun using buff system
             const enums = this.game.getEnums();
-            this.game.addComponent(targetId, "buff", {
+            this.applyBuff(targetId, {
                 buffType: enums.buffTypes.stunned,
                 endTime: this.game.state.now + this.stunDuration,
                 appliedTime: this.game.state.now,
@@ -179,19 +179,15 @@ class ChargeAbility extends GUTS.BaseAbility {
     
     // DESYNC SAFE: Remove stun effect
     removeStun(targetId) {
+        // Expiry handled centrally by BuffEffectsSystem._reapExpiredBuffs.
         // Check if target still exists and has the stun buff
         const enums = this.game.getEnums();
-        if (this.game.hasComponent(targetId, "buff")) {
-            const buff = this.game.getComponent(targetId, "buff");
-            if (buff && buff.buffType === enums.buffTypes.stunned) {
-                this.game.removeComponent(targetId, "buff");
-
-                // Visual effect when stun expires
-                const transform = this.game.getComponent(targetId, "transform");
-                const targetPos = transform?.position;
-                if (targetPos) {
-                    this.playConfiguredEffects('expiration', targetPos);
-                }
+        if (this.hasBuff(targetId, enums.buffTypes.stunned)) {
+            // Visual effect when stun expires
+            const transform = this.game.getComponent(targetId, "transform");
+            const targetPos = transform?.position;
+            if (targetPos) {
+                this.playConfiguredEffects('expiration', targetPos);
             }
         }
     }

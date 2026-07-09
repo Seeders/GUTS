@@ -1,10 +1,12 @@
 {
  "title": "Field Manual",
- "icon": "\ud83d\udcd6",
+ "icon": "📖",
  "kind": "techDiscount",
  "pct": 0.5,
  "description": "Your next technology costs half",
+ "cost": 50,
  "weight": 3,
  "minRound": 2,
- "fileName": "fieldManual"
+ "fileName": "fieldManual",
+ "category": "growth"
 }

@@ -14,6 +14,10 @@
   "splashRadius": 80,
   "element": "fire",
   "castParticleEffectSystems": [],
-  "trailParticleEffectSystems": ["fireball_trail"],
-  "impactParticleEffectSystems": ["fireball_impact"]
+  "trailParticleEffectSystems": [
+    "fireball_trail"
+  ],
+  "impactParticleEffectSystems": [
+    "fireball_impact"
+  ]
 }

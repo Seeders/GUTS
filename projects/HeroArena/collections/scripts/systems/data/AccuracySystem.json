@@ -1,0 +1,9 @@
+{
+  "filePath": "/projects/scripts/systems/js/AccuracySystem.js",
+  "fileName": "AccuracySystem",
+  "services": [
+    "rollHitChance",
+    "calculateHitChance"
+  ],
+  "testFilePath": "/projects/HeroArena/collections/scripts/systems/tests/AccuracySystem.test.js"
+}

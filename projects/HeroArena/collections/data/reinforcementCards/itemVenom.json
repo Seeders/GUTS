@@ -1,0 +1,12 @@
+{
+ "title": "Venom Vial",
+ "icon": "🧪",
+ "kind": "squadItem",
+ "itemId": "venomVial",
+ "description": "Equip a squad: attacks poison their target",
+ "cost": 50,
+ "weight": 2,
+ "minRound": 4,
+ "fileName": "itemVenom",
+ "category": "item"
+}

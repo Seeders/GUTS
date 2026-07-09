@@ -7,14 +7,17 @@
   "priority": 5,
   "castTime": 0.2,
   "castParticleEffectSystems": [
-    "dust_burst"
+    "smoke_burst"
   ],
   "trailParticleEffectSystems": [],
-  "impactParticleEffectSystems": [],
+  "impactParticleEffectSystems": [
+    "smoke_burst",
+    "dark_sparkles"
+  ],
   "expirationParticleEffectSystems": [],
   "fileName": "SmokeBombAbility",
   "filePath": "/projects/HeroArena/collections/scripts/abilities/js/SmokeBombAbility.js",
   "name": "Smoke Bomb",
-  "description": "Vanish in smoke — gain massive evasion briefly.",
+  "description": "Vanish in smoke \u00e2\u20ac\u201d gain massive evasion briefly.",
   "duration": 6
 }

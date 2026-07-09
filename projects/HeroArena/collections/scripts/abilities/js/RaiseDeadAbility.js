@@ -42,7 +42,7 @@ class RaiseDeadAbility extends GUTS.BaseAbility {
         // Schedule the necromancy after cast time
         this.game.schedulingSystem.scheduleAction(() => {
             this.performRaiseDeadRitual(casterEntity, validCorpses, casterTeam.team);
-        }, this.castTime, casterEntity);
+        }, 0, casterEntity); // payload at execute — queue already waited to the release point
     }
     
     performRaiseDeadRitual(casterEntity, validCorpses, team) {

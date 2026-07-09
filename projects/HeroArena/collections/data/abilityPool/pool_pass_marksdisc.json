@@ -1,0 +1,26 @@
+{
+ "id": "pool_pass_marksdisc",
+ "title": "Marksman Discipline",
+ "description": "+25 range, +10% damage",
+ "cost": 14,
+ "requirements": [
+  {
+   "int": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Marksman Discipline",
+  "cost": 14,
+  "description": "+25 range, +10% damage",
+  "statModifiers": {
+   "range": {
+    "add": 25
+   },
+   "damage": {
+    "pct": 0.1
+   }
+  }
+ }
+}

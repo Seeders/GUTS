@@ -21,7 +21,7 @@ class RegenerationAbility extends GUTS.BaseAbility {
 
         this.game.schedulingSystem.scheduleAction(() => {
             this._applyBuff(casterEntity, target);
-        }, this.castTime, casterEntity);
+        }, 0, casterEntity); // payload at execute — queue already waited to the release point
     }
 
     _pickAlly(allies) {
@@ -43,7 +43,7 @@ class RegenerationAbility extends GUTS.BaseAbility {
         const t = this.game.getComponent(targetId, "transform");
         if (t?.position) this.playConfiguredEffects('impact', t.position);
 
-        this.game.addComponent(targetId, "buff", {
+        this.applyBuff(targetId, {
             buffType: enums.buffTypes.regenerating,
             endTime: this.game.state.now + this.duration,
             appliedTime: this.game.state.now,
@@ -51,13 +51,7 @@ class RegenerationAbility extends GUTS.BaseAbility {
             sourceEntity: casterEntity
         });
 
-        this.game.schedulingSystem.scheduleAction(() => {
-            if (!this.game.hasComponent(targetId, "buff")) return;
-            const buff = this.game.getComponent(targetId, "buff");
-            if (buff && buff.buffType === enums.buffTypes.regenerating) {
-                this.game.removeComponent(targetId, "buff");
-            }
-        }, this.duration, targetId);
+        // Expiry handled centrally by BuffEffectsSystem._reapExpiredBuffs.
     }
 }
 

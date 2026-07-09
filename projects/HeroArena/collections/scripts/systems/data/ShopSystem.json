@@ -4,5 +4,6 @@
   "services": [
     "resetShop",
     "updateSquadExperience"
-  ]
+  ],
+  "testFilePath": "/projects/HeroArena/collections/scripts/systems/tests/ShopSystem.test.js"
 }

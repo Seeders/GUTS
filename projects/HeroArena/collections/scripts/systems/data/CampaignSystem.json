@@ -41,9 +41,6 @@
     "getTarotCardPurchaseCost",
     "canPurchaseTarotCard",
     "purchaseTarotCard",
-    "getUncollectedTarotCards",
-    "getCurrentQuest",
-    "completeQuestNode",
-    "generateAvailableQuests"
+    "getUncollectedTarotCards"
   ]
 }

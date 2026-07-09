@@ -1,0 +1,26 @@
+{
+ "id": "pool_pass_reflexes",
+ "title": "Honed Reflexes",
+ "description": "+25% attack speed, +6 evasion",
+ "cost": 14,
+ "requirements": [
+  {
+   "str": {
+    "min": 1
+   }
+  }
+ ],
+ "tech": {
+  "title": "Honed Reflexes",
+  "cost": 14,
+  "description": "+25% attack speed, +6 evasion",
+  "statModifiers": {
+   "attackSpeed": {
+    "pct": 0.25
+   },
+   "evasion": {
+    "add": 6
+   }
+  }
+ }
+}
