@@ -469,6 +469,24 @@ class EntityRenderer {
     }
 
     /**
+     * Dedupe concurrent creations of the same billboard batch: the first caller
+     * builds it, everyone else awaits the same promise. Without this, N same-type
+     * entities spawning while the sprite sheet loads each build an InstancedMesh
+     * and all but the last are orphaned in the scene.
+     */
+    async _getOrCreateBillboardBatch(batchKey, factory) {
+        if (!this._billboardBatchPromises) this._billboardBatchPromises = new Map();
+        let promise = this._billboardBatchPromises.get(batchKey);
+        if (!promise) {
+            promise = factory();
+            this._billboardBatchPromises.set(batchKey, promise);
+            promise.finally(() => this._billboardBatchPromises.delete(batchKey))
+                .catch(() => {});
+        }
+        return promise;
+    }
+
+    /**
      * Create an instanced billboard batch for sprite sheet entities
      */
     async createBillboardBatch(batchKey, entityDef, spriteSheetPath) {
@@ -889,10 +907,12 @@ class EntityRenderer {
         }
         const batchKey = `billboard_${entityDef.spriteAnimationSet}`;
 
-        // Get or create instanced batch
+        // Get or create instanced batch (deduped: concurrent spawns of the same
+        // type at game start must share ONE creation, not each build a batch)
         let batch = this.billboardBatches.get(batchKey);
         if (!batch) {
-            batch = await this.createBillboardBatch(batchKey, entityDef, spriteSheetPath);
+            batch = await this._getOrCreateBillboardBatch(batchKey, () =>
+                this.createBillboardBatch(batchKey, entityDef, spriteSheetPath));
             if (!batch) {
                 console.error(`[EntityRenderer] Failed to create billboard batch for ${batchKey}`);
                 return false;
@@ -968,10 +988,11 @@ class EntityRenderer {
             return false;
         }
 
-        // Get or create instanced batch
+        // Get or create instanced batch (deduped — see spawnAnimatedBillboard)
         let batch = this.billboardBatches.get(batchKey);
         if (!batch) {
-            batch = await this.createStaticBillboardBatch(batchKey, textureId, textureDef.imagePath);
+            batch = await this._getOrCreateBillboardBatch(batchKey, () =>
+                this.createStaticBillboardBatch(batchKey, textureId, textureDef.imagePath));
             if (!batch) {
                 console.error(`[EntityRenderer] Failed to create static billboard batch for ${batchKey}`);
                 return false;

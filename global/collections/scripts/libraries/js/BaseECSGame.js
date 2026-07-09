@@ -995,13 +995,73 @@ class BaseECSGame {
      * whole state (e.g. ECSGame's `new GUTS.GameState(collections)`).
      */
     get state() {
+        // ECS storage is authoritative once the singleton entity exists;
+        // _state is only the pre-init buffer (and is kept pointing at the
+        // same object so either path yields the identical component).
+        const storage = this._gameStateStorage;
+        if (storage) {
+            const s = storage[this.gameStateEntityId];
+            if (s) return s;
+        }
         return this._state;
     }
     set state(value) {
         this._state = value;
         if (this.gameStateEntityId && this.entityAlive[this.gameStateEntityId]) {
-            const storage = this._objectComponents.get('gameState');
+            const storage = this._gameStateStorage || this._objectComponents.get('gameState');
             if (storage) storage[this.gameStateEntityId] = value;
+        }
+    }
+
+    /**
+     * State fields that survive scene transitions. Everything else in the
+     * gameState component is reset to its configs/state.json default when a
+     * scene unloads — same lifecycle as every other ECS component.
+     *
+     * The base list covers engine/session plumbing; projects append flow
+     * carriers of their own (e.g. campaign progress) via
+     * configs.game.persistentStateFields.
+     */
+    static PERSISTENT_STATE_FIELDS = [
+        'now',                   // game clock — resetCurrentTime owns resetting it
+        'playerName',            // session identity
+        'playerId',
+        'onlinePlayers',         // set by matchmaking BEFORE the game scene loads
+        'gameMode',              // chosen in menu scenes, read by the game scene
+        'level',                 // set before scene switch; read during terrain load
+        'gameSeed',              // deterministic RNG seed may be set pre-switch
+        'isHeadlessSimulation',  // headless runners set this before switchScene
+        'skirmishConfig',        // match config may be staged before the scene loads
+        'lastGameResult'         // written at game end, shown after the switch
+    ];
+
+    /**
+     * Deep-cloned defaults for the gameState component (configs/state.json).
+     */
+    _gameStateDefaults() {
+        const defaults = this.getCollections?.()?.configs?.state;
+        return defaults ? JSON.parse(JSON.stringify(defaults)) : {};
+    }
+
+    /**
+     * Reset the gameState component for a scene change: persistent fields keep
+     * their values, every other field is removed and re-seeded from
+     * configs/state.json. Mutates IN PLACE so game.state, the ECS component
+     * slot, and any captured references all stay the same object.
+     */
+    resetGameStateForSceneChange() {
+        const s = this.state;
+        if (!s) return;
+        const persistent = new Set([
+            ...(this.constructor.PERSISTENT_STATE_FIELDS || BaseECSGame.PERSISTENT_STATE_FIELDS),
+            ...(this.gameConfig?.persistentStateFields || [])
+        ]);
+        for (const key of Object.keys(s)) {
+            if (!persistent.has(key)) delete s[key];
+        }
+        const defaults = this._gameStateDefaults();
+        for (const key of Object.keys(defaults)) {
+            if (!(key in s)) s[key] = defaults[key];
         }
     }
 
@@ -1027,6 +1087,16 @@ class BaseECSGame {
         this._setComponentBit(id, typeId);
         const storage = this._getObjectStorage('gameState');
         storage[id] = this._state;
+        this._gameStateStorage = storage;
+
+        // Seed missing fields from configs/state.json so every game variant
+        // (client, server, headless) starts from the same data-defined
+        // defaults. Existing values win — the engine/subclass may have set
+        // fields before this runs.
+        const defaults = this._gameStateDefaults();
+        for (const key of Object.keys(defaults)) {
+            if (!(key in this._state)) this._state[key] = defaults[key];
+        }
         return id;
     }
 

@@ -127,6 +127,18 @@ class BaseMovementSystem extends GUTS.BaseSystem {
     }
 
     /**
+     * Hook: whether two units should push each other apart via separation
+     * forces. Override in subclass to layer collisions (e.g. flying units
+     * pass freely over ground units).
+     * @param {number} entityId
+     * @param {number} otherEntityId
+     * @returns {boolean}
+     */
+    shouldSeparate(entityId, otherEntityId) {
+        return true;
+    }
+
+    /**
      * Ensure cached field arrays are initialized (lazy init on first frame)
      */
     _ensureFieldArrays() {
@@ -435,6 +447,7 @@ class BaseMovementSystem extends GUTS.BaseSystem {
 
         for (const otherEntityId of nearbyUnits) {
             if (checksPerformed >= this.MAX_SEPARATION_CHECKS) break;
+            if (!this.shouldSeparate(entityId, otherEntityId)) continue;
             checksPerformed++;
 
             const otherPosX = posXArr[otherEntityId];

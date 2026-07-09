@@ -9,7 +9,8 @@
 class UnitOrderSystem extends GUTS.BaseSystem {
     static services = [
         'applySquadTargetPosition',
-        'applySquadsTargetPositions'
+        'applySquadsTargetPositions',
+        'applyUnitTargetPosition'
     ];
 
     static serviceDependencies = [
@@ -45,7 +46,23 @@ class UnitOrderSystem extends GUTS.BaseSystem {
         const createdTime = commandCreatedTime || this.game.state.now;
 
         placement.squadUnits.forEach((unitId) => {
-            // Cancel: disable the squad's current order and stop its movement.
+            this.applyUnitTargetPosition(unitId, targetPosition, meta, createdTime);
+        });
+    }
+
+    /**
+     * Apply a target position order to a single unit. Same semantics as
+     * applySquadTargetPosition but for units that don't belong to a placement
+     * (summons, reassembled units).
+     * @param {number} unitId - The unit entity ID
+     * @param {Object} targetPosition - Target position { x, y, z }
+     * @param {Object} meta - Order metadata (isMoveOrder, preventEnemiesInRangeCheck, etc.)
+     * @param {number} commandCreatedTime - The issued time from server
+     */
+    applyUnitTargetPosition(unitId, targetPosition, meta, commandCreatedTime) {
+        const createdTime = commandCreatedTime || this.game.state.now;
+        {
+            // Cancel: disable the unit's current order and stop its movement.
             if (meta?.clearOrder) {
                 const po = this.game.getComponent(unitId, "playerOrder");
                 if (po) {
@@ -120,7 +137,7 @@ class UnitOrderSystem extends GUTS.BaseSystem {
                     }
                 }
             }
-        });
+        }
     }
 
     /**

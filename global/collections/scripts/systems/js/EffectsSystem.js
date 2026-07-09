@@ -81,7 +81,10 @@ class EffectsSystem extends GUTS.BaseSystem {
             const elapsed = currentTime - effect.startTime;
             const progress = elapsed / effect.duration;
 
-            if (progress >= 1) {
+            // elapsed < 0: the game clock was reset (resetCurrentTime) — the
+            // effect's startTime is from before the reset and it would
+            // otherwise linger indefinitely. Expire it.
+            if (progress >= 1 || elapsed < 0) {
                 this._toRemove.push(i);
                 continue;
             }
@@ -119,7 +122,10 @@ class EffectsSystem extends GUTS.BaseSystem {
     
     updateFlickerEffect(effect, elapsed, animation) {
         if (animation?.flickerCount > 0 && effect?.flickerCount < animation?.flickerCount) {
-            if (elapsed % animation.flickerSpeed < animation.flickerSpeed / 2) {
+            // flickerSpeed configs are in ms; elapsed is in seconds
+            const flickerSpeed = animation.flickerSpeed > 1
+                ? animation.flickerSpeed / 1000 : animation.flickerSpeed;
+            if (elapsed % flickerSpeed < flickerSpeed / 2) {
                 if (animation.opacityFlicker) {
                     effect.material.opacity = Math.random() * 0.6 + 0.4;
                 }
@@ -134,7 +140,8 @@ class EffectsSystem extends GUTS.BaseSystem {
     
     updatePulseEffect(effect, elapsed, animation) {
         if (animation?.pulseEffect) {
-            const pulseIntensity = Math.sin(elapsed * 0.01) * 0.3 + 0.7;
+            // elapsed is in seconds — ~1.6 pulses per second
+            const pulseIntensity = Math.sin(elapsed * 10) * 0.3 + 0.7;
             effect.material.opacity = pulseIntensity;
         }
     }
@@ -296,7 +303,13 @@ class EffectsSystem extends GUTS.BaseSystem {
         effect.geometry = geometry;
         effect.material = material;
         effect.startTime = this.game.state.now;
-        effect.duration = mergedAnimation.duration || 1000;
+        // Game clock is SECONDS. Legacy callers pass durations in milliseconds
+        // (e.g. 800), which made progress advance 1000× too slowly — beams sat
+        // frozen in the air for minutes. No line effect legitimately lasts 30s+,
+        // so large values are treated as ms and converted.
+        let duration = mergedAnimation.duration || 1;
+        if (duration > 30) duration = duration / 1000;
+        effect.duration = duration;
         effect.originalOpacity = material.opacity;
         effect.type = type;
         

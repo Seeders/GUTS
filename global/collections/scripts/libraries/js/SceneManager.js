@@ -300,6 +300,13 @@ class SceneManager {
         // Destroy ALL systems for a clean slate (they'll be recreated by configureSystems)
         this.destroyAllSystems();
 
+        // gameState is ECS data: it resets with the scene like every other
+        // component (persistent session fields excepted — see
+        // BaseECSGame.PERSISTENT_STATE_FIELDS / configs.game.persistentStateFields).
+        if (typeof this.game.resetGameStateForSceneChange === 'function') {
+            this.game.resetGameStateForSceneChange();
+        }
+
         this.currentScene = null;
         this.currentSceneName = null;
     }
