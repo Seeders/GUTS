@@ -1,0 +1,16 @@
+{
+ "title": "Amulet of Vitality",
+ "icon": "amulet_T1",
+ "description": "+20% HP; unlocks Regeneration",
+ "statModifiers": {
+  "maxHP": {
+   "pct": 0.2
+  }
+ },
+ "unlockAbility": "RegenerationAbility",
+ "itemType": "jewelry",
+ "slots": [
+  "amulet"
+ ],
+ "fileName": "amuletVitality"
+}

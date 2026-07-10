@@ -1,27 +1,9 @@
 {
  "unit": "2_sd_hoplite",
- "techs": [
-  {
-   "id": "hop_phalanx",
-   "title": "Phalanx Masters",
-   "cost": 22,
-   "description": "Unlocks Phalanx Formation",
-   "unlockAbility": "PhalanxFormationAbility"
-  },
-  {
-   "id": "hop_pikes",
-   "title": "Armor Breaker",
-   "cost": 15,
-   "description": "Unlocks Armor Breaker",
-   "unlockAbility": "SunderArmorAbility"
-  },
-  {
-   "id": "hop_wall",
-   "title": "Shield Wall",
-   "cost": 14,
-   "description": "Unlocks Shield Wall",
-   "unlockAbility": "ShieldWallAbility"
-  }
+ "abilityPool": [
+  "pool_ab_PhalanxFormationAbility",
+  "pool_ab_SunderArmorAbility",
+  "pool_ab_ShieldWallAbility"
  ],
  "fileName": "2_sd_hoplite"
 }

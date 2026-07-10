@@ -10,10 +10,5 @@
    }
   }
  ],
- "tech": {
-  "title": "Stealth",
-  "cost": 13,
-  "description": "Slip into stealth — untargetable (even while attacking) until revealed.",
-  "unlockAbility": "StealthAbility"
- }
+ "unlockAbility": "StealthAbility"
 }

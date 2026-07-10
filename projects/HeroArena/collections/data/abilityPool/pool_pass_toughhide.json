@@ -10,14 +10,9 @@
    }
   }
  ],
- "tech": {
-  "title": "Toughened Hide",
-  "cost": 14,
-  "description": "+15% max HP",
-  "statModifiers": {
-   "maxHP": {
-    "pct": 0.15
-   }
+ "statModifiers": {
+  "maxHP": {
+   "pct": 0.15
   }
  }
 }

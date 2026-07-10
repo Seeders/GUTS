@@ -10,10 +10,5 @@
    }
   }
  ],
- "tech": {
-  "title": "Heal",
-  "cost": 12,
-  "description": "Restores health to the most injured ally",
-  "unlockAbility": "HealAbility"
- }
+ "unlockAbility": "HealAbility"
 }

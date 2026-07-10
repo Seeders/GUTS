@@ -1,0 +1,17 @@
+{
+ "title": "Longbow",
+ "icon": "bow_t1",
+ "description": "+40 range, +10% damage; unlocks Multi Shot",
+ "statModifiers": {
+  "range": {
+   "add": 40
+  },
+  "damage": {
+   "pct": 0.1
+  }
+ },
+ "unlockAbility": "MultiShotAbility",
+ "attrReq": "dex",
+ "itemType": "rangeWeapon",
+ "fileName": "longbow"
+}

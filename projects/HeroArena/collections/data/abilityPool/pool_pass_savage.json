@@ -10,17 +10,12 @@
    }
   }
  ],
- "tech": {
-  "title": "Savage Blows",
-  "cost": 14,
-  "description": "+30% damage, -3 armor",
-  "statModifiers": {
-   "damage": {
-    "pct": 0.3
-   },
-   "armor": {
-    "add": -3
-   }
+ "statModifiers": {
+  "damage": {
+   "pct": 0.3
+  },
+  "armor": {
+   "add": -3
   }
  }
 }

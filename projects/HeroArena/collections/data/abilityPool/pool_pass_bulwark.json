@@ -10,17 +10,12 @@
    }
   }
  ],
- "tech": {
-  "title": "Bulwark",
-  "cost": 14,
-  "description": "+5 armor, +8 evasion",
-  "statModifiers": {
-   "armor": {
-    "add": 5
-   },
-   "evasion": {
-    "add": 8
-   }
+ "statModifiers": {
+  "armor": {
+   "add": 5
+  },
+  "evasion": {
+   "add": 8
   }
  }
 }

@@ -10,17 +10,12 @@
    }
   }
  ],
- "tech": {
-  "title": "Zealots Fervor",
-  "cost": 14,
-  "description": "+20% damage, -10% HP",
-  "statModifiers": {
-   "damage": {
-    "pct": 0.2
-   },
-   "maxHP": {
-    "pct": -0.1
-   }
+ "statModifiers": {
+  "damage": {
+   "pct": 0.2
+  },
+  "maxHP": {
+   "pct": -0.1
   }
  }
 }

@@ -10,10 +10,5 @@
    }
   }
  ],
- "tech": {
-  "title": "Meteor Strike",
-  "cost": 18,
-  "description": "Devastating strike on the densest enemy formation",
-  "unlockAbility": "MeteorStrikeAbility"
- }
+ "unlockAbility": "MeteorStrikeAbility"
 }

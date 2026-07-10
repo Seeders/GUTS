@@ -10,10 +10,5 @@
    }
   }
  ],
- "tech": {
-  "title": "Curse",
-  "cost": 14,
-  "description": "Curses enemies, reducing their damage and making them vulnerable",
-  "unlockAbility": "CurseAbility"
- }
+ "unlockAbility": "CurseAbility"
 }

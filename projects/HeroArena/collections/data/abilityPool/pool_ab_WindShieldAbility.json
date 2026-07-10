@@ -10,10 +10,5 @@
    }
   }
  ],
- "tech": {
-  "title": "Wind Shield",
-  "cost": 15,
-  "description": "Creates a swirling tornado that reflects projectiles back at attackers",
-  "unlockAbility": "WindShieldAbility"
- }
+ "unlockAbility": "WindShieldAbility"
 }

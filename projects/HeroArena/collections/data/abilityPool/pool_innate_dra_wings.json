@@ -1,0 +1,9 @@
+{
+ "id": "pool_innate_dra_wings",
+ "title": "Take Flight",
+ "description": "The dragon takes to the skies — becomes a flying unit, untouchable by melee",
+ "cost": 21,
+ "requirements": [],
+ "innate": true,
+ "transformUnit": "dragon_red_flying"
+}

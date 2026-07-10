@@ -14,10 +14,5 @@
    ]
   }
  ],
- "tech": {
-  "title": "Crippling Shot",
-  "cost": 16,
-  "description": "A shot that cripples the target — slowed movement and attack.",
-  "unlockAbility": "CripplingShotAbility"
- }
+ "unlockAbility": "CripplingShotAbility"
 }

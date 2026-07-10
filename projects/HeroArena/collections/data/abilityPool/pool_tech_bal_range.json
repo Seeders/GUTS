@@ -10,14 +10,9 @@
    }
   }
  ],
- "tech": {
-  "title": "Siege Rails",
-  "cost": 18,
-  "description": "+80 attack range",
-  "statModifiers": {
-   "range": {
-    "add": 80
-   }
+ "statModifiers": {
+  "range": {
+   "add": 80
   }
  }
 }

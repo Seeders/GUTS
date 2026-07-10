@@ -10,10 +10,5 @@
    }
   }
  ],
- "tech": {
-  "title": "Venomous Claws",
-  "cost": 13,
-  "description": "Skeleton hits poison their victims",
-  "grantBuff": "poisoned_weapon"
- }
+ "grantBuff": "poisoned_weapon"
 }

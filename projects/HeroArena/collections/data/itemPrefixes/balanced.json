@@ -1,0 +1,16 @@
+{
+ "title": "Balanced",
+ "statModifiers": {
+  "damage": {
+   "pct": 0.06
+  },
+  "armor": {
+   "add": 4
+  }
+ },
+ "weight": 2,
+ "itemTypes": [
+  "jewelry"
+ ],
+ "fileName": "balanced"
+}

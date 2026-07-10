@@ -10,10 +10,5 @@
    }
   }
  ],
- "tech": {
-  "title": "Arena Presence",
-  "cost": 15,
-  "description": "Intimidate nearby enemies, reducing their damage and accuracy (does not stack)",
-  "unlockAbility": "ArenaPresenceAbility"
- }
+ "unlockAbility": "ArenaPresenceAbility"
 }

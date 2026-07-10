@@ -10,14 +10,9 @@
    }
   }
  ],
- "tech": {
-  "title": "Devotion",
-  "cost": 12,
-  "description": "+40% max HP",
-  "statModifiers": {
-   "maxHP": {
-    "pct": 0.4
-   }
+ "statModifiers": {
+  "maxHP": {
+   "pct": 0.4
   }
  }
 }

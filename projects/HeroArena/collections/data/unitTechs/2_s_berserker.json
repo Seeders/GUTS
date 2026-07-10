@@ -1,31 +1,9 @@
 {
  "unit": "2_s_berserker",
- "techs": [
-  {
-   "id": "ber_bloodlust",
-   "title": "Bloodlust",
-   "cost": 20,
-   "description": "Unlocks Bloodlust: kills feed frenzy",
-   "unlockAbility": "BloodlustAbility"
-  },
-  {
-   "id": "ber_charge",
-   "title": "Reckless Charge",
-   "cost": 20,
-   "description": "Unlocks Charge: crash into the enemy line",
-   "unlockAbility": "ChargeAbility"
-  },
-  {
-   "id": "ber_frenzy",
-   "title": "Frenzy",
-   "cost": 14,
-   "description": "+35% attack speed",
-   "statModifiers": {
-    "attackSpeed": {
-     "pct": 0.35
-    }
-   }
-  }
+ "abilityPool": [
+  "pool_ab_BloodlustAbility",
+  "pool_ab_ChargeAbility",
+  "pool_tech_ber_frenzy"
  ],
  "fileName": "2_s_berserker"
 }

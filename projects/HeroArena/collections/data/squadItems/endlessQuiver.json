@@ -1,0 +1,17 @@
+{
+ "title": "Endless Quiver",
+ "icon": "quiver_T1",
+ "description": "+20% attack speed; unlocks Rapid Fire",
+ "statModifiers": {
+  "attackSpeed": {
+   "pct": 0.2
+  }
+ },
+ "unlockAbility": "RapidFireAbility",
+ "attrReq": "dex",
+ "itemType": "rangeWeapon",
+ "slots": [
+  "offhand"
+ ],
+ "fileName": "endlessQuiver"
+}

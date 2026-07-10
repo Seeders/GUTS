@@ -450,14 +450,26 @@ class ArmyShopSystem extends GUTS.BaseSystem {
             remaining.splice(remaining.indexOf(pick), 1);
             usedCategories.add(pick.category);
             if (pick.def.unitId) usedUnits.add(pick.def.unitId);
+
+            // Item cards roll a prefix + suffix now so the offer shows the actual
+            // magic item (name + rolled stats). Clone the def (never mutate the
+            // collection) and stash the roll for pickReinforcement to consume.
+            let cardDef = pick.def;
+            let title = cardDef.title, description = cardDef.description || '';
+            if (cardDef.kind === 'squadItem') {
+                const roll = this._rollItemAffixes(cardDef.itemId, rng);
+                cardDef = { ...cardDef, _roll: roll };
+                title = roll.title;
+                description = roll.description;
+            }
             options.push({
                 id: pick.id,
-                title: pick.def.title,
-                icon: pick.def.icon || '🎁',
-                description: pick.def.description || '',
-                cost: this._cardCost(pick.def)
+                title,
+                icon: cardDef.icon || '🎁',
+                description,
+                cost: this._cardCost(cardDef)
             });
-            defs.push(pick.def);
+            defs.push(cardDef);
         }
         return { options, defs };
     }
@@ -493,8 +505,10 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         const option = pending.options?.[optionIndex];
         if (!option) return { success: false, reason: 'bad_option' };
 
-        const def = this.collections.reinforcementCards?.[option.id]
-            || pending.defs?.[optionIndex];
+        // Prefer the per-player pending def (index-aligned with options) — it carries
+        // generated fields like item affix rolls (_roll); fall back to the static card.
+        const def = pending.defs?.[optionIndex]
+            || this.collections.reinforcementCards?.[option.id];
         if (!def) return { success: false, reason: 'no_card' };
 
         // Mechabellum: only free units/unlocks and pure economy cards are free;
@@ -513,12 +527,12 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         // inventory UI, so it equips immediately onto its best squad if it fields
         // one, else banks the item too.
         if (def.kind === 'squadItem') {
-            if (!Array.isArray(stats.itemInventory)) stats.itemInventory = [];
+            const inst = this._makeItemInstance(def);   // roll uid + prefix/suffix
             const aiIds = this.call.getAIPlayerIds?.() || [];
             if (aiIds.includes(numericPlayerId) && (stats.heroRoster || []).length) {
-                this._autoEquipItem(stats, def.itemId);
+                this._autoEquipItem(stats, inst);
             } else {
-                stats.itemInventory.push(def.itemId);
+                this._bankItem(stats, inst);
             }
             this._broadcastShop(stats);
             return { success: true, card: option.id, state: this.getShopStateForPlayer(numericPlayerId) };
@@ -544,12 +558,255 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         return { success: true, skipped: true, gold, state: this.getShopStateForPlayer(numericPlayerId) };
     }
 
-    // Equip an inventory item onto one roster entry (Mechabellum device on a
-    // squad). Consumes one copy from stats.itemInventory, records it on the entry
-    // (entry.items — travels with that squad instance), and applies its effects to
-    // the live squad now + on every respawn (applyArmyUpgrades). rosterIndex < 0
-    // cancels target selection, leaving the item in the inventory.
-    equipSquadItem(numericPlayerId, itemId, rosterIndex) {
+    // Attribute label for equip-restriction messages.
+    static ATTR_LABEL = { str: 'STR', dex: 'DEX', int: 'INT' };
+
+    // Weapon items only fit units that wield that category of weapon. A unit's
+    // `weaponType` is a concrete kind (sword, bow, staff, ...); these map it to
+    // the broad melee/ranged/magic class the item's `itemType` is gated on.
+    static WEAPON_KIND_CATEGORY = {
+        sword: 'melee', axe: 'melee', mace: 'melee', dagger: 'melee',
+        bow: 'ranged', crossbow: 'ranged',
+        staff: 'magic', wand: 'magic',
+    };
+    static WEAPON_ITEM_CATEGORY = {
+        meleeWeapon: 'melee', rangeWeapon: 'ranged', magicWeapon: 'magic',
+    };
+    static WEAPON_CATEGORY_LABEL = { melee: 'melee', ranged: 'ranged', magic: 'magic' };
+
+    // Equipment slots and how many items each holds at once (only rings stack).
+    static SLOT_CAP = {
+        weapon: 1, offhand: 1, cloak: 1, armor: 1,
+        helmet: 1, glove: 1, boots: 1, ring: 2, amulet: 1,
+    };
+    // Default slot(s) an item can occupy, by itemType. An item may override with
+    // its own `slots` array (e.g. a dagger is ["weapon","offhand"], a quiver is
+    // offhand-only, an amulet is amulet not ring).
+    static DEFAULT_SLOTS = {
+        meleeWeapon: ['weapon'], rangeWeapon: ['weapon'], magicWeapon: ['weapon'],
+        shield: ['offhand'], cape: ['cloak'], bodyArmor: ['armor'],
+        helmet: ['helmet'], gloves: ['glove'], boots: ['boots'], jewelry: ['ring'],
+    };
+
+    // Slots this item is allowed in — explicit `slots` on the item wins, else the
+    // itemType default. Empty = not slot-equippable.
+    _itemSlots(item) {
+        if (Array.isArray(item?.slots) && item.slots.length) return item.slots;
+        return ArmyShopSystem.DEFAULT_SLOTS[item?.itemType] || [];
+    }
+    // Which slot an already-equipped instance sits in. Tagged at equip time;
+    // older saves without a tag fall back to the item's first eligible slot.
+    _instanceSlot(inst) {
+        if (inst?.slot) return inst.slot;
+        const slots = this._itemSlots(this._resolveItem(inst));
+        return slots[0] || null;
+    }
+    // The slot a newly-equipped item should take: first eligible slot with spare
+    // capacity; if every eligible slot is full, its first eligible slot (whose
+    // oldest occupant gets swapped back to inventory).
+    _chooseEquipSlot(entry, item) {
+        const slots = this._itemSlots(item);
+        if (!slots.length) return null;
+        const items = entry.items || [];
+        for (const s of slots) {
+            const cap = ArmyShopSystem.SLOT_CAP[s] ?? 1;
+            const used = items.filter(x => this._instanceSlot(x) === s).length;
+            if (used < cap) return s;
+        }
+        return slots[0];
+    }
+    // Put an item instance into its slot on a roster entry, auto-swapping any
+    // occupant(s) of a full slot back to the commander inventory, then rebuild the
+    // squad so stat mods reflect the new loadout. Assumes itemEquipCheck passed.
+    // Returns the chosen slot, or null if the item isn't slot-equippable.
+    _placeItemInSlot(stats, rosterIndex, inst, item) {
+        const entry = stats.heroRoster?.[rosterIndex];
+        if (!entry) return null;
+        if (!Array.isArray(entry.items)) entry.items = [];
+        const slot = this._chooseEquipSlot(entry, item);
+        if (!slot) return null;
+        const cap = ArmyShopSystem.SLOT_CAP[slot] ?? 1;
+        // Evict oldest occupants until adding one more stays within capacity.
+        let occ = entry.items.filter(x => this._instanceSlot(x) === slot);
+        while (occ.length >= cap) {
+            const evict = occ.shift();
+            const ei = entry.items.findIndex(x => (x?.uid ?? x) === (evict?.uid ?? evict));
+            if (ei !== -1) entry.items.splice(ei, 1);
+            this._bankItem(stats, evict);
+        }
+        inst.slot = slot;
+        entry.items.push(inst);
+        this.call.respawnRosterEntry?.(stats.playerId, rosterIndex);   // rebuild mods
+        return slot;
+    }
+
+    // Can this roster entry's unit equip this item?
+    //   • Tier 3/4 units can't use items at all.
+    //   • Weapon items (melee/range/magicWeapon) must match the unit's weapon
+    //     CLASS — a melee weapon can't go on a ranged unit, and vice versa. A
+    //     unit with no weapon (weaponType 'none') can't hold any weapon item.
+    //   • Weapons/shields carry an `attrReq` (str|dex|int); the unit must have
+    //     that attribute (>0), which covers pure AND hybrid units. Items without
+    //     an attrReq (armor, accessories) fit any unit.
+    // Returns { ok } or { ok:false, reason:<human text> } — reason is shown to
+    // the player verbatim after "Cannot equip: ".
+    itemEquipCheck(entry, item) {
+        if (!entry || !item) return { ok: false, reason: 'invalid target' };
+        const spawnType = this._resolveSpawnType(entry);
+        const tier = ArmyShopSystem.unitTier(spawnType);
+        if (tier != null && tier >= 3) {
+            return { ok: false, reason: 'T3/T4 units cannot use items' };
+        }
+        const weaponCat = ArmyShopSystem.WEAPON_ITEM_CATEGORY[item.itemType];
+        if (weaponCat) {
+            const unitCats = new Set(this._unitWeaponTypes(spawnType)
+                .map(k => ArmyShopSystem.WEAPON_KIND_CATEGORY[k])
+                .filter(Boolean));
+            if (!unitCats.has(weaponCat)) {
+                const lbl = ArmyShopSystem.WEAPON_CATEGORY_LABEL[weaponCat] || weaponCat;
+                return { ok: false, reason: `only ${lbl} units can use this weapon` };
+            }
+        }
+        const attr = item.attrReq;
+        if (attr) {
+            const profile = this._profileForEntry(entry);
+            if (!(profile[attr] > 0)) {
+                return { ok: false, reason: `requires ${ArmyShopSystem.ATTR_LABEL[attr] || attr}` };
+            }
+        }
+        return { ok: true };
+    }
+
+    // ─── Magic items (rolled prefix + suffix) ────────────────────────────────
+    // Items live as INSTANCES { uid, itemId, prefix, suffix, title } in both
+    // stats.itemInventory and roster entry.items. The base (squadItems[itemId])
+    // supplies icon / attrReq / unlockAbility + an implicit stat package; a rolled
+    // prefix (itemPrefixes) and suffix (itemSuffixes) each add statModifiers on
+    // top — a D2/PoE "blue" item, so each offered copy rolls differently.
+
+    // Merge several { field:{add,pct} } maps, summing add and pct per field.
+    static mergeStatMods(...sources) {
+        const out = {};
+        for (const src of sources) {
+            if (!src) continue;
+            for (const field of Object.keys(src)) {
+                const m = src[field] || {};
+                const cur = out[field] || (out[field] = {});
+                if (m.add != null) cur.add = (cur.add || 0) + m.add;
+                if (m.pct != null) cur.pct = (cur.pct || 0) + m.pct;
+            }
+        }
+        return out;
+    }
+
+    // Resolve an instance against collections → flat item with merged stats.
+    // Static + collections-passed so the CLIENT UI can resolve the same way.
+    static resolveItemInstance(collections, inst) {
+        if (typeof inst === 'string') inst = { uid: inst, itemId: inst };   // legacy safety
+        const base = collections?.squadItems?.[inst.itemId] || {};
+        const pre  = inst.prefix ? collections?.itemPrefixes?.[inst.prefix] : null;
+        const suf  = inst.suffix ? collections?.itemSuffixes?.[inst.suffix] : null;
+        return {
+            uid: inst.uid,
+            itemId: inst.itemId,
+            icon: base.icon,
+            title: inst.title || base.title || inst.itemId,
+            attrReq: base.attrReq || null,
+            itemType: base.itemType || null,
+            slots: base.slots || null,
+            unlockAbility: base.unlockAbility || null,
+            grantBuff: base.grantBuff || null,
+            grantAntiAir: base.grantAntiAir || false,
+            statModifiers: ArmyShopSystem.mergeStatMods(base.statModifiers, pre?.statModifiers, suf?.statModifiers),
+        };
+    }
+
+    // Human summary of a merged stat map, e.g. "+25% damage, +6 armor".
+    static STAT_LABEL = {
+        maxHP: 'HP', damage: 'damage', attackSpeed: 'attack speed', armor: 'armor',
+        range: 'range', criticalChance: 'crit', criticalMultiplier: 'crit dmg',
+        evasion: 'evasion', blockChance: 'block', accuracy: 'accuracy',
+        lifeLeech: 'lifesteal', fireDamage: 'fire dmg', coldDamage: 'cold dmg',
+        visionRange: 'vision', awareness: 'awareness', stealth: 'stealth',
+        thorns: 'thorns',
+    };
+    // These stats are stored as 0..1 fractions, so a flat `add` reads as a percent
+    // ("+8% block", not "+0.08 block").
+    static PCT_ADD_FIELDS = new Set([
+        'criticalChance', 'evasion', 'blockChance', 'lifeLeech', 'thorns'
+    ]);
+    static statModsSummary(mods) {
+        const parts = [];
+        for (const field of Object.keys(mods || {})) {
+            const m = mods[field]; const label = ArmyShopSystem.STAT_LABEL[field] || field;
+            if (m.pct) parts.push(`${m.pct > 0 ? '+' : ''}${Math.round(m.pct * 100)}% ${label}`);
+            if (m.add) {
+                const isPct = ArmyShopSystem.PCT_ADD_FIELDS.has(field);
+                const val = isPct ? `${Math.round(m.add * 100)}%` : `${m.add}`;
+                parts.push(`${m.add > 0 ? '+' : ''}${val} ${label}`);
+            }
+        }
+        return parts.join(', ');
+    }
+
+    _nextItemUid() {
+        this._itemUidSeq = (this._itemUidSeq || 0) + 1;
+        return 'itm' + this._itemUidSeq;
+    }
+
+    // Weighted pick of an affix key from a collection ('itemPrefixes'|'itemSuffixes'),
+    // restricted to affixes whose `itemTypes` allows this item's type. An affix with
+    // no `itemTypes` is universal. Returns null if the pool is empty for this type.
+    _rollAffixKey(collectionName, rng, itemType) {
+        let all = Object.values(this.collections?.[collectionName] || {});
+        if (itemType) all = all.filter(a => !a.itemTypes || a.itemTypes.includes(itemType));
+        if (!all.length) return null;
+        const total = all.reduce((s, a) => s + (a.weight || 1), 0);
+        let r = rng.next() * total;
+        for (const a of all) { r -= (a.weight || 1); if (r <= 0) return a.fileName || a.id; }
+        const last = all[all.length - 1];
+        return last.fileName || last.id;
+    }
+
+    // Roll prefix + suffix for a base item → { itemId, prefix, suffix, title, description }.
+    // Affixes are drawn from the pool matching the item's `itemType`.
+    _rollItemAffixes(itemId, rng) {
+        const base = this.collections?.squadItems?.[itemId] || {};
+        const itemType = base.itemType || null;
+        const prefix = this._rollAffixKey('itemPrefixes', rng, itemType);
+        const suffix = this._rollAffixKey('itemSuffixes', rng, itemType);
+        const pre = prefix ? this.collections?.itemPrefixes?.[prefix] : null;
+        const suf = suffix ? this.collections?.itemSuffixes?.[suffix] : null;
+        const title = `${pre?.title ? pre.title + ' ' : ''}${base.title || itemId}${suf?.title ? ' ' + suf.title : ''}`;
+        const merged = ArmyShopSystem.mergeStatMods(base.statModifiers, pre?.statModifiers, suf?.statModifiers);
+        const ab = base.unlockAbility
+            ? (this.collections?.abilities?.[base.unlockAbility]?.name || base.unlockAbility.replace(/Ability$/, ''))
+            : null;
+        const description = [ArmyShopSystem.statModsSummary(merged), ab ? `unlocks ${ab}` : '']
+            .filter(Boolean).join('; ');
+        return { itemId, prefix, suffix, title, description };
+    }
+
+    // Build a fresh equip-able instance (assigns a uid). Uses the offer's pre-rolled
+    // affixes (def._roll) when present so the equipped item matches what was shown.
+    _makeItemInstance(def) {
+        const roll = def._roll || this._rollItemAffixes(def.itemId, this.game.rng.strand('shop'));
+        return { uid: this._nextItemUid(), itemId: def.itemId,
+                 prefix: roll.prefix, suffix: roll.suffix, title: roll.title };
+    }
+
+    _resolveItem(inst) { return ArmyShopSystem.resolveItemInstance(this.collections, inst); }
+
+    _bankItem(stats, inst) {
+        if (!Array.isArray(stats.itemInventory)) stats.itemInventory = [];
+        stats.itemInventory.push(inst);
+    }
+
+    // Equip an inventory item (by uid) onto one roster entry. Consumes it from
+    // stats.itemInventory, records the INSTANCE on the entry (entry.items — travels
+    // with that squad), applies effects now + on every respawn (applyArmyUpgrades).
+    // rosterIndex < 0 cancels target selection, leaving the item in the inventory.
+    equipSquadItem(numericPlayerId, uid, rosterIndex) {
         const stats = this._getStats(numericPlayerId);
         if (!stats) return { success: false, reason: 'no_player' };
         if (!this._inPlacement()) return { success: false, reason: 'wrong_phase' };
@@ -557,17 +814,20 @@ class ArmyShopSystem extends GUTS.BaseSystem {
             return { success: true, cancelled: true, state: this.getShopStateForPlayer(numericPlayerId) };
         }
         const inv = stats.itemInventory || [];
-        const invIdx = inv.indexOf(itemId);
+        const invIdx = inv.findIndex(x => (x?.uid ?? x) === uid);
         if (invIdx === -1) return { success: false, reason: 'not_in_inventory' };
         const entry = stats.heroRoster?.[rosterIndex];
         if (!entry) return { success: false, reason: 'bad_target' };
-        const item = this.collections.squadItems?.[itemId];
-        if (!item) return { success: false, reason: 'no_item' };
+        const inst = inv[invIdx];
+        const item = this._resolveItem(inst);
+
+        const compat = this.itemEquipCheck(entry, item);
+        if (!compat.ok) return { success: false, reason: compat.reason };
+        if (!this._itemSlots(item).length) return { success: false, reason: 'cannot equip' };
 
         inv.splice(invIdx, 1);
-        if (!Array.isArray(entry.items)) entry.items = [];
-        entry.items.push(itemId);
-        this._applyItemToLiveSquad(stats, rosterIndex, item);
+        // Places into its slot, auto-swapping any displaced item back to inventory.
+        this._placeItemInSlot(stats, rosterIndex, inst, item);
         this._broadcastShop(stats);
         return { success: true, state: this.getShopStateForPlayer(numericPlayerId) };
     }
@@ -575,32 +835,35 @@ class ArmyShopSystem extends GUTS.BaseSystem {
     // Unequip an item from a squad back into the commander inventory. The squad
     // respawns clean so the item's stat mods drop off (applyArmyUpgrades rebuilds
     // from the remaining items). Placement phase only.
-    unequipSquadItem(numericPlayerId, rosterIndex, itemId) {
+    unequipSquadItem(numericPlayerId, rosterIndex, uid) {
         const stats = this._getStats(numericPlayerId);
         if (!stats) return { success: false, reason: 'no_player' };
         if (!this._inPlacement()) return { success: false, reason: 'wrong_phase' };
         const entry = stats.heroRoster?.[rosterIndex];
         if (!entry) return { success: false, reason: 'bad_target' };
-        const i = (entry.items || []).indexOf(itemId);
+        const i = (entry.items || []).findIndex(x => (x?.uid ?? x) === uid);
         if (i === -1) return { success: false, reason: 'not_equipped' };
+        const inst = entry.items[i];
         entry.items.splice(i, 1);
-        if (!Array.isArray(stats.itemInventory)) stats.itemInventory = [];
-        stats.itemInventory.push(itemId);
+        this._bankItem(stats, inst);
         this.call.respawnRosterEntry?.(stats.playerId, rosterIndex);   // rebuild → mods drop
         this._broadcastShop(stats);
         return { success: true, state: this.getShopStateForPlayer(numericPlayerId) };
     }
 
-    // AI: equip an item on its highest-level (most valuable) squad.
-    _autoEquipItem(stats, itemId) {
+    // AI: equip an item INSTANCE on its highest-level (most valuable) COMPATIBLE
+    // squad. If no squad can use it (all T3/T4 or wrong attribute), bank it.
+    _autoEquipItem(stats, inst) {
         const roster = stats.heroRoster || [];
-        const item = this.collections.squadItems?.[itemId];
-        if (!roster.length || !item) return;
-        let best = 0, bestLv = -1;
-        roster.forEach((e, i) => { const lv = e.level || 1; if (lv > bestLv) { bestLv = lv; best = i; } });
-        if (!Array.isArray(roster[best].items)) roster[best].items = [];
-        roster[best].items.push(itemId);
-        this._applyItemToLiveSquad(stats, best, item);
+        const item = this._resolveItem(inst);
+        if (!roster.length) { this._bankItem(stats, inst); return; }
+        let best = -1, bestLv = -1;
+        roster.forEach((e, i) => {
+            const lv = e.level || 1;
+            if (lv > bestLv && this.itemEquipCheck(e, item).ok) { bestLv = lv; best = i; }
+        });
+        if (best < 0) { this._bankItem(stats, inst); return; }   // nothing eligible — keep it
+        this._placeItemInSlot(stats, best, inst, item);
     }
 
     // Apply an item's effects to the live units at one roster index.
@@ -675,8 +938,7 @@ class ArmyShopSystem extends GUTS.BaseSystem {
                 const owned = stats.unitTechs[def.unitId] || [];
                 if (!owned.includes(def.techId)) {
                     stats.unitTechs[def.unitId] = [...owned, def.techId];
-                    const techDef = (this.collections.unitTechs?.[def.unitId]?.techs || [])
-                        .find(t => t.id === def.techId);
+                    const techDef = this._defaultTechs(def.unitId).find(t => t.id === def.techId);
                     if (techDef?.statModifiers) this._applyTechToLiveUnits(stats, def.unitId, techDef);
                     if (techDef?.unlockAbility) this._reapplyAbilitiesForUnitType(stats, def.unitId);
                     if (techDef?.grantAntiAir) this._applyAntiAirToLiveUnits(stats, def.unitId);
@@ -1677,9 +1939,24 @@ class ArmyShopSystem extends GUTS.BaseSystem {
     // abilities the deck assigned to this unit (each ability → an unlockAbility
     // tech), kept only while the unit still qualifies (str/dex/int/weapon). With no
     // deck, the unit's authored collections.unitTechs list.
+    // A unit's authored default techs, resolved from its abilityPool references
+    // (flat GUTS convention: unitTechs entries reference pool ids instead of
+    // embedding tech objects). Each pool entry IS the tech payload; its id is the
+    // stable tech id. Pool-only fields (requirements/innate) are stripped.
+    _defaultTechs(unitId) {
+        const out = [];
+        for (const poolId of (this.collections.unitTechs?.[unitId]?.abilityPool || [])) {
+            const p = this.collections.abilityPool?.[poolId];
+            if (!p) continue;
+            const { requirements, innate, ...tech } = p;
+            out.push({ ...tech, id: p.id });
+        }
+        return out;
+    }
+
     _unitTechsFor(stats, unitId) {
         const deck = this._deckFor(stats);
-        const defaults = this.collections.unitTechs?.[unitId]?.techs || [];
+        const defaults = this._defaultTechs(unitId);
         if (!deck) return defaults;
         const entry = (deck.units || []).find(u => u.unitId === unitId);
         if (!entry) return defaults;   // unit not customized ⇒ its default techs
@@ -1693,9 +1970,11 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         // grantBuff, onDeath*, ...); the pool id is the stable tech id.
         for (const poolId of (entry.abilities || [])) {
             const p = this.collections.abilityPool?.[poolId];
-            if (!p || !p.tech) continue;
+            if (!p) continue;
             if (!this.isEligible([profile], p.requirements)) continue;
-            out.push({ ...p.tech, id: p.id });
+            // Flat pool entry: the tech IS the entry (minus its pool-only fields).
+            const { requirements, innate, ...tech } = p;
+            out.push({ ...tech, id: p.id });
         }
         return out;
     }
@@ -1892,9 +2171,9 @@ class ArmyShopSystem extends GUTS.BaseSystem {
             if (m.statModifiers) this._applyStatMods(combat, health, m.statModifiers);
         }
         // Squad items: per-entry equipment re-applies to THIS squad on respawn.
-        for (const itemId of (entry.items || [])) {
-            const item = this.collections.squadItems?.[itemId];
-            if (!item) continue;
+        // Each is a rolled instance → resolve to merged (base + prefix + suffix) stats.
+        for (const inst of (entry.items || [])) {
+            const item = this._resolveItem(inst);
             if (item.statModifiers) this._applyStatMods(combat, health, item.statModifiers);
             if (item.grantAntiAir) info.canTargetAir = true;
             if (item.grantBuff) this._grantPermanentBuff(entityId, item.grantBuff);
@@ -1984,10 +2263,11 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         for (const t of this._unitTechsFor(stats, spawnType)) {
             if (t.unlockAbility && ownedTechs.has(t.id)) ids.add(t.unlockAbility);
         }
-        // Squad items on this entry can grant an ability too.
-        for (const itemId of (entry.items || [])) {
-            const it = this.collections.squadItems?.[itemId];
-            if (it?.unlockAbility) ids.add(it.unlockAbility);
+        // Squad items on this entry can grant an ability too (dedup by the Set:
+        // an item ability the unit already has via a tech collapses to one).
+        for (const inst of (entry.items || [])) {
+            const it = this._resolveItem(inst);
+            if (it.unlockAbility) ids.add(it.unlockAbility);
         }
 
         for (const owned of (stats.ownedAbilities || [])) {

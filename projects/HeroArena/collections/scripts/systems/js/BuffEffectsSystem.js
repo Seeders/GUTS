@@ -486,18 +486,22 @@ class BuffEffectsSystem extends GUTS.BaseSystem {
 
     _applyTargetReflect(attackerId, targetId, damageDealt) {
         const enums = this.enums;
+
+        // Total reflect fraction = timed thorns/retaliation buffs + the target's
+        // permanent `thorns` combat stat (from equipped items like shields).
+        let pct = 0;
         for (const buff of this.getBuffs(targetId)) {
             const isThorns = buff.buffType === enums.buffTypes?.thorns_aura
                           || buff.buffType === enums.buffTypes?.retaliation;
             if (!isThorns) continue;
-
             const buffTypeDef = this.call.getBuffTypeDef(buff.buffType);
-            const pct = buffTypeDef?.thornsPercent ?? 0;
-            if (pct <= 0) continue;
-
-            const reflectDmg = Math.max(1, Math.round(damageDealt * pct));
-            this.call.scheduleDamage(targetId, attackerId, reflectDmg, enums.element.physical, 0, {});
+            pct += buffTypeDef?.thornsPercent ?? 0;
         }
+        pct += this.game.getComponent(targetId, 'combat')?.thorns ?? 0;
+        if (pct <= 0) return;
+
+        const reflectDmg = Math.max(1, Math.round(damageDealt * pct));
+        this.call.scheduleDamage(targetId, attackerId, reflectDmg, enums.element.physical, 0, {});
     }
 
     // Emit floating damage numbers for poison DoT ticks. Global DamageSystem

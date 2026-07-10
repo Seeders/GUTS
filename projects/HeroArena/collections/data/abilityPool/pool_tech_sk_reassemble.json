@@ -10,10 +10,5 @@
    }
   }
  ],
- "tech": {
-  "title": "Reassemble",
-  "cost": 25,
-  "description": "Each skeleton rebuilds itself once per battle",
-  "onDeathReassemble": true
- }
+ "onDeathReassemble": true
 }

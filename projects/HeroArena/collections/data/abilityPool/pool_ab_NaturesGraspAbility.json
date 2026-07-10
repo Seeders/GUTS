@@ -10,10 +10,5 @@
    }
   }
  ],
- "tech": {
-  "title": "Nature's Grasp",
-  "cost": 24,
-  "description": "Slow all nearby enemies as roots grasp their feet.",
-  "unlockAbility": "NaturesGraspAbility"
- }
+ "unlockAbility": "NaturesGraspAbility"
 }

@@ -10,14 +10,9 @@
    }
   }
  ],
- "tech": {
-  "title": "Bigger Payloads",
-  "cost": 14,
-  "description": "+40% damage",
-  "statModifiers": {
-   "damage": {
-    "pct": 0.4
-   }
+ "statModifiers": {
+  "damage": {
+   "pct": 0.4
   }
  }
 }

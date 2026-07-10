@@ -1115,6 +1115,69 @@
     filter: drop-shadow(0 0 3px rgba(200,120,255,0.7));
 }
 .sq-item:hover { filter: drop-shadow(0 0 5px rgba(230,160,255,1)); }
+
+/* Equipment paperdoll: 5×2 grid of slots on the squad inspector. */
+.eq-grid {
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin-top: 5px;
+}
+.eq-slot {
+    display: flex; align-items: center; justify-content: center;
+    height: 30px; border-radius: 5px; font-size: 0.95rem;
+    border: 1px solid #3a4152; background: #10151f;
+}
+.eq-slot.filled {
+    cursor: pointer;
+    border-color: rgba(200,120,255,0.6); background: rgba(200,120,255,0.12);
+    filter: drop-shadow(0 0 3px rgba(200,120,255,0.5));
+}
+.eq-slot.filled:hover { background: rgba(200,120,255,0.28); }
+.eq-slot.empty { opacity: 0.32; filter: grayscale(1); }
+/* Stash item armed: only the slots it can occupy light up as equip targets. */
+.eq-slot.eq-valid {
+    cursor: pointer;
+    border-color: rgba(120,220,160,0.7); background: rgba(120,220,160,0.14);
+    opacity: 1; filter: drop-shadow(0 0 4px rgba(120,220,160,0.5));
+    animation: eqArmPulse 1s ease-in-out infinite;
+}
+.eq-slot.eq-valid:hover { background: rgba(120,220,160,0.3); }
+@keyframes eqArmPulse { 50% { border-color: rgba(120,220,160,1); } }
+
+/* Commander stash: chest-headed panel of unequipped loot. */
+.stash-panel {
+    margin: 2px 4px 8px; border: 1px solid #4a3f2a; border-radius: 6px;
+    background: linear-gradient(180deg, rgba(40,32,18,0.55), rgba(20,16,10,0.55));
+}
+.stash-head {
+    display: flex; align-items: center; gap: 6px; cursor: pointer;
+    padding: 4px 8px; user-select: none;
+    border-bottom: 1px solid rgba(216,180,90,0.18);
+}
+.stash-head:hover { background: rgba(216,180,90,0.08); }
+.stash-title { font-weight: bold; color: #e8d9a0; font-size: 0.82rem; letter-spacing: 0.5px; }
+.stash-count {
+    min-width: 16px; text-align: center; font-size: 0.7rem; color: #1a140a;
+    background: #d8b45a; border-radius: 9px; padding: 0 5px; font-weight: bold;
+}
+.stash-caret { margin-left: auto; color: #b8a678; font-size: 0.8rem; }
+.stash-empty { padding: 6px 10px; font-size: 0.72rem; color: #8a7c58; font-style: italic; }
+.stash-grid {
+    display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; padding: 7px;
+}
+.stash-cell {
+    display: flex; align-items: center; justify-content: center;
+    height: 38px; border-radius: 5px; border: 1px solid #3a3325;
+    background: rgba(0,0,0,0.28);
+}
+.stash-cell.filled {
+    cursor: pointer; border-color: rgba(216,180,90,0.5);
+    background: rgba(216,180,90,0.1);
+}
+.stash-cell.filled:hover { background: rgba(216,180,90,0.24); }
+.stash-cell.filled.selected {
+    border-color: #ffe08a; background: rgba(255,224,138,0.28);
+    box-shadow: 0 0 6px rgba(255,224,138,0.6);
+}
+.stash-cell.empty { opacity: 0.5; }
 .inv-item {
     display: inline-flex; align-items: center; gap: 3px; cursor: pointer;
     font-size: 0.72rem; padding: 1px 6px; border-radius: 10px;

@@ -10,14 +10,9 @@
    }
   }
  ],
- "tech": {
-  "title": "Siege Bolts",
-  "cost": 16,
-  "description": "+60 attack range",
-  "statModifiers": {
-   "range": {
-    "add": 60
-   }
+ "statModifiers": {
+  "range": {
+   "add": 60
   }
  }
 }

@@ -13,10 +13,5 @@
    ]
   }
  ],
- "tech": {
-  "title": "Shadow Strike",
-  "cost": 20,
-  "description": "Teleport behind an enemy and deal critical damage",
-  "unlockAbility": "ShadowStrikeAbility"
- }
+ "unlockAbility": "ShadowStrikeAbility"
 }

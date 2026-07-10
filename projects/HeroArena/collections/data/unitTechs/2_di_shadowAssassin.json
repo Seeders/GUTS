@@ -1,27 +1,9 @@
 {
  "unit": "2_di_shadowAssassin",
- "techs": [
-  {
-   "id": "sha_backstab",
-   "title": "Backstab",
-   "cost": 15,
-   "description": "Unlocks Backstab: massive damage from behind",
-   "unlockAbility": "BackstabAbility"
-  },
-  {
-   "id": "sha_strike",
-   "title": "Shadow Strike",
-   "cost": 20,
-   "description": "Unlocks Shadow Strike: teleport execution",
-   "unlockAbility": "ShadowStrikeAbility"
-  },
-  {
-   "id": "sha_smoke",
-   "title": "Smoke Bomb",
-   "cost": 13,
-   "description": "Unlocks Smoke Bomb: vanish in smoke for massive evasion",
-   "unlockAbility": "SmokeBombAbility"
-  }
+ "abilityPool": [
+  "pool_ab_BackstabAbility",
+  "pool_ab_ShadowStrikeAbility",
+  "pool_ab_SmokeBombAbility"
  ],
  "fileName": "2_di_shadowAssassin"
 }

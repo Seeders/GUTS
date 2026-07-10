@@ -1,0 +1,15 @@
+{
+ "title": "Savage",
+ "statModifiers": {
+  "damage": {
+   "pct": 0.18
+  }
+ },
+ "weight": 2,
+ "itemTypes": [
+  "meleeWeapon",
+  "rangeWeapon",
+  "magicWeapon"
+ ],
+ "fileName": "savage"
+}

@@ -1,0 +1,14 @@
+{
+ "title": "Arcane",
+ "statModifiers": {
+  "range": {
+   "add": 30
+  }
+ },
+ "weight": 2,
+ "itemTypes": [
+  "rangeWeapon",
+  "magicWeapon"
+ ],
+ "fileName": "arcane"
+}

@@ -485,7 +485,9 @@ class CampaignRunSystem extends GUTS.BaseSystem {
         if (fielded.length) {
             const uid = fielded[Math.floor(rng.next() * fielded.length)];
             const owned = new Set(stats.unitTechs?.[uid] || []);
-            const open = (this.collections.unitTechs[uid].techs || []).filter(t => !owned.has(t.id));
+            const open = (this.collections.unitTechs[uid].abilityPool || [])
+                .map(id => this.collections.abilityPool?.[id]).filter(Boolean)
+                .filter(t => !owned.has(t.id) && !t.innate);
             if (open.length) techPick = { uid, tech: open[Math.floor(rng.next() * open.length)] };
         }
         if (techPick) {

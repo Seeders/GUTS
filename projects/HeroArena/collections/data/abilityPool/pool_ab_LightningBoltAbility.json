@@ -10,10 +10,5 @@
    }
   }
  ],
- "tech": {
-  "title": "Lightning Bolt",
-  "cost": 15,
-  "description": "Instantly strikes an enemy with pure lightning",
-  "unlockAbility": "LightningBoltAbility"
- }
+ "unlockAbility": "LightningBoltAbility"
 }

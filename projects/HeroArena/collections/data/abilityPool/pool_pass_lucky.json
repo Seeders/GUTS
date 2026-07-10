@@ -10,14 +10,9 @@
    }
   }
  ],
- "tech": {
-  "title": "Lucky Strikes",
-  "cost": 14,
-  "description": "+15% critical chance",
-  "statModifiers": {
-   "criticalChance": {
-    "add": 0.15
-   }
+ "statModifiers": {
+  "criticalChance": {
+   "add": 0.15
   }
  }
 }

@@ -1,6 +1,6 @@
 {
  "title": "Keen Whetstone",
- "icon": "⚔️",
+ "icon": "sword_hook",
  "kind": "squadItem",
  "itemId": "whetstone",
  "description": "Equip a squad: +25% damage",

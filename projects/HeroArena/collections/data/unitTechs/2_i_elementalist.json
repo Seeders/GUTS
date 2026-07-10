@@ -1,27 +1,9 @@
 {
  "unit": "2_i_elementalist",
- "techs": [
-  {
-   "id": "ele_chain",
-   "title": "Chain Lightning",
-   "cost": 17,
-   "description": "Unlocks Chain Lightning",
-   "unlockAbility": "ChainLightningAbility"
-  },
-  {
-   "id": "ele_bolt",
-   "title": "Thunderbolt",
-   "cost": 15,
-   "description": "Unlocks Lightning Bolt: single-target blast",
-   "unlockAbility": "LightningBoltAbility"
-  },
-  {
-   "id": "ele_storm",
-   "title": "Fire Storm",
-   "cost": 26,
-   "description": "Unlocks Fire Storm: rain destruction",
-   "unlockAbility": "FireStormAbility"
-  }
+ "abilityPool": [
+  "pool_ab_ChainLightningAbility",
+  "pool_ab_LightningBoltAbility",
+  "pool_ab_FireStormAbility"
  ],
  "fileName": "2_i_elementalist"
 }

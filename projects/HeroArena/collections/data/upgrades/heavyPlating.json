@@ -1,30 +1,30 @@
 {
-  "title": "Heavy Plating",
-  "description": "+8 armor and +10% HP to Strength units",
-  "value": 45,
-  "icon": "shield",
-  "perUnitType": true,
-  "requirements": [
-    {
-      "str": {
-        "min": 2
-      }
-    }
-  ],
-  "target": {
-    "str": {
-      "min": 2
-    }
+ "title": "Heavy Plating",
+ "description": "+8 armor and +10% HP to Strength units",
+ "value": 45,
+ "icon": "shield",
+ "perUnitType": true,
+ "requirements": [
+  {
+   "str": {
+    "min": 2
+   }
+  }
+ ],
+ "target": {
+  "str": {
+   "min": 2
+  }
+ },
+ "statModifiers": {
+  "armor": {
+   "add": 8
   },
-  "statModifiers": {
-    "armor": {
-      "add": 8
-    },
-    "maxHP": {
-      "pct": 0.1
-    }
-  },
-  "requiresBuildings": [
-    "barracks"
-  ]
+  "maxHP": {
+   "pct": 0.1
+  }
+ },
+ "requiresBuildings": [
+  "barracks"
+ ]
 }

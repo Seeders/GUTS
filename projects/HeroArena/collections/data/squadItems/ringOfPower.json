@@ -1,0 +1,16 @@
+{
+ "title": "Ring of Power",
+ "icon": "ring_T1",
+ "description": "+12% damage, +5% crit; unlocks Haste",
+ "statModifiers": {
+  "damage": {
+   "pct": 0.12
+  },
+  "criticalChance": {
+   "add": 0.05
+  }
+ },
+ "unlockAbility": "HasteAbility",
+ "itemType": "jewelry",
+ "fileName": "ringOfPower"
+}

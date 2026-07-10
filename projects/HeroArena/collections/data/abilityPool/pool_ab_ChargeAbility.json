@@ -16,10 +16,5 @@
    ]
   }
  ],
- "tech": {
-  "title": "Charge",
-  "cost": 20,
-  "description": "Rush forward dealing damage and stunning enemies",
-  "unlockAbility": "ChargeAbility"
- }
+ "unlockAbility": "ChargeAbility"
 }

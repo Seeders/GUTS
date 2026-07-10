@@ -10,14 +10,9 @@
    }
   }
  ],
- "tech": {
-  "title": "Vampiric Edge",
-  "cost": 14,
-  "description": "+12% life leech",
-  "statModifiers": {
-   "lifeLeech": {
-    "add": 0.12
-   }
+ "statModifiers": {
+  "lifeLeech": {
+   "add": 0.12
   }
  }
 }

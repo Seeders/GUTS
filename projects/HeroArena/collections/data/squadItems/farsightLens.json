@@ -1,7 +1,13 @@
 {
  "title": "Farsight Lens",
- "icon": "🔭",
+ "icon": "crossbow_sniper",
  "description": "+50 attack range",
- "statModifiers": { "range": { "add": 50 } },
- "fileName": "farsightLens"
+ "statModifiers": {
+  "range": {
+   "add": 50
+  }
+ },
+ "fileName": "farsightLens",
+ "unlockAbility": "PiercingShotAbility",
+ "itemType": "rangeWeapon"
 }

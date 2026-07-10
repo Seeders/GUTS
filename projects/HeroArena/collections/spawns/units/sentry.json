@@ -1,5 +1,6 @@
 {
   "title": "Sentry Tower",
+  "icon": "sentry_tower",
   "strength": 0,
   "dexterity": 2,
   "intelligence": 0,

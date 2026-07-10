@@ -14,10 +14,5 @@
    ]
   }
  ],
- "tech": {
-  "title": "Rapid Fire",
-  "cost": 14,
-  "description": "Drastically increased attack speed for a short time.",
-  "unlockAbility": "RapidFireAbility"
- }
+ "unlockAbility": "RapidFireAbility"
 }

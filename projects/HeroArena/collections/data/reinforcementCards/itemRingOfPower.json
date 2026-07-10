@@ -1,0 +1,12 @@
+{
+ "title": "Ring of Power",
+ "icon": "ring_T1",
+ "kind": "squadItem",
+ "itemId": "ringOfPower",
+ "description": "Equip a squad: +12% damage, +5% crit; unlocks Haste",
+ "cost": 75,
+ "weight": 2,
+ "minRound": 3,
+ "fileName": "itemRingOfPower",
+ "category": "item"
+}

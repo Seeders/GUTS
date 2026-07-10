@@ -1,7 +1,8 @@
 class AccuracySystem extends GUTS.BaseSystem {
     static services = [
         'rollHitChance',
-        'calculateHitChance'
+        'calculateHitChance',
+        'rollBlock'
     ];
 
     static serviceDependencies = [
@@ -15,6 +16,9 @@ class AccuracySystem extends GUTS.BaseSystem {
         // Hit chance configuration
         this.MIN_HIT_CHANCE = 0.05;  // 5% minimum hit chance
         this.MAX_HIT_CHANCE = 0.95;  // 95% maximum hit chance
+
+        // Block chance is capped so stacked shields can't reach total immunity.
+        this.MAX_BLOCK_CHANCE = 0.75;
 
         // Deterministic pseudo-random state
         this.hitRollCounter = 0;
@@ -93,5 +97,21 @@ class AccuracySystem extends GUTS.BaseSystem {
         // Simple deterministic hash (same as used elsewhere in codebase)
         const x = Math.sin(seed) * 10000;
         return x - Math.floor(x);
+    }
+
+    /**
+     * Roll to determine if the defender blocks an incoming attack.
+     * Attacks only (spells are unblockable, like they are unevadable).
+     * @param {number} attackerId
+     * @param {number} defenderId
+     * @returns {{ blocked: boolean, blockChance: number, roll: number }}
+     */
+    rollBlock(attackerId, defenderId) {
+        const defenderStats = this.call.getAggregatedDefensiveStats(defenderId);
+        const blockChance = Math.min(
+            this.MAX_BLOCK_CHANCE, Math.max(0, defenderStats?.blockChance ?? 0));
+        if (blockChance <= 0) return { blocked: false, blockChance: 0, roll: 1 };
+        const roll = this.deterministicRandom(attackerId, defenderId);
+        return { blocked: roll < blockChance, blockChance, roll };
     }
 }

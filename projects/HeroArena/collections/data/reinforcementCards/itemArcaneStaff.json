@@ -1,0 +1,12 @@
+{
+ "title": "Arcane Staff",
+ "icon": "staff_T1",
+ "kind": "squadItem",
+ "itemId": "arcaneStaff",
+ "description": "Equip a squad: +30 range; unlocks Fireball Needs INT.",
+ "cost": 110,
+ "weight": 2,
+ "minRound": 4,
+ "fileName": "itemArcaneStaff",
+ "category": "item"
+}

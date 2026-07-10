@@ -16,10 +16,5 @@
    ]
   }
  ],
- "tech": {
-  "title": "Leap Slam",
-  "cost": 20,
-  "description": "Leap into the air and slam down, dealing AoE damage",
-  "unlockAbility": "LeapSlamAbility"
- }
+ "unlockAbility": "LeapSlamAbility"
 }

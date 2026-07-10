@@ -1,0 +1,14 @@
+{
+ "title": "of Leeching",
+ "statModifiers": {
+  "lifeLeech": {
+   "add": 0.12
+  }
+ },
+ "weight": 1,
+ "itemTypes": [
+  "meleeWeapon",
+  "jewelry"
+ ],
+ "fileName": "leeching"
+}

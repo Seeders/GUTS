@@ -1,0 +1,16 @@
+{
+ "title": "of the Tiger",
+ "statModifiers": {
+  "criticalChance": {
+   "add": 0.06
+  }
+ },
+ "weight": 1,
+ "itemTypes": [
+  "meleeWeapon",
+  "rangeWeapon",
+  "magicWeapon",
+  "gloves"
+ ],
+ "fileName": "theTiger"
+}

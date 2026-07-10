@@ -10,17 +10,12 @@
    }
   }
  ],
- "tech": {
-  "title": "Titans Girth",
-  "cost": 14,
-  "description": "+30% HP, -2 armor",
-  "statModifiers": {
-   "maxHP": {
-    "pct": 0.3
-   },
-   "armor": {
-    "add": -2
-   }
+ "statModifiers": {
+  "maxHP": {
+   "pct": 0.3
+  },
+  "armor": {
+   "add": -2
   }
  }
 }

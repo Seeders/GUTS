@@ -1,0 +1,21 @@
+{
+ "title": "Assassin's Dagger",
+ "icon": "dagger",
+ "description": "+25% attack speed, +8% crit; unlocks Backstab",
+ "statModifiers": {
+  "attackSpeed": {
+   "pct": 0.25
+  },
+  "criticalChance": {
+   "add": 0.08
+  }
+ },
+ "unlockAbility": "BackstabAbility",
+ "attrReq": "dex",
+ "itemType": "meleeWeapon",
+ "slots": [
+  "weapon",
+  "offhand"
+ ],
+ "fileName": "assassinDagger"
+}

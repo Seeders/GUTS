@@ -10,10 +10,5 @@
    }
   }
  ],
- "tech": {
-  "title": "Burning Aura",
-  "cost": 19,
-  "description": "Emanate heat that burns nearby enemies",
-  "unlockAbility": "BurningAuraAbility"
- }
+ "unlockAbility": "BurningAuraAbility"
 }

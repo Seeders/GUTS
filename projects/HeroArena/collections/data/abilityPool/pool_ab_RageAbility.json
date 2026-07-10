@@ -10,10 +10,5 @@
    }
   }
  ],
- "tech": {
-  "title": "Raging Strike",
-  "cost": 12,
-  "description": "Unleash primal fury with increased damage and attack speed",
-  "unlockAbility": "RageAbility"
- }
+ "unlockAbility": "RageAbility"
 }

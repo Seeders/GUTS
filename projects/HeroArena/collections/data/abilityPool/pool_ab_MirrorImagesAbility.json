@@ -10,10 +10,5 @@
    }
   }
  ],
- "tech": {
-  "title": "Mirror Images",
-  "cost": 25,
-  "description": "Creates 2 weaker illusions of self",
-  "unlockAbility": "MirrorImagesAbility"
- }
+ "unlockAbility": "MirrorImagesAbility"
 }

@@ -10,10 +10,5 @@
    }
   }
  ],
- "tech": {
-  "title": "Shockwave",
-  "cost": 14,
-  "description": "Slam the ground, knocking nearby enemies back and dealing light damage.",
-  "unlockAbility": "ShockwaveAbility"
- }
+ "unlockAbility": "ShockwaveAbility"
 }

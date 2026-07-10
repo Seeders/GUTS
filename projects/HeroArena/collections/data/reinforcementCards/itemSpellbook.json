@@ -1,0 +1,12 @@
+{
+ "title": "Spellbook",
+ "icon": "book",
+ "kind": "squadItem",
+ "itemId": "spellbook",
+ "description": "Equip a squad: +20 range; unlocks Chain Lightning Needs INT.",
+ "cost": 110,
+ "weight": 2,
+ "minRound": 4,
+ "fileName": "itemSpellbook",
+ "category": "item"
+}

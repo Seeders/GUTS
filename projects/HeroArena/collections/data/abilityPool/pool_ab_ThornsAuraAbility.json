@@ -10,10 +10,5 @@
    }
   }
  ],
- "tech": {
-  "title": "Thorns Aura",
-  "cost": 16,
-  "description": "Damage attackers when they strike you.",
-  "unlockAbility": "ThornsAuraAbility"
- }
+ "unlockAbility": "ThornsAuraAbility"
 }

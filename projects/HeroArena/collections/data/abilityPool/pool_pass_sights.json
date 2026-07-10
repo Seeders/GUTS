@@ -10,14 +10,9 @@
    }
   }
  ],
- "tech": {
-  "title": "Extended Sights",
-  "cost": 14,
-  "description": "+40 range",
-  "statModifiers": {
-   "range": {
-    "add": 40
-   }
+ "statModifiers": {
+  "range": {
+   "add": 40
   }
  }
 }

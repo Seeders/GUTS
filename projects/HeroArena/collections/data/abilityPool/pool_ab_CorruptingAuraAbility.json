@@ -10,10 +10,5 @@
    }
   }
  ],
- "tech": {
-  "title": "Corrupting Aura",
-  "cost": 24,
-  "description": "Emanate dark energy that drains enemies and empowers undead (does not stack)",
-  "unlockAbility": "CorruptingAuraAbility"
- }
+ "unlockAbility": "CorruptingAuraAbility"
 }

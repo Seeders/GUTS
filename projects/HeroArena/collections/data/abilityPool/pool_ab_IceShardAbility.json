@@ -10,10 +10,5 @@
    }
   }
  ],
- "tech": {
-  "title": "Ice Shard",
-  "cost": 13,
-  "description": "Fires piercing ice shards that slow enemies",
-  "unlockAbility": "IceShardAbility"
- }
+ "unlockAbility": "IceShardAbility"
 }

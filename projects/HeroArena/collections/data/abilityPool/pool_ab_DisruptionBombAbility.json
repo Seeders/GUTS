@@ -10,10 +10,5 @@
    }
   }
  ],
- "tech": {
-  "title": "Disruption Bomb",
-  "cost": 24,
-  "description": "Throw a bomb that disables enemy abilities and equipment (effects do not stack)",
-  "unlockAbility": "DisruptionBombAbility"
- }
+ "unlockAbility": "DisruptionBombAbility"
 }

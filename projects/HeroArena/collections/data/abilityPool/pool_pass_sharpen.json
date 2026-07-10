@@ -10,14 +10,9 @@
    }
   }
  ],
- "tech": {
-  "title": "Whetted Edge",
-  "cost": 14,
-  "description": "+8 flat damage",
-  "statModifiers": {
-   "damage": {
-    "add": 8
-   }
+ "statModifiers": {
+  "damage": {
+   "add": 8
   }
  }
 }

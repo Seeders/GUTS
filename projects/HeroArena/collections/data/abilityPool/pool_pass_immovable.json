@@ -10,17 +10,12 @@
    }
   }
  ],
- "tech": {
-  "title": "Immovable",
-  "cost": 14,
-  "description": "+200 HP, -10% attack speed",
-  "statModifiers": {
-   "maxHP": {
-    "add": 200
-   },
-   "attackSpeed": {
-    "pct": -0.1
-   }
+ "statModifiers": {
+  "maxHP": {
+   "add": 200
+  },
+  "attackSpeed": {
+   "pct": -0.1
   }
  }
 }

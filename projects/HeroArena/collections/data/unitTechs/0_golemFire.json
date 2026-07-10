@@ -1,27 +1,9 @@
 {
  "unit": "0_golemFire",
- "techs": [
-  {
-   "id": "gfi_aura",
-   "title": "Burning Aura",
-   "cost": 19,
-   "description": "Unlocks Burning Aura: scorch everything close",
-   "unlockAbility": "BurningAuraAbility"
-  },
-  {
-   "id": "gfi_inferno",
-   "title": "Inferno",
-   "cost": 16,
-   "description": "Unlocks Inferno: eruption of flame",
-   "unlockAbility": "InfernoAbility"
-  },
-  {
-   "id": "gfi_core",
-   "title": "Fireball",
-   "cost": 16,
-   "description": "Unlocks Fireball",
-   "unlockAbility": "FireBallAbility"
-  }
+ "abilityPool": [
+  "pool_ab_BurningAuraAbility",
+  "pool_ab_InfernoAbility",
+  "pool_ab_FireBallAbility"
  ],
  "fileName": "0_golemFire"
 }

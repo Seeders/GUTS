@@ -1,27 +1,9 @@
 {
  "unit": "2_d_ranger",
- "techs": [
-  {
-   "id": "ran_multishot",
-   "title": "Split Volley",
-   "cost": 17,
-   "description": "Unlocks Multi-Shot",
-   "unlockAbility": "MultiShotAbility"
-  },
-  {
-   "id": "ran_aimed",
-   "title": "Deadeye",
-   "cost": 15,
-   "description": "Unlocks Aimed Shot",
-   "unlockAbility": "AimedShotAbility"
-  },
-  {
-   "id": "ran_hawkeye",
-   "title": "Crippling Shot",
-   "cost": 16,
-   "description": "Unlocks Crippling Shot",
-   "unlockAbility": "CripplingShotAbility"
-  }
+ "abilityPool": [
+  "pool_ab_MultiShotAbility",
+  "pool_ab_AimedShotAbility",
+  "pool_ab_CripplingShotAbility"
  ],
  "fileName": "2_d_ranger"
 }

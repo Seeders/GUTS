@@ -10,10 +10,5 @@
    }
   }
  ],
- "tech": {
-  "title": "Fear",
-  "cost": 21,
-  "description": "Strike terror into an enemy, sending it fleeing for a few seconds.",
-  "unlockAbility": "FearAbility"
- }
+ "unlockAbility": "FearAbility"
 }

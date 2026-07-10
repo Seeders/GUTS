@@ -686,7 +686,9 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
         // Deck-aware: the effective tech list may be customized by the player's deck.
         const catalog = this.game.armyShopSystem?._unitTechsFor
             ? this.game.armyShopSystem._unitTechsFor(stats, def.id)
-            : (this.collections.unitTechs?.[def.id]?.techs || []);
+            : (this.collections.unitTechs?.[def.id]?.abilityPool || [])
+                .map(id => this.collections.abilityPool?.[id]).filter(Boolean)
+                .map(p => { const { requirements, innate, ...t } = p; return { ...t, id: p.id }; });
         const techs = catalog.filter(t => ownedTechs.includes(t.id));
         const pos = this.game.getComponent(entityId, 'transform')?.position;
         if (!pos) return;

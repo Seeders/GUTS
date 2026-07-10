@@ -1,6 +1,6 @@
 {
  "title": "Farsight Lens",
- "icon": "🔭",
+ "icon": "crossbow_sniper",
  "kind": "squadItem",
  "itemId": "farsightLens",
  "description": "Equip a squad: +50 attack range",

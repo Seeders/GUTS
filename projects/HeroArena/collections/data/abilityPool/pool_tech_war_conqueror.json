@@ -10,14 +10,9 @@
    }
   }
  ],
- "tech": {
-  "title": "Conqueror",
-  "cost": 14,
-  "description": "+30% damage",
-  "statModifiers": {
-   "damage": {
-    "pct": 0.3
-   }
+ "statModifiers": {
+  "damage": {
+   "pct": 0.3
   }
  }
 }

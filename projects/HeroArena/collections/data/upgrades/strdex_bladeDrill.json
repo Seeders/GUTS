@@ -1,33 +1,33 @@
 {
-  "title": "Blade Drill",
-  "description": "+12% attack speed to Str/Dex units",
-  "value": 60,
-  "icon": "speed",
-  "perUnitType": true,
-  "requirements": [
-    {
-      "str": {
-        "min": 2
-      },
-      "dex": {
-        "min": 2
-      }
-    }
-  ],
-  "target": {
-    "str": {
-      "min": 2
-    },
-    "dex": {
-      "min": 2
-    }
+ "title": "Blade Drill",
+ "description": "+12% attack speed to Str/Dex units",
+ "value": 60,
+ "icon": "speed",
+ "perUnitType": true,
+ "requirements": [
+  {
+   "str": {
+    "min": 2
+   },
+   "dex": {
+    "min": 2
+   }
+  }
+ ],
+ "target": {
+  "str": {
+   "min": 2
   },
-  "statModifiers": {
-    "attackSpeed": {
-      "pct": 0.12
-    }
-  },
-  "requiresBuildings": [
-    "barracks"
-  ]
+  "dex": {
+   "min": 2
+  }
+ },
+ "statModifiers": {
+  "attackSpeed": {
+   "pct": 0.12
+  }
+ },
+ "requiresBuildings": [
+  "barracks"
+ ]
 }

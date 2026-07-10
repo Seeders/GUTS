@@ -10,10 +10,5 @@
    }
   }
  ],
- "tech": {
-  "title": "Bear Trap",
-  "cost": 15,
-  "description": "Place a hidden trap that snares enemies",
-  "unlockAbility": "BearTrapAbility"
- }
+ "unlockAbility": "BearTrapAbility"
 }

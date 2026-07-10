@@ -1,27 +1,27 @@
 {
-  "title": "Swift Strikes",
-  "description": "+15% attack speed to Dexterity units",
-  "value": 45,
-  "icon": "sword",
-  "perUnitType": true,
-  "requirements": [
-    {
-      "dex": {
-        "min": 2
-      }
-    }
-  ],
-  "target": {
-    "dex": {
-      "min": 2
-    }
-  },
-  "statModifiers": {
-    "attackSpeed": {
-      "pct": 0.15
-    }
-  },
-  "requiresBuildings": [
-    "fletchersHall"
-  ]
+ "title": "Swift Strikes",
+ "description": "+15% attack speed to Dexterity units",
+ "value": 45,
+ "icon": "sword",
+ "perUnitType": true,
+ "requirements": [
+  {
+   "dex": {
+    "min": 2
+   }
+  }
+ ],
+ "target": {
+  "dex": {
+   "min": 2
+  }
+ },
+ "statModifiers": {
+  "attackSpeed": {
+   "pct": 0.15
+  }
+ },
+ "requiresBuildings": [
+  "fletchersHall"
+ ]
 }

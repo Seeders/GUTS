@@ -1,0 +1,12 @@
+{
+ "title": "Amulet of Vitality",
+ "icon": "amulet_T1",
+ "kind": "squadItem",
+ "itemId": "amuletVitality",
+ "description": "Equip a squad: +20% HP; unlocks Regeneration",
+ "cost": 90,
+ "weight": 2,
+ "minRound": 4,
+ "fileName": "itemAmuletVitality",
+ "category": "item"
+}

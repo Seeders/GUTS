@@ -1,6 +1,6 @@
 {
  "title": "Runic Plating",
- "icon": "⛨",
+ "icon": "body_chainmail_str",
  "kind": "squadItem",
  "itemId": "runicPlating",
  "description": "Equip a squad: +30% HP and +8 armor",

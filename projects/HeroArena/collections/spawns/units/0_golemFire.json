@@ -1,5 +1,6 @@
 {
   "title": "Fire Golem",
+  "icon": "unit_fireGolem",
   "strength": 2,
   "dexterity": 0,
   "intelligence": 1,

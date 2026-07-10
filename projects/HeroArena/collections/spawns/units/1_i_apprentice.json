@@ -1,183 +1,183 @@
 {
-  "title": "Apprentice",
-  "strength": 0,
-  "dexterity": 0,
-  "intelligence": 3,
-  "weaponType": "staff",
-  "size": 25,
-  "height": 50,
-  "value": 35,
-  "hp": 80,
-  "speed": 55,
-  "damage": 15,
-  "attackSpeed": 0.8,
-  "range": 180,
-  "projectile": "fireball",
-  "element": "fire",
-  "armor": 0,
-  "fireResistance": 0.5,
-  "coldResistance": 0,
-  "lightningResistance": 0,
-  "accuracy": 100,
-  "evasion": 5,
-  "criticalChance": 0.05,
-  "criticalMultiplier": 2,
-  "passives": [
+ "title": "Apprentice",
+ "strength": 0,
+ "dexterity": 0,
+ "intelligence": 3,
+ "weaponType": "staff",
+ "size": 25,
+ "height": 50,
+ "value": 35,
+ "hp": 80,
+ "speed": 55,
+ "damage": 15,
+ "attackSpeed": 0.8,
+ "range": 180,
+ "projectile": "arcaneBolt",
+ "element": "lightning",
+ "armor": 0,
+ "fireResistance": 0.5,
+ "coldResistance": 0,
+ "lightningResistance": 0,
+ "accuracy": 100,
+ "evasion": 5,
+ "criticalChance": 0.05,
+ "criticalMultiplier": 2,
+ "passives": [
+  {
+   "type": "increased",
+   "tags": [
+    "spell",
+    "fire"
+   ],
+   "value": 0.2
+  }
+ ],
+ "render": {
+  "animations": {
+   "idle": [
     {
-      "type": "increased",
-      "tags": [
-        "spell",
-        "fire"
-      ],
-      "value": 0.2
-    }
-  ],
-  "render": {
-    "animations": {
-      "idle": [
-        {
-          "main": {
-            "shapes": [
-              {
-                "scale": {
-                  "z": 1,
-                  "y": 1,
-                  "x": 1
-                },
-                "id": 0,
-                "animation": "idle_short"
-              }
-            ]
-          }
-        }
-      ],
-      "walk": [
-        {
-          "main": {
-            "shapes": [
-              {
-                "scale": {
-                  "z": 1,
-                  "y": 1,
-                  "x": 1
-                },
-                "id": 0,
-                "animation": "walk_bow"
-              }
-            ]
-          }
-        }
-      ],
-      "attack": [
-        {
-          "main": {
-            "shapes": [
-              {
-                "type": "gltf",
-                "width": 2,
-                "height": 0.2,
-                "depth": 1,
-                "color": "#FFFFFF",
-                "metalness": "0",
-                "roughness": "1",
-                "scale": {
-                  "z": 1,
-                  "y": 1,
-                  "x": 1
-                },
-                "id": 0,
-                "animation": "1h_spell_throw"
-              }
-            ]
-          }
-        }
-      ],
-      "death": [
-        {
-          "main": {
-            "shapes": [
-              {
-                "id": 0,
-                "animation": "death_fallback"
-              }
-            ],
-            "loops": false
-          }
-        }
-      ]
-    },
-    "model": {
-      "main": {
-        "position": {
-          "x": 0,
-          "y": 0,
-          "z": 0
-        },
-        "rotation": {
-          "x": 0,
-          "y": 0,
-          "z": 0
-        },
+     "main": {
+      "shapes": [
+       {
         "scale": {
-          "x": 1,
-          "y": 1,
-          "z": 1
+         "z": 1,
+         "y": 1,
+         "x": 1
         },
-        "shapes": [
-          {
-            "type": "gltf",
-            "width": 2,
-            "height": 0.2,
-            "depth": 1,
-            "color": "#FFFFFF",
-            "metalness": "0",
-            "roughness": "1",
-            "scale": {
-              "z": 1,
-              "y": 1,
-              "x": 1
-            },
-            "model": "apprentice"
-          }
-        ]
-      }
-    },
-    "equipment": [
-      {
-        "slot": "mainHand",
-        "item": "woodStaff",
-        "attachmentData": {
-          "bone": "RightHand",
-          "offset": {
-            "x": 0,
-            "y": 10,
-            "z": 0
-          },
-          "rotation": {
-            "x": 0,
-            "y": 20,
-            "z": 0
-          }
-        }
-      }
-    ]
+        "id": 0,
+        "animation": "idle_short"
+       }
+      ]
+     }
+    }
+   ],
+   "walk": [
+    {
+     "main": {
+      "shapes": [
+       {
+        "scale": {
+         "z": 1,
+         "y": 1,
+         "x": 1
+        },
+        "id": 0,
+        "animation": "walk_bow"
+       }
+      ]
+     }
+    }
+   ],
+   "attack": [
+    {
+     "main": {
+      "shapes": [
+       {
+        "type": "gltf",
+        "width": 2,
+        "height": 0.2,
+        "depth": 1,
+        "color": "#FFFFFF",
+        "metalness": "0",
+        "roughness": "1",
+        "scale": {
+         "z": 1,
+         "y": 1,
+         "x": 1
+        },
+        "id": 0,
+        "animation": "1h_spell_throw"
+       }
+      ]
+     }
+    }
+   ],
+   "death": [
+    {
+     "main": {
+      "shapes": [
+       {
+        "id": 0,
+        "animation": "death_fallback"
+       }
+      ],
+      "loops": false
+     }
+    }
+   ]
   },
-  "buyable": true,
-  "specUnits": [
-    "2_i_elementalist",
-    "2_i_enchanter",
-    "2_i_necromancer"
-  ],
-  "squadWidth": 2,
-  "squadHeight": 1,
-  "placementGridWidth": 2,
-  "placementGridHeight": 1,
-  "abilities": [],
-  "icon": "unit_apprentice",
-  "visionRange": 280,
-  "supplyCost": 2,
-  "spriteAnimationSet": "apprentice",
-  "requiresUnits": [],
-  "requiresBuildings": [],
-  "canTargetAir": true
+  "model": {
+   "main": {
+    "position": {
+     "x": 0,
+     "y": 0,
+     "z": 0
+    },
+    "rotation": {
+     "x": 0,
+     "y": 0,
+     "z": 0
+    },
+    "scale": {
+     "x": 1,
+     "y": 1,
+     "z": 1
+    },
+    "shapes": [
+     {
+      "type": "gltf",
+      "width": 2,
+      "height": 0.2,
+      "depth": 1,
+      "color": "#FFFFFF",
+      "metalness": "0",
+      "roughness": "1",
+      "scale": {
+       "z": 1,
+       "y": 1,
+       "x": 1
+      },
+      "model": "apprentice"
+     }
+    ]
+   }
+  },
+  "equipment": [
+   {
+    "slot": "mainHand",
+    "item": "woodStaff",
+    "attachmentData": {
+     "bone": "RightHand",
+     "offset": {
+      "x": 0,
+      "y": 10,
+      "z": 0
+     },
+     "rotation": {
+      "x": 0,
+      "y": 20,
+      "z": 0
+     }
+    }
+   }
+  ]
+ },
+ "buyable": true,
+ "specUnits": [
+  "2_i_elementalist",
+  "2_i_enchanter",
+  "2_i_necromancer"
+ ],
+ "squadWidth": 2,
+ "squadHeight": 1,
+ "placementGridWidth": 2,
+ "placementGridHeight": 1,
+ "abilities": [],
+ "icon": "unit_apprentice",
+ "visionRange": 280,
+ "supplyCost": 2,
+ "spriteAnimationSet": "apprentice",
+ "requiresUnits": [],
+ "requiresBuildings": [],
+ "canTargetAir": true
 }

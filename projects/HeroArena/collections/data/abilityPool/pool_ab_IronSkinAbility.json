@@ -10,10 +10,5 @@
    }
   }
  ],
- "tech": {
-  "title": "Iron Skin",
-  "cost": 17,
-  "description": "Harden the body — massive armor boost but slower attacks.",
-  "unlockAbility": "IronSkinAbility"
- }
+ "unlockAbility": "IronSkinAbility"
 }

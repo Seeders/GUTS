@@ -10,17 +10,12 @@
    }
   }
  ],
- "tech": {
-  "title": "Deadeye Poise",
-  "cost": 14,
-  "description": "+30 range, +10% attack speed",
-  "statModifiers": {
-   "range": {
-    "add": 30
-   },
-   "attackSpeed": {
-    "pct": 0.1
-   }
+ "statModifiers": {
+  "range": {
+   "add": 30
+  },
+  "attackSpeed": {
+   "pct": 0.1
   }
  }
 }

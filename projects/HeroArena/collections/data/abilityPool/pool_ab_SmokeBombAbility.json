@@ -10,10 +10,5 @@
    }
   }
  ],
- "tech": {
-  "title": "Smoke Bomb",
-  "cost": 17,
-  "description": "Vanish in smoke â€” gain massive evasion briefly.",
-  "unlockAbility": "SmokeBombAbility"
- }
+ "unlockAbility": "SmokeBombAbility"
 }

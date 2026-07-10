@@ -1,0 +1,14 @@
+{
+ "title": "of Sight",
+ "statModifiers": {
+  "visionRange": {
+   "add": 40
+  }
+ },
+ "weight": 2,
+ "itemTypes": [
+  "helmet",
+  "boots"
+ ],
+ "fileName": "sight"
+}

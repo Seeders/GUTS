@@ -1,33 +1,33 @@
 {
-  "title": "Lingering Toxin",
-  "description": "+15% damage to Dex/Int units",
-  "value": 60,
-  "icon": "toxic_damage",
-  "perUnitType": true,
-  "requirements": [
-    {
-      "dex": {
-        "min": 2
-      },
-      "int": {
-        "min": 2
-      }
-    }
-  ],
-  "target": {
-    "dex": {
-      "min": 2
-    },
-    "int": {
-      "min": 2
-    }
+ "title": "Lingering Toxin",
+ "description": "+15% damage to Dex/Int units",
+ "value": 60,
+ "icon": "toxic_damage",
+ "perUnitType": true,
+ "requirements": [
+  {
+   "dex": {
+    "min": 2
+   },
+   "int": {
+    "min": 2
+   }
+  }
+ ],
+ "target": {
+  "dex": {
+   "min": 2
   },
-  "statModifiers": {
-    "damage": {
-      "pct": 0.15
-    }
-  },
-  "requiresBuildings": [
-    "fletchersHall"
-  ]
+  "int": {
+   "min": 2
+  }
+ },
+ "statModifiers": {
+  "damage": {
+   "pct": 0.15
+  }
+ },
+ "requiresBuildings": [
+  "fletchersHall"
+ ]
 }

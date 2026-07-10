@@ -10,10 +10,5 @@
    }
   }
  ],
- "tech": {
-  "title": "True Sight",
-  "cost": 15,
-  "description": "Arcane detection — expose nearby cloaked and invisible enemies for the team.",
-  "unlockAbility": "TrueSightAbility"
- }
+ "unlockAbility": "TrueSightAbility"
 }

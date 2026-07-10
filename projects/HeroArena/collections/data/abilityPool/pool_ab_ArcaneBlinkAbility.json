@@ -10,10 +10,5 @@
    }
   }
  ],
- "tech": {
-  "title": "Arcane Blink",
-  "cost": 11,
-  "description": "When struck, teleport away from the attacker.",
-  "unlockAbility": "ArcaneBlinkAbility"
- }
+ "unlockAbility": "ArcaneBlinkAbility"
 }

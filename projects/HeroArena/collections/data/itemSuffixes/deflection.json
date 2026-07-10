@@ -1,0 +1,13 @@
+{
+ "title": "of Deflection",
+ "statModifiers": {
+  "blockChance": {
+   "add": 0.1
+  }
+ },
+ "weight": 2,
+ "itemTypes": [
+  "shield"
+ ],
+ "fileName": "deflection"
+}

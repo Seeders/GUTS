@@ -10,10 +10,5 @@
    }
   }
  ],
- "tech": {
-  "title": "Regeneration",
-  "cost": 18,
-  "description": "Grant an ally regeneration over time.",
-  "unlockAbility": "RegenerationAbility"
- }
+ "unlockAbility": "RegenerationAbility"
 }

@@ -10,10 +10,5 @@
    }
   }
  ],
- "tech": {
-  "title": "Rend",
-  "cost": 15,
-  "description": "Open a deep wound on a tough enemy, bleeding it for damage over time.",
-  "unlockAbility": "RendAbility"
- }
+ "unlockAbility": "RendAbility"
 }

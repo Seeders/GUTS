@@ -10,17 +10,12 @@
    }
   }
  ],
- "tech": {
-  "title": "Snipers Nest",
-  "cost": 14,
-  "description": "+45 range, -10% attack speed",
-  "statModifiers": {
-   "range": {
-    "add": 45
-   },
-   "attackSpeed": {
-    "pct": -0.1
-   }
+ "statModifiers": {
+  "range": {
+   "add": 45
+  },
+  "attackSpeed": {
+   "pct": -0.1
   }
  }
 }

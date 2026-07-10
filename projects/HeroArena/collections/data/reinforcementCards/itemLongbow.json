@@ -1,0 +1,12 @@
+{
+ "title": "Longbow",
+ "icon": "bow_t1",
+ "kind": "squadItem",
+ "itemId": "longbow",
+ "description": "Equip a squad: +40 range, +10% damage; unlocks Multi Shot Needs DEX.",
+ "cost": 100,
+ "weight": 2,
+ "minRound": 3,
+ "fileName": "itemLongbow",
+ "category": "item"
+}

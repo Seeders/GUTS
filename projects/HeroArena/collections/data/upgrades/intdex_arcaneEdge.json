@@ -1,33 +1,33 @@
 {
-  "title": "Arcane Edge",
-  "description": "+12% damage to Int/Dex units",
-  "value": 40,
-  "icon": "stab",
-  "perUnitType": true,
-  "requirements": [
-    {
-      "int": {
-        "min": 2
-      },
-      "dex": {
-        "min": 2
-      }
-    }
-  ],
-  "target": {
-    "int": {
-      "min": 2
-    },
-    "dex": {
-      "min": 2
-    }
+ "title": "Arcane Edge",
+ "description": "+12% damage to Int/Dex units",
+ "value": 40,
+ "icon": "stab",
+ "perUnitType": true,
+ "requirements": [
+  {
+   "int": {
+    "min": 2
+   },
+   "dex": {
+    "min": 2
+   }
+  }
+ ],
+ "target": {
+  "int": {
+   "min": 2
   },
-  "statModifiers": {
-    "damage": {
-      "pct": 0.12
-    }
-  },
-  "requiresBuildings": [
-    "mageTower"
-  ]
+  "dex": {
+   "min": 2
+  }
+ },
+ "statModifiers": {
+  "damage": {
+   "pct": 0.12
+  }
+ },
+ "requiresBuildings": [
+  "mageTower"
+ ]
 }

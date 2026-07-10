@@ -10,14 +10,9 @@
    }
   }
  ],
- "tech": {
-  "title": "Executioner",
-  "cost": 14,
-  "description": "+0.5 critical multiplier",
-  "statModifiers": {
-   "criticalMultiplier": {
-    "add": 0.5
-   }
+ "statModifiers": {
+  "criticalMultiplier": {
+   "add": 0.5
   }
  }
 }

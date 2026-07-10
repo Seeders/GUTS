@@ -1,0 +1,15 @@
+{
+ "title": "of the Fox",
+ "statModifiers": {
+  "evasion": {
+   "add": 0.08
+  }
+ },
+ "weight": 2,
+ "itemTypes": [
+  "cape",
+  "boots",
+  "jewelry"
+ ],
+ "fileName": "theFox"
+}

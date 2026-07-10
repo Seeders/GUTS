@@ -10,20 +10,15 @@
    }
   }
  ],
- "tech": {
-  "title": "Duelist",
-  "cost": 14,
-  "description": "+12% damage, +4 armor, +8% attack speed",
-  "statModifiers": {
-   "damage": {
-    "pct": 0.12
-   },
-   "armor": {
-    "add": 4
-   },
-   "attackSpeed": {
-    "pct": 0.08
-   }
+ "statModifiers": {
+  "damage": {
+   "pct": 0.12
+  },
+  "armor": {
+   "add": 4
+  },
+  "attackSpeed": {
+   "pct": 0.08
   }
  }
 }

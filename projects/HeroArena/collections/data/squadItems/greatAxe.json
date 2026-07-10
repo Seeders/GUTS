@@ -1,0 +1,17 @@
+{
+ "title": "Great Axe",
+ "icon": "2h_axe_T1",
+ "description": "+40% damage, -10% attack speed; unlocks Execute",
+ "statModifiers": {
+  "damage": {
+   "pct": 0.4
+  },
+  "attackSpeed": {
+   "pct": -0.1
+  }
+ },
+ "unlockAbility": "ExecuteAbility",
+ "attrReq": "str",
+ "itemType": "meleeWeapon",
+ "fileName": "greatAxe"
+}

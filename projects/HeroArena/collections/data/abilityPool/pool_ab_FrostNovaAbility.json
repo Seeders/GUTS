@@ -10,10 +10,5 @@
    }
   }
  ],
- "tech": {
-  "title": "Frost Nova",
-  "cost": 26,
-  "description": "A burst of frost freezes nearby enemies.",
-  "unlockAbility": "FrostNovaAbility"
- }
+ "unlockAbility": "FrostNovaAbility"
 }

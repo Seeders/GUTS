@@ -1,0 +1,14 @@
+{
+ "title": "Heavy",
+ "statModifiers": {
+  "damage": {
+   "pct": 0.2
+  }
+ },
+ "weight": 1,
+ "itemTypes": [
+  "meleeWeapon",
+  "magicWeapon"
+ ],
+ "fileName": "heavy"
+}

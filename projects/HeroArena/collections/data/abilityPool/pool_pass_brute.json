@@ -10,17 +10,12 @@
    }
   }
  ],
- "tech": {
-  "title": "Brute Strength",
-  "cost": 14,
-  "description": "+5 damage, +80 HP",
-  "statModifiers": {
-   "damage": {
-    "add": 5
-   },
-   "maxHP": {
-    "add": 80
-   }
+ "statModifiers": {
+  "damage": {
+   "add": 5
+  },
+  "maxHP": {
+   "add": 80
   }
  }
 }

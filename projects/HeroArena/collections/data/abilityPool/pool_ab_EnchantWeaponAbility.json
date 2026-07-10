@@ -10,10 +10,5 @@
    }
   }
  ],
- "tech": {
-  "title": "Enchant Weapon",
-  "cost": 15,
-  "description": "Enchant ally weapons with elemental damage (does not stack, refreshes duration)",
-  "unlockAbility": "EnchantWeaponAbility"
- }
+ "unlockAbility": "EnchantWeaponAbility"
 }

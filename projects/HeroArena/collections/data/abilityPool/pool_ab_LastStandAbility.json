@@ -10,10 +10,5 @@
    }
   }
  ],
- "tech": {
-  "title": "Last Stand",
-  "cost": 14,
-  "description": "When badly hurt, dig in: heavy damage reduction and a damage boost for a few seconds.",
-  "unlockAbility": "LastStandAbility"
- }
+ "unlockAbility": "LastStandAbility"
 }

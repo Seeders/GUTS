@@ -1,0 +1,12 @@
+{
+ "title": "Holy Sceptre",
+ "icon": "sceptre_T1",
+ "kind": "squadItem",
+ "itemId": "holySceptre",
+ "description": "Equip a squad: Unlocks Heal Needs INT.",
+ "cost": 110,
+ "weight": 2,
+ "minRound": 4,
+ "fileName": "itemHolySceptre",
+ "category": "item"
+}

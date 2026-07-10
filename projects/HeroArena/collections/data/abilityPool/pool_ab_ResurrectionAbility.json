@@ -10,10 +10,5 @@
    }
   }
  ],
- "tech": {
-  "title": "Resurrection",
-  "cost": 20,
-  "description": "Revive a fallen ally with partial health.",
-  "unlockAbility": "ResurrectionAbility"
- }
+ "unlockAbility": "ResurrectionAbility"
 }

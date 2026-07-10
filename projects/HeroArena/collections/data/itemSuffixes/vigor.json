@@ -1,0 +1,19 @@
+{
+ "title": "of Vigor",
+ "statModifiers": {
+  "maxHP": {
+   "pct": 0.12
+  }
+ },
+ "weight": 3,
+ "itemTypes": [
+  "bodyArmor",
+  "cape",
+  "boots",
+  "helmet",
+  "gloves",
+  "jewelry",
+  "shield"
+ ],
+ "fileName": "vigor"
+}

@@ -10,14 +10,9 @@
    }
   }
  ],
- "tech": {
-  "title": "Frenzy",
-  "cost": 14,
-  "description": "+35% attack speed",
-  "statModifiers": {
-   "attackSpeed": {
-    "pct": 0.35
-   }
+ "statModifiers": {
+  "attackSpeed": {
+   "pct": 0.35
   }
  }
 }

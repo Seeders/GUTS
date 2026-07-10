@@ -10,10 +10,5 @@
    }
   }
  ],
- "tech": {
-  "title": "Taunt",
-  "cost": 17,
-  "description": "Force nearby enemies to focus on you.",
-  "unlockAbility": "TauntAbility"
- }
+ "unlockAbility": "TauntAbility"
 }

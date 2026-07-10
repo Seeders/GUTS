@@ -1,0 +1,12 @@
+{
+ "title": "Swift Boots",
+ "icon": "boots_T1_dex",
+ "kind": "squadItem",
+ "itemId": "swiftBoots",
+ "description": "Equip a squad: +8% evasion; unlocks Sprint",
+ "cost": 75,
+ "weight": 2,
+ "minRound": 3,
+ "fileName": "itemSwiftBoots",
+ "category": "item"
+}

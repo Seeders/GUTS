@@ -1,36 +1,36 @@
 {
-  "title": "Skirmish Drill",
-  "description": "+10% attack speed and +6% damage to Dex/Str units",
-  "value": 40,
-  "icon": "speed",
-  "perUnitType": true,
-  "requirements": [
-    {
-      "dex": {
-        "min": 2
-      },
-      "str": {
-        "min": 2
-      }
-    }
-  ],
-  "target": {
-    "dex": {
-      "min": 2
-    },
-    "str": {
-      "min": 2
-    }
+ "title": "Skirmish Drill",
+ "description": "+10% attack speed and +6% damage to Dex/Str units",
+ "value": 40,
+ "icon": "speed",
+ "perUnitType": true,
+ "requirements": [
+  {
+   "dex": {
+    "min": 2
+   },
+   "str": {
+    "min": 2
+   }
+  }
+ ],
+ "target": {
+  "dex": {
+   "min": 2
   },
-  "statModifiers": {
-    "attackSpeed": {
-      "pct": 0.1
-    },
-    "damage": {
-      "pct": 0.06
-    }
+  "str": {
+   "min": 2
+  }
+ },
+ "statModifiers": {
+  "attackSpeed": {
+   "pct": 0.1
   },
-  "requiresBuildings": [
-    "fletchersHall"
-  ]
+  "damage": {
+   "pct": 0.06
+  }
+ },
+ "requiresBuildings": [
+  "fletchersHall"
+ ]
 }

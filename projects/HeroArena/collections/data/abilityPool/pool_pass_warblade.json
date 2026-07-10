@@ -10,17 +10,12 @@
    }
   }
  ],
- "tech": {
-  "title": "Warblade",
-  "cost": 14,
-  "description": "+15% damage, +10% attack speed",
-  "statModifiers": {
-   "damage": {
-    "pct": 0.15
-   },
-   "attackSpeed": {
-    "pct": 0.1
-   }
+ "statModifiers": {
+  "damage": {
+   "pct": 0.15
+  },
+  "attackSpeed": {
+   "pct": 0.1
   }
  }
 }

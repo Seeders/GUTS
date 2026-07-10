@@ -10,10 +10,5 @@
    }
   }
  ],
- "tech": {
-  "title": "Chain Lightning",
-  "cost": 15,
-  "description": "Lightning that jumps between multiple enemies",
-  "unlockAbility": "ChainLightningAbility"
- }
+ "unlockAbility": "ChainLightningAbility"
 }

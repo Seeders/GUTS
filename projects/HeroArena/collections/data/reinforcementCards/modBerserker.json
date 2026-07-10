@@ -6,11 +6,21 @@
  "prefix": "Berserker",
  "description": "+55% damage and +15% attack speed, but −20% HP",
  "statModifiers": {
-  "damage": { "pct": 0.55 },
-  "attackSpeed": { "pct": 0.15 },
-  "maxHP": { "pct": -0.2 }
+  "damage": {
+   "pct": 0.55
+  },
+  "attackSpeed": {
+   "pct": 0.15
+  },
+  "maxHP": {
+   "pct": -0.2
+  }
  },
- "appliesToTiers": [1, 2, 3],
+ "appliesToTiers": [
+  1,
+  2,
+  3
+ ],
  "weight": 2,
  "minRound": 4,
  "fileName": "modBerserker",

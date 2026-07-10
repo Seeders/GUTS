@@ -10,13 +10,8 @@
    }
   }
  ],
- "tech": {
-  "title": "Bone Blast",
-  "cost": 22,
-  "description": "Skeletons explode on death, burning everything nearby",
-  "onDeathExplode": {
-   "damage": 45,
-   "radius": 70
-  }
+ "onDeathExplode": {
+  "damage": 45,
+  "radius": 70
  }
 }

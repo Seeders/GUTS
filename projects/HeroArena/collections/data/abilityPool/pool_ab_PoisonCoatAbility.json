@@ -16,10 +16,5 @@
    ]
   }
  ],
- "tech": {
-  "title": "Poison Coat",
-  "cost": 15,
-  "description": "Coat your weapon — attacks apply poison.",
-  "unlockAbility": "PoisonCoatAbility"
- }
+ "unlockAbility": "PoisonCoatAbility"
 }

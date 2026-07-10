@@ -10,10 +10,5 @@
    }
   }
  ],
- "tech": {
-  "title": "Entangle",
-  "cost": 15,
-  "description": "Roots an enemy in place with vines.",
-  "unlockAbility": "EntangleAbility"
- }
+ "unlockAbility": "EntangleAbility"
 }

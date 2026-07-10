@@ -10,10 +10,5 @@
    }
   }
  ],
- "tech": {
-  "title": "Fire Ball",
-  "cost": 16,
-  "description": "Launch a fiery projectile that explodes on impact",
-  "unlockAbility": "FireBallAbility"
- }
+ "unlockAbility": "FireBallAbility"
 }

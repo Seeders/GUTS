@@ -10,10 +10,5 @@
    }
   }
  ],
- "tech": {
-  "title": "Sprint",
-  "cost": 11,
-  "description": "Run with great speed for a short time.",
-  "unlockAbility": "SprintAbility"
- }
+ "unlockAbility": "SprintAbility"
 }

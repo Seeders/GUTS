@@ -1,0 +1,12 @@
+{
+ "title": "War Mace",
+ "icon": "mace_T1",
+ "kind": "squadItem",
+ "itemId": "warMace",
+ "description": "Equip a squad: +15% damage; unlocks Sunder Armor Needs STR.",
+ "cost": 85,
+ "weight": 2,
+ "minRound": 3,
+ "fileName": "itemWarMace",
+ "category": "item"
+}

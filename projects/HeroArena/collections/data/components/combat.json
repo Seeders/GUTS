@@ -23,6 +23,7 @@
     "criticalMultiplier": 1.5,
     "fireDamage": 0,
     "coldDamage": 0,
-    "lifeLeech": 0
+    "lifeLeech": 0,
+    "thorns": 0
   }
 }

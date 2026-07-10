@@ -1,0 +1,17 @@
+{
+ "title": "Heavy Crossbow",
+ "icon": "crossbow_t1",
+ "description": "+20% damage, +10% accuracy; unlocks Piercing Shot",
+ "statModifiers": {
+  "damage": {
+   "pct": 0.2
+  },
+  "accuracy": {
+   "add": 0.1
+  }
+ },
+ "unlockAbility": "PiercingShotAbility",
+ "attrReq": "dex",
+ "itemType": "rangeWeapon",
+ "fileName": "heavyCrossbow"
+}

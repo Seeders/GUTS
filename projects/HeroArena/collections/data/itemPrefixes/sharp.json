@@ -1,0 +1,15 @@
+{
+ "title": "Sharp",
+ "statModifiers": {
+  "damage": {
+   "pct": 0.12
+  }
+ },
+ "weight": 3,
+ "itemTypes": [
+  "meleeWeapon",
+  "rangeWeapon",
+  "magicWeapon"
+ ],
+ "fileName": "sharp"
+}

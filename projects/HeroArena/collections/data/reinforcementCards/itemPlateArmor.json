@@ -1,0 +1,12 @@
+{
+ "title": "Plate Armor",
+ "icon": "body_T1_str",
+ "kind": "squadItem",
+ "itemId": "plateArmor",
+ "description": "Equip a squad: +30% HP, +6 armor; unlocks Iron Skin",
+ "cost": 100,
+ "weight": 2,
+ "minRound": 3,
+ "fileName": "itemPlateArmor",
+ "category": "item"
+}

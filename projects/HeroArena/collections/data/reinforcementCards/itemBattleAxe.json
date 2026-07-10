@@ -1,0 +1,12 @@
+{
+ "title": "Battle Axe",
+ "icon": "axe_T1",
+ "kind": "squadItem",
+ "itemId": "battleAxe",
+ "description": "Equip a squad: +25% damage; unlocks Bash Needs STR.",
+ "cost": 75,
+ "weight": 2,
+ "minRound": 3,
+ "fileName": "itemBattleAxe",
+ "category": "item"
+}

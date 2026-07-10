@@ -1,0 +1,17 @@
+{
+ "title": "Plated",
+ "statModifiers": {
+  "armor": {
+   "add": 6
+  }
+ },
+ "weight": 2,
+ "itemTypes": [
+  "bodyArmor",
+  "helmet",
+  "shield",
+  "cape",
+  "boots"
+ ],
+ "fileName": "plated"
+}

@@ -13,10 +13,5 @@
    ]
   }
  ],
- "tech": {
-  "title": "Backstab",
-  "cost": 15,
-  "description": "A vicious strike from behind for massive damage.",
-  "unlockAbility": "BackstabAbility"
- }
+ "unlockAbility": "BackstabAbility"
 }

@@ -10,14 +10,9 @@
    }
   }
  ],
- "tech": {
-  "title": "Arcane Focus",
-  "cost": 12,
-  "description": "+35% damage",
-  "statModifiers": {
-   "damage": {
-    "pct": 0.35
-   }
+ "statModifiers": {
+  "damage": {
+   "pct": 0.35
   }
  }
 }

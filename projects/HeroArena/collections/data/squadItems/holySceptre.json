@@ -1,0 +1,9 @@
+{
+ "title": "Holy Sceptre",
+ "icon": "sceptre_T1",
+ "description": "Unlocks Heal",
+ "unlockAbility": "HealAbility",
+ "attrReq": "int",
+ "itemType": "magicWeapon",
+ "fileName": "holySceptre"
+}

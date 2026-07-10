@@ -15,10 +15,5 @@
    ]
   }
  ],
- "tech": {
-  "title": "Bash",
-  "cost": 15,
-  "description": "Slam your shield into the enemy, stunning them",
-  "unlockAbility": "BashAbility"
- }
+ "unlockAbility": "BashAbility"
 }

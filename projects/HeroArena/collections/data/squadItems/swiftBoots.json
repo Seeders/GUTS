@@ -1,0 +1,13 @@
+{
+ "title": "Swift Boots",
+ "icon": "boots_T1_dex",
+ "description": "+8% evasion; unlocks Sprint",
+ "statModifiers": {
+  "evasion": {
+   "add": 0.08
+  }
+ },
+ "unlockAbility": "SprintAbility",
+ "itemType": "boots",
+ "fileName": "swiftBoots"
+}

@@ -252,6 +252,7 @@ class StatAggregationSystem extends GUTS.BaseSystem {
             poisonResistance: combat?.poisonResistance || 0,
             accuracy: combat?.accuracy ?? unitType?.accuracy ?? 100,
             evasion: combat?.evasion ?? unitType?.evasion ?? 0,
+            blockChance: combat?.blockChance ?? unitType?.blockChance ?? 0,
             criticalChance: combat?.criticalChance ?? unitType?.criticalChance ?? 0,
             criticalMultiplier: combat?.criticalMultiplier ?? unitType?.criticalMultiplier ?? 1.5
         };

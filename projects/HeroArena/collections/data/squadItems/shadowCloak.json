@@ -1,0 +1,13 @@
+{
+ "title": "Shadow Cloak",
+ "icon": "cloak_T1",
+ "description": "+10% evasion; unlocks Stealth",
+ "statModifiers": {
+  "evasion": {
+   "add": 0.1
+  }
+ },
+ "unlockAbility": "StealthAbility",
+ "itemType": "cape",
+ "fileName": "shadowCloak"
+}

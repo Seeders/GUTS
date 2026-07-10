@@ -1,0 +1,14 @@
+{
+ "title": "Spellbook",
+ "icon": "book",
+ "description": "+20 range; unlocks Chain Lightning",
+ "statModifiers": {
+  "range": {
+   "add": 20
+  }
+ },
+ "unlockAbility": "ChainLightningAbility",
+ "attrReq": "int",
+ "itemType": "magicWeapon",
+ "fileName": "spellbook"
+}

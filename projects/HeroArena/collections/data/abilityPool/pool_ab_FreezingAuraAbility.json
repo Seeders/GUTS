@@ -10,10 +10,5 @@
    }
   }
  ],
- "tech": {
-  "title": "Freezing Aura",
-  "cost": 26,
-  "description": "Emanate freezing cold",
-  "unlockAbility": "FreezingAuraAbility"
- }
+ "unlockAbility": "FreezingAuraAbility"
 }

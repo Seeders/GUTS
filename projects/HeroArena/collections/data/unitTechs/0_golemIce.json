@@ -1,27 +1,9 @@
 {
  "unit": "0_golemIce",
- "techs": [
-  {
-   "id": "gic_aura",
-   "title": "Freezing Aura",
-   "cost": 26,
-   "description": "Unlocks Freezing Aura: chill nearby enemies",
-   "unlockAbility": "FreezingAuraAbility"
-  },
-  {
-   "id": "gic_nova",
-   "title": "Frost Nova",
-   "cost": 26,
-   "description": "Unlocks Frost Nova",
-   "unlockAbility": "FrostNovaAbility"
-  },
-  {
-   "id": "gic_glacial",
-   "title": "Avalanche",
-   "cost": 16,
-   "description": "Unlocks Avalanche",
-   "unlockAbility": "BlizzardAbility"
-  }
+ "abilityPool": [
+  "pool_ab_FreezingAuraAbility",
+  "pool_ab_FrostNovaAbility",
+  "pool_ab_BlizzardAbility"
  ],
  "fileName": "0_golemIce"
 }

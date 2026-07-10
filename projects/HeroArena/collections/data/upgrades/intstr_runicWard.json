@@ -1,36 +1,36 @@
 {
-  "title": "Runic Ward",
-  "description": "+12% HP and +4 armor to Int/Str units",
-  "value": 60,
-  "icon": "runestone",
-  "perUnitType": true,
-  "requirements": [
-    {
-      "int": {
-        "min": 2
-      },
-      "str": {
-        "min": 2
-      }
-    }
-  ],
-  "target": {
-    "int": {
-      "min": 2
-    },
-    "str": {
-      "min": 2
-    }
+ "title": "Runic Ward",
+ "description": "+12% HP and +4 armor to Int/Str units",
+ "value": 60,
+ "icon": "runestone",
+ "perUnitType": true,
+ "requirements": [
+  {
+   "int": {
+    "min": 2
+   },
+   "str": {
+    "min": 2
+   }
+  }
+ ],
+ "target": {
+  "int": {
+   "min": 2
   },
-  "statModifiers": {
-    "maxHP": {
-      "pct": 0.12
-    },
-    "armor": {
-      "add": 4
-    }
+  "str": {
+   "min": 2
+  }
+ },
+ "statModifiers": {
+  "maxHP": {
+   "pct": 0.12
   },
-  "requiresBuildings": [
-    "mageTower"
-  ]
+  "armor": {
+   "add": 4
+  }
+ },
+ "requiresBuildings": [
+  "mageTower"
+ ]
 }

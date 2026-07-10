@@ -70,18 +70,14 @@ class DeckBuilderSystem extends GUTS.BaseSystem {
         const tree = this.collections.upgradeTrees?.[bId];
         return (tree?.branches || []).flatMap(b => (b.nodes || []).map(n => n.upgrade));
     }
-    // The pool id for one of a unit's original techs (ability → pool_ab_<id>,
-    // special tech → pool_tech_<techId>), matching the generated abilityPool.
-    _poolIdForTech(t) {
-        const pid = t.unlockAbility ? `pool_ab_${t.unlockAbility}` : `pool_tech_${t.id}`;
-        return this.collections.abilityPool?.[pid] ? pid : null;
-    }
-    // The unit's ORIGINAL techs as pool ids (≤4), used as the pre-selected default.
+    // The unit's ORIGINAL techs as pool ids (≤MAX), pre-selected as the default.
+    // unitTechs entries now reference the pool directly; drop innate entries
+    // (transforms etc.) since those aren't customizable deck slots.
     _defaultAbilityPoolIds(unitId) {
         const out = [];
-        for (const t of (this.collections.unitTechs?.[unitId]?.techs || [])) {
-            const pid = this._poolIdForTech(t);
-            if (pid && !out.includes(pid)) out.push(pid);
+        for (const pid of (this.collections.unitTechs?.[unitId]?.abilityPool || [])) {
+            const p = this.collections.abilityPool?.[pid];
+            if (p && !p.innate && !out.includes(pid)) out.push(pid);
         }
         return out.slice(0, DeckBuilderSystem.MAX_ABILITIES);
     }
@@ -106,7 +102,7 @@ class DeckBuilderSystem extends GUTS.BaseSystem {
         // guarantee enough supply to fill all units.
         const used = new Set();
         const unitDefs = this.collections.units || {};
-        const pool = Object.values(this.collections.abilityPool || {});
+        const pool = Object.values(this.collections.abilityPool || {}).filter(p => !p.innate);
         for (const uid of this._tieredUnitIds()) {
             const def = unitDefs[uid] || {};
             const abils = [];
@@ -159,18 +155,21 @@ class DeckBuilderSystem extends GUTS.BaseSystem {
         const d = this._deck(); const e = this._unitEntry(d, unitId);
         const i = e.abilities.indexOf(poolId);
         if (i >= 0) { e.abilities.splice(i, 1); this._persist(); this._render(); return; }
-        if (e.abilities.length >= DeckBuilderSystem.MAX_ABILITIES) {
-            GUTS.NotificationSystem?.show?.(`Max ${DeckBuilderSystem.MAX_ABILITIES} abilities per unit`, 'error');
-            return;
-        }
-        // STEAL: if another unit holds it, remove it from them first (one owner rule).
+        // Assigned to another unit? Always UNASSIGN it from that unit first (one-owner
+        // rule) — even if the current unit is full, so clicking it frees it.
         const holder = this._usedByMap(d)[poolId];
         if (holder && holder !== unitId) {
             const he = (d.units || []).find(u => u.unitId === holder);
             const j = he ? he.abilities.indexOf(poolId) : -1;
             if (j >= 0) he.abilities.splice(j, 1);
         }
-        e.abilities.push(poolId);
+        // Then equip it onto the current unit if there's room.
+        if (e.abilities.length < DeckBuilderSystem.MAX_ABILITIES) {
+            e.abilities.push(poolId);
+        } else if (!holder || holder === unitId) {
+            GUTS.NotificationSystem?.show?.(`Max ${DeckBuilderSystem.MAX_ABILITIES} abilities per unit`, 'error');
+            return;
+        }
         this._persist(); this._render();
     }
     // Exactly one building: selecting a new one replaces; clicking the current clears.
@@ -279,7 +278,7 @@ class DeckBuilderSystem extends GUTS.BaseSystem {
               /* ability states, relative to the selected unit */
               .db-abil.equipped{border-color:#7ad87a;background:#183018;color:#ccffcc;}      /* on this unit */
               .db-abil.available{border-color:#5aa0d8;}                                       /* free + compatible */
-              .db-abil.inuse{border-color:#c98a3a;background:#241c10;color:#e0b070;cursor:not-allowed;} /* taken by another unit */
+              .db-abil.inuse{border-color:#c98a3a;background:#241c10;color:#e0b070;} /* taken by another unit — click to steal/free */
               .db-abil.incompat{opacity:0.28;cursor:not-allowed;filter:grayscale(1);}         /* unit fails requirement */
               .db-tag{display:block;font-size:9px;opacity:0.8;margin-top:2px;}`;
             document.head.appendChild(st);
@@ -301,7 +300,7 @@ class DeckBuilderSystem extends GUTS.BaseSystem {
         let editHtml = '<div class="db-muted">Select or create a deck to edit.</div>';
         if (d) {
             const unitDefs = this.collections.units || {};
-            const pool = Object.values(this.collections.abilityPool || {});
+            const pool = Object.values(this.collections.abilityPool || {}).filter(p => !p.innate);
             const T = GUTS.ArmyShopSystem;
 
             // Ensure a selected unit; build the global ability→unit map.
@@ -332,7 +331,7 @@ class DeckBuilderSystem extends GUTS.BaseSystem {
             const cellHtml = (p) => {
                 const equipped = selEntry.abilities.includes(p.id);
                 const holder = usedBy[p.id];
-                const desc = p.description || this.collections.abilities?.[p.tech?.unlockAbility]?.description || '';
+                const desc = p.description || this.collections.abilities?.[p.unlockAbility]?.description || '';
                 let cls, tag = '';
                 if (equipped) { cls = 'equipped'; tag = 'equipped'; }
                 else if (holder && holder !== selId) { cls = 'inuse'; tag = `steal from ${unitTitle(holder)}`; }
@@ -434,8 +433,11 @@ class DeckBuilderSystem extends GUTS.BaseSystem {
         const canvas = this._root?.querySelector('.db-sprite');
         const set = canvas && this.collections.spriteAnimationSets?.[canvas.dataset.set];
         if (!canvas || !set || !set.frames) return;
-        const dirs = [...new Set(Object.keys(set.frames)
-            .filter(k => k.startsWith('idle')).map(k => k.replace(/^idle/, '').replace(/_\d+$/, '')))];
+        // Use only the GROUND-perspective idle frames (the sheet also has an elevated
+        // angle); spin through the 8 compass directions in order.
+        const ORDER = ['Down', 'DownLeft', 'Left', 'UpLeft', 'Up', 'UpRight', 'Right', 'DownRight'];
+        const suf = Object.keys(set.frames).some(k => /^idle.*Ground_\d+$/.test(k)) ? 'Ground' : '';
+        const dirs = ORDER.filter(dir => set.frames[`idle${dir}${suf}_0`]);
         if (!dirs.length) return;
         const img = this._spriteImg(set.spriteSheet);
         const ctx = canvas.getContext('2d');
@@ -444,7 +446,7 @@ class DeckBuilderSystem extends GUTS.BaseSystem {
             const tick = (this._previewTick = (this._previewTick || 0) + 1);
             const dir = dirs[Math.floor(tick / 6) % dirs.length];   // rotate every ~0.8s
             const fr = tick % 5;                                     // idle animation frame
-            const f = set.frames[`idle${dir}_${fr}`] || set.frames[`idle${dir}_0`] || Object.values(set.frames)[0];
+            const f = set.frames[`idle${dir}${suf}_${fr}`] || set.frames[`idle${dir}${suf}_0`];
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             if (img.complete && img.naturalWidth && f) {
                 ctx.imageSmoothingEnabled = false;

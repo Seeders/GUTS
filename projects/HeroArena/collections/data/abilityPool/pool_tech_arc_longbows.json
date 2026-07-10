@@ -10,14 +10,9 @@
    }
   }
  ],
- "tech": {
-  "title": "Longbows",
-  "cost": 14,
-  "description": "+50 attack range",
-  "statModifiers": {
-   "range": {
-    "add": 50
-   }
+ "statModifiers": {
+  "range": {
+   "add": 50
   }
  }
 }

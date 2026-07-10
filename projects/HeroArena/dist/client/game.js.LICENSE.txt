@@ -1,0 +1,12 @@
+/*!
+ * GUTS Game Engine - Client Bundle
+ * Project: HeroArena
+ * Built: 2026-07-09T05:17:04.085Z
+ * Mode: production
+ */
+
+/**
+ * @license
+ * Copyright 2010-2025 Three.js Authors
+ * SPDX-License-Identifier: MIT
+ */

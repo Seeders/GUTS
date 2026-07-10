@@ -10,10 +10,5 @@
    }
   }
  ],
- "tech": {
-  "title": "Retaliate",
-  "cost": 14,
-  "description": "Reflect a portion of damage taken back to attackers.",
-  "unlockAbility": "RetaliateAbility"
- }
+ "unlockAbility": "RetaliateAbility"
 }

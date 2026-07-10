@@ -1,0 +1,12 @@
+{
+ "title": "Endless Quiver",
+ "icon": "quiver_T1",
+ "kind": "squadItem",
+ "itemId": "endlessQuiver",
+ "description": "Equip a squad: +20% attack speed; unlocks Rapid Fire Needs DEX.",
+ "cost": 90,
+ "weight": 2,
+ "minRound": 3,
+ "fileName": "itemEndlessQuiver",
+ "category": "item"
+}

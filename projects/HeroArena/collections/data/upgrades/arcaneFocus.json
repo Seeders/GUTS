@@ -1,27 +1,27 @@
 {
-  "title": "Arcane Focus",
-  "description": "+25% damage to Intelligence units",
-  "value": 50,
-  "icon": "elemental_damage",
-  "perUnitType": true,
-  "requirements": [
-    {
-      "int": {
-        "min": 2
-      }
-    }
-  ],
-  "target": {
-    "int": {
-      "min": 2
-    }
-  },
-  "statModifiers": {
-    "damage": {
-      "pct": 0.25
-    }
-  },
-  "requiresBuildings": [
-    "mageTower"
-  ]
+ "title": "Arcane Focus",
+ "description": "+25% damage to Intelligence units",
+ "value": 50,
+ "icon": "elemental_damage",
+ "perUnitType": true,
+ "requirements": [
+  {
+   "int": {
+    "min": 2
+   }
+  }
+ ],
+ "target": {
+  "int": {
+   "min": 2
+  }
+ },
+ "statModifiers": {
+  "damage": {
+   "pct": 0.25
+  }
+ },
+ "requiresBuildings": [
+  "mageTower"
+ ]
 }

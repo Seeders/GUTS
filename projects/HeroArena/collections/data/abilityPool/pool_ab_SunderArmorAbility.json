@@ -10,10 +10,5 @@
    }
   }
  ],
- "tech": {
-  "title": "Sunder Armor",
-  "cost": 15,
-  "description": "Shatter nearby enemies' armor for a while, so all your hits land harder.",
-  "unlockAbility": "SunderArmorAbility"
- }
+ "unlockAbility": "SunderArmorAbility"
 }

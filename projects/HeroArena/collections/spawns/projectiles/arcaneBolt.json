@@ -1,0 +1,53 @@
+{
+ "damageType": "lightning",
+ "render": {
+  "animations": { "idle": [ {} ] },
+  "model": {
+   "main": {
+    "shapes": [
+     {
+      "name": "core",
+      "type": "sphere",
+      "size": 4,
+      "color": { "paletteColor": "Blue7Color" },
+      "emissive": { "paletteColor": "Blue7Color" },
+      "emissiveIntensity": 3
+     },
+     {
+      "name": "aura",
+      "type": "sphere",
+      "size": 7,
+      "color": { "paletteColor": "Purple5Color" },
+      "emissive": { "paletteColor": "Purple5Color" },
+      "emissiveIntensity": 2,
+      "opacity": 0.55
+     },
+     {
+      "name": "glow",
+      "type": "sphere",
+      "size": 11,
+      "color": { "paletteColor": "Blue4Color" },
+      "emissive": { "paletteColor": "Blue4Color" },
+      "emissiveIntensity": 1.4,
+      "opacity": 0.22
+     }
+    ],
+    "position": { "y": 0, "z": 0 },
+    "rotation": { "x": 0, "y": 0, "z": 0 },
+    "scale": { "x": 1, "y": 1, "z": 1 }
+   }
+  }
+ },
+ "speed": 130,
+ "title": "Arcane Bolt",
+ "ballistic": false,
+ "homing": true,
+ "homingStrength": 6,
+ "particle": "lightning_sparks",
+ "shadows": false,
+ "hitSound": "plasma",
+ "attackSound": "plasma",
+ "splashOnHit": false,
+ "trailEffect": "lightning_arc",
+ "impactEffect": "lightning_impact"
+}

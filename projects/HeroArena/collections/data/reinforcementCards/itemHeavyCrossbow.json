@@ -1,0 +1,12 @@
+{
+ "title": "Heavy Crossbow",
+ "icon": "crossbow_t1",
+ "kind": "squadItem",
+ "itemId": "heavyCrossbow",
+ "description": "Equip a squad: +20% damage, +10% accuracy; unlocks Piercing Shot Needs DEX.",
+ "cost": 100,
+ "weight": 2,
+ "minRound": 3,
+ "fileName": "itemHeavyCrossbow",
+ "category": "item"
+}

@@ -1,0 +1,9 @@
+/*!
+ * GUTS Game Engine - Server Bundle
+ * Project: HeroArena
+ * Built: 2026-07-09T05:17:04.085Z
+ * Mode: production
+ *
+ * IMPORTANT: This bundle expects global.GUTS to be set up before loading.
+ * Set up in server_game.js before loading this bundle.
+ */

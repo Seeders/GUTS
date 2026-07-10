@@ -10,10 +10,5 @@
    }
   }
  ],
- "tech": {
-  "title": "Blizzard",
-  "cost": 16,
-  "description": "Summons a devastating blizzard of ice shards that freezes enemies in an area",
-  "unlockAbility": "BlizzardAbility"
- }
+ "unlockAbility": "BlizzardAbility"
 }

@@ -1,0 +1,15 @@
+{
+ "title": "of the Bear",
+ "statModifiers": {
+  "maxHP": {
+   "pct": 0.18
+  }
+ },
+ "weight": 1,
+ "itemTypes": [
+  "bodyArmor",
+  "jewelry",
+  "shield"
+ ],
+ "fileName": "theBear"
+}

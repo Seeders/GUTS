@@ -1,6 +1,6 @@
 {
  "title": "Vampiric Charm",
- "icon": "🩸",
+ "icon": "amulet_T2",
  "kind": "squadItem",
  "itemId": "vampiricCharm",
  "description": "Equip a squad: lifesteal 25% of damage dealt",

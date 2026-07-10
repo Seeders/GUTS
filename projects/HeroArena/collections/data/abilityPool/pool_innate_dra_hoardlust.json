@@ -1,0 +1,13 @@
+{
+ "id": "pool_innate_dra_hoardlust",
+ "title": "Hoardlust",
+ "description": "+30% damage",
+ "cost": 18,
+ "requirements": [],
+ "innate": true,
+ "statModifiers": {
+  "damage": {
+   "pct": 0.3
+  }
+ }
+}

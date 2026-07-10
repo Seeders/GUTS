@@ -10,17 +10,12 @@
    }
   }
  ],
- "tech": {
-  "title": "Battle-Hardened",
-  "cost": 14,
-  "description": "+20% HP and +3 armor",
-  "statModifiers": {
-   "maxHP": {
-    "pct": 0.2
-   },
-   "armor": {
-    "add": 3
-   }
+ "statModifiers": {
+  "maxHP": {
+   "pct": 0.2
+  },
+  "armor": {
+   "add": 3
   }
  }
 }

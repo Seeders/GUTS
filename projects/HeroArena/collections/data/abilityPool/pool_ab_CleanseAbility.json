@@ -10,10 +10,5 @@
    }
   }
  ],
- "tech": {
-  "title": "Cleanse",
-  "cost": 15,
-  "description": "Purge crowd control and debuffs from nearby allies.",
-  "unlockAbility": "CleanseAbility"
- }
+ "unlockAbility": "CleanseAbility"
 }

@@ -1,0 +1,16 @@
+{
+ "title": "Plate Armor",
+ "icon": "body_T1_str",
+ "description": "+30% HP, +6 armor; unlocks Iron Skin",
+ "statModifiers": {
+  "maxHP": {
+   "pct": 0.3
+  },
+  "armor": {
+   "add": 6
+  }
+ },
+ "unlockAbility": "IronSkinAbility",
+ "itemType": "bodyArmor",
+ "fileName": "plateArmor"
+}

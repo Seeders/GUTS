@@ -6,11 +6,21 @@
  "prefix": "Fortified",
  "description": "+50% HP and +12 armor, but −20% damage",
  "statModifiers": {
-  "maxHP": { "pct": 0.5 },
-  "armor": { "add": 12 },
-  "damage": { "pct": -0.2 }
+  "maxHP": {
+   "pct": 0.5
+  },
+  "armor": {
+   "add": 12
+  },
+  "damage": {
+   "pct": -0.2
+  }
  },
- "appliesToTiers": [2, 3, 4],
+ "appliesToTiers": [
+  2,
+  3,
+  4
+ ],
  "weight": 3,
  "minRound": 3,
  "fileName": "modFortified",

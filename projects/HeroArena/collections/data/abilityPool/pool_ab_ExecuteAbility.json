@@ -10,10 +10,5 @@
    }
   }
  ],
- "tech": {
-  "title": "Execute",
-  "cost": 15,
-  "description": "Strike the most wounded enemy in reach for damage that scales with its missing health.",
-  "unlockAbility": "ExecuteAbility"
- }
+ "unlockAbility": "ExecuteAbility"
 }

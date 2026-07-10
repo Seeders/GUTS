@@ -1,27 +1,9 @@
 {
  "unit": "2_d_beastMaster",
- "techs": [
-  {
-   "id": "bea_wolf",
-   "title": "Wolf Pack",
-   "cost": 19,
-   "description": "Unlocks Summon Wolf: fights beside you",
-   "unlockAbility": "SummonWolfAbility"
-  },
-  {
-   "id": "bea_grasp",
-   "title": "Nature's Grasp",
-   "cost": 24,
-   "description": "Unlocks Nature's Grasp: vines seize foes",
-   "unlockAbility": "NaturesGraspAbility"
-  },
-  {
-   "id": "bea_alpha",
-   "title": "Hunter’s Mark",
-   "cost": 14,
-   "description": "Unlocks Hunter’s Mark",
-   "unlockAbility": "TrackingMark"
-  }
+ "abilityPool": [
+  "pool_ab_SummonWolfAbility",
+  "pool_ab_NaturesGraspAbility",
+  "pool_ab_TrackingMark"
  ],
  "fileName": "2_d_beastMaster"
 }

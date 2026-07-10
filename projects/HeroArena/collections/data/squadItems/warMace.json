@@ -1,0 +1,14 @@
+{
+ "title": "War Mace",
+ "icon": "mace_T1",
+ "description": "+15% damage; unlocks Sunder Armor",
+ "statModifiers": {
+  "damage": {
+   "pct": 0.15
+  }
+ },
+ "unlockAbility": "SunderArmorAbility",
+ "attrReq": "str",
+ "itemType": "meleeWeapon",
+ "fileName": "warMace"
+}

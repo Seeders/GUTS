@@ -1,27 +1,9 @@
 {
  "unit": "2_i_enchanter",
- "techs": [
-  {
-   "id": "enc_enchant",
-   "title": "Enchant Weapon",
-   "cost": 15,
-   "description": "Unlocks Enchant Weapon: empower an ally's blade",
-   "unlockAbility": "EnchantWeaponAbility"
-  },
-  {
-   "id": "enc_nova",
-   "title": "Frost Nova",
-   "cost": 24,
-   "description": "Unlocks Frost Nova: freeze everything nearby",
-   "unlockAbility": "FrostNovaAbility"
-  },
-  {
-   "id": "enc_mindcontrol",
-   "title": "Dominate Mind",
-   "cost": 22,
-   "description": "Unlocks Mind Control: seize an enemy unit for your side",
-   "unlockAbility": "MindControlAbility"
-  }
+ "abilityPool": [
+  "pool_ab_EnchantWeaponAbility",
+  "pool_ab_FrostNovaAbility",
+  "pool_ab_MindControlAbility"
  ],
  "fileName": "2_i_enchanter"
 }

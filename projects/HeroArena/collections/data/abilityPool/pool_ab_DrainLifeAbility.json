@@ -10,10 +10,5 @@
    }
   }
  ],
- "tech": {
-  "title": "Drain Life",
-  "cost": 14,
-  "description": "Drains health from an enemy and heals the caster",
-  "unlockAbility": "DrainLifeAbility"
- }
+ "unlockAbility": "DrainLifeAbility"
 }

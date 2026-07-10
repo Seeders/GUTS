@@ -1,0 +1,12 @@
+{
+ "title": "Knight's Sword",
+ "icon": "sword_T1",
+ "kind": "squadItem",
+ "itemId": "knightSword",
+ "description": "Equip a squad: +18% damage, +5% crit; unlocks Charge Needs STR.",
+ "cost": 90,
+ "weight": 2,
+ "minRound": 3,
+ "fileName": "itemKnightSword",
+ "category": "item"
+}

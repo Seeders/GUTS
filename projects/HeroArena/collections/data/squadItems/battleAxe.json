@@ -1,0 +1,14 @@
+{
+ "title": "Battle Axe",
+ "icon": "axe_T1",
+ "description": "+25% damage; unlocks Bash",
+ "statModifiers": {
+  "damage": {
+   "pct": 0.25
+  }
+ },
+ "unlockAbility": "BashAbility",
+ "attrReq": "str",
+ "itemType": "meleeWeapon",
+ "fileName": "battleAxe"
+}

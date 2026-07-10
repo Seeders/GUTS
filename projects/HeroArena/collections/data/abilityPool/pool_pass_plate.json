@@ -10,14 +10,9 @@
    }
   }
  ],
- "tech": {
-  "title": "Reinforced Plate",
-  "cost": 14,
-  "description": "+6 armor",
-  "statModifiers": {
-   "armor": {
-    "add": 6
-   }
+ "statModifiers": {
+  "armor": {
+   "add": 6
   }
  }
 }

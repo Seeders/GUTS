@@ -10,14 +10,9 @@
    }
   }
  ],
- "tech": {
-  "title": "Evasive",
-  "cost": 14,
-  "description": "+12 evasion",
-  "statModifiers": {
-   "evasion": {
-    "add": 12
-   }
+ "statModifiers": {
+  "evasion": {
+   "add": 12
   }
  }
 }

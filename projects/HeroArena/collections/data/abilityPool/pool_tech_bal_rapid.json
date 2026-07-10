@@ -10,14 +10,9 @@
    }
   }
  ],
- "tech": {
-  "title": "Autoloader",
-  "cost": 16,
-  "description": "+30% attack speed",
-  "statModifiers": {
-   "attackSpeed": {
-    "pct": 0.3
-   }
+ "statModifiers": {
+  "attackSpeed": {
+   "pct": 0.3
   }
  }
 }

@@ -307,6 +307,8 @@ class PlacementUISystem extends GUTS.BaseSystem {
         this.elements.shopPendingCancel = document.getElementById('shopPendingCancel');
         this.elements.unlockedUnitsPanel = document.getElementById('unlockedUnitsPanel');
         this.elements.unlockedUnitsCards = document.getElementById('unlockedUnitsCards');
+        this.elements.stashPanel = document.getElementById('stashPanel');
+        this.elements.stashBody = document.getElementById('stashBody');
 
         // Selection panel (icons + orders of the selected units, attack-move button)
         this.elements.selectionPanel = document.getElementById('selectionPanel');
@@ -371,27 +373,9 @@ class PlacementUISystem extends GUTS.BaseSystem {
             if (this._placingBuildingId) this._cancelBuildingPlacement();
             else this._cancelAbilityTarget();
         });
-        // Item equip: after clicking an inventory item, the next left-click on one
-        // of your squads in the WORLD equips it there. (Capture so it beats the
-        // normal selection/drag handlers when a squad is actually hit.)
-        this._track(document, 'mousedown', (e) => {
-            if (!this._itemTargeting || e.button !== 0) return;
-            if (e.target !== this.canvas) return;
-            const worldPos = this.getWorldPositionFromMouse(e.clientX, e.clientY, false);
-            if (!worldPos) return;
-            const rosterIndex = this._pickOwnedSquadAt(worldPos);
-            if (rosterIndex == null) return;   // missed a squad — stay in targeting, let the click pass
-            const itemId = this._itemTargeting;
-            this._exitItemTargetMode();
-            this.call.submitEquipSquadItem(itemId, rosterIndex, (res) => {
-                if (res?.success === false && res?.reason) {
-                    GUTS.NotificationSystem?.show?.(`Cannot equip: ${res.reason}`, 'error');
-                }
-                this._renderShop(res?.state || res);
-                this._refreshSelectionPanel?.();
-            });
-            e.stopPropagation();
-        });
+        // Item equip: click an inventory item to arm targeting, then click an
+        // equipment slot in the selection window to equip it there
+        // (see _wireSelectionTechButton). Escape cancels.
         this._track(document, 'keydown', (e) => {
             if (e.key === 'Escape' && this._itemTargeting) this._exitItemTargetMode();
         });
@@ -721,7 +705,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
             const card = document.createElement('div');
             card.className = `arena-option-card ${affordable ? '' : 'arena-option-poor'}`;
             card.innerHTML = `
-                <div class="arena-option-name">${option.icon || '🎁'} ${option.title}</div>
+                <div class="arena-option-name">${this._itemIcon(option, 28)} ${option.title}</div>
                 <div class="arena-option-desc">${option.description || ''}</div>
                 <div class="arena-option-tag">${cost > 0 ? `${cost}g` : 'Free'}</div>`;
             card.addEventListener('click', () => {
@@ -1482,11 +1466,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
                     <div class="sq-title">
                         <div class="sq-name">${this._unitModPrefix(unitId, s)}${def.title || unitId} <span class="sq-level">Lv ${level}${level >= maxLevel ? ' MAX' : ''}</span></div>
                         <div class="sq-tags">${tags.map(t => `<span class="ut-tag">${t}</span>`).join('')}</div>
-                        ${(entry?.items?.length) ? `<div class="sq-items">${entry.items.map(id => {
-                            const it = this.collections.squadItems?.[id] || {};
-                            return `<span class="sq-item" data-unequip-item="${id}" data-unequip-roster="${info?.rosterIndex ?? ''}"
-                                title="${it.title || id}: ${it.description || ''} — click to unequip">${it.icon || '◈'}</span>`;
-                        }).join('')}</div>` : ''}
+                        ${(GUTS.ArmyShopSystem.unitTier(unitId) ?? 0) < 3 ? this._equipmentGrid(entry, info?.rosterIndex) : ''}
                     </div>
                 </div>
                 ${level < maxLevel ? `<div class="sq-xp" title="Combat XP — full bar allows promotion">
@@ -1547,6 +1527,25 @@ class PlacementUISystem extends GUTS.BaseSystem {
         if (this._selTechWired || !this.elements.selectionCards) return;
         this._selTechWired = true;
         this.elements.selectionCards.addEventListener('click', (e) => {
+            // Armed with a stash item → click a valid (lit) equipment slot equips it here.
+            if (this._itemTargeting) {
+                const cell = e.target.closest('.eq-slot.eq-valid');
+                const grid = cell?.closest('[data-equip-roster]');
+                if (grid) {
+                    const ri = parseInt(grid.dataset.equipRoster, 10);
+                    if (Number.isNaN(ri)) return;
+                    const itemId = this._itemTargeting;
+                    this._exitItemTargetMode();
+                    this.call.submitEquipSquadItem(itemId, ri, (res) => {
+                        if (res?.success === false && res?.reason) {
+                            GUTS.NotificationSystem?.show?.(`Cannot equip: ${res.reason}`, 'error');
+                        }
+                        this._renderShop(res?.state || res);
+                        this._refreshSelectionPanel();
+                    });
+                    return;
+                }
+            }
             // Click an equipped item chip → unequip it back to the commander inventory.
             const chip = e.target.closest('[data-unequip-item]');
             if (chip) {
@@ -1585,7 +1584,9 @@ class PlacementUISystem extends GUTS.BaseSystem {
     _deckUnitTechs(unitId) {
         const shop = this.game.armyShopSystem, st = this._myStats();
         if (shop?._unitTechsFor && st) return shop._unitTechsFor(st, unitId);
-        return this.collections.unitTechs?.[unitId]?.techs || [];
+        return (this.collections.unitTechs?.[unitId]?.abilityPool || [])
+            .map(id => this.collections.abilityPool?.[id]).filter(Boolean)
+            .map(p => { const { requirements, innate, ...t } = p; return { ...t, id: p.id }; });
     }
     _deckTree(buildingId) {
         const shop = this.game.armyShopSystem, st = this._myStats();
@@ -2053,6 +2054,104 @@ class PlacementUISystem extends GUTS.BaseSystem {
             : `<span class="${cls} ud-fallback">⚔</span>`;
     }
 
+    // Item glyph: `it.icon` is an icon-collection key → render its PNG. Anything
+    // whose `icon` is an emoji (no matching icon key — legacy items, non-item
+    // reinforcement cards) falls through to rendering that text. Inline-sized so
+    // it sits in chips (18px) or card headers (larger) without a CSS change.
+    _itemIcon(it, size = 18) {
+        const imagePath = this.collections?.icons?.[it?.icon]?.imagePath;
+        if (imagePath) {
+            return `<img class="item-icon" src="./resources/${imagePath}" alt=""` +
+                ` style="width:${size}px;height:${size}px;vertical-align:middle;object-fit:contain">`;
+        }
+        return it?.icon || '◈';
+    }
+
+    // Resolve a stored item INSTANCE ({uid,itemId,prefix,suffix,title}) into a
+    // display view: rolled title, base icon key, and a stat+ability summary. Uses
+    // the shared server resolver so client and server agree on merged stats.
+    _resolveItemView(inst) {
+        const S = GUTS.ArmyShopSystem;
+        const r = S.resolveItemInstance(this.collections, inst);
+        const stats = S.statModsSummary(r.statModifiers);
+        const ab = r.unlockAbility
+            ? (this.collections.abilities?.[r.unlockAbility]?.name || r.unlockAbility.replace(/Ability$/, ''))
+            : null;
+        const description = [stats, ab ? `unlocks ${ab}` : ''].filter(Boolean).join('; ');
+        return { uid: r.uid, icon: r.icon, title: r.title, description };
+    }
+
+    // Paperdoll layout — one cell per equip slot (rings twice). Glyphs are the
+    // empty-slot placeholders.
+    static SLOT_LAYOUT = [
+        { key: 'weapon',  label: 'Weapon',  glyph: '🗡' },
+        { key: 'offhand', label: 'Offhand', glyph: '🛡' },
+        { key: 'helmet',  label: 'Helmet',  glyph: '⛑' },
+        { key: 'armor',   label: 'Armor',   glyph: '🎽' },
+        { key: 'cloak',   label: 'Cloak',   glyph: '🧥' },
+        { key: 'glove',   label: 'Gloves',  glyph: '🧤' },
+        { key: 'boots',   label: 'Boots',   glyph: '🥾' },
+        { key: 'ring',    label: 'Ring',    glyph: '💍' },
+        { key: 'ring',    label: 'Ring',    glyph: '💍' },
+        { key: 'amulet',  label: 'Amulet',  glyph: '📿' },
+    ];
+
+    // Which slot an equipped instance occupies: the tag written at equip time, or
+    // (legacy items) the first slot its type allows. Mirrors the server's rule.
+    _itemSlotOf(inst) {
+        if (inst?.slot) return inst.slot;
+        const S = GUTS.ArmyShopSystem;
+        const r = S.resolveItemInstance(this.collections, inst);
+        if (Array.isArray(r.slots) && r.slots.length) return r.slots[0];
+        return (S.DEFAULT_SLOTS?.[r.itemType] || [])[0] || null;
+    }
+
+    // Slot keys the currently-armed stash item may occupy on THIS squad (null if
+    // none armed, or the unit can't equip it — tier/weapon-class/attr gates).
+    _armedItemSlots(entry) {
+        if (!this._itemTargeting) return null;
+        const inv = this._shopState?.itemInventory || [];
+        const inst = inv.find(it => this._resolveItemView(it).uid === this._itemTargeting);
+        if (!inst) return null;
+        const S = GUTS.ArmyShopSystem;
+        const r = S.resolveItemInstance(this.collections, inst);
+        // Same eligibility gate the server enforces — don't light slots on a unit
+        // that would be rejected (T3/T4, wrong weapon class, missing attribute).
+        const shop = this.game.armyShopSystem;
+        if (shop && entry && shop.itemEquipCheck && !shop.itemEquipCheck(entry, r).ok) return null;
+        const slots = (Array.isArray(r.slots) && r.slots.length)
+            ? r.slots : (S.DEFAULT_SLOTS?.[r.itemType] || []);
+        return new Set(slots);
+    }
+
+    // Render the equipment paperdoll for a roster entry. Filled cells show the
+    // item icon and unequip on click (via the existing [data-unequip-item]
+    // handler); empty cells show the slot glyph, dimmed. When a stash item is
+    // armed, only the slots it can occupy light up as equip targets.
+    _equipmentGrid(entry, rosterIndex) {
+        const bySlot = {};
+        for (const inst of (entry?.items || [])) {
+            const s = this._itemSlotOf(inst);
+            if (!s) continue;
+            (bySlot[s] = bySlot[s] || []).push(inst);
+        }
+        const armed = this._armedItemSlots(entry);
+        const seen = {};
+        const cells = PlacementUISystem.SLOT_LAYOUT.map(sl => {
+            const idx = seen[sl.key] || 0;
+            seen[sl.key] = idx + 1;
+            const valid = armed?.has(sl.key) ? ' eq-valid' : '';
+            const inst = (bySlot[sl.key] || [])[idx];
+            if (inst) {
+                const v = this._resolveItemView(inst);
+                return `<span class="eq-slot filled${valid}" data-unequip-item="${v.uid}" data-unequip-roster="${rosterIndex ?? ''}"
+                    title="${sl.label}: ${v.title} — ${v.description} — click to unequip">${this._itemIcon(v, 22)}</span>`;
+            }
+            return `<span class="eq-slot empty${valid}" title="${sl.label} (empty)">${sl.glyph}</span>`;
+        }).join('');
+        return `<div class="eq-grid" data-equip-roster="${rosterIndex ?? ''}">${cells}</div>`;
+    }
+
     // Role/trait tags derived from the unit's numbers — the "what does it do".
     _unitTags(def, id) {
         const tags = [];
@@ -2186,32 +2285,53 @@ class PlacementUISystem extends GUTS.BaseSystem {
     // Commander inventory bar: held items not yet equipped. Click a chip to enter
     // the pick-a-squad banner and equip it (Diablo-style deferred equipment).
     _renderItemInventory(s) {
-        let bar = document.getElementById('commanderInventoryBar');
-        if (!bar) {
-            const host = this.elements.unlockedUnitsCards?.parentElement;
-            if (!host) return;
-            bar = document.createElement('div');
-            bar.id = 'commanderInventoryBar';
-            bar.style.cssText = 'display:flex; align-items:center; flex-wrap:wrap; gap:6px; padding:2px 4px 6px; font-size:0.8rem; color:#e6b8ff;';
-            host.insertBefore(bar, this.elements.unlockedUnitsCards);
+        const bar = this.elements.stashBody;
+        if (!bar) return;
+        if (!this._stashWired) {
+            this._stashWired = true;
+            bar.className = 'stash-panel';
             bar.addEventListener('click', (e) => {
+                // Header toggles the stash open/closed.
+                if (e.target.closest('[data-stash-toggle]')) {
+                    this._stashCollapsed = !this._stashCollapsed;
+                    this._renderItemInventory(this._shopState || s);
+                    return;
+                }
                 const chip = e.target.closest('[data-inv-item]');
                 if (!chip) return;
-                // Click to arm; click the same chip again to cancel.
+                // Click to arm equip-targeting; click the same item again to cancel.
                 if (this._itemTargeting === chip.dataset.invItem) this._exitItemTargetMode();
                 else this._enterItemTargetMode(chip.dataset.invItem);
             });
         }
         const inv = s.itemInventory || [];
-        if (!inv.length) { bar.innerHTML = ''; bar.style.display = 'none'; return; }
-        bar.style.display = 'flex';
-        bar.innerHTML = `<span title="Items your commander is holding — click one, then click a squad in the world to equip it">🎒 Inventory</span>`
-            + inv.map(id => {
-                const it = this.collections.squadItems?.[id] || {};
-                const sel = this._itemTargeting === id ? ' selected' : '';
-                return `<span class="inv-item${sel}" data-inv-item="${id}"
-                    title="${it.title || id}: ${it.description || ''} — click, then click a squad">${it.icon || '◈'} ${it.title || id}</span>`;
-            }).join('');
+        const hasItems = inv.length > 0;
+        const collapsed = !!this._stashCollapsed;
+        const chest = this._itemIcon({ icon: hasItems ? 'chest_gold' : 'chest_basic' }, 22);
+
+        // Pad the loot out to a minimum so even one item reads as a stash grid.
+        const MIN_CELLS = 12;
+        const cells = inv.map(inst => {
+            const v = this._resolveItemView(inst);
+            const sel = this._itemTargeting === v.uid ? ' selected' : '';
+            return `<span class="stash-cell filled${sel}" data-inv-item="${v.uid}"
+                title="${v.title}: ${v.description} — click, then click an equipment slot to equip">${this._itemIcon(v, 28)}</span>`;
+        });
+        while (cells.length < MIN_CELLS) cells.push('<span class="stash-cell empty"></span>');
+
+        this.elements.stashPanel?.classList.remove('hidden');
+        bar.style.display = 'block';
+        bar.innerHTML = `
+            <div class="stash-head" data-stash-toggle
+                title="Commander stash — unequipped loot. Click an item, then click a squad to equip it.">
+                ${chest}
+                <span class="stash-title">Stash</span>
+                <span class="stash-count">${inv.length}</span>
+                <span class="stash-caret">${collapsed ? '▸' : '▾'}</span>
+            </div>
+            ${collapsed || !hasItems
+                ? (hasItems ? '' : '<div class="stash-empty">empty — win rounds to find loot</div>')
+                : `<div class="stash-grid">${cells.join('')}</div>`}`;
     }
 
     _renderDeploySlots(s) {
@@ -2235,10 +2355,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
         }
         const used = s.deploysUsed ?? 0;
         const slots = s.deploySlots ?? 2;
-        bar.innerHTML = `<span title="New squads you can recruit from the menu this round (free card units don't count)">🎖 Deploys ${used}/${slots}</span>
-            <button id="buyDeploySlotBtn" style="padding:1px 8px; font-size:0.72rem; background:rgba(216,180,90,0.15);
-                border:1px solid rgba(216,180,90,0.5); border-radius:3px; color:#e8d9a0; cursor:pointer;"
-                title="Extra recruitment: +1 deploy slot this round">+1 slot (${s.nextSlotCost ?? 100}g)</button>`;
+        bar.innerHTML = `<span title="New squads you can recruit from the menu this round (free card units don't count)">🎖 Deploys ${used}/${slots}</span>`;
     }
 
     _onUnlockedUnitClick(event) {
@@ -2430,36 +2547,23 @@ class PlacementUISystem extends GUTS.BaseSystem {
         });
     }
 
-    // ── Squad-item equip: click an inventory item, then a squad in the world ──
+    // ── Squad-item equip: click an inventory item, then an equipment slot in the
+    // selection window (see _wireSelectionTechButton) ──
     _enterItemTargetMode(itemId) {
         this._itemTargeting = itemId;
         document.body.style.cursor = 'crosshair';
         const item = this.collections.squadItems?.[itemId] || {};
         GUTS.NotificationSystem?.show?.(
-            `Click one of your squads to equip ${item.icon || ''} ${item.title || 'the item'} (Esc to cancel)`, 'info');
+            `Select a squad, then click an equipment slot to equip ${item.icon || ''} ${item.title || 'the item'} (Esc to cancel)`, 'info');
         if (this._shopState) this._renderItemInventory(this._shopState);   // highlight the picked chip
+        this._refreshSelectionPanel?.();   // arm slots on the open selection panel
     }
 
     _exitItemTargetMode() {
         this._itemTargeting = null;
         document.body.style.cursor = 'default';
         if (this._shopState) this._renderItemInventory(this._shopState);
-    }
-
-    // Roster index of the player's own squad nearest a world point (null if the
-    // click didn't land on one of their units).
-    _pickOwnedSquadAt(worldPos) {
-        const myId = this.game.clientNetworkManager?.numericPlayerId ?? 0;
-        let best = null, bestD = Infinity;
-        for (const eid of (this.game.getEntitiesWith?.('heroRosterInfo', 'transform') || [])) {
-            const info = this.game.getComponent(eid, 'heroRosterInfo');
-            if (!info || info.playerId !== myId) continue;
-            const p = this.game.getComponent(eid, 'transform')?.position;
-            if (!p) continue;
-            const d = (p.x - worldPos.x) ** 2 + (p.z - worldPos.z) ** 2;
-            if (d < bestD) { bestD = d; best = info.rosterIndex; }
-        }
-        return (best != null && bestD < 90 * 90) ? best : null;
+        this._refreshSelectionPanel?.();
     }
 
     _getMyPlayerStats() {
@@ -2749,6 +2853,7 @@ class PlacementUISystem extends GUTS.BaseSystem {
         // Hide the shop — not actionable mid-battle.
         if (this.elements.shopPanel)          this.elements.shopPanel.classList.add('hidden');
         if (this.elements.unlockedUnitsPanel) this.elements.unlockedUnitsPanel.classList.add('hidden');
+        if (this.elements.stashPanel)         this.elements.stashPanel.classList.add('hidden');
         this._logEvent(`Round ${this.game.state.round ?? 1} — battle begins!`, 'battle');
     }
 

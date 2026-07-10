@@ -1,7 +1,13 @@
 {
  "title": "Keen Whetstone",
- "icon": "⚔️",
+ "icon": "sword_hook",
  "description": "+25% damage",
- "statModifiers": { "damage": { "pct": 0.25 } },
- "fileName": "whetstone"
+ "statModifiers": {
+  "damage": {
+   "pct": 0.25
+  }
+ },
+ "fileName": "whetstone",
+ "unlockAbility": "BattleCryAbility",
+ "itemType": "meleeWeapon"
 }

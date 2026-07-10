@@ -1,6 +1,6 @@
 {
  "title": "Venom Vial",
- "icon": "🧪",
+ "icon": "ring_potion",
  "kind": "squadItem",
  "itemId": "venomVial",
  "description": "Equip a squad: attacks poison their target",

@@ -1,0 +1,15 @@
+{
+ "title": "Precise",
+ "statModifiers": {
+  "accuracy": {
+   "add": 0.1
+  }
+ },
+ "weight": 2,
+ "itemTypes": [
+  "rangeWeapon",
+  "helmet",
+  "gloves"
+ ],
+ "fileName": "precise"
+}

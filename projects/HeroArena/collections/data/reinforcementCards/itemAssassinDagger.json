@@ -1,0 +1,12 @@
+{
+ "title": "Assassin's Dagger",
+ "icon": "dagger",
+ "kind": "squadItem",
+ "itemId": "assassinDagger",
+ "description": "Equip a squad: +25% attack speed, +8% crit; unlocks Backstab Needs DEX.",
+ "cost": 90,
+ "weight": 2,
+ "minRound": 3,
+ "fileName": "itemAssassinDagger",
+ "category": "item"
+}

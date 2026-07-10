@@ -10,10 +10,5 @@
    }
   }
  ],
- "tech": {
-  "title": "Haste",
-  "cost": 15,
-  "description": "Quicken nearby allies — more attack and move speed for a while.",
-  "unlockAbility": "HasteAbility"
- }
+ "unlockAbility": "HasteAbility"
 }

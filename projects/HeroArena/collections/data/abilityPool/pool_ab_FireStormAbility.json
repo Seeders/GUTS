@@ -10,10 +10,5 @@
    }
   }
  ],
- "tech": {
-  "title": "Fire Storm",
-  "cost": 26,
-  "description": "Rain fire on the largest enemy cluster",
-  "unlockAbility": "FireStormAbility"
- }
+ "unlockAbility": "FireStormAbility"
 }

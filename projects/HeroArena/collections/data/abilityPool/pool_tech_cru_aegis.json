@@ -10,14 +10,9 @@
    }
   }
  ],
- "tech": {
-  "title": "Aegis",
-  "cost": 14,
-  "description": "+8 armor",
-  "statModifiers": {
-   "armor": {
-    "add": 8
-   }
+ "statModifiers": {
+  "armor": {
+   "add": 8
   }
  }
 }

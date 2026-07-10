@@ -1,0 +1,12 @@
+{
+ "title": "Falchion",
+ "icon": "falchion_T1",
+ "kind": "squadItem",
+ "itemId": "falchion",
+ "description": "Equip a squad: +12% damage, +15% attack speed; unlocks Rend Needs STR.",
+ "cost": 90,
+ "weight": 2,
+ "minRound": 3,
+ "fileName": "itemFalchion",
+ "category": "item"
+}

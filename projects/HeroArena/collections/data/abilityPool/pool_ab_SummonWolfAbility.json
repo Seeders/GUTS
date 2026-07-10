@@ -10,10 +10,5 @@
    }
   }
  ],
- "tech": {
-  "title": "Summon Wolf",
-  "cost": 19,
-  "description": "Call forth a loyal wolf companion (max 1 per Beast Master)",
-  "unlockAbility": "SummonWolfAbility"
- }
+ "unlockAbility": "SummonWolfAbility"
 }

@@ -1,34 +1,10 @@
 {
  "unit": "1_di_scout",
- "techs": [
-  {
-   "id": "sco_sprint",
-   "title": "Sprint",
-   "cost": 11,
-   "description": "Unlocks Sprint: burst of speed",
-   "unlockAbility": "SprintAbility"
-  },
-  {
-   "id": "sco_smoke",
-   "title": "Smoke Bomb",
-   "cost": 17,
-   "description": "Unlocks Smoke Bomb: vanish from combat",
-   "unlockAbility": "SmokeBombAbility"
-  },
-  {
-   "id": "sco_cripple",
-   "title": "Stealth",
-   "cost": 13,
-   "description": "Unlocks Stealth",
-   "unlockAbility": "StealthAbility"
-  },
-  {
-   "id": "sco_venom",
-   "title": "Blinding Powder",
-   "cost": 12,
-   "description": "Unlocks Blinding Powder",
-   "unlockAbility": "BlindingShotAbility"
-  }
+ "abilityPool": [
+  "pool_ab_SprintAbility",
+  "pool_ab_SmokeBombAbility",
+  "pool_ab_StealthAbility",
+  "pool_ab_BlindingShotAbility"
  ],
  "fileName": "1_di_scout"
 }

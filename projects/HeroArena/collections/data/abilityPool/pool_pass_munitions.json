@@ -10,17 +10,12 @@
    }
   }
  ],
- "tech": {
-  "title": "Heavy Munitions",
-  "cost": 14,
-  "description": "+25% damage, -15% attack speed",
-  "statModifiers": {
-   "damage": {
-    "pct": 0.25
-   },
-   "attackSpeed": {
-    "pct": -0.15
-   }
+ "statModifiers": {
+  "damage": {
+   "pct": 0.25
+  },
+  "attackSpeed": {
+   "pct": -0.15
   }
  }
 }

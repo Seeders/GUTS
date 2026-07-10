@@ -10,10 +10,5 @@
    }
   }
  ],
- "tech": {
-  "title": "Reveal",
-  "cost": 15,
-  "description": "Expose nearby hidden enemies so your whole team can target them.",
-  "unlockAbility": "RevealAbility"
- }
+ "unlockAbility": "RevealAbility"
 }

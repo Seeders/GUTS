@@ -1,27 +1,9 @@
 {
  "unit": "2_sd_knight",
- "techs": [
-  {
-   "id": "kni_charge",
-   "title": "Cavalry Charge",
-   "cost": 20,
-   "description": "Unlocks Charge: lance into the line",
-   "unlockAbility": "ChargeAbility"
-  },
-  {
-   "id": "kni_bash",
-   "title": "Shield Bash",
-   "cost": 15,
-   "description": "Unlocks Bash: stun the target",
-   "unlockAbility": "BashAbility"
-  },
-  {
-   "id": "kni_barding",
-   "title": "Last Stand",
-   "cost": 14,
-   "description": "Unlocks Last Stand",
-   "unlockAbility": "LastStandAbility"
-  }
+ "abilityPool": [
+  "pool_ab_ChargeAbility",
+  "pool_ab_BashAbility",
+  "pool_ab_LastStandAbility"
  ],
  "fileName": "2_sd_knight"
 }

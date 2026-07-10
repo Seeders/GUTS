@@ -14,10 +14,5 @@
    ]
   }
  ],
- "tech": {
-  "title": "Aimed Shot",
-  "cost": 13,
-  "description": "A long-aimed shot dealing massive damage.",
-  "unlockAbility": "AimedShotAbility"
- }
+ "unlockAbility": "AimedShotAbility"
 }

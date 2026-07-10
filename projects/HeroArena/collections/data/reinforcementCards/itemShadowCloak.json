@@ -1,0 +1,12 @@
+{
+ "title": "Shadow Cloak",
+ "icon": "cloak_T1",
+ "kind": "squadItem",
+ "itemId": "shadowCloak",
+ "description": "Equip a squad: +10% evasion; unlocks Stealth",
+ "cost": 90,
+ "weight": 2,
+ "minRound": 4,
+ "fileName": "itemShadowCloak",
+ "category": "item"
+}

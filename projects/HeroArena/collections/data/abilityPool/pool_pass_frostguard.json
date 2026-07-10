@@ -10,10 +10,5 @@
    }
   }
  ],
- "tech": {
-  "title": "Frostguard",
-  "cost": 14,
-  "description": "Permanent ice armor - a frost ward",
-  "grantBuff": "ice_armor"
- }
+ "grantBuff": "ice_armor"
 }

@@ -10,14 +10,9 @@
    }
   }
  ],
- "tech": {
-  "title": "Vigor",
-  "cost": 14,
-  "description": "+140 max HP",
-  "statModifiers": {
-   "maxHP": {
-    "add": 140
-   }
+ "statModifiers": {
+  "maxHP": {
+   "add": 140
   }
  }
 }

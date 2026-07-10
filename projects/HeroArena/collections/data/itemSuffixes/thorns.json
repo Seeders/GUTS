@@ -1,0 +1,14 @@
+{
+ "title": "of Thorns",
+ "statModifiers": {
+  "thorns": {
+   "add": 0.15
+  }
+ },
+ "weight": 1,
+ "itemTypes": [
+  "shield",
+  "bodyArmor"
+ ],
+ "fileName": "thorns"
+}

@@ -10,10 +10,5 @@
    }
   }
  ],
- "tech": {
-  "title": "Bloodlust",
-  "cost": 20,
-  "description": "Heal when dealing damage and gain stacking damage bonuses",
-  "unlockAbility": "BloodlustAbility"
- }
+ "unlockAbility": "BloodlustAbility"
 }

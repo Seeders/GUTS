@@ -44,7 +44,7 @@ describe('ArmyShopSystem deck gating', () => {
     });
 
     it('special (non-ability) techs are in the pool — e.g. skeleton Bone Blast', () => {
-        expect(shop.collections.abilityPool['pool_tech_sk_explode']?.tech?.onDeathExplode).toBeTruthy();
+        expect(shop.collections.abilityPool['pool_tech_sk_explode']?.onDeathExplode).toBeTruthy();
         const stats = addPlayer({ deck: { units: [
             { unitId: '0_skeleton', abilities: ['pool_tech_sk_explode'] }
         ], buildings: [], bannedCommanders: [] } });
@@ -66,7 +66,7 @@ describe('ArmyShopSystem deck gating', () => {
     it('a unit not customized by the deck keeps its default techs', () => {
         const stats = addPlayer({ deck: { units: [{ unitId: '1_s_barbarian', abilities: [] }], buildings: [], bannedCommanders: [] } });
         const techs = shop._unitTechsFor(stats, '1_d_archer');   // archer absent from deck.units
-        expect(techs).toEqual(shop.collections.unitTechs['1_d_archer'].techs);
+        expect(techs).toEqual(shop._defaultTechs('1_d_archer'));   // == its authored (pool-resolved) defaults
     });
 
     it('_treeFor filters a building tree to the deck\'s chosen upgrades', () => {

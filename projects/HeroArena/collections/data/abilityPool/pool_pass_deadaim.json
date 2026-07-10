@@ -10,14 +10,9 @@
    }
   }
  ],
- "tech": {
-  "title": "Dead Aim",
-  "cost": 14,
-  "description": "+20 accuracy",
-  "statModifiers": {
-   "accuracy": {
-    "add": 20
-   }
+ "statModifiers": {
+  "accuracy": {
+   "add": 20
   }
  }
 }

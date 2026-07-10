@@ -10,10 +10,5 @@
    }
   }
  ],
- "tech": {
-  "title": "Blinding Shot",
-  "cost": 12,
-  "description": "Blind an enemy so its attacks miss for a short time.",
-  "unlockAbility": "BlindingShotAbility"
- }
+ "unlockAbility": "BlindingShotAbility"
 }

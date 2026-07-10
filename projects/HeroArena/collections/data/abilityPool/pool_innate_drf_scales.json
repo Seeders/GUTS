@@ -1,0 +1,13 @@
+{
+ "id": "pool_innate_drf_scales",
+ "title": "Ancient Scales",
+ "description": "+30% max HP",
+ "cost": 18,
+ "requirements": [],
+ "innate": true,
+ "statModifiers": {
+  "maxHP": {
+   "pct": 0.3
+  }
+ }
+}

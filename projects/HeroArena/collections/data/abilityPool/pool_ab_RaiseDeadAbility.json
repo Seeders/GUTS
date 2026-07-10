@@ -10,10 +10,5 @@
    }
   }
  ],
- "tech": {
-  "title": "Raise Dead",
-  "cost": 19,
-  "description": "Convert corpses into skeleton warriors",
-  "unlockAbility": "RaiseDeadAbility"
- }
+ "unlockAbility": "RaiseDeadAbility"
 }

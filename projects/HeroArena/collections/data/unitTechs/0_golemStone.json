@@ -1,27 +1,9 @@
 {
  "unit": "0_golemStone",
- "techs": [
-  {
-   "id": "gst_taunt",
-   "title": "Immovable Object",
-   "cost": 17,
-   "description": "Unlocks Taunt: enemies must face the golem",
-   "unlockAbility": "TauntAbility"
-  },
-  {
-   "id": "gst_ironskin",
-   "title": "Iron Skin",
-   "cost": 17,
-   "description": "Unlocks Iron Skin: harden against a burst",
-   "unlockAbility": "IronSkinAbility"
-  },
-  {
-   "id": "gst_monolith",
-   "title": "Spiked Carapace",
-   "cost": 16,
-   "description": "Unlocks Spiked Carapace",
-   "unlockAbility": "ThornsAuraAbility"
-  }
+ "abilityPool": [
+  "pool_ab_TauntAbility",
+  "pool_ab_IronSkinAbility",
+  "pool_ab_ThornsAuraAbility"
  ],
  "fileName": "0_golemStone"
 }

@@ -1,0 +1,17 @@
+{
+ "title": "Tower Shield",
+ "icon": "shield_T1",
+ "description": "+10 armor, +15% block; unlocks Shield Wall",
+ "statModifiers": {
+  "armor": {
+   "add": 10
+  },
+  "blockChance": {
+   "add": 0.15
+  }
+ },
+ "unlockAbility": "ShieldWallAbility",
+ "attrReq": "str",
+ "itemType": "shield",
+ "fileName": "towerShield"
+}

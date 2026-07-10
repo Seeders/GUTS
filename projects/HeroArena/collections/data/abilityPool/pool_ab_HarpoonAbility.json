@@ -10,10 +10,5 @@
    }
   }
  ],
- "tech": {
-  "title": "Harpoon",
-  "cost": 15,
-  "description": "Hook the nearest enemy and yank it toward you, out of its formation.",
-  "unlockAbility": "HarpoonAbility"
- }
+ "unlockAbility": "HarpoonAbility"
 }

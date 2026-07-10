@@ -10,10 +10,5 @@
    }
   }
  ],
- "tech": {
-  "title": "Skyward Pikes",
-  "cost": 13,
-  "description": "Soldiers can strike flying units",
-  "grantAntiAir": true
- }
+ "grantAntiAir": true
 }

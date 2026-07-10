@@ -10,10 +10,5 @@
    }
   }
  ],
- "tech": {
-  "title": "Phalanx Formation",
-  "cost": 20,
-  "description": "Link shields with nearby squadmates: +50% armor, -20% damage taken for 25s",
-  "unlockAbility": "PhalanxFormationAbility"
- }
+ "unlockAbility": "PhalanxFormationAbility"
 }

@@ -1,0 +1,14 @@
+{
+ "title": "Arcane Staff",
+ "icon": "staff_T1",
+ "description": "+30 range; unlocks Fireball",
+ "statModifiers": {
+  "range": {
+   "add": 30
+  }
+ },
+ "unlockAbility": "FireBallAbility",
+ "attrReq": "int",
+ "itemType": "magicWeapon",
+ "fileName": "arcaneStaff"
+}

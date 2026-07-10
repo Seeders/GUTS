@@ -10,10 +10,5 @@
    }
   }
  ],
- "tech": {
-  "title": "Invisibility",
-  "cost": 15,
-  "description": "Vanish completely — attack without revealing yourself; only true sight exposes you.",
-  "unlockAbility": "InvisibilityAbility"
- }
+ "unlockAbility": "InvisibilityAbility"
 }

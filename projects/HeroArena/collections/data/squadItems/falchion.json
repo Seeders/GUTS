@@ -1,0 +1,17 @@
+{
+ "title": "Falchion",
+ "icon": "falchion_T1",
+ "description": "+12% damage, +15% attack speed; unlocks Rend",
+ "statModifiers": {
+  "damage": {
+   "pct": 0.12
+  },
+  "attackSpeed": {
+   "pct": 0.15
+  }
+ },
+ "unlockAbility": "RendAbility",
+ "attrReq": "str",
+ "itemType": "meleeWeapon",
+ "fileName": "falchion"
+}

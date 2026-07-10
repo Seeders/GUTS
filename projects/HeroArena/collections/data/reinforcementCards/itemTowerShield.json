@@ -1,0 +1,12 @@
+{
+ "title": "Tower Shield",
+ "icon": "shield_T1",
+ "kind": "squadItem",
+ "itemId": "towerShield",
+ "description": "Equip a squad: +10 armor, +15% block; unlocks Shield Wall Needs STR.",
+ "cost": 100,
+ "weight": 2,
+ "minRound": 3,
+ "fileName": "itemTowerShield",
+ "category": "item"
+}

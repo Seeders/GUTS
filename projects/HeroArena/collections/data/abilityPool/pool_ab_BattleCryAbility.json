@@ -10,10 +10,5 @@
    }
   }
  ],
- "tech": {
-  "title": "Battle Cry",
-  "cost": 13,
-  "description": "Rally nearby allies, boosting their damage and morale (does not stack)",
-  "unlockAbility": "BattleCryAbility"
- }
+ "unlockAbility": "BattleCryAbility"
 }

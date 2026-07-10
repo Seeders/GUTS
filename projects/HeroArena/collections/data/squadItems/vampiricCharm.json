@@ -1,7 +1,16 @@
 {
  "title": "Vampiric Charm",
- "icon": "🩸",
+ "icon": "amulet_T2",
  "description": "Heals for 25% of damage dealt (lifesteal)",
- "statModifiers": { "lifeLeech": { "add": 0.25 } },
- "fileName": "vampiricCharm"
+ "statModifiers": {
+  "lifeLeech": {
+   "add": 0.25
+  }
+ },
+ "fileName": "vampiricCharm",
+ "unlockAbility": "DrainLifeAbility",
+ "itemType": "jewelry",
+ "slots": [
+  "amulet"
+ ]
 }

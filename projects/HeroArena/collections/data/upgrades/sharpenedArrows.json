@@ -1,29 +1,29 @@
 {
-  "title": "Sharpened Arrows",
-  "description": "+20% damage to bow & crossbow units",
-  "value": 40,
-  "icon": "bow",
-  "perUnitType": true,
-  "requirements": [
-    {
-      "weaponType": [
-        "bow",
-        "crossbow"
-      ]
-    }
-  ],
-  "target": {
-    "weaponType": [
-      "bow",
-      "crossbow"
-    ]
-  },
-  "statModifiers": {
-    "damage": {
-      "pct": 0.2
-    }
-  },
-  "requiresBuildings": [
-    "fletchersHall"
+ "title": "Sharpened Arrows",
+ "description": "+20% damage to bow & crossbow units",
+ "value": 40,
+ "icon": "bow",
+ "perUnitType": true,
+ "requirements": [
+  {
+   "weaponType": [
+    "bow",
+    "crossbow"
+   ]
+  }
+ ],
+ "target": {
+  "weaponType": [
+   "bow",
+   "crossbow"
   ]
+ },
+ "statModifiers": {
+  "damage": {
+   "pct": 0.2
+  }
+ },
+ "requiresBuildings": [
+  "fletchersHall"
+ ]
 }

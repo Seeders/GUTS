@@ -15,6 +15,7 @@ class DamageSystem extends GUTS.BaseSystem {
     static serviceDependencies = [
         'showDamageNumber',
         'rollHitChance',
+        'rollBlock',
         'getAggregatedDamageModifiers',
         'grantCombatExperience',
         'applyDamage',
@@ -195,6 +196,26 @@ class DamageSystem extends GUTS.BaseSystem {
                     hitChance: hitResult.hitChance,
                     accuracy: hitResult.accuracy,
                     evasion: hitResult.evasion
+                };
+            }
+        }
+
+        // STEP 2.2: Block check (attacks only; the redistributed shield-wall shares
+        // already resolved their own block on the original hit). A successful block
+        // negates the hit entirely — shields turn blockChance into real mitigation.
+        if (!options.isSpell && !options.sharedDamage && this.game.hasService('rollBlock')) {
+            const blockResult = this.call.rollBlock(sourceId, targetId);
+            if (blockResult.blocked) {
+                log.debug('Damage', `BLOCKED! ${sourceName}(${sourceId}) -> ${targetName}(${targetId})`, {
+                    blockChance: (blockResult.blockChance * 100).toFixed(1) + '%',
+                    roll: blockResult.roll.toFixed(3)
+                });
+                this.showMissEffect(targetId);
+                return {
+                    damage: 0,
+                    prevented: true,
+                    reason: 'blocked',
+                    blockChance: blockResult.blockChance
                 };
             }
         }

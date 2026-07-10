@@ -10,10 +10,5 @@
    }
   }
  ],
- "tech": {
-  "title": "Inferno",
-  "cost": 16,
-  "description": "Creates a blazing inferno that damages all enemies in a large area",
-  "unlockAbility": "InfernoAbility"
- }
+ "unlockAbility": "InfernoAbility"
 }

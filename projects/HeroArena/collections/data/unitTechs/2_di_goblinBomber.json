@@ -1,31 +1,9 @@
 {
  "unit": "2_di_goblinBomber",
- "techs": [
-  {
-   "id": "gob_disrupt",
-   "title": "Disruption Bomb",
-   "cost": 24,
-   "description": "Unlocks Disruption Bomb: silences a whole area",
-   "unlockAbility": "DisruptionBombAbility"
-  },
-  {
-   "id": "gob_explosive",
-   "title": "Explosive Cache",
-   "cost": 17,
-   "description": "Unlocks Explosive Trap placement",
-   "unlockAbility": "ExplosiveTrapAbility"
-  },
-  {
-   "id": "gob_payload",
-   "title": "Bigger Payloads",
-   "cost": 14,
-   "description": "+40% damage",
-   "statModifiers": {
-    "damage": {
-     "pct": 0.4
-    }
-   }
-  }
+ "abilityPool": [
+  "pool_ab_DisruptionBombAbility",
+  "pool_ab_ExplosiveTrapAbility",
+  "pool_tech_gob_payload"
  ],
  "fileName": "2_di_goblinBomber"
 }

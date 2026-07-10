@@ -1,0 +1,12 @@
+{
+ "title": "Great Axe",
+ "icon": "2h_axe_T1",
+ "kind": "squadItem",
+ "itemId": "greatAxe",
+ "description": "Equip a squad: +40% damage, -10% attack speed; unlocks Execute Needs STR.",
+ "cost": 110,
+ "weight": 2,
+ "minRound": 4,
+ "fileName": "itemGreatAxe",
+ "category": "item"
+}

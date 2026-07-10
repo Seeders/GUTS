@@ -10,17 +10,12 @@
    }
   }
  ],
- "tech": {
-  "title": "Berserker Training",
-  "cost": 14,
-  "description": "+15% attack speed, +10% damage",
-  "statModifiers": {
-   "attackSpeed": {
-    "pct": 0.15
-   },
-   "damage": {
-    "pct": 0.1
-   }
+ "statModifiers": {
+  "attackSpeed": {
+   "pct": 0.15
+  },
+  "damage": {
+   "pct": 0.1
   }
  }
 }

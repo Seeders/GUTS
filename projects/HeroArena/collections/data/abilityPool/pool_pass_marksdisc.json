@@ -10,17 +10,12 @@
    }
   }
  ],
- "tech": {
-  "title": "Marksman Discipline",
-  "cost": 14,
-  "description": "+25 range, +10% damage",
-  "statModifiers": {
-   "range": {
-    "add": 25
-   },
-   "damage": {
-    "pct": 0.1
-   }
+ "statModifiers": {
+  "range": {
+   "add": 25
+  },
+  "damage": {
+   "pct": 0.1
   }
  }
 }

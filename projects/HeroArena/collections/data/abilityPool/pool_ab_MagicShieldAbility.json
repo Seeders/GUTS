@@ -10,10 +10,5 @@
    }
   }
  ],
- "tech": {
-  "title": "Magic Shield",
-  "cost": 15,
-  "description": "Wrap yourself in arcane shielding — heavy elemental damage reduction.",
-  "unlockAbility": "MagicShieldAbility"
- }
+ "unlockAbility": "MagicShieldAbility"
 }

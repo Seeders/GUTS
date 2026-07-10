@@ -14,10 +14,5 @@
    ]
   }
  ],
- "tech": {
-  "title": "Tracking Mark",
-  "cost": 14,
-  "description": "Mark an enemy for increased damage - multiple Rangers can mark the same target for stacking effect",
-  "unlockAbility": "TrackingMark"
- }
+ "unlockAbility": "TrackingMark"
 }

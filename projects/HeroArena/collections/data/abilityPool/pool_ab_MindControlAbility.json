@@ -10,10 +10,5 @@
    }
   }
  ],
- "tech": {
-  "title": "Mind Control",
-  "cost": 22,
-  "description": "Charms enemy to fight for you",
-  "unlockAbility": "MindControlAbility"
- }
+ "unlockAbility": "MindControlAbility"
 }

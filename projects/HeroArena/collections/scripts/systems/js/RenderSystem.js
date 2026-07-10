@@ -512,10 +512,13 @@ class RenderSystem extends GUTS.BaseSystem {
             // Note: spawnedEntities is already updated by caller to prevent race conditions
             this._stats.entitiesSpawned++;
 
-            // Set opacity for hiding units (only affects billboard entities)
-            if (opacity !== 1.0) {
-                this.entityRenderer.setEntityOpacity(entityId, opacity);
-            }
+            // Always set opacity on spawn — never guard on `!== 1.0`. The engine
+            // pools instance slots (freeList): a despawned stealther returns its
+            // slot at 0.5 opacity, and a fresh unit that pops that slot inherits
+            // the stale 0.5. The update path also skips setEntityOpacity while
+            // opacity stays at its spawn value, so a respawn onto a reused slot
+            // would stay half-transparent forever. Reset it explicitly here.
+            this.entityRenderer.setEntityOpacity(entityId, opacity);
 
             // Set tint if specified (only affects billboard entities)
             if (tint !== null) {

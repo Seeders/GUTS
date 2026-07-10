@@ -10,10 +10,5 @@
    }
   }
  ],
- "tech": {
-  "title": "Arcane Ward",
-  "cost": 15,
-  "description": "Shield your most wounded nearby ally, cutting the damage it takes.",
-  "unlockAbility": "ArcaneWardAbility"
- }
+ "unlockAbility": "ArcaneWardAbility"
 }

@@ -10,17 +10,12 @@
    }
   }
  ],
- "tech": {
-  "title": "Sentinel",
-  "cost": 14,
-  "description": "+7 armor, +8% HP",
-  "statModifiers": {
-   "armor": {
-    "add": 7
-   },
-   "maxHP": {
-    "pct": 0.08
-   }
+ "statModifiers": {
+  "armor": {
+   "add": 7
+  },
+  "maxHP": {
+   "pct": 0.08
   }
  }
 }

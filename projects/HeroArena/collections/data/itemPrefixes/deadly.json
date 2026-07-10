@@ -1,0 +1,19 @@
+{
+ "title": "Deadly",
+ "statModifiers": {
+  "damage": {
+   "pct": 0.1
+  },
+  "accuracy": {
+   "add": 0.1
+  }
+ },
+ "weight": 1,
+ "itemTypes": [
+  "meleeWeapon",
+  "rangeWeapon",
+  "magicWeapon",
+  "gloves"
+ ],
+ "fileName": "deadly"
+}
