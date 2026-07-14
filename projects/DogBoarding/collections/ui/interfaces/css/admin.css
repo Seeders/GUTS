@@ -390,12 +390,12 @@
 
     .side__nav {
         order: 3; flex: 1 1 100%;
+        min-width: 0;                   /* let the strip shrink; its own scroll takes over */
         flex-direction: row; flex-wrap: nowrap;
         gap: 4px;
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
-        margin: 2px -14px -2px;         /* bleed to the edges, pad back in */
-        padding: 2px 14px;
+        padding-bottom: 2px;
         scrollbar-width: none;
     }
     .side__nav::-webkit-scrollbar { display: none; }
