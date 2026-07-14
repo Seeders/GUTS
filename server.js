@@ -24,6 +24,7 @@ const chokidar = require('chokidar');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const vm = require('vm');
+const { makeEditorGate } = require('./editor-auth');
 
 // CLI Arguments
 const args = process.argv.slice(2);
@@ -139,6 +140,17 @@ app.use((req, res, next) => {
     }
     next();
 });
+
+/**
+ * Editor authentication. The editor endpoints below can read, write and delete
+ * arbitrary files under projects/ and compile the served bundle - unauthenticated
+ * they are remote code execution. This gate fronts every editor surface (the
+ * endpoints and the /projects/Editor page); games, static assets, the sprite
+ * read endpoint, sockets and project backends pass through. Mounted before
+ * express.static so it can gate the editor page too. See editor-auth.js for the
+ * GUTS_EDITOR_PASSWORD / GUTS_EDITOR_USER config.
+ */
+app.use(makeEditorGate({ isProduction }));
 
 // Serve static files from the entire repo
 app.use(express.static(BASE_DIR, {
