@@ -7,7 +7,7 @@
     "lede": "Small-group boarding with real yard time, individual attention, and staff who learn your dog’s name before they learn their breed. Every stay is logged, every service is on the invoice, no surprises.",
     "primaryCta": {
       "label": "Register your dog",
-      "route": "/portal"
+      "route": "/portal/signup"
     },
     "secondaryCta": {
       "label": "See rates",
