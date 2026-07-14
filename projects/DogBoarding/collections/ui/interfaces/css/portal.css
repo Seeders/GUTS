@@ -168,7 +168,9 @@
 /* ===== availability calendar ===== */
 .cal {
     display: grid;
-    grid-template-columns: repeat(7, 1fr);
+    /* minmax(0, 1fr) so the seven cells shrink to the screen instead of forcing
+       the page a few px wide. See the same note in admin.css. */
+    grid-template-columns: repeat(7, minmax(0, 1fr));
     gap: 6px;
     margin: 0.5rem 0 1.5rem;
 }

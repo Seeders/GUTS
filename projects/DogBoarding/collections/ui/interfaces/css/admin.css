@@ -377,7 +377,10 @@
 /* ===== calendar (month grid) ===== */
 .cal {
     display: grid;
-    grid-template-columns: repeat(7, 1fr);
+    /* minmax(0, 1fr), not 1fr: a bare 1fr track keeps a min-content floor, so on
+       a narrow phone the seven cells refuse to shrink and push the page wider
+       than the screen. minmax(0, …) lets them shrink to fit. */
+    grid-template-columns: repeat(7, minmax(0, 1fr));
     gap: 6px;
     margin: 1rem 0 1.5rem;
 }

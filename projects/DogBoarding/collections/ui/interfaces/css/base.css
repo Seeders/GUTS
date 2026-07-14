@@ -43,6 +43,13 @@
 
 * { box-sizing: border-box; }
 
+/* No sideways scroll on the page itself. overflow-x: clip (not hidden) still
+   clips a stray few-px overflow but does NOT turn the root into a scroll
+   container, so the sticky headers keep working. Genuinely wide content — tables,
+   the calendar grid — carries its own overflow-x, so nothing here is what gets
+   clipped; this only catches the odd element that pokes past the edge. */
+html, body { max-width: 100%; overflow-x: clip; }
+
 /*
   hidden must actually hide.
 
@@ -356,5 +363,8 @@ body { overflow-wrap: break-word; }
 
     /* Thumbs, not mice. */
     .btn { padding: 11px 16px; }
-    .toast { left: 12px; right: 12px; }
+    /* Keep toasts inside the screen: pin the host to both edges and let the
+       toast fill it, so a long message can't sit 380px wide off the right edge. */
+    .toasts { left: 12px; right: 12px; bottom: 14px; align-items: stretch; }
+    .toast { max-width: 100%; }
 }
