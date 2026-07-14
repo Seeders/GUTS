@@ -1,0 +1,4 @@
+# The live database and everything clients have uploaded.
+# Never commit vet records — they carry client names, addresses and phone numbers.
+data/
+dist/
