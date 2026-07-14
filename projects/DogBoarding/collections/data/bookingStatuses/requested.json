@@ -1,0 +1,19 @@
+{
+  "title": "Requested",
+  "order": 1,
+  "tone": "warn",
+  "onSite": false,
+  "occupies": false,
+  "description": "Asked for through the public site. Nobody has said yes yet.",
+  "actions": [
+    {
+      "to": "confirmed",
+      "label": "✓ Confirm",
+      "primary": true
+    },
+    {
+      "to": "cancelled",
+      "label": "Decline"
+    }
+  ]
+}

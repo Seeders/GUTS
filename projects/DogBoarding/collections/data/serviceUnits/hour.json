@@ -1,0 +1,6 @@
+{
+  "title": "Hour",
+  "order": 3,
+  "perNight": false,
+  "description": "Charged by the hour."
+}

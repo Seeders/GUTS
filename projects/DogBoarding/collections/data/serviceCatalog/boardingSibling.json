@@ -1,0 +1,10 @@
+{
+  "title": "Boarding - Sibling Dog",
+  "order": 3,
+  "code": "BOARD-2ND",
+  "unit": "night",
+  "price": 30,
+  "taxable": true,
+  "active": true,
+  "description": "Second dog from the same household, sharing a suite."
+}

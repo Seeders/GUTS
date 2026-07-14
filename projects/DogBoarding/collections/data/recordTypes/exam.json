@@ -1,0 +1,7 @@
+{
+  "title": "Wellness Exam",
+  "order": 6,
+  "required": false,
+  "typicalValidMonths": 12,
+  "description": "A recent clean bill of health."
+}

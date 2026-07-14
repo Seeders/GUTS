@@ -1,0 +1,10 @@
+{
+  "title": "THREE SkeletonUtils",
+  "isModule": true,
+  "windowContext": "THREE",
+  "exportNamespace": true,
+  "requireName": "SkeletonUtils",
+  "importName": "SkeletonUtils",
+  "fileName": "three_SkeletonUtils",
+  "filePath": "/projects/scripts/libraries/js/three_SkeletonUtils.js"
+}

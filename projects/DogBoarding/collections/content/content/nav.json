@@ -1,0 +1,23 @@
+{
+  "title": "Public navigation",
+  "order": 5,
+  "brandFallback": "Dog Boarding",
+  "links": [
+    {
+      "label": "Home",
+      "route": "/"
+    },
+    {
+      "label": "Services & Rates",
+      "route": "/services"
+    },
+    {
+      "label": "New Client Form",
+      "route": "/register"
+    }
+  ],
+  "staffLink": {
+    "label": "Staff Login",
+    "route": "/admin"
+  }
+}

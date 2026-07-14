@@ -1,0 +1,8 @@
+{
+  "title": "Registration",
+  "description": "The public intake form, built from the intake + intakePet form schemas.",
+  "route": "/register",
+  "page": "intake",
+  "interface": "public",
+  "systems": []
+}

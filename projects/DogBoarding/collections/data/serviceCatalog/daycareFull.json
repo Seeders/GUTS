@@ -1,0 +1,10 @@
+{
+  "title": "Daycare - Full Day",
+  "order": 4,
+  "code": "DAYCARE",
+  "unit": "day",
+  "price": 35,
+  "taxable": true,
+  "active": true,
+  "description": "Supervised play, up to ten hours."
+}

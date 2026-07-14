@@ -1,0 +1,10 @@
+{
+  "title": "Registration success page",
+  "order": 4,
+  "heading": "You’re registered.",
+  "body": "A member of staff will check your vet records and confirm everything by email.",
+  "cta": {
+    "label": "Back to the home page",
+    "route": "/"
+  }
+}

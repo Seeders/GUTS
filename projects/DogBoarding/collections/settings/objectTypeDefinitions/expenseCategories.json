@@ -1,0 +1,6 @@
+{
+  "id": "expenseCategories",
+  "name": "Expense Categories",
+  "singular": "expenseCategory",
+  "objectTypeCategory": "data"
+}

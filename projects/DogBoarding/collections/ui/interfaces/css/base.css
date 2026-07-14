@@ -1,0 +1,337 @@
+/* ==========================================================================
+   Dog Boarding — shared foundation.
+
+   Loaded under every interface. Design tokens, and the components both faces
+   need: buttons, form fields, tables, badges, modals, toasts.
+
+   The public site and the admin console share this palette so the product feels
+   like one thing, but they do not share a rhythm — see public.css and admin.css.
+   ========================================================================== */
+:root {
+    /* Warm neutrals + a sage green that reads as "cared for" rather than "clinical" */
+    --ink:        #1c1a17;
+    --ink-2:      #4a453e;
+    --muted:      #837b70;
+    --line:       #e4dfd6;
+    --line-2:     #efebe3;
+    --paper:      #fbf9f5;
+    --paper-2:    #ffffff;
+
+    --sage:       #4a7a5c;
+    --sage-dark:  #3a6249;
+    --sage-light: #eaf1ec;
+
+    --clay:       #b0553e;
+    --amber:      #b07d21;
+    --amber-bg:   #fdf4e0;
+    --red:        #b03a30;
+    --red-bg:     #fbeceb;
+    --green:      #2f7a4a;
+    --green-bg:   #e9f4ec;
+    --blue:       #3a6a94;
+    --blue-bg:    #e9f1f7;
+
+    --radius:     10px;
+    --radius-sm:  6px;
+    --shadow:     0 1px 2px rgba(28, 26, 23, .05), 0 8px 24px -12px rgba(28, 26, 23, .18);
+    --shadow-lg:  0 24px 60px -20px rgba(28, 26, 23, .35);
+
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+}
+
+* { box-sizing: border-box; }
+
+/*
+  hidden must actually hide.
+
+  The `hidden` attribute is display:none in the browser's default stylesheet,
+  which is the weakest specificity there is - so any author rule that sets a
+  display wins over it. `.login { display: grid }` and `.admin { display: flex }`
+  both do, which meant `pane.hidden = true` set the attribute and changed
+  nothing: after logging in, the console rendered underneath a login screen that
+  was still sitting on top of it.
+
+  Panels are shown and hidden all over this app (interface panes, the pages of
+  the public site, table rows). They all depend on this line.
+*/
+[hidden] { display: none !important; }
+
+body {
+    margin: 0;
+    font-family: var(--sans);
+    color: var(--ink);
+    background: var(--paper);
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.55;
+}
+
+body.is-admin { background: #f4f2ee; }
+
+a { color: var(--sage-dark); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+h1, h2, h3, h4 { margin: 0 0 .4em; line-height: 1.2; font-weight: 650; letter-spacing: -0.01em; }
+
+p { margin: 0 0 1em; }
+p:last-child { margin-bottom: 0; }
+
+.muted { color: var(--muted); }
+.small { font-size: 13px; }
+.center { text-align: center; }
+.pos { color: var(--green); }
+.neg { color: var(--red); }
+.warn-text { color: var(--amber); }
+.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+/* ==========================================================================
+   Buttons — shared
+   ========================================================================== */
+
+.btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 9px 16px;
+    font: inherit; font-size: 14px; font-weight: 550;
+    color: var(--ink);
+    background: var(--paper-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    text-decoration: none;
+    transition: background .12s, border-color .12s, transform .05s;
+    white-space: nowrap;
+}
+.btn:hover { background: var(--line-2); text-decoration: none; }
+.btn:active { transform: translateY(1px); }
+.btn:disabled { opacity: .55; cursor: not-allowed; }
+
+.btn--primary {
+    background: var(--sage); border-color: var(--sage); color: #fff;
+}
+.btn--primary:hover { background: var(--sage-dark); border-color: var(--sage-dark); }
+
+.btn--ghost { background: transparent; }
+.btn--ghost:hover { background: var(--sage-light); border-color: var(--sage); }
+
+.btn--danger { background: var(--red); border-color: var(--red); color: #fff; }
+.btn--danger:hover { background: #8f2f26; border-color: #8f2f26; }
+
+.btn--danger-ghost { color: var(--red); }
+.btn--danger-ghost:hover { background: var(--red-bg); border-color: var(--red); }
+
+.btn--lg { padding: 13px 26px; font-size: 16px; }
+.btn--tiny { padding: 4px 10px; font-size: 12.5px; }
+.btn--block { width: 100%; }
+
+.link-btn {
+    background: none; border: 0; padding: 0;
+    font: inherit; font-size: 13px; font-weight: 550;
+    color: var(--sage-dark); cursor: pointer; text-decoration: underline;
+    text-underline-offset: 2px;
+}
+.link-btn:hover { color: var(--ink); }
+.link-btn.danger { color: var(--red); }
+
+.row-actions { display: flex; gap: 12px; }
+
+/* ==========================================================================
+   Forms — shared
+   ========================================================================== */
+
+.field { display: block; margin-bottom: 16px; }
+.field__label {
+    display: block; margin-bottom: 5px;
+    font-size: 13px; font-weight: 600; color: var(--ink-2);
+}
+.field__label .req { color: var(--clay); font-style: normal; margin-left: 2px; }
+
+.field input[type="text"], .field input[type="email"], .field input[type="tel"],
+.field input[type="date"], .field input[type="number"], .field input[type="password"],
+.field input[type="search"], .field select, .field textarea,
+input[type="text"], input[type="date"], input[type="number"], input[type="password"],
+input[type="email"], input[type="search"], select, textarea {
+    width: 100%;
+    padding: 9px 11px;
+    font: inherit; font-size: 14.5px;
+    color: var(--ink);
+    background: var(--paper-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    transition: border-color .12s, box-shadow .12s;
+}
+textarea { resize: vertical; min-height: 62px; }
+
+input:focus, select:focus, textarea:focus {
+    outline: none;
+    border-color: var(--sage);
+    box-shadow: 0 0 0 3px rgba(74, 122, 92, .13);
+}
+
+.field input[type="file"] {
+    width: 100%; padding: 8px;
+    font-size: 13px;
+    border: 1px dashed var(--line);
+    border-radius: var(--radius-sm);
+    background: var(--paper);
+}
+
+.hint { display: block; margin-top: 5px; font-size: 12.5px; color: var(--muted); }
+
+.field--check {
+    display: flex; align-items: center; gap: 9px;
+    padding: 10px 12px;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+}
+.field--check input { width: auto; margin: 0; }
+.field--check span { font-size: 14px; font-weight: 500; }
+
+.field-row { display: flex; gap: 14px; }
+.field-row > * { flex: 1; min-width: 0; }
+
+.inline-field { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; }
+.inline-field span { color: var(--muted); font-weight: 550; white-space: nowrap; }
+.inline-field input { width: auto; }
+.inline-field.check { cursor: pointer; }
+
+.form-actions { display: flex; justify-content: flex-end; gap: 10px; margin: 20px 0; }
+.form-actions--left { justify-content: flex-start; flex-wrap: wrap; }
+
+.check-inline input { width: auto; cursor: pointer; }
+
+@media (max-width: 720px) {
+    .field-row { flex-direction: column; gap: 0; }
+}
+
+/* ==========================================================================
+   Toasts + modal — shared
+   ========================================================================== */
+
+.toasts {
+    position: fixed; bottom: 22px; right: 22px; z-index: 200;
+    display: flex; flex-direction: column; gap: 9px; align-items: flex-end;
+}
+.toast {
+    padding: 11px 17px;
+    font-size: 14px; font-weight: 550;
+    color: #fff; background: var(--ink);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow);
+    opacity: 0; transform: translateY(8px);
+    transition: opacity .2s, transform .2s;
+    max-width: 380px;
+}
+.toast--in { opacity: 1; transform: none; }
+.toast--good { background: var(--green); }
+.toast--bad { background: var(--red); }
+.toast--warn { background: var(--amber); }
+
+.modal-overlay {
+    position: fixed; inset: 0; z-index: 150;
+    display: flex; align-items: flex-start; justify-content: center;
+    padding: 40px 20px;
+    background: rgba(28, 26, 23, .45);
+    backdrop-filter: blur(2px);
+    overflow-y: auto;
+}
+.modal {
+    width: 100%;
+    background: var(--paper-2);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    animation: modal-in .16s ease-out;
+}
+@keyframes modal-in {
+    from { opacity: 0; transform: translateY(-8px) scale(.99); }
+}
+.modal__head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 22px; border-bottom: 1px solid var(--line-2);
+}
+.modal__head h2 { margin: 0; font-size: 18px; }
+.modal__x {
+    background: none; border: 0; cursor: pointer;
+    font-size: 26px; line-height: 1; color: var(--muted); padding: 0 4px;
+}
+.modal__x:hover { color: var(--ink); }
+.modal__body { padding: 22px; }
+.modal__foot {
+    display: flex; justify-content: flex-end; gap: 10px;
+    padding: 15px 22px; border-top: 1px solid var(--line-2);
+    background: var(--paper);
+    border-radius: 0 0 var(--radius) var(--radius);
+}
+.confirm-text { font-size: 15px; margin: 0; }
+
+/* ==========================================================================
+   Tables — shared
+   ========================================================================== */
+
+.table-wrap { overflow-x: auto; }
+
+.table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.table th {
+    padding: 9px 12px;
+    text-align: left;
+    font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase;
+    color: var(--muted);
+    border-bottom: 1px solid var(--line);
+    white-space: nowrap;
+}
+.table td {
+    padding: 11px 12px;
+    border-bottom: 1px solid var(--line-2);
+    vertical-align: middle;
+}
+.table tbody tr:last-child td { border-bottom: 0; }
+.table tr.clickable { cursor: pointer; }
+.table tr.clickable:hover { background: var(--sage-light); }
+.table tfoot td { border-top: 2px solid var(--line); border-bottom: 0; padding-top: 12px; }
+.table p { margin: 0; }
+
+.badge {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 2px 8px;
+    font-size: 11px; font-weight: 650; letter-spacing: .02em;
+    border-radius: 20px;
+    vertical-align: middle;
+    white-space: nowrap;
+}
+.badge--neutral { background: var(--line-2); color: var(--ink-2); }
+.badge--good    { background: var(--green-bg); color: var(--green); }
+.badge--warn    { background: var(--amber-bg); color: var(--amber); }
+.badge--bad     { background: var(--red-bg); color: var(--red); }
+.badge--info    { background: var(--blue-bg); color: var(--blue); }
+
+.empty {
+    padding: 34px 20px;
+    text-align: center;
+    color: var(--muted);
+    background: var(--paper);
+    border: 1px dashed var(--line);
+    border-radius: var(--radius-sm);
+}
+.empty p { margin: 0; }
+
+.loading { display: flex; align-items: center; gap: 10px; padding: 30px; color: var(--muted); }
+.spinner {
+    width: 16px; height: 16px;
+    border: 2px solid var(--line);
+    border-top-color: var(--sage);
+    border-radius: 50%;
+    animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.fatal, .error-box {
+    max-width: 520px; margin: 80px auto; padding: 30px;
+    text-align: center;
+    background: var(--paper-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+}
+

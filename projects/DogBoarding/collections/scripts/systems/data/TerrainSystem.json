@@ -1,0 +1,20 @@
+{
+  "filePath": "/projects/scripts/systems/js/TerrainSystem.js",
+  "fileName": "TerrainSystem",
+  "services": [
+    "getTerrainHeightAtPosition",
+    "getTerrainTypeAtPosition",
+    "getTerrainHeightAtPositionSmooth",
+    "getTileMapTerrainType",
+    "getTerrainTypeAtGridPosition",
+    "getHeightLevelAtGridPosition",
+    "getTileMap",
+    "getTerrainSize",
+    "getTerrainExtensionSize",
+    "getTerrainExtendedSize",
+    "hasTerrain",
+    "getLevel",
+    "isTerrainInitialized",
+    "getLevelEntityData"
+  ]
+}

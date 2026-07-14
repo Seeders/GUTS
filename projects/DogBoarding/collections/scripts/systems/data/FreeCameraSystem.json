@@ -1,0 +1,9 @@
+{
+  "filePath": "/projects/scripts/systems/js/FreeCameraSystem.js",
+  "fileName": "FreeCameraSystem",
+  "services": [
+    "setInitialPosition",
+    "getYaw",
+    "getPitch"
+  ]
+}

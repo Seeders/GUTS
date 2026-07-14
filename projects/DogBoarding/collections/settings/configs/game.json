@@ -1,0 +1,23 @@
+{
+  "title": "Dog Boarding",
+  "libraries": [
+    "DogBoardApi",
+    "DogBoardUI",
+    "InterfaceLoader",
+    "FormRenderer",
+    "PublicSite",
+    "AdminClients",
+    "AdminBookings",
+    "AdminBilling",
+    "AdminExpenses",
+    "AdminReports",
+    "AdminConsole",
+    "DogBoardingApp",
+    "SimpleLoader"
+  ],
+  "interface": "public",
+  "baseInterface": "base",
+  "initialScene": "home",
+  "appLibrary": "DogBoardingApp",
+  "appLoaderLibrary": "SimpleLoader"
+}

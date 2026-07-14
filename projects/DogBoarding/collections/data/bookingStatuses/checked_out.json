@@ -1,0 +1,14 @@
+{
+  "title": "Checked out",
+  "order": 4,
+  "tone": "neutral",
+  "onSite": false,
+  "occupies": true,
+  "description": "Gone home. The stay still counts for billing and occupancy.",
+  "actions": [
+    {
+      "to": "checked_in",
+      "label": "Undo check-out"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+    "title": "Business",
+    "description": "Who we are and how we bill. Edited here, in the GUTS editor - not in the app. This is configuration, not client data, so it is a collection and not a database row.",
+
+    "name": "Happy Tails Boarding",
+    "email": "hello@happytails.example",
+    "phone": "(555) 012-3456",
+    "address": "148 Old Mill Road, Fairview, OR 97024",
+
+    "taxRateBps": 0,
+    "invoicePrefix": "INV",
+    "invoiceTermsDays": 14,
+
+    "vaccineWarnDays": 30
+}

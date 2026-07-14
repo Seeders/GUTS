@@ -1,0 +1,10 @@
+{
+  "title": "House Food",
+  "order": 11,
+  "code": "FOOD",
+  "unit": "day",
+  "price": 4,
+  "taxable": true,
+  "active": true,
+  "description": "Per day, if you are not sending their own."
+}

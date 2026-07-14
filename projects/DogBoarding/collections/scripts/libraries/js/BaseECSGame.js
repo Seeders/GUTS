@@ -1,0 +1,2643 @@
+// Import BaseSystem to ensure it's available before any systems are created
+import BaseSystem from '../../systems/js/BaseSystem.js';
+
+class BaseECSGame {
+    constructor(app) {
+        this.app = app;
+        this._state = {};
+
+        this.entitiesToAdd = [];
+        this.classes = [];
+        this.systems = [];
+
+        // Scene management
+        this.sceneManager = null;
+
+        // Service registry
+        this._services = new GUTS.GameServices();
+
+
+        // ============================================
+        // HIGH-PERFORMANCE ECS STORAGE (10k+ entities)
+        // ============================================
+
+        // Maximum entities - pre-allocate for performance
+        // Can be configured via game.json maxEntities (default 65536)
+        const gameConfig = app?.collections?.configs?.game;
+        this.MAX_ENTITIES = gameConfig?.maxEntities || 65536; // Power of 2 recommended for performance
+
+        // Entity management with TypedArrays
+        // entityAlive[i] = 1 if entity i exists, 0 if free slot
+        this.entityAlive = new Uint8Array(this.MAX_ENTITIES);
+        // Component bitmask per entity (up to 32 component types with single Uint32)
+        // For more components, we use multiple Uint32s
+        // 256 component types max = 8 Uint32s per entity
+        this.MASK_UINT32_COUNT = 8;
+        this.entityComponentMask = new Uint32Array(this.MAX_ENTITIES * this.MASK_UINT32_COUNT);
+
+        // Entity ID counter (no recycling - IDs grow monotonically to prevent reference bugs)
+        this.nextEntityId = 1; // Start at 1, reserve 0 as "no entity"
+        this.entityCount = 0;
+
+        // Component type registry - maps component name to numeric ID (0-63)
+        this._componentTypeId = new Map(); // componentName -> typeId
+        this._componentTypeNames = []; // typeId -> componentName
+        this._nextComponentTypeId = 0;
+
+        // SoA (Structure of Arrays) storage for numeric components
+        // Each numeric field gets its own Float32Array for cache-friendly iteration
+        this._numericArrays = new Map(); // "componentType.field.path" -> Float32Array
+
+        // Track which components are numeric-only (use TypedArrays)
+        // Maps componentId -> { fields: ['field1', 'nested.field2'], isNumeric: true }
+        this._numericComponentInfo = new Map();
+
+        // Object storage for non-numeric/complex component data
+        // Pre-allocated array of objects, indexed by entity ID
+        this._objectComponents = new Map(); // componentType -> Array[MAX_ENTITIES]
+
+        // Query cache for getEntitiesWith - stores reusable arrays to avoid allocations
+        this._queryCache = new Map();
+
+        // Delta sync tracking - stores last synced state for computing deltas
+        this._lastSyncedState = null;
+
+        // Client-only components - excluded from server sync to preserve client state
+        // These components are managed locally and should not be overwritten by server
+        this._clientOnlyComponents = new Set([
+            'renderable',
+            'animationState',
+            // Singleton game state: synced via the existing curated flows
+            // (BATTLE_END broadcast / syncWithServerState), never wholesale —
+            // wholesale sync would double-apply and clobber client-local fields.
+            'gameState',
+            // Per-client deterministic sim data; syncing would fight the
+            // correction-only entity sync and flood deltas at 20 TPS.
+            'behaviorState'
+        ]);
+
+        // Proxy cache for getComponent - avoids creating new proxies every call
+        // Map: componentType -> Map(entityId -> proxy)
+        this._proxyCache = new Map();
+
+        // Pre-allocated result array for queries (avoids allocation in hot path)
+        this._queryResultBuffer = new Uint32Array(this.MAX_ENTITIES);
+
+        this.lastTime = 0;
+        this.currentTime = 0;
+        this.deltaTime = 0;
+        this.tickCount = 0;
+
+        // Fixed timestep for deterministic simulation (20 TPS = 0.05s per tick)
+        this.FIXED_DELTA_TIME = 1/20;
+
+        this.isServer = false;
+        // Performance monitoring
+        if (typeof GUTS !== 'undefined' && typeof GUTS.PerformanceMonitor !== 'undefined') {
+            this.performanceMonitor = new GUTS.PerformanceMonitor();
+        }
+
+        // Call logging for debugging
+        if (typeof GUTS !== 'undefined' && typeof GUTS.CallLogger !== 'undefined') {
+            this.callLogger = new GUTS.CallLogger();
+        }
+
+        // Global seeded random instance - can be reseeded for deterministic simulation
+        if (typeof GUTS !== 'undefined' && typeof GUTS.SeededRandom !== 'undefined') {
+            this.rng = new GUTS.SeededRandom(Date.now());
+        }
+
+        // Initialize component type registry with common components
+        this._initComponentTypes();
+    }
+
+    /**
+     * Pre-register common component types and allocate their storage
+     */
+    _initComponentTypes() {
+
+        const collections = this.getCollections();
+        this.componentGenerator = new GUTS.ComponentGenerator(collections.components, collections);
+
+        // Pre-register all component types in alphabetical order for deterministic type IDs
+        // This ensures server and client have identical type ID mappings
+        const componentNames = Object.keys(collections.components).sort();
+        for (const componentName of componentNames) {
+            this._getComponentTypeId(componentName);
+        }
+    }
+
+    /**
+     * Get or create a numeric component type ID
+     */
+    _getComponentTypeId(componentType) {
+        let typeId = this._componentTypeId.get(componentType);
+        if (typeId === undefined) {
+
+            typeId = this._nextComponentTypeId++;
+            this._componentTypeId.set(componentType, typeId);
+            this._componentTypeNames[typeId] = componentType;
+        }
+        return typeId;
+    }
+
+    /**
+     * Set component bit in entity's bitmask
+     * Supports up to 256 component types (8 Uint32s per entity)
+     */
+    _setComponentBit(entityId, componentTypeId) {
+        const wordIndex = Math.floor(componentTypeId / 32);
+        const maskIndex = entityId * this.MASK_UINT32_COUNT + wordIndex;
+        const bit = componentTypeId % 32;
+        this.entityComponentMask[maskIndex] |= (1 << bit);
+    }
+
+    /**
+     * Clear component bit in entity's bitmask
+     * Supports up to 256 component types (8 Uint32s per entity)
+     */
+    _clearComponentBit(entityId, componentTypeId) {
+        const wordIndex = Math.floor(componentTypeId / 32);
+        const maskIndex = entityId * this.MASK_UINT32_COUNT + wordIndex;
+        const bit = componentTypeId % 32;
+        this.entityComponentMask[maskIndex] &= ~(1 << bit);
+    }
+
+    /**
+     * Check if entity has component via bitmask
+     * Supports up to 256 component types (8 Uint32s per entity)
+     */
+    _hasComponentBit(entityId, componentTypeId) {
+        const wordIndex = Math.floor(componentTypeId / 32);
+        const maskIndex = entityId * this.MASK_UINT32_COUNT + wordIndex;
+        const bit = componentTypeId % 32;
+        return (this.entityComponentMask[maskIndex] & (1 << bit)) !== 0;
+    }
+
+    /**
+     * Get or create Float32Array for a numeric field
+     */
+    _getNumericArray(key) {
+        let arr = this._numericArrays.get(key);
+        if (!arr) {
+            arr = new Float32Array(this.MAX_ENTITIES);
+            this._numericArrays.set(key, arr);
+        }
+        return arr;
+    }
+
+    /**
+     * Get or create object storage array for a component type
+     */
+    _getObjectStorage(componentType) {
+        let storage = this._objectComponents.get(componentType);
+        if (!storage) {
+            storage = new Array(this.MAX_ENTITIES);
+            this._objectComponents.set(componentType, storage);
+        }
+        return storage;
+    }
+
+    /**
+     * Analyze a component schema to determine if it's all-numeric
+     * Returns { isNumeric: true, fields: ['field1', 'nested.field2'] } or { isNumeric: false }
+     * Numbers, booleans (stored as 0/1), enum strings, and arrays of enum values (bitmasks) are all considered numeric.
+     * @param {Object} schema - The component schema
+     * @param {Object|null} enumMap - The enum map if this component has enums
+     * @param {string} prefix - Path prefix for nested fields
+     */
+    _analyzeComponentSchema(schema, enumMap = null, prefix = '') {
+        const fields = [];
+        let isNumeric = true;
+
+        for (const key in schema) {
+            const value = schema[key];
+            const fieldPath = prefix ? `${prefix}.${key}` : key;
+
+            if (typeof value === 'number') {
+                fields.push(fieldPath);
+            } else if (typeof value === 'boolean') {
+                // Booleans stored as 0/1 in TypedArrays
+                fields.push(fieldPath);
+            } else if (value === null) {
+                // null fields stored as -Infinity in TypedArrays
+                fields.push(fieldPath);
+            } else if (typeof value === 'string' && enumMap && enumMap.toIndex.hasOwnProperty(value)) {
+                // String that will be converted to enum index - treat as numeric
+                fields.push(fieldPath);
+            } else if (Array.isArray(value) && enumMap) {
+                // Arrays of enum values will be converted to bitmask - treat as numeric
+                // Check if array contains enum values or "all"
+                const isEnumArray = value.every(item =>
+                    item === 'all' || enumMap.toIndex.hasOwnProperty(item)
+                );
+                if (isEnumArray) {
+                    fields.push(fieldPath);
+                } else {
+                    isNumeric = false;
+                    break;
+                }
+            } else if (value && typeof value === 'object' && !Array.isArray(value)) {
+                // Recursively check nested objects
+                const nested = this._analyzeComponentSchema(value, enumMap, fieldPath);
+                if (nested.isNumeric) {
+                    fields.push(...nested.fields);
+                } else {
+                    isNumeric = false;
+                    break;
+                }
+            } else {
+                // String (non-enum), non-enum array, null, etc. - not purely numeric
+                isNumeric = false;
+                break;
+            }
+        }
+
+        return { isNumeric, fields };
+    }
+
+    /**
+     * Register a component type and set up storage (TypedArrays for numeric, object array otherwise)
+     * Called when a component is first added
+     */
+    _setupComponentStorage(componentId, schema, enumMap = null) {
+        if (this._numericComponentInfo.has(componentId)) {
+            return; // Already set up
+        }
+
+        const analysis = this._analyzeComponentSchema(schema, enumMap);
+        // Cache both schemas for getComponent:
+        // - schema: expanded schema (used for TypedArray field enumeration)
+        // - originalSchema: preserves $fixedArray directives for array proxy creation
+        analysis.schema = schema;
+        analysis.originalSchema = this.componentGenerator.getOriginalSchema(componentId);
+        this._numericComponentInfo.set(componentId, analysis);
+
+        if (analysis.isNumeric) {
+            // Create TypedArrays for each field
+            for (const fieldPath of analysis.fields) {
+                const key = `${componentId}.${fieldPath}`;
+                this._getNumericArray(key);
+            }
+        }
+    }
+
+    /**
+     * Set a value in a numeric component's TypedArray storage
+     * Note: Caller should use _toStorageValue() if passing user-provided values
+     */
+    _setNumericField(componentId, entityId, fieldPath, value) {
+        const key = `${componentId}.${fieldPath}`;
+        const arr = this._numericArrays.get(key);
+        if (arr) {
+            arr[entityId] = value;
+        }
+    }
+
+    /**
+     * Get a value from a numeric component's TypedArray storage (internal)
+     * Converts -Infinity (null sentinel) back to null for API consumers
+     */
+    _getNumericField(componentId, entityId, fieldPath) {
+        const key = `${componentId}.${fieldPath}`;
+        const arr = this._numericArrays.get(key);
+        if (!arr) return undefined;
+        return this._fromStorageValue(arr[entityId]);
+    }
+
+    /**
+     * Get raw value from TypedArray storage without null conversion (for internal use)
+     */
+    _getRawNumericField(componentId, entityId, fieldPath) {
+        const key = `${componentId}.${fieldPath}`;
+        const arr = this._numericArrays.get(key);
+        return arr ? arr[entityId] : undefined;
+    }
+
+    /**
+     * Direct field read - bypasses proxy for maximum performance in hot paths
+     * Use for tight loops where proxy overhead matters (collision, pathfinding)
+     * @param {number} entityId - Entity ID
+     * @param {string} componentType - Component name (e.g., 'transform')
+     * @param {string} fieldPath - Dot-separated path (e.g., 'position.x')
+     * @returns {number|null} - Raw value, or null if field was null
+     * @example
+     * // Instead of: game.getComponent(id, 'transform').position.x
+     * const x = game.getField(id, 'transform', 'position.x');
+     */
+    getField(entityId, componentType, fieldPath) {
+        return this._getNumericField(componentType, entityId, fieldPath);
+    }
+
+    /**
+     * Direct field write - bypasses proxy for maximum performance in hot paths
+     * @param {number} entityId - Entity ID
+     * @param {string} componentType - Component name (e.g., 'transform')
+     * @param {string} fieldPath - Dot-separated path (e.g., 'position.x')
+     * @param {number|null} value - Value to set
+     * @example
+     * // Instead of: game.getComponent(id, 'transform').position.x = 100
+     * game.setField(id, 'transform', 'position.x', 100);
+     */
+    setField(entityId, componentType, fieldPath, value) {
+        this._setNumericField(componentType, entityId, fieldPath, this._toStorageValue(value));
+    }
+
+    /**
+     * Get direct references to TypedArrays for a component's fields.
+     * Use this for maximum performance in tight loops - avoids all proxy/function overhead.
+     *
+     * @param {string} componentType - Component name (e.g., 'transform')
+     * @param {string[]} fieldPaths - Array of field paths (e.g., ['position.x', 'position.y', 'position.z'])
+     * @returns {Object} Map of fieldPath -> Float32Array (or undefined if not found)
+     * @example
+     * // Get direct array access for transform position fields
+     * const arrays = game.getFieldArrays('transform', ['position.x', 'position.y', 'position.z']);
+     * // Now access directly: arrays['position.x'][entityId]
+     * for (const entityId of entities) {
+     *     const x = arrays['position.x'][entityId];
+     *     const y = arrays['position.y'][entityId];
+     *     const z = arrays['position.z'][entityId];
+     * }
+     */
+    getFieldArrays(componentType, fieldPaths) {
+        const result = {};
+        for (const fieldPath of fieldPaths) {
+            const key = `${componentType}.${fieldPath}`;
+            result[fieldPath] = this._numericArrays.get(key);
+        }
+        return result;
+    }
+
+    /**
+     * Get a single TypedArray for direct field access.
+     * Use in hot loops where you need to read/write many entities.
+     *
+     * @param {string} componentType - Component name
+     * @param {string} fieldPath - Field path (e.g., 'position.x')
+     * @returns {Float32Array|undefined} Direct array reference
+     * @example
+     * const posX = game.getFieldArray('transform', 'position.x');
+     * const posZ = game.getFieldArray('transform', 'position.z');
+     * for (const id of nearbyUnits) {
+     *     const dx = myX - posX[id];
+     *     const dz = myZ - posZ[id];
+     * }
+     */
+    getFieldArray(componentType, fieldPath) {
+        const key = `${componentType}.${fieldPath}`;
+        return this._numericArrays.get(key);
+    }
+
+    /**
+     * Read multiple fields from a component in one call - more efficient than multiple getField calls.
+     * Returns plain values (not a proxy), so it's a snapshot that won't track changes.
+     *
+     * @param {number} entityId - Entity ID
+     * @param {string} componentType - Component name
+     * @param {string[]} fieldPaths - Array of field paths to read
+     * @returns {Object} Map of fieldPath -> value
+     * @example
+     * const { 'position.x': x, 'position.z': z } = game.getFields(id, 'transform', ['position.x', 'position.z']);
+     */
+    getFields(entityId, componentType, fieldPaths) {
+        const result = {};
+        for (const fieldPath of fieldPaths) {
+            result[fieldPath] = this._getNumericField(componentType, entityId, fieldPath);
+        }
+        return result;
+    }
+
+    /**
+     * Write multiple fields to a component in one call.
+     *
+     * @param {number} entityId - Entity ID
+     * @param {string} componentType - Component name
+     * @param {Object} fieldValues - Map of fieldPath -> value
+     * @example
+     * game.setFields(id, 'velocity', { vx: 10, vy: 0, vz: 5 });
+     */
+    setFields(entityId, componentType, fieldValues) {
+        for (const fieldPath in fieldValues) {
+            this._setNumericField(componentType, entityId, fieldPath, this._toStorageValue(fieldValues[fieldPath]));
+        }
+    }
+
+    /**
+     * Check if a field value represents null/unset
+     * @param {number} value - Value from getField or direct TypedArray read
+     * @returns {boolean} - True if value represents null
+     */
+    isNull(value) {
+        return value === -Infinity || value === null;
+    }
+
+    // ============================================
+    // NULL SENTINEL CONVERSION UTILITIES
+    // ============================================
+    // TypedArrays can't store null, so we use -Infinity as a sentinel value.
+    // These methods provide consistent conversion at all boundaries:
+    //   - _toStorageValue / _fromStorageValue: for TypedArray read/write
+    //   - _toSyncValue / _fromSyncValue: for JSON serialization (sync)
+    // ============================================
+
+    /**
+     * Convert API value to TypedArray storage format
+     * null -> -Infinity (null sentinel), other values pass through
+     */
+    _toStorageValue(value) {
+        return value === null ? -Infinity : value;
+    }
+
+    /**
+     * Convert TypedArray storage value to API format
+     * -Infinity (null sentinel) -> null, other values pass through
+     */
+    _fromStorageValue(value) {
+        return value === -Infinity ? null : value;
+    }
+
+    /**
+     * Convert TypedArray storage value to JSON-safe format for sync
+     * -Infinity (null sentinel) -> null (JSON null), other values pass through
+     * Note: This is the same as _fromStorageValue since JSON uses null
+     */
+    _toSyncValue(value) {
+        return value === -Infinity ? null : value;
+    }
+
+    /**
+     * Convert JSON sync value back to TypedArray storage format
+     * null (JSON null) -> -Infinity (null sentinel), other values pass through
+     * Note: This is the same as _toStorageValue since JSON uses null
+     */
+    _fromSyncValue(value) {
+        return value === null ? -Infinity : value;
+    }
+
+    /**
+     * Write component data to TypedArrays (for numeric components)
+     * Handles numbers, booleans (as 0/1), and enum values (already converted to indices)
+     */
+    _writeNumericComponent(componentId, entityId, data, schema, prefix = '') {
+        for (const key in schema) {
+            const fieldPath = prefix ? `${prefix}.${key}` : key;
+            const schemaValue = schema[key];
+            let dataValue = prefix
+                ? this._getNestedValue(data, fieldPath)
+                : data[key];
+
+            if (typeof schemaValue === 'number' || typeof schemaValue === 'boolean' || typeof schemaValue === 'string') {
+                // Convert booleans to 0/1 for storage
+                if (typeof dataValue === 'boolean') {
+                    dataValue = dataValue ? 1 : 0;
+                }
+                // Use default from schema if data value is undefined
+                if (dataValue === undefined) {
+                    dataValue = typeof schemaValue === 'boolean' ? (schemaValue ? 1 : 0) : schemaValue;
+                }
+                this._setNumericField(componentId, entityId, fieldPath, dataValue);
+            } else if (schemaValue === null) {
+                // null schema fields: use null sentinel as default
+                if (dataValue === undefined) {
+                    dataValue = null;
+                }
+                this._setNumericField(componentId, entityId, fieldPath, this._toStorageValue(dataValue));
+            } else if (schemaValue && typeof schemaValue === 'object' && !Array.isArray(schemaValue)) {
+                this._writeNumericComponent(componentId, entityId, data, schemaValue, fieldPath);
+            }
+        }
+    }
+
+    /**
+     * Read component data from TypedArrays and return as proxy object
+     * Proxy reads/writes directly from TypedArrays on every access (no stale data)
+     * Proxies are cached per entity+component to avoid GC churn
+     */
+    _readNumericComponent(componentId, entityId, schema, prefix = '') {
+        // For top-level calls (no prefix), check proxy cache first
+        if (!prefix) {
+            let componentCache = this._proxyCache.get(componentId);
+            if (!componentCache) {
+                componentCache = new Map();
+                this._proxyCache.set(componentId, componentCache);
+            }
+            const cached = componentCache.get(entityId);
+            if (cached) {
+                return cached;
+            }
+            // Create and cache the proxy
+            const proxy = this._createComponentProxy(componentId, entityId, schema, '');
+            componentCache.set(entityId, proxy);
+            return proxy;
+        }
+        // Nested objects (with prefix) still create proxies but aren't cached separately
+        return this._createComponentProxy(componentId, entityId, schema, prefix);
+    }
+
+    /**
+     * Create a proxy that reads/writes directly from TypedArrays
+     * Every property access goes through the proxy traps for live data
+     */
+    _createComponentProxy(componentId, entityId, schema, prefix) {
+        const game = this;
+
+        // Build schema info for fast lookups
+        const schemaInfo = {};
+        for (const key in schema) {
+            const schemaValue = schema[key];
+            schemaInfo[key] = {
+                fieldPath: prefix ? `${prefix}.${key}` : key,
+                type: schemaValue === null ? 'null' :
+                      typeof schemaValue === 'boolean' ? 'boolean' :
+                      (typeof schemaValue === 'number' || typeof schemaValue === 'string') ? 'number' :
+                      (schemaValue && schemaValue.$fixedArray) ? 'fixedArray' :
+                      (schemaValue && schemaValue.$bitmask) ? 'bitmask' :
+                      (schemaValue && schemaValue.$enum) ? 'enum' :
+                      (schemaValue && typeof schemaValue === 'object') ? 'nested' : 'unknown',
+                schemaValue
+            };
+        }
+
+        // Cache for nested proxies (fixedArray, bitmask, nested objects)
+        const nestedCache = {};
+
+        return new Proxy({}, {
+            get(target, prop) {
+                // Support JSON.stringify
+                if (prop === 'toJSON') {
+                    return () => {
+                        const result = {};
+                        for (const key in schemaInfo) {
+                            const info = schemaInfo[key];
+                            if (info.type === 'number' || info.type === 'enum') {
+                                result[key] = game._getNumericField(componentId, entityId, info.fieldPath);
+                            } else if (info.type === 'boolean') {
+                                result[key] = game._getNumericField(componentId, entityId, info.fieldPath) !== 0;
+                            } else if (info.type === 'null') {
+                                result[key] = game._getNumericField(componentId, entityId, info.fieldPath);
+                            } else if (info.type === 'fixedArray' || info.type === 'bitmask' || info.type === 'nested') {
+                                // Trigger the getter to get the nested proxy, then toJSON it
+                                const nested = nestedCache[key] || game._createNestedProxy(componentId, entityId, key, info, prefix);
+                                result[key] = nested.toJSON ? nested.toJSON() : nested;
+                            }
+                        }
+                        return result;
+                    };
+                }
+
+                const info = schemaInfo[prop];
+                if (!info) return undefined;
+
+                if (info.type === 'number' || info.type === 'enum') {
+                    return game._getNumericField(componentId, entityId, info.fieldPath);
+                } else if (info.type === 'boolean') {
+                    return game._getNumericField(componentId, entityId, info.fieldPath) !== 0;
+                } else if (info.type === 'null') {
+                    return game._getNumericField(componentId, entityId, info.fieldPath);
+                } else if (info.type === 'fixedArray' || info.type === 'bitmask' || info.type === 'nested') {
+                    // Cache nested proxies to avoid recreation
+                    if (!nestedCache[prop]) {
+                        nestedCache[prop] = game._createNestedProxy(componentId, entityId, prop, info, prefix);
+                    }
+                    return nestedCache[prop];
+                }
+                return undefined;
+            },
+            set(target, prop, value) {
+                const info = schemaInfo[prop];
+                if (!info) return false;
+
+                let storedValue = value;
+                if (info.type === 'boolean') {
+                    storedValue = value ? 1 : 0;
+                } else if (info.type === 'null') {
+                    storedValue = game._toStorageValue(value);
+                }
+
+                if (info.type === 'number' || info.type === 'boolean' || info.type === 'null' || info.type === 'enum') {
+                    game._setNumericField(componentId, entityId, info.fieldPath, storedValue);
+                    return true;
+                }
+                return false;
+            },
+            ownKeys() {
+                return Object.keys(schemaInfo);
+            },
+            getOwnPropertyDescriptor(target, prop) {
+                if (prop in schemaInfo) {
+                    return { configurable: true, enumerable: true };
+                }
+                return undefined;
+            }
+        });
+    }
+
+    /**
+     * Create nested proxy for fixedArray, bitmask, or nested object
+     */
+    _createNestedProxy(componentId, entityId, key, info, prefix) {
+        if (info.type === 'fixedArray') {
+            return this._createFixedArrayProxy(componentId, entityId, key, info.schemaValue.$fixedArray, prefix);
+        } else if (info.type === 'bitmask') {
+            return this._createBitmaskProxy(componentId, entityId, key, info.schemaValue.$bitmask, prefix);
+        } else if (info.type === 'nested') {
+            return this._createComponentProxy(componentId, entityId, info.schemaValue, info.fieldPath);
+        }
+        return undefined;
+    }
+
+    /**
+     * Create an array-like proxy for $fixedArray fields
+     * Allows array[index] access that maps to individual TypedArray fields
+     */
+    _createFixedArrayProxy(componentId, entityId, baseName, config, prefix = '') {
+        const game = this;
+        // Support both static size and dynamic sizeFrom (enum-based)
+        let size = config.size || 0;
+        if (config.sizeFrom) {
+            const enumMap = this.componentGenerator.getEnumMap(config.sizeFrom);
+            size = enumMap?.toValue?.length || 0;
+        }
+        const fields = config.fields;
+        const fieldPrefix = prefix ? `${prefix}.${baseName}` : baseName;
+
+        if (fields && Array.isArray(fields)) {
+            // Multi-field array: each element is an object with the specified fields
+            // Fields stored as: baseName_field0, baseName_field1, etc.
+            return new Proxy({}, {
+                get(target, prop) {
+                    if (prop === 'length') return size;
+                    // Support JSON.stringify via toJSON
+                    if (prop === 'toJSON') {
+                        return () => {
+                            const arr = [];
+                            for (let i = 0; i < size; i++) {
+                                const element = {};
+                                for (const field of fields) {
+                                    element[field] = game._getNumericField(componentId, entityId, `${fieldPrefix}_${field}${i}`);
+                                }
+                                arr[i] = element;
+                            }
+                            return arr;
+                        };
+                    }
+                    const index = parseInt(prop, 10);
+                    if (!isNaN(index) && index >= 0 && index < size) {
+                        // Return object with all fields for this index
+                        const element = {};
+                        for (const field of fields) {
+                            element[field] = game._getNumericField(componentId, entityId, `${fieldPrefix}_${field}${index}`);
+                        }
+                        // Return proxy for field writes
+                        return new Proxy(element, {
+                            set(t, f, v) {
+                                t[f] = v;
+                                game._setNumericField(componentId, entityId, `${fieldPrefix}_${f}${index}`, game._toStorageValue(v));
+                                return true;
+                            }
+                        });
+                    }
+                    return undefined;
+                },
+                set(target, prop, value) {
+                    const index = parseInt(prop, 10);
+                    if (!isNaN(index) && index >= 0 && index < size && typeof value === 'object') {
+                        for (const field of fields) {
+                            if (value[field] !== undefined) {
+                                game._setNumericField(componentId, entityId, `${fieldPrefix}_${field}${index}`, game._toStorageValue(value[field]));
+                            }
+                        }
+                        return true;
+                    }
+                    return false;
+                },
+                ownKeys(target) {
+                    const keys = [];
+                    for (let i = 0; i < size; i++) {
+                        keys.push(String(i));
+                    }
+                    return keys;
+                },
+                getOwnPropertyDescriptor(target, prop) {
+                    const index = parseInt(prop, 10);
+                    if (!isNaN(index) && index >= 0 && index < size) {
+                        const element = {};
+                        for (const field of fields) {
+                            element[field] = game._getNumericField(componentId, entityId, `${fieldPrefix}_${field}${index}`);
+                        }
+                        return {
+                            value: element,
+                            writable: true,
+                            enumerable: true,
+                            configurable: true
+                        };
+                    }
+                    return undefined;
+                }
+            });
+        } else {
+            // Simple array: baseName0, baseName1, etc.
+            return new Proxy({}, {
+                get(target, prop) {
+                    if (prop === 'length') return size;
+                    // Support JSON.stringify via toJSON
+                    if (prop === 'toJSON') {
+                        return () => {
+                            const arr = [];
+                            for (let i = 0; i < size; i++) {
+                                arr[i] = game._getNumericField(componentId, entityId, `${fieldPrefix}${i}`);
+                            }
+                            return arr;
+                        };
+                    }
+                    const index = parseInt(prop, 10);
+                    if (!isNaN(index) && index >= 0 && index < size) {
+                        return game._getNumericField(componentId, entityId, `${fieldPrefix}${index}`);
+                    }
+                    return undefined;
+                },
+                set(target, prop, value) {
+                    const index = parseInt(prop, 10);
+                    if (!isNaN(index) && index >= 0 && index < size) {
+                        game._setNumericField(componentId, entityId, `${fieldPrefix}${index}`, game._toStorageValue(value));
+                        return true;
+                    }
+                    return false;
+                },
+                ownKeys(target) {
+                    // Return numeric indices as strings for JSON.stringify enumeration
+                    const keys = [];
+                    for (let i = 0; i < size; i++) {
+                        keys.push(String(i));
+                    }
+                    return keys;
+                },
+                getOwnPropertyDescriptor(target, prop) {
+                    const index = parseInt(prop, 10);
+                    if (!isNaN(index) && index >= 0 && index < size) {
+                        return {
+                            value: game._getNumericField(componentId, entityId, `${fieldPrefix}${index}`),
+                            writable: true,
+                            enumerable: true,
+                            configurable: true
+                        };
+                    }
+                    return undefined;
+                }
+            });
+        }
+    }
+
+    /**
+     * Create a proxy for $bitmask fields
+     * Bitmask is stored as individual 32-bit fields (baseName0, baseName1, etc.)
+     * Returns a proxy object with helper methods: has(id), add(id), remove(id), toArray()
+     * Also supports direct numeric operations for backwards compatibility
+     */
+    _createBitmaskProxy(componentId, entityId, baseName, config, prefix = '') {
+        const game = this;
+        let bitCount;
+        let enumMap = null;
+
+        if (config.sizeFrom) {
+            enumMap = this.componentGenerator.getEnumMap(config.sizeFrom);
+            bitCount = enumMap?.toValue?.length || 32;
+        } else {
+            bitCount = config.size || 32;
+        }
+
+        const fieldCount = Math.ceil(bitCount / 32);
+        const fieldPrefix = prefix ? `${prefix}.${baseName}` : baseName;
+
+        // Helper to get index from string ID or number
+        const getIndex = (id) => {
+            if (typeof id === 'number') return id;
+            if (typeof id === 'string' && enumMap) {
+                return enumMap.toIndex[id];
+            }
+            return undefined;
+        };
+
+        // Helper functions for reading/writing individual 32-bit fields
+        const getFieldValue = (fieldIdx) => game._getNumericField(componentId, entityId, `${fieldPrefix}${fieldIdx}`) || 0;
+        const setFieldValue = (fieldIdx, val) => game._setNumericField(componentId, entityId, `${fieldPrefix}${fieldIdx}`, val);
+
+        // Create bitmask object with helper methods (works for both single and multi-field)
+        return {
+            // Check if bitmask has a specific bit set
+            has(id) {
+                const index = getIndex(id);
+                if (index === undefined) return false;
+                const fieldIdx = Math.floor(index / 32);
+                const bitIdx = index % 32;
+                return (getFieldValue(fieldIdx) & (1 << bitIdx)) !== 0;
+            },
+
+            // Add a bit to the bitmask
+            add(id) {
+                const index = getIndex(id);
+                if (index === undefined) return false;
+                const fieldIdx = Math.floor(index / 32);
+                const bitIdx = index % 32;
+                setFieldValue(fieldIdx, getFieldValue(fieldIdx) | (1 << bitIdx));
+                return true;
+            },
+
+            // Remove a bit from the bitmask
+            remove(id) {
+                const index = getIndex(id);
+                if (index === undefined) return false;
+                const fieldIdx = Math.floor(index / 32);
+                const bitIdx = index % 32;
+                setFieldValue(fieldIdx, getFieldValue(fieldIdx) & ~(1 << bitIdx));
+                return true;
+            },
+
+            // Toggle a bit in the bitmask
+            toggle(id) {
+                const index = getIndex(id);
+                if (index === undefined) return false;
+                const fieldIdx = Math.floor(index / 32);
+                const bitIdx = index % 32;
+                setFieldValue(fieldIdx, getFieldValue(fieldIdx) ^ (1 << bitIdx));
+                return true;
+            },
+
+            // Get array of all set IDs (strings if enumMap exists, otherwise indices)
+            toArray() {
+                const result = [];
+                for (let i = 0; i < bitCount; i++) {
+                    const fieldIdx = Math.floor(i / 32);
+                    const bitIdx = i % 32;
+                    if ((getFieldValue(fieldIdx) & (1 << bitIdx)) !== 0) {
+                        result.push(enumMap ? enumMap.toValue[i] : i);
+                    }
+                }
+                return result;
+            },
+
+            // Clear all bits
+            clear() {
+                for (let i = 0; i < fieldCount; i++) {
+                    setFieldValue(i, 0);
+                }
+            },
+
+            // For JSON serialization - returns raw numeric value(s)
+            toJSON() {
+                if (fieldCount === 1) {
+                    return getFieldValue(0);
+                }
+                const arr = [];
+                for (let i = 0; i < fieldCount; i++) {
+                    arr[i] = getFieldValue(i);
+                }
+                return arr;
+            }
+        };
+    }
+
+    /**
+     * Get a nested value from an object using dot notation path
+     */
+    _getNestedValue(obj, path) {
+        const parts = path.split('.');
+        let current = obj;
+        for (const part of parts) {
+            if (current === undefined || current === null) return undefined;
+            current = current[part];
+        }
+        return current;
+    }
+
+    // Service registry methods (delegated to GameServices)
+    register(key, method) {
+        this._services.register(key, method);
+    }
+
+    hasService(key) {
+        return this._services.has(key);
+    }
+
+    getService(key) {
+        if(!this._services.has(key)){
+            console.log('service not found!', key);
+        }
+        return this._services.get(key);
+    }
+
+    /**
+     * Cache service dependencies on a class instance for fast access
+     * Used for systems, abilities, behavior nodes, and other configured classes
+     * Uses lazy caching with getters to ensure services are available when first accessed
+     * @param {Object} instance - The class instance to cache services on
+     */
+    getServiceDependencies(instance) {
+        if (!instance) return;
+
+        const ClassConstructor = instance.constructor;
+        const deps = ClassConstructor.serviceDependencies;
+
+        if (deps && deps.length > 0) {
+            // Initialize call object if it doesn't exist
+            if (!instance.call) {
+                instance.call = {};
+            }
+
+            // Use lazy caching with getters so services are resolved when first accessed
+            // This ensures all systems have registered their services before we try to access them
+            for (const serviceName of deps) {
+                const game = this;
+                let cachedService = null;
+                let cached = false;
+
+                Object.defineProperty(instance.call, serviceName, {
+                    get() {
+                        if (!cached) {
+                            cachedService = game.getService(serviceName);
+                            cached = true;
+                        }
+                        return cachedService;
+                    },
+                    configurable: true,
+                    enumerable: true
+                });
+            }
+        }
+    }
+
+    call(key, ...args) {
+        const result = this._services.call(key, ...args);
+        if (this.callLogger) {
+            this.callLogger.log(key, args, result, this.state.now);
+        }
+        return result;
+    }
+
+    listServices() {
+        return this._services.listServices();
+    }
+
+    async init(isServer = false, config) {
+        this.isServer = isServer;
+        if(!this.isServer){
+            document.addEventListener('keydown', (e) => {
+                this.triggerEvent('onKeyDown', e.key);
+            });
+        }
+        await this.loadGameScripts(config);
+    }
+
+    /**
+     * game.state IS the singleton `gameState` component: the accessor keeps the
+     * component slot pointed at the live object even when subclasses replace the
+     * whole state (e.g. ECSGame's `new GUTS.GameState(collections)`).
+     */
+    get state() {
+        // ECS storage is authoritative once the singleton entity exists;
+        // _state is only the pre-init buffer (and is kept pointing at the
+        // same object so either path yields the identical component).
+        const storage = this._gameStateStorage;
+        if (storage) {
+            const s = storage[this.gameStateEntityId];
+            if (s) return s;
+        }
+        return this._state;
+    }
+    set state(value) {
+        this._state = value;
+        if (this.gameStateEntityId && this.entityAlive[this.gameStateEntityId]) {
+            const storage = this._gameStateStorage || this._objectComponents.get('gameState');
+            if (storage) storage[this.gameStateEntityId] = value;
+        }
+    }
+
+    /**
+     * State fields that survive scene transitions. Everything else in the
+     * gameState component is reset to its configs/state.json default when a
+     * scene unloads — same lifecycle as every other ECS component.
+     *
+     * The base list covers engine/session plumbing; projects append flow
+     * carriers of their own (e.g. campaign progress) via
+     * configs.game.persistentStateFields.
+     */
+    static PERSISTENT_STATE_FIELDS = [
+        'now',                   // game clock — resetCurrentTime owns resetting it
+        'playerName',            // session identity
+        'playerId',
+        'onlinePlayers',         // set by matchmaking BEFORE the game scene loads
+        'gameMode',              // chosen in menu scenes, read by the game scene
+        'level',                 // set before scene switch; read during terrain load
+        'gameSeed',              // deterministic RNG seed may be set pre-switch
+        'isHeadlessSimulation',  // headless runners set this before switchScene
+        'skirmishConfig',        // match config may be staged before the scene loads
+        'lastGameResult'         // written at game end, shown after the switch
+    ];
+
+    /**
+     * Deep-cloned defaults for the gameState component (configs/state.json).
+     */
+    _gameStateDefaults() {
+        const defaults = this.getCollections?.()?.configs?.state;
+        return defaults ? JSON.parse(JSON.stringify(defaults)) : {};
+    }
+
+    /**
+     * Reset the gameState component for a scene change: persistent fields keep
+     * their values, every other field is removed and re-seeded from
+     * configs/state.json. Mutates IN PLACE so game.state, the ECS component
+     * slot, and any captured references all stay the same object.
+     */
+    resetGameStateForSceneChange() {
+        const s = this.state;
+        if (!s) return;
+        const persistent = new Set([
+            ...(this.constructor.PERSISTENT_STATE_FIELDS || BaseECSGame.PERSISTENT_STATE_FIELDS),
+            ...(this.gameConfig?.persistentStateFields || [])
+        ]);
+        for (const key of Object.keys(s)) {
+            if (!persistent.has(key)) delete s[key];
+        }
+        const defaults = this._gameStateDefaults();
+        for (const key of Object.keys(defaults)) {
+            if (!(key in s)) s[key] = defaults[key];
+        }
+    }
+
+    /**
+     * Create the singleton game-state entity and register game.state as its
+     * `gameState` component (same object — ECS owns it; game.state is an alias).
+     *
+     * Deliberately uses a RESERVED slot (MAX_ENTITIES - 1) instead of
+     * createEntity(): allocating a normal ID would shift every subsequent
+     * entity ID by one, which can reorder equidistant-target picks and break
+     * seeded-simulation comparability. The reserved slot keeps all gameplay
+     * entity IDs identical. (Consequence: the singleton is not returned by
+     * getAllEntities(), which scans 1..nextEntityId — intentional.)
+     */
+    _ensureGameStateEntity() {
+        const id = this.MAX_ENTITIES - 1;
+        this.gameStateEntityId = id;
+        if (!this.entityAlive[id]) {
+            this.entityAlive[id] = 1;
+            this.entityComponentMask.fill(0, id * this.MASK_UINT32_COUNT, (id + 1) * this.MASK_UINT32_COUNT);
+        }
+        const typeId = this._getComponentTypeId('gameState');
+        this._setComponentBit(id, typeId);
+        const storage = this._getObjectStorage('gameState');
+        storage[id] = this._state;
+        this._gameStateStorage = storage;
+
+        // Seed missing fields from configs/state.json so every game variant
+        // (client, server, headless) starts from the same data-defined
+        // defaults. Existing values win — the engine/subclass may have set
+        // fields before this runs.
+        const defaults = this._gameStateDefaults();
+        for (const key of Object.keys(defaults)) {
+            if (!(key in this._state)) this._state[key] = defaults[key];
+        }
+        return id;
+    }
+
+    async loadGameScripts(config, options = {}) {
+        this.collections = this.getCollections();
+        this.gameConfig = config ? config : (this.isServer ? this.collections.configs.server : this.collections.configs.game);
+
+        // Register game.state as the singleton gameState component (ECS-owned).
+        this._ensureGameStateEntity();
+
+        // Initialize SceneManager (handles lazy system instantiation)
+        this.sceneManager = new GUTS.SceneManager(this);
+
+        // Store available system types for lazy instantiation
+        this.availableSystemTypes = this.gameConfig.systems || [];
+        // Map to track instantiated systems by name
+        this.systemsByName = new Map();
+
+        // Load initial scene if configured (skip for editors that manage scene loading explicitly)
+        if (!options.skipInitialScene) {
+            await this.loadInitialScene();
+        }
+    }
+
+    /**
+     * Load the initial scene from game config
+     * @returns {Promise<void>}
+     */
+    async loadInitialScene() {
+        const initialScene = this.gameConfig.initialScene;
+        if (initialScene && this.sceneManager) {
+            await this.sceneManager.loadScene(initialScene);
+        } else {
+            console.warn('[BaseECSGame] No initialScene configured in game config');
+        }
+    }
+
+    /**
+     * Create a system instance
+     * Systems are always created fresh - they are destroyed on scene unload
+     * @param {string} systemName - The system class name
+     * @returns {Object|null} The system instance or null if not available
+     */
+    createSystem(systemName) {
+        // Check if this system type is available (skip check if no whitelist defined)
+        if (this.availableSystemTypes.length > 0 && !this.availableSystemTypes.includes(systemName)) {
+            console.warn(`[BaseECSGame] System '${systemName}' not in available systems list`);
+            console.warn(`[BaseECSGame] Available systems:`, this.availableSystemTypes);
+            return null;
+        }
+
+        // Check if the class exists
+        if (!GUTS[systemName]) {
+            console.error(`[BaseECSGame] System class '${systemName}' not found in GUTS`);
+            return null;
+        }
+
+        // Create the system
+        const params = { canvas: this.canvas };
+        const systemInst = new GUTS[systemName](this);
+        systemInst.enabled = false;
+
+        // Auto-register services from static services array
+        const SystemClass = GUTS[systemName];
+        if (SystemClass.services && Array.isArray(SystemClass.services)) {
+           for (const serviceName of SystemClass.services) {
+                if (typeof systemInst[serviceName] === 'function') {
+                    this.register(serviceName, systemInst[serviceName].bind(systemInst));
+                }
+            }
+        }
+
+
+        if (systemInst.init) {
+            systemInst.init(params);
+        }
+
+        // Add to tracking
+        this.systems.push(systemInst);
+        this.systemsByName.set(systemName, systemInst);
+
+        return systemInst;
+    }
+
+    /**
+     * Check if a system is available (defined in config)
+     * @param {string} systemName - The system class name
+     * @returns {boolean}
+     */
+    isSystemAvailable(systemName) {
+        return this.availableSystemTypes.includes(systemName);
+    }
+
+    /**
+     * Switch to a different scene
+     * @param {string} sceneName - Name of the scene to load
+     * @param {Object} [params] - Optional parameters to pass to the scene's systems via onSceneLoad
+     * @returns {Promise<void>}
+     */
+    async switchScene(sceneName, params = null) {
+        if (this.sceneManager) {
+            await this.sceneManager.switchScene(sceneName, params);
+        }
+    }
+
+    getEntityId() {
+        // Never recycle entity IDs - always use fresh IDs
+        // This prevents bugs where cached entity references (lastAttacker, target, etc.)
+        // accidentally point to completely different entities after ID reuse
+        // Memory cost is negligible - typed arrays grow as needed
+        if (this.nextEntityId >= this.MAX_ENTITIES) {
+            throw new Error(`Maximum entity limit (${this.MAX_ENTITIES}) reached`);
+        }
+        return this.nextEntityId++;
+    }
+
+    getCollections() {
+        return this.app.getCollections();
+    }
+
+    async update(deltaTime) {
+        if (!this.state.isPaused) {
+            // Start performance frame tracking
+            if (this.performanceMonitor) {
+                this.performanceMonitor.startFrame();
+            }
+
+            // Use tick count based timing to avoid floating-point accumulation errors
+            this.tickCount++;
+            // Use deltaTime from Engine (respects tickRate config)
+            // Round to 2 decimal places to avoid floating-point precision issues
+            // (e.g., 3 * 0.05 = 0.15000000000000002 in JavaScript)
+            this.currentTime = Math.round(this.tickCount * deltaTime * 100) / 100;
+
+            // Only update if a reasonable amount of time has passed
+            // const timeSinceLastUpdate = this.currentTime - this.lastTime;
+
+            // // Skip update if more than 1 second has passed (tab was inactive)
+            // if (timeSinceLastUpdate > 1000) {
+            //     this.lastTime = this.currentTime; // Reset timer without updating
+            //     return;
+            // }
+            this.state.now = this.currentTime;
+            // Use deltaTime from Engine (which respects tickRate config)
+            this.state.deltaTime = deltaTime;
+            this.deltaTime = deltaTime;
+
+            for (const system of this.systems) {
+                // Skip disabled systems
+                if (!system.enabled) continue;
+
+                const systemName = system.constructor.name;
+
+                // Start tracking this system
+                if (this.performanceMonitor) {
+                    this.performanceMonitor.startSystem(systemName);
+                }
+
+                if (system.update) {
+                    await system.update();
+                }
+
+                // End update tracking
+                if (this.performanceMonitor) {
+                    this.performanceMonitor.endSystemUpdate(systemName);
+                }
+
+                if(system.render && !this.isServer){
+                    // Start render tracking
+                    if (this.performanceMonitor) {
+                        this.performanceMonitor.startSystemRender(systemName);
+                    }
+
+                    await system.render();
+
+                    // End render tracking
+                    if (this.performanceMonitor) {
+                        this.performanceMonitor.endSystemRender(systemName);
+                    }
+                } else if (this.performanceMonitor) {
+                    // If no render, still need to end the system tracking
+                    this.performanceMonitor.startSystemRender(systemName);
+                    this.performanceMonitor.endSystemRender(systemName);
+                }
+            }
+
+            // Update performance overlay
+            if (this.performanceMonitor) {
+                this.performanceMonitor.updateOverlay();
+            }
+
+            this.postUpdate();
+        }
+    }
+
+    postUpdate() {
+       // this.desyncDebugger?.displaySync(false); 
+       
+        this.lastTime = this.currentTime;
+    
+        this.entitiesToAdd.forEach((entity) => this.addEntity(entity));        
+        this.entitiesToAdd = [];
+        
+    }
+
+    createEntity(setId) {
+        const id = setId !== undefined && setId !== null ? setId : this.getEntityId();
+        // Mark entity as alive
+        this.entityAlive[id] = 1;
+        // Clear component bitmask
+        // Clear all mask words for this entity
+        const maskBase = id * this.MASK_UINT32_COUNT;
+        for (let w = 0; w < this.MASK_UINT32_COUNT; w++) {
+            this.entityComponentMask[maskBase + w] = 0;
+        }
+        this.entityCount++;
+        // When using a specific ID, ensure nextEntityId is always higher
+        // This is critical for getEntitiesWith() which iterates up to nextEntityId
+        if (id >= this.nextEntityId) {
+            this.nextEntityId = id + 1;
+        }
+        return id;
+    }
+
+    destroyEntity(entityId) {
+        if (!this.entityAlive[entityId]) return;
+
+        // Notify systems
+        for (let i = 0; i < this.systems.length; i++) {
+            const system = this.systems[i];
+            if (system.entityDestroyed) {
+                system.entityDestroyed(entityId);
+            }
+        }
+
+        // Clear component data from object storage
+        for (const [componentType, storage] of this._objectComponents) {
+            if (storage[entityId] !== undefined) {
+                storage[entityId] = undefined;
+            }
+        }
+
+        // Clear cached proxies for this entity
+        for (const [, componentCache] of this._proxyCache) {
+            componentCache.delete(entityId);
+        }
+
+        // Note: TypedArray numeric data doesn't need clearing -
+        // the bitmask ensures it won't be read
+
+        // Mark entity as dead (no ID recycling - IDs are never reused)
+        this.entityAlive[entityId] = 0;
+        // Clear all mask words for this entity
+        const maskBase = entityId * this.MASK_UINT32_COUNT;
+        for (let w = 0; w < this.MASK_UINT32_COUNT; w++) {
+            this.entityComponentMask[maskBase + w] = 0;
+        }
+        this.entityCount--;
+
+        // Invalidate query cache - entity was destroyed, cached query results are stale
+        this._queryCache.clear();
+    }
+
+    hasEntity(entityId) {
+        return this.entityAlive[entityId] === 1;
+    }
+
+    addComponent(entityId, componentId, data) {
+        if (!this.entityAlive[entityId]) {
+            throw new Error(`Entity ${entityId} does not exist`);
+        }
+
+        const componentMethods = this.getComponents();
+        if (!componentMethods[componentId]) {
+            console.warn(`[BaseECSGame] No component factory for '${componentId}'. Add it to the components collection.`);
+        }
+
+        // Use factory function if available, otherwise use data directly as fallback
+        const componentData = componentMethods[componentId]
+            ? componentMethods[componentId](data)
+            : { ...data };
+
+        // Get component type ID and set bitmask
+        const typeId = this._getComponentTypeId(componentId);
+        this._setComponentBit(entityId, typeId);
+
+        // Set up storage on first encounter (analyzes schema for numeric optimization)
+        const schema = this.getComponentSchema( componentId);
+        const enumMap = this.getEnumMap(componentId);
+        if (schema) {
+            this._setupComponentStorage(componentId, schema, enumMap);
+        }
+
+        // Check if this is a numeric component (use TypedArrays) or object component
+        const componentInfo = this._numericComponentInfo.get(componentId);
+        if (componentInfo && componentInfo.isNumeric && schema) {
+            // Store in TypedArrays
+            this._writeNumericComponent(componentId, entityId, componentData, schema);
+        } else {
+            // Store in object storage (indexed by entity ID)
+            const storage = this._getObjectStorage(componentId);
+            storage[entityId] = componentData;
+        }
+
+        // Invalidate query cache - component was added, cached query results are stale
+        this._queryCache.clear();
+    }
+
+    /**
+     * OPTIMIZATION: Add multiple components at once with single cache invalidation
+     * @param {*} entityId - Entity ID
+     * @param {Object} componentsData - Object mapping componentId -> data
+     */
+    addComponents(entityId, componentsData) {
+        if (!this.entityAlive[entityId]) {
+            throw new Error(`Entity ${entityId} does not exist`);
+        }
+
+        const componentMethods = this.getComponents();
+
+        for (const [componentId, data] of Object.entries(componentsData)) {
+            // Use factory function if available, otherwise use data directly
+            const componentData = componentMethods[componentId]
+                ? componentMethods[componentId](data)
+                : { ...data };
+
+            // Get component type ID and set bitmask
+            const typeId = this._getComponentTypeId(componentId);
+            this._setComponentBit(entityId, typeId);
+
+            // Set up storage on first encounter (analyzes schema for numeric optimization)
+            const schema = this.getComponentSchema( componentId);
+            const enumMap = this.getEnumMap(componentId);
+            if (schema) {
+                this._setupComponentStorage(componentId, schema, enumMap);
+            }
+
+            // Check if this is a numeric component (use TypedArrays) or object component
+            const componentInfo = this._numericComponentInfo.get(componentId);
+            if (componentInfo && componentInfo.isNumeric && schema) {
+                // Store in TypedArrays
+                this._writeNumericComponent(componentId, entityId, componentData, schema);
+            } else {
+                // Store in object storage
+                const storage = this._getObjectStorage(componentId);
+                storage[entityId] = componentData;
+            }
+        }
+
+        // Single cache invalidation for all components
+        this._queryCache.clear();
+    }
+
+    removeComponent(entityId, componentType) {
+        if (!this.entityAlive[entityId]) return null;
+
+        const component = this.getComponent(entityId, componentType);
+        if (component === undefined) return null;
+
+        // Clear bitmask
+        const typeId = this._componentTypeId.get(componentType);
+        if (typeId !== undefined) {
+            this._clearComponentBit(entityId, typeId);
+        }
+
+        // Clear object storage
+        const storage = this._objectComponents.get(componentType);
+        if (storage) {
+            storage[entityId] = undefined;
+        }
+
+        // Clear cached proxy for this entity+component
+        const componentCache = this._proxyCache.get(componentType);
+        if (componentCache) {
+            componentCache.delete(entityId);
+        }
+
+        // Invalidate query cache - component was removed, cached query results are stale
+        this._queryCache.clear();
+
+        return component;
+    }
+
+    getComponent(entityId, componentType) {
+        // Fast path: check bitmask first
+        const typeId = this._componentTypeId.get(componentType);
+        if (typeId === undefined) return undefined;
+        if (!this._hasComponentBit(entityId, typeId)) return undefined;
+
+        // Check if this is a numeric component (stored in TypedArrays)
+        const componentInfo = this._numericComponentInfo.get(componentType);
+        if (componentInfo && componentInfo.isNumeric && componentInfo.schema) {
+            // Use original schema to preserve $fixedArray info for array proxy creation
+            const schema = componentInfo.originalSchema || componentInfo.schema;
+            return this._readNumericComponent(componentType, entityId, schema);
+        }
+
+        // Get from object storage
+        const storage = this._objectComponents.get(componentType);
+        return storage ? storage[entityId] : undefined;
+    }
+
+    /**
+     * Serialize a component for network sync
+     * Uses getComponent (which returns proxies with toJSON support)
+     * Returns a plain object suitable for JSON serialization
+     */
+    serializeComponent(entityId, componentType) {
+        const component = this.getComponent(entityId, componentType);
+        if (!component) return null;
+        // JSON.parse(JSON.stringify) converts proxy to plain object
+        // The proxy's toJSON methods handle $fixedArray serialization
+        return JSON.parse(JSON.stringify(component));
+    }
+
+    /**
+     * Get ECS data for network sync
+     * @param {boolean} fullSync - If true, sends full state and resets delta tracking.
+     *                             If false, sends only changes since last sync.
+     * Returns sparse format to minimize payload size
+     * Format: {
+     *   fullSync: boolean,  // true if this is a full state sync
+     *   entityAlive: { entityId: 1, ... },  // sparse: only alive entities (or changed)
+     *   entityDead: [entityId, ...],  // only in delta: entities that died since last sync
+     *   entityComponentMask: { entityId: [w0, w1, w2, w3, w4, w5, w6, w7], ... },  // sparse: 8 Uint32s for 256 component types
+     *   numericArrays: { key: { entityId: value, ... } },  // sparse: only non-zero/non-null values (or changed)
+     *   objectComponents: { componentType: { entityId: data } },
+     *   nextEntityId: number
+     * }
+     */
+    getECSData(fullSync = true) {
+        const maxEntity = this.nextEntityId;
+        const lastState = this._lastSyncedState;
+
+        // If fullSync or no previous state, send everything
+        if (fullSync || !lastState) {
+            const result = this._getFullECSData(maxEntity);
+            result.fullSync = true;
+            // Store current state for future delta calculations
+            this._lastSyncedState = this._captureStateSnapshot(maxEntity);
+            return result;
+        }
+
+        // Delta sync - only send what changed
+        return this._getDeltaECSData(maxEntity, lastState);
+    }
+
+    /**
+     * Get full ECS state (sparse format)
+     */
+    _getFullECSData(maxEntity) {
+        const result = {
+            nextEntityId: this.nextEntityId,
+            entityAlive: {},
+            entityComponentMask: {},
+            numericArrays: {},
+            objectComponents: {}
+        };
+
+        // Sparse entityAlive - only include alive entities (value = 1)
+        for (let i = 0; i < maxEntity; i++) {
+            if (this.entityAlive[i] === 1) {
+                result.entityAlive[i] = 1;
+            }
+        }
+
+        // Sparse entityComponentMask - only include entities with components
+        // Stored as array of 8 Uint32 values for 256 component types
+        for (let i = 0; i < maxEntity; i++) {
+            const maskBase = i * this.MASK_UINT32_COUNT;
+            let hasAnyBit = false;
+            for (let w = 0; w < this.MASK_UINT32_COUNT; w++) {
+                if (this.entityComponentMask[maskBase + w] !== 0) {
+                    hasAnyBit = true;
+                    break;
+                }
+            }
+            if (hasAnyBit) {
+                const maskArray = [];
+                for (let w = 0; w < this.MASK_UINT32_COUNT; w++) {
+                    maskArray.push(this.entityComponentMask[maskBase + w]);
+                }
+                result.entityComponentMask[i] = maskArray;
+            }
+        }
+
+        // Include numeric arrays in sparse format (only non-zero, non-null values)
+        // ALSO include zeros that changed FROM non-zero (to ensure clients reset them)
+        // Skip client-only components
+        // IMPORTANT: Only include entities that are alive AND have the component bit set
+        const lastState = this._lastSyncedState;
+        for (const [key, arr] of this._numericArrays) {
+            // key format is "componentType.fieldPath" - extract component type
+            const componentType = key.split('.')[0];
+            if (this._clientOnlyComponents.has(componentType)) {
+                continue;  // Skip client-only components
+            }
+
+            // Get component type ID for bit checking
+            const typeId = this._componentTypeId.get(componentType);
+
+            const lastArr = lastState?.numericArrays?.get(key);
+            const lastMaxEntity = lastState?.nextEntityId || 0;
+            const sparse = {};
+            for (let i = 0; i < maxEntity; i++) {
+                // Skip if entity doesn't have this component (check bitmask)
+                if (typeId !== undefined && !this._hasComponentBit(i, typeId)) continue;
+
+                const val = arr[i];
+                // Only check lastArr within its bounds
+                const lastVal = (lastArr && i < lastMaxEntity) ? lastArr[i] : 0;
+                // Include non-zero values
+                // Also include zeros if they were previously non-zero (value changed to 0)
+                if (val !== 0 || (lastVal !== 0 && val === 0)) {
+                    sparse[i] = this._toSyncValue(val);
+                }
+            }
+            // Only include if there are any values
+            if (Object.keys(sparse).length > 0) {
+                result.numericArrays[key] = sparse;
+            }
+        }
+
+        // Include object components - skip client-only
+        for (const [componentType, storage] of this._objectComponents) {
+            if (this._clientOnlyComponents.has(componentType)) {
+                continue;
+            }
+
+            const componentData = {};
+            for (let i = 0; i < maxEntity; i++) {
+                if (storage[i] !== undefined) {
+                    componentData[i] = storage[i];
+                }
+            }
+            if (Object.keys(componentData).length > 0) {
+                result.objectComponents[componentType] = componentData;
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Capture a snapshot of current state for delta comparison
+     */
+    _captureStateSnapshot(maxEntity) {
+        const snapshot = {
+            nextEntityId: this.nextEntityId,
+            entityAlive: new Uint8Array(maxEntity),
+            entityComponentMask: new Uint32Array(maxEntity * this.MASK_UINT32_COUNT),
+            numericArrays: new Map(),
+            objectComponents: new Map()
+        };
+
+        // Copy entityAlive
+        snapshot.entityAlive.set(this.entityAlive.subarray(0, maxEntity));
+
+        // Copy entityComponentMask
+        snapshot.entityComponentMask.set(this.entityComponentMask.subarray(0, maxEntity * this.MASK_UINT32_COUNT));
+
+        // Copy numeric arrays
+        for (const [key, arr] of this._numericArrays) {
+            snapshot.numericArrays.set(key, new Float32Array(arr.subarray(0, maxEntity)));
+        }
+
+        // Deep copy object components
+        for (const [componentType, storage] of this._objectComponents) {
+            const copy = new Array(maxEntity);
+            for (let i = 0; i < maxEntity; i++) {
+                if (storage[i] !== undefined) {
+                    copy[i] = JSON.parse(JSON.stringify(storage[i]));
+                }
+            }
+            snapshot.objectComponents.set(componentType, copy);
+        }
+
+        return snapshot;
+    }
+
+    /**
+     * Get delta ECS data - only changes since last sync
+     */
+    _getDeltaECSData(maxEntity, lastState) {
+        const result = {
+            fullSync: false,
+            nextEntityId: this.nextEntityId,
+            entityAlive: {},
+            entityDead: [],
+            entityComponentMask: {},
+            numericArrays: {},
+            objectComponents: {}
+        };
+
+        const lastMaxEntity = lastState.nextEntityId;
+
+        // Check entityAlive changes
+        for (let i = 0; i < maxEntity; i++) {
+            const current = this.entityAlive[i];
+            const previous = i < lastMaxEntity ? lastState.entityAlive[i] : 0;
+
+            if (current !== previous) {
+                if (current === 1) {
+                    result.entityAlive[i] = 1;  // Entity became alive
+                } else {
+                    result.entityDead.push(i);  // Entity died
+                }
+            }
+        }
+
+        // Check entityComponentMask changes (8 Uint32s per entity for 256 component types)
+        for (let i = 0; i < maxEntity; i++) {
+            const maskBase = i * this.MASK_UINT32_COUNT;
+            const lastMaskBase = i * this.MASK_UINT32_COUNT;
+            let hasChanged = false;
+
+            for (let w = 0; w < this.MASK_UINT32_COUNT; w++) {
+                const current = this.entityComponentMask[maskBase + w];
+                const prev = (i < lastMaxEntity) ? lastState.entityComponentMask[lastMaskBase + w] : 0;
+                if (current !== prev) {
+                    hasChanged = true;
+                    break;
+                }
+            }
+
+            if (hasChanged) {
+                const maskArray = [];
+                for (let w = 0; w < this.MASK_UINT32_COUNT; w++) {
+                    maskArray.push(this.entityComponentMask[maskBase + w]);
+                }
+                result.entityComponentMask[i] = maskArray;
+            }
+        }
+
+        // Check numeric array changes - skip client-only components
+        // IMPORTANT: Only include entities that are alive AND have the component bit set
+        for (const [key, arr] of this._numericArrays) {
+            const componentType = key.split('.')[0];
+            if (this._clientOnlyComponents.has(componentType)) {
+                continue;
+            }
+
+            // Get component type ID for bit checking
+            const typeId = this._componentTypeId.get(componentType);
+
+            const lastArr = lastState.numericArrays.get(key);
+            const sparse = {};
+
+            for (let i = 0; i < maxEntity; i++) {
+                // Skip if entity doesn't have this component (check bitmask)
+                if (typeId !== undefined && !this._hasComponentBit(i, typeId)) continue;
+
+                const current = arr[i];
+                const previous = (lastArr && i < lastMaxEntity) ? lastArr[i] : 0;
+
+                if (current !== previous) {
+                    // Include the new value (even if 0 or -Infinity, since it changed)
+                    sparse[i] = this._toSyncValue(current);
+                }
+            }
+
+            if (Object.keys(sparse).length > 0) {
+                result.numericArrays[key] = sparse;
+            }
+        }
+
+        // Check object component changes - skip client-only
+        for (const [componentType, storage] of this._objectComponents) {
+            if (this._clientOnlyComponents.has(componentType)) {
+                continue;
+            }
+
+            const lastStorage = lastState.objectComponents.get(componentType);
+            const componentData = {};
+
+            for (let i = 0; i < maxEntity; i++) {
+                const current = storage[i];
+                const previous = lastStorage ? lastStorage[i] : undefined;
+
+                // Check if changed (simple JSON comparison)
+                const currentStr = current !== undefined ? JSON.stringify(current) : undefined;
+                const previousStr = previous !== undefined ? JSON.stringify(previous) : undefined;
+
+                if (currentStr !== previousStr) {
+                    if (current !== undefined) {
+                        componentData[i] = current;
+                    } else {
+                        // Mark as removed with null
+                        componentData[i] = null;
+                    }
+                }
+            }
+
+            if (Object.keys(componentData).length > 0) {
+                result.objectComponents[componentType] = componentData;
+            }
+        }
+
+        // Remove empty arrays/objects from result
+        if (result.entityDead.length === 0) delete result.entityDead;
+        if (Object.keys(result.entityAlive).length === 0) delete result.entityAlive;
+        if (Object.keys(result.entityComponentMask).length === 0) delete result.entityComponentMask;
+        if (Object.keys(result.numericArrays).length === 0) delete result.numericArrays;
+        if (Object.keys(result.objectComponents).length === 0) delete result.objectComponents;
+
+        // Update snapshot for next delta
+        this._lastSyncedState = this._captureStateSnapshot(maxEntity);
+
+        return result;
+    }
+
+    /**
+     * Reset delta tracking - call this when you want the next sync to be a full sync
+     */
+    resetSyncState() {
+        this._lastSyncedState = null;
+    }
+
+    /**
+     * Capture a checksum of the current ECS state for determinism validation.
+     * Used to verify that client and server simulations are in sync.
+     *
+     * The checksum includes:
+     * - All alive entity IDs
+     * - All component bitmasks
+     * - All numeric component data (TypedArrays)
+     * - Current tick count
+     *
+     * @returns {Object} { checksum: number, tickCount: number, entityCount: number }
+     */
+    captureStateChecksum() {
+        // Simple but effective hash function (djb2 variant)
+        let hash = 5381;
+        const addToHash = (value) => {
+            // Handle different value types
+            if (typeof value === 'number') {
+                // Convert to integer bits for consistent hashing
+                // Use DataView for proper float-to-int conversion
+                if (!this._checksumBuffer) {
+                    this._checksumBuffer = new ArrayBuffer(8);
+                    this._checksumView = new DataView(this._checksumBuffer);
+                }
+                this._checksumView.setFloat64(0, value, true);
+                const low = this._checksumView.getUint32(0, true);
+                const high = this._checksumView.getUint32(4, true);
+                hash = ((hash << 5) + hash + low) >>> 0;
+                hash = ((hash << 5) + hash + high) >>> 0;
+            } else {
+                hash = ((hash << 5) + hash + (value | 0)) >>> 0;
+            }
+        };
+
+        const maxEntity = this.nextEntityId;
+
+        // Hash tick count for temporal sync verification
+        addToHash(this.tickCount);
+
+        // Hash all alive entities and their component masks
+        for (let entityId = 1; entityId < maxEntity; entityId++) {
+            if (!this.entityAlive[entityId]) continue;
+
+            addToHash(entityId);
+            const maskBase = entityId * this.MASK_UINT32_COUNT;
+            for (let w = 0; w < this.MASK_UINT32_COUNT; w++) {
+                addToHash(this.entityComponentMask[maskBase + w]);
+            }
+        }
+
+        // Hash all numeric component data (deterministic order via sorted keys)
+        const sortedKeys = Array.from(this._numericArrays.keys()).sort();
+        for (const key of sortedKeys) {
+            // Skip client-only components
+            const componentType = key.split('.')[0];
+            if (this._clientOnlyComponents.has(componentType)) continue;
+
+            const arr = this._numericArrays.get(key);
+            for (let entityId = 1; entityId < maxEntity; entityId++) {
+                if (!this.entityAlive[entityId]) continue;
+                // Only hash if entity has this component
+                const typeId = this._componentTypeId.get(componentType);
+                if (typeId !== undefined && this._hasComponentBit(entityId, typeId)) {
+                    addToHash(arr[entityId]);
+                }
+            }
+        }
+
+        return {
+            checksum: hash,
+            tickCount: this.tickCount,
+            entityCount: this.entityCount
+        };
+    }
+
+    /**
+     * Compare two state checksums for determinism validation.
+     * Logs detailed info if mismatch detected.
+     *
+     * @param {Object} localState - Local checksum from captureStateChecksum()
+     * @param {Object} remoteState - Remote checksum from captureStateChecksum()
+     * @returns {boolean} True if states match, false if desync detected
+     */
+    validateStateSync(localState, remoteState) {
+        if (localState.tickCount !== remoteState.tickCount) {
+            console.warn(`[Desync] Tick mismatch: local=${localState.tickCount}, remote=${remoteState.tickCount}`);
+            return false;
+        }
+
+        if (localState.entityCount !== remoteState.entityCount) {
+            console.warn(`[Desync] Entity count mismatch at tick ${localState.tickCount}: local=${localState.entityCount}, remote=${remoteState.entityCount}`);
+            return false;
+        }
+
+        if (localState.checksum !== remoteState.checksum) {
+            console.warn(`[Desync] State checksum mismatch at tick ${localState.tickCount}: local=${localState.checksum}, remote=${remoteState.checksum}`);
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Apply ECS data from server (handles both full sync and delta sync)
+     */
+    applyECSData(data) {
+        // Check if this is a full sync or delta sync
+        if (data.fullSync !== false) {
+            this._applyFullECSData(data);
+        } else {
+            this._applyDeltaECSData(data);
+        }
+
+        // Common cleanup for both sync types
+        this._finalizeECSSync(data);
+    }
+
+    /**
+     * Apply full ECS sync - replaces all state
+     */
+    _applyFullECSData(data) {
+        const maxEntity = data.nextEntityId || this.nextEntityId;
+
+        // Clear and apply entity alive flags from sparse format
+        this.entityAlive.fill(0, 0, maxEntity);
+        if (data.entityAlive) {
+            for (const entityIdStr of Object.keys(data.entityAlive)) {
+                this.entityAlive[parseInt(entityIdStr, 10)] = 1;
+            }
+        }
+
+        // Build bitmask for client-only components to preserve (8 Uint32s for 256 component types)
+        const clientOnlyMask = new Uint32Array(this.MASK_UINT32_COUNT);
+        for (const componentType of this._clientOnlyComponents) {
+            const typeId = this._componentTypeId.get(componentType);
+            if (typeId !== undefined) {
+                const wordIndex = Math.floor(typeId / 32);
+                const bit = typeId % 32;
+                clientOnlyMask[wordIndex] |= (1 << bit);
+            }
+        }
+
+        // Apply component masks from sparse format, preserving client-only component bits
+        for (let i = 0; i < maxEntity; i++) {
+            const maskBase = i * this.MASK_UINT32_COUNT;
+            // Preserve client-only bits from current mask, clear the rest
+            for (let w = 0; w < this.MASK_UINT32_COUNT; w++) {
+                const preserved = this.entityComponentMask[maskBase + w] & clientOnlyMask[w];
+                this.entityComponentMask[maskBase + w] = preserved;
+            }
+        }
+        if (data.entityComponentMask) {
+            for (const [entityIdStr, mask] of Object.entries(data.entityComponentMask)) {
+                const entityId = parseInt(entityIdStr, 10);
+                const maskBase = entityId * this.MASK_UINT32_COUNT;
+                // Merge server mask with preserved client-only bits
+                // Handle both old format (2 elements) and new format (8 elements)
+                const maskLen = Math.min(mask.length, this.MASK_UINT32_COUNT);
+                for (let w = 0; w < maskLen; w++) {
+                    this.entityComponentMask[maskBase + w] |= mask[w];
+                }
+            }
+        }
+
+        // Apply numeric arrays - only clear/replace arrays that server sends
+        // Skip client-only components even if server sends them (backwards compatibility)
+        for (const [key, sparse] of Object.entries(data.numericArrays || {})) {
+            const componentType = key.split('.')[0];
+            if (this._clientOnlyComponents.has(componentType)) {
+                continue;  // Don't apply client-only components from server
+            }
+
+            let arr = this._numericArrays.get(key);
+            if (!arr) {
+                arr = new Float32Array(this.MAX_ENTITIES);
+                this._numericArrays.set(key, arr);
+            }
+            // Clear this specific array before applying server data
+            arr.fill(0, 0, maxEntity);
+            // Apply server values
+            for (const [entityIdStr, value] of Object.entries(sparse)) {
+                arr[parseInt(entityIdStr, 10)] = this._fromSyncValue(value);
+            }
+        }
+
+        // Apply object components - only clear/replace components that server sends
+        // Skip client-only components
+        for (const [componentType, componentData] of Object.entries(data.objectComponents || {})) {
+            if (this._clientOnlyComponents.has(componentType)) {
+                continue;
+            }
+
+            const storage = this._getObjectStorage(componentType);
+            // Clear this specific component type before applying server data
+            for (let i = 0; i < maxEntity; i++) {
+                storage[i] = undefined;
+            }
+            // Apply server values
+            for (const [entityIdStr, value] of Object.entries(componentData)) {
+                storage[parseInt(entityIdStr, 10)] = value;
+            }
+        }
+    }
+
+    /**
+     * Apply delta ECS sync - only applies changes
+     */
+    _applyDeltaECSData(data) {
+        // Apply entity deaths
+        if (data.entityDead) {
+            for (const entityId of data.entityDead) {
+                this.entityAlive[entityId] = 0;
+                // Clear all mask words for dead entity
+                const maskBase = entityId * this.MASK_UINT32_COUNT;
+                for (let w = 0; w < this.MASK_UINT32_COUNT; w++) {
+                    this.entityComponentMask[maskBase + w] = 0;
+                }
+            }
+        }
+
+        // Apply new/changed alive entities
+        if (data.entityAlive) {
+            for (const entityIdStr of Object.keys(data.entityAlive)) {
+                this.entityAlive[parseInt(entityIdStr, 10)] = 1;
+            }
+        }
+
+        // Apply component mask changes, preserving client-only component bits
+        if (data.entityComponentMask) {
+            // Build bitmask for client-only components to preserve (8 Uint32s for 256 component types)
+            const clientOnlyMask = new Uint32Array(this.MASK_UINT32_COUNT);
+            for (const componentType of this._clientOnlyComponents) {
+                const typeId = this._componentTypeId.get(componentType);
+                if (typeId !== undefined) {
+                    const wordIndex = Math.floor(typeId / 32);
+                    const bit = typeId % 32;
+                    clientOnlyMask[wordIndex] |= (1 << bit);
+                }
+            }
+
+            for (const [entityIdStr, mask] of Object.entries(data.entityComponentMask)) {
+                const entityId = parseInt(entityIdStr, 10);
+                const maskBase = entityId * this.MASK_UINT32_COUNT;
+                // Handle both old format (2 elements) and new format (8 elements)
+                const maskLen = Math.min(mask.length, this.MASK_UINT32_COUNT);
+                for (let w = 0; w < maskLen; w++) {
+                    // Preserve client-only bits, apply server bits
+                    const preserved = this.entityComponentMask[maskBase + w] & clientOnlyMask[w];
+                    this.entityComponentMask[maskBase + w] = mask[w] | preserved;
+                }
+            }
+        }
+
+        // Apply numeric array changes (only changed values)
+        // Skip client-only components
+        for (const [key, sparse] of Object.entries(data.numericArrays || {})) {
+            const componentType = key.split('.')[0];
+            if (this._clientOnlyComponents.has(componentType)) {
+                continue;
+            }
+
+            let arr = this._numericArrays.get(key);
+            if (!arr) {
+                arr = new Float32Array(this.MAX_ENTITIES);
+                this._numericArrays.set(key, arr);
+            }
+            for (const [entityIdStr, value] of Object.entries(sparse)) {
+                arr[parseInt(entityIdStr, 10)] = this._fromSyncValue(value);
+            }
+        }
+
+        // Apply object component changes - skip client-only
+        for (const [componentType, componentData] of Object.entries(data.objectComponents || {})) {
+            if (this._clientOnlyComponents.has(componentType)) {
+                continue;
+            }
+
+            const storage = this._getObjectStorage(componentType);
+            for (const [entityIdStr, value] of Object.entries(componentData)) {
+                const entityId = parseInt(entityIdStr, 10);
+                if (value === null) {
+                    // null means removed
+                    storage[entityId] = undefined;
+                } else {
+                    storage[entityId] = value;
+                }
+            }
+        }
+    }
+
+    /**
+     * Finalize ECS sync - common cleanup for both full and delta
+     */
+    _finalizeECSSync(data) {
+        // Sync entity ID counter
+        if (data.nextEntityId !== undefined) {
+            this.nextEntityId = data.nextEntityId;
+        }
+
+        // Clear all cached proxies since data has been overwritten
+        for (const [, componentCache] of this._proxyCache) {
+            componentCache.clear();
+        }
+    }
+
+    /**
+     * Update specific fields of a component
+     * For numeric components (TypedArray storage), this is the only way to persist changes
+     * For object components, this also works (direct mutation still works for those)
+     * @param {number} entityId
+     * @param {string} componentType
+     * @param {Object} updates - Object with field updates, e.g. { current: 50 } or { 'nested.field': 10 }
+     */
+    updateComponent(entityId, componentType, updates) {
+        const typeId = this._componentTypeId.get(componentType);
+        if (typeId === undefined) return;
+        if (!this._hasComponentBit(entityId, typeId)) return;
+
+        const componentInfo = this._numericComponentInfo.get(componentType);
+        if (componentInfo && componentInfo.isNumeric) {
+            // Write to TypedArrays (convert null to storage sentinel)
+            for (const fieldPath in updates) {
+                this._setNumericField(componentType, entityId, fieldPath, this._toStorageValue(updates[fieldPath]));
+            }
+        } else {
+            // Update object storage
+            const storage = this._objectComponents.get(componentType);
+            if (storage && storage[entityId]) {
+                for (const fieldPath in updates) {
+                    if (fieldPath.includes('.')) {
+                        // Handle nested paths
+                        this._setNestedValue(storage[entityId], fieldPath, updates[fieldPath]);
+                    } else {
+                        storage[entityId][fieldPath] = updates[fieldPath];
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Set a nested value in an object using dot notation path
+     */
+    _setNestedValue(obj, path, value) {
+        const parts = path.split('.');
+        let current = obj;
+        for (let i = 0; i < parts.length - 1; i++) {
+            if (current[parts[i]] === undefined) {
+                current[parts[i]] = {};
+            }
+            current = current[parts[i]];
+        }
+        current[parts[parts.length - 1]] = value;
+    }
+
+    hasComponent(entityId, componentType) {
+        const typeId = this._componentTypeId.get(componentType);
+        if (typeId === undefined) return false;
+        return this._hasComponentBit(entityId, typeId);
+    }
+
+    getEntitiesWith(...componentTypes) {
+        // Create cache key from component types
+        const queryKey = componentTypes.join(',');
+
+        // Get or create reusable result array for this query
+        // This avoids allocations - each unique query gets one array that's reused forever
+        let result = this._queryCache.get(queryKey);
+        if (!result) {
+            result = [];
+            this._queryCache.set(queryKey, result);
+        }
+        result.length = 0;  // Clear without deallocating (keeps underlying buffer)
+
+        // Build query bitmask from component types (8 Uint32s for 256 component types)
+        const queryMask = new Uint32Array(this.MASK_UINT32_COUNT);
+        for (const componentType of componentTypes) {
+            const typeId = this._componentTypeId.get(componentType);
+            if (typeId === undefined) {
+                // Component type doesn't exist yet, no entities can have it
+                return result;  // Return empty reusable array
+            }
+            const wordIndex = Math.floor(typeId / 32);
+            const bit = typeId % 32;
+            queryMask[wordIndex] |= (1 << bit);
+        }
+
+        // Scan all entities using bitmask matching
+        // This is cache-friendly because we iterate contiguously through TypedArrays
+        const alive = this.entityAlive;
+        const masks = this.entityComponentMask;
+        const maxId = this.nextEntityId;
+        const maskCount = this.MASK_UINT32_COUNT;
+
+        for (let entityId = 1; entityId < maxId; entityId++) {
+            // Skip dead entities
+            if (!alive[entityId]) continue;
+
+            // Check if entity has all required components via bitmask
+            const maskBase = entityId * maskCount;
+            let match = true;
+            for (let w = 0; w < maskCount; w++) {
+                // Use >>>0 to ensure unsigned comparison (fixes bit 31 signed/unsigned mismatch)
+                if (((masks[maskBase + w] & queryMask[w]) >>> 0) !== queryMask[w]) {
+                    match = false;
+                    break;
+                }
+            }
+            if (match) {
+                result.push(entityId);
+            }
+        }
+
+        return result;
+    }
+    
+    /**
+     * Get all alive entity IDs
+     * @returns {number[]} Array of alive entity IDs
+     */
+    getAllEntities() {
+        const result = [];
+        const alive = this.entityAlive;
+        const maxId = this.nextEntityId;
+        for (let entityId = 1; entityId < maxId; entityId++) {
+            if (alive[entityId]) {
+                result.push(entityId);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Check if an entity exists
+     * @param {number} entityId
+     * @returns {boolean}
+     */
+    entityExists(entityId) {
+        return entityId > 0 && entityId < this.MAX_ENTITIES && this.entityAlive[entityId] === 1;
+    }
+
+    // ============================================
+    // HIGH-PERFORMANCE ITERATION API
+    // ============================================
+
+    /**
+     * Get the contiguous entity ID range for entities with a specific component.
+     * This is optimal when entities are created sequentially and not destroyed.
+     *
+     * @param {string} componentType - The component type to query
+     * @returns {{start: number, end: number, count: number, contiguous: boolean}}
+     *          start: first entity ID with component
+     *          end: last entity ID + 1 (exclusive, for loop compatibility)
+     *          count: number of entities with this component
+     *          contiguous: true if all entities in range have the component (no gaps)
+     *
+     * @example
+     * // Fast iteration when entities are contiguous:
+     * const range = game.getEntityRange('boidTag');
+     * const posX = game.getFieldArray('position', 'x');
+     * if (range.contiguous) {
+     *     for (let eid = range.start; eid < range.end; eid++) {
+     *         posX[eid] += 1; // Direct array access, no indirection
+     *     }
+     * }
+     */
+    getEntityRange(componentType) {
+        const typeId = this._componentTypeId.get(componentType);
+        if (typeId === undefined) {
+            return { start: 0, end: 0, count: 0, contiguous: true };
+        }
+
+        const alive = this.entityAlive;
+        const masks = this.entityComponentMask;
+        const maxId = this.nextEntityId;
+        const wordIndex = Math.floor(typeId / 32);
+        const bit = 1 << (typeId % 32);
+        const maskCount = this.MASK_UINT32_COUNT;
+
+        let start = 0;
+        let end = 0;
+        let count = 0;
+
+        // Find first and last entity with this component
+        for (let entityId = 1; entityId < maxId; entityId++) {
+            if (alive[entityId] && (masks[entityId * maskCount + wordIndex] & bit)) {
+                if (start === 0) start = entityId;
+                end = entityId + 1;
+                count++;
+            }
+        }
+
+        // Check if contiguous (no gaps)
+        const contiguous = (end - start) === count;
+
+        return { start, end, count, contiguous };
+    }
+
+    /**
+     * High-performance entity iteration without array allocation.
+     * Calls the callback for each entity with the specified components.
+     *
+     * @param {string|string[]} componentTypes - Component type(s) to query
+     * @param {function(entityId: number): void} callback - Called for each matching entity
+     *
+     * @example
+     * game.forEachEntity('boidTag', (eid) => {
+     *     posX[eid] += headX[eid] * speed;
+     * });
+     */
+    forEachEntity(componentTypes, callback) {
+        const types = Array.isArray(componentTypes) ? componentTypes : [componentTypes];
+
+        // Build query bitmask (8 Uint32s for 256 component types)
+        const queryMask = new Uint32Array(this.MASK_UINT32_COUNT);
+        for (const componentType of types) {
+            const typeId = this._componentTypeId.get(componentType);
+            if (typeId === undefined) return; // No entities can match
+            const wordIndex = Math.floor(typeId / 32);
+            const bit = typeId % 32;
+            queryMask[wordIndex] |= (1 << bit);
+        }
+
+        const alive = this.entityAlive;
+        const masks = this.entityComponentMask;
+        const maxId = this.nextEntityId;
+        const maskCount = this.MASK_UINT32_COUNT;
+
+        for (let entityId = 1; entityId < maxId; entityId++) {
+            if (!alive[entityId]) continue;
+            const maskBase = entityId * maskCount;
+            let match = true;
+            for (let w = 0; w < maskCount; w++) {
+                if ((masks[maskBase + w] & queryMask[w]) !== queryMask[w]) {
+                    match = false;
+                    break;
+                }
+            }
+            if (match) {
+                callback(entityId);
+            }
+        }
+    }
+
+    /**
+     * Iterate over a contiguous range of entities.
+     * Use this when you know entities were created sequentially and not destroyed.
+     * This is the fastest iteration method - no component checks, pure array access.
+     *
+     * @param {number} start - First entity ID (inclusive)
+     * @param {number} end - Last entity ID (exclusive)
+     * @param {function(entityId: number): void} callback
+     *
+     * @example
+     * const range = game.getEntityRange('boidTag');
+     * if (range.contiguous) {
+     *     game.forEachInRange(range.start, range.end, (eid) => {
+     *         posX[eid] += headX[eid] * speed;
+     *     });
+     * }
+     */
+    forEachInRange(start, end, callback) {
+        for (let entityId = start; entityId < end; entityId++) {
+            callback(entityId);
+        }
+    }
+
+    /**
+     * Get multiple field arrays at once for a component.
+     * More efficient than multiple getFieldArray calls.
+     *
+     * @param {string} componentType
+     * @param {...string} fieldPaths - Field paths to retrieve
+     * @returns {Float32Array[]} Array of TypedArrays in the same order as fieldPaths
+     *
+     * @example
+     * const [posX, posY, posZ] = game.getFields('position', 'x', 'y', 'z');
+     */
+    getFields(componentType, ...fieldPaths) {
+        return fieldPaths.map(fieldPath => {
+            const key = `${componentType}.${fieldPath}`;
+            return this._numericArrays.get(key);
+        });
+    }
+
+    /**
+     * Get count of alive entities
+     * @returns {number}
+     */
+    getEntityCount() {
+        return this.entityCount;
+    }
+
+    /**
+     * Get all component types for an entity
+     * @param {number} entityId
+     * @returns {string[]} Array of component type names
+     */
+    getEntityComponentTypes(entityId) {
+        if (!this.entityAlive[entityId]) return [];
+
+        const result = [];
+        const maskBase = entityId * this.MASK_UINT32_COUNT;
+
+        // Check all 256 possible component types (8 words x 32 bits)
+        for (let w = 0; w < this.MASK_UINT32_COUNT; w++) {
+            const mask = this.entityComponentMask[maskBase + w];
+            if (mask === 0) continue; // Skip empty words
+            for (let bit = 0; bit < 32; bit++) {
+                if (mask & (1 << bit)) {
+                    const typeId = w * 32 + bit;
+                    const name = this._componentTypeNames[typeId];
+                    if (name) result.push(name);
+                }
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Iterate over entities with specific components without allocating arrays
+     * Calls callback(entityId) for each matching entity
+     * @param {string[]} componentTypes - Component types to match
+     * @param {function} callback - Called with each matching entityId
+     */
+    forEachEntityWith(componentTypes, callback) {
+        // Build query bitmask (8 Uint32s for 256 component types)
+        const queryMask = new Uint32Array(this.MASK_UINT32_COUNT);
+        for (const componentType of componentTypes) {
+            const typeId = this._componentTypeId.get(componentType);
+            if (typeId === undefined) return; // No entities can match
+            const wordIndex = Math.floor(typeId / 32);
+            const bit = typeId % 32;
+            queryMask[wordIndex] |= (1 << bit);
+        }
+
+        const alive = this.entityAlive;
+        const masks = this.entityComponentMask;
+        const maxId = this.nextEntityId;
+        const maskCount = this.MASK_UINT32_COUNT;
+
+        for (let entityId = 1; entityId < maxId; entityId++) {
+            if (!alive[entityId]) continue;
+            const maskBase = entityId * maskCount;
+            let match = true;
+            for (let w = 0; w < maskCount; w++) {
+                if ((masks[maskBase + w] & queryMask[w]) !== queryMask[w]) {
+                    match = false;
+                    break;
+                }
+            }
+            if (match) {
+                callback(entityId);
+            }
+        }
+    }
+
+    /**
+     * Clear all entities and reset the ECS state
+     */
+    clearAllEntities() {
+        // Clear all object storage
+        for (const storage of this._objectComponents.values()) {
+            storage.fill(undefined);
+        }
+
+        // Reset TypedArrays
+        this.entityAlive.fill(0);
+        this.entityComponentMask.fill(0);
+
+        // Reset entity management
+        this.nextEntityId = 1;
+        this.entityCount = 0;
+
+        // Invalidate query cache
+        this._queryCache.clear();
+    }
+
+    triggerEvent(eventName, data) {
+        for (let i = 0; i < this.systems.length; i++) {
+            const system = this.systems[i];
+            if (system[eventName]) {
+                system[eventName](data);
+            }
+        }
+    }
+
+    gameOver() {
+        this.state.gameOver = true;
+    }
+
+    gameVictory() {
+        this.state.victory = true;
+    }
+
+    /**
+     * End the game with result data
+     * Sets phase to ended and triggers onGameEnd event for local handling
+     * Note: For online games, scenario systems should call broadcastGameEnd service first
+     * @param {Object} result - Game result data built by the scenario system
+     */
+    endGame(result) {
+        this.state.phase = this.enums?.gamePhase?.ended ?? 'ended';
+        this.triggerEvent('onGameEnd', result);
+    }
+
+    resetCurrentTime() {
+        this.state.now = 0;
+        this.lastTime = 0;
+        this.currentTime = 0;
+        this.tickCount = 0;
+    }
+
+    getComponents(){
+        if(!this.components){
+            this.components = this.componentGenerator.getComponents();
+        }
+        return this.components;
+    }
+
+    getComponentSchema(componentId) {
+        return this.componentGenerator.getSchema(componentId);
+    }
+
+    /**
+     * Get enum map with toIndex and toValue
+     * @param {string} enumName - The enum name (e.g., 'team', 'element', 'projectiles')
+     * @returns {Object} { toIndex: {string->number}, toValue: [number->string] }
+     */
+    getEnumMap(enumName) {
+        return this.componentGenerator.getEnumMap(enumName);
+    }
+
+    /**
+     * Get a collection item by numeric index
+     * @param {string} collectionName - The collection name (e.g., 'levels', 'units')
+     * @param {number} index - The numeric index
+     * @returns {Object|undefined} The collection item, or undefined if not found
+     */
+    getCollectionItem(collectionName, index) {
+        const enumMap = this.componentGenerator.getEnumMap(collectionName);
+        if (!enumMap?.toValue?.[index]) return undefined;
+        const key = enumMap.toValue[index];
+        return this.getCollections()[collectionName]?.[key];
+    }
+
+    /**
+     * Get a collection item key (string name) by numeric index
+     * @param {string} collectionName - The collection name (e.g., 'levels', 'units')
+     * @param {number} index - The numeric index
+     * @returns {string|undefined} The collection key, or undefined if not found
+     */
+    getCollectionKey(collectionName, index) {
+        const enumMap = this.componentGenerator.getEnumMap(collectionName);
+        return enumMap?.toValue?.[index];
+    }
+
+    /**
+     * Get all enums as a convenient lookup object
+     * Usage: const enums = game.getEnums();
+     *        components.team({ team: enums.team.left })
+     * @returns {Object} { team: { neutral: 0, hostile: 1, ... }, element: { ... }, ... }
+     */
+    getEnums() {
+        if (!this._enums) {
+            this._enums = this.componentGenerator.getEnums();
+        }
+        return this._enums;
+    }
+
+    /**
+     * Get reverse enum lookup (index → key)
+     * Usage: const reverseEnums = game.getReverseEnums();
+     *        const levelName = reverseEnums.levels[levelIndex];
+     * @returns {Object} { levels: { 0: 'level_1', 1: 'level_2' }, ... }
+     */
+    getReverseEnums() {
+        if (!this._reverseEnums) {
+            this._reverseEnums = this.componentGenerator.getReverseEnums();
+        }
+        return this._reverseEnums;
+    }
+
+    getUnitTypeDef(unitTypeComponent) {
+        if (!unitTypeComponent || unitTypeComponent.collection === -1 || unitTypeComponent.type === -1) {
+            return null;
+        }
+
+        const collections = this.getCollections();
+        const collectionEnumMap = this.getEnumMap('objectTypeDefinitions');
+        const collectionName = collectionEnumMap?.toValue?.[unitTypeComponent.collection];
+
+        if (!collectionName || !collections[collectionName]) {
+            return null;
+        }
+
+        const typeEnumMap = this.getEnumMap(collectionName);
+        const typeName = typeEnumMap?.toValue?.[unitTypeComponent.type];
+
+        if (!typeName) {
+            return null;
+        }
+
+        const def = collections[collectionName][typeName];
+        // Include resolved names for convenience
+        if (def) {
+            return {
+                ...def,
+                id: typeName,
+                collection: collectionName
+            };
+        }
+        return null;
+    }
+}
+
+
+// Assign to global.GUTS for server
+if (typeof global !== 'undefined' && global.GUTS) {
+    global.GUTS.BaseECSGame = BaseECSGame;
+}
+
+// ES6 exports for webpack bundling
+export default BaseECSGame;
+export { BaseECSGame };

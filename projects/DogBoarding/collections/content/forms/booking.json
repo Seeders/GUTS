@@ -1,0 +1,32 @@
+{
+  "title": "Booking",
+  "order": 11,
+  "fields": [
+    {
+      "name": "check_in",
+      "label": "Check in",
+      "type": "date",
+      "required": true,
+      "half": true
+    },
+    {
+      "name": "check_out",
+      "label": "Check out",
+      "type": "date",
+      "required": true,
+      "half": true
+    },
+    {
+      "name": "status",
+      "label": "Status",
+      "type": "select",
+      "optionsFrom": "bookingStatuses"
+    },
+    {
+      "name": "notes",
+      "label": "Notes",
+      "type": "textarea",
+      "rows": 2
+    }
+  ]
+}

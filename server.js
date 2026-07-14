@@ -62,6 +62,84 @@ app.use(cors({
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(express.json({ limit: '10mb' }));
 
+// ===== PROJECT BACKENDS =====
+
+/**
+ * A project may ship a backend by exporting `mount(app, { base })` from
+ * `projects/<Name>/backend.js`. We mount it under the same URL prefix the
+ * project's client is served from, so a project's API lives alongside its
+ * index.html and two projects can never collide over a route like /api.
+ *
+ * This runs before the static handler purely so a project can shadow a path if
+ * it needs to; static would fall through for API routes anyway.
+ */
+function mountProjectBackends() {
+    let projectNames = [];
+    try {
+        projectNames = fsSync.readdirSync(PROJS_DIR, { withFileTypes: true })
+            .filter(entry => entry.isDirectory())
+            .map(entry => entry.name);
+    } catch (error) {
+        console.error('Could not read the projects directory:', error.message);
+        return;
+    }
+
+    for (const projectName of projectNames) {
+        const backendPath = path.join(PROJS_DIR, projectName, 'backend.js');
+        if (!fsSync.existsSync(backendPath)) continue;
+
+        try {
+            const backend = require(backendPath);
+            if (typeof backend.mount !== 'function') {
+                console.warn(`${projectName}/backend.js has no mount() export; skipping.`);
+                continue;
+            }
+
+            const base = `/projects/${projectName}`;
+            const info = backend.mount(app, { base }) || {};
+            console.log(`Mounted ${projectName} backend at ${info.routes || base + '/api'}`);
+        } catch (error) {
+            // One broken project must not take the whole server down with it.
+            console.error(`Failed to mount ${projectName} backend:`, error.message);
+        }
+    }
+}
+
+mountProjectBackends();
+
+/**
+ * `secure` is a per-project storage category, a sibling of collections/:
+ *
+ *     projects/<Name>/secure/    databases, uploaded documents, anything private
+ *
+ * Any project gets one by creating the folder. Nothing inside is ever served:
+ * it is reachable only through that project's own authenticated routes. We
+ * serve the whole repo statically, so the door has to be shut here, before
+ * express.static gets a look at it.
+ *
+ * It sits outside collections/ on purpose — the build treats the folder
+ * structure under collections/ as the source of truth and inlines what it finds
+ * into the client bundle, so a "secure" collection would compile straight into
+ * the browser.
+ *
+ * For DogBoarding this folder holds the database and uploaded vet records,
+ * which carry client home addresses and phone numbers.
+ *
+ * Also denied: the multer scratch directory at /uploads (raw uploaded bytes;
+ * nothing fetches them by URL).
+ *
+ * NOT denied: /cache, which ImageManager legitimately fetches sprite atlases
+ * from (global/.../ImageManager.js fetches `/cache/${prefix}.json`).
+ */
+const PRIVATE_PATHS = /^\/uploads(\/|$)|^\/projects\/[^/]+\/(secure|node_modules)(\/|$)/;
+
+app.use((req, res, next) => {
+    if (PRIVATE_PATHS.test(req.path)) {
+        return res.status(403).json({ error: 'Forbidden.' });
+    }
+    next();
+});
+
 // Serve static files from the entire repo
 app.use(express.static(BASE_DIR, {
     setHeaders: (res, filePath) => {

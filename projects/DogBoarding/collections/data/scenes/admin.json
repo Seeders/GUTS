@@ -1,0 +1,8 @@
+{
+  "title": "Back office",
+  "description": "The staff console. Sub-sections come from the Admin Nav collection.",
+  "route": "/admin",
+  "page": "admin",
+  "interface": "admin",
+  "systems": []
+}

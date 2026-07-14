@@ -1,0 +1,20 @@
+{
+  "title": "Rates page",
+  "order": 2,
+  "heading": "Services & Rates",
+  "lede": "Straightforward pricing. Boarding is charged per night; the night you check out is not charged. Extras are only billed when you ask for them.",
+  "groupHeadings": {
+    "night": "Overnight boarding",
+    "day": "Daycare & per-day add-ons",
+    "hour": "Hourly",
+    "each": "Extras, one at a time"
+  },
+  "callout": {
+    "heading": "Multi-dog households",
+    "body": "Dogs from the same home share a suite at the sibling rate. If they would rather not share, we will not make them."
+  },
+  "cta": {
+    "label": "Register your dog",
+    "route": "/register"
+  }
+}

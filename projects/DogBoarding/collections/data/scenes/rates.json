@@ -1,0 +1,8 @@
+{
+  "title": "Services & Rates",
+  "description": "The public rate card, built from the Service Catalog collection.",
+  "route": "/services",
+  "page": "rates",
+  "interface": "public",
+  "systems": []
+}

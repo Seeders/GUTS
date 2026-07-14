@@ -1,0 +1,99 @@
+{
+  "title": "A dog on the intake form",
+  "order": 2,
+  "description": "Repeated once per dog. Vet records are attached per dog.",
+  "fields": [
+    {
+      "name": "name",
+      "label": "Name",
+      "type": "text",
+      "required": true,
+      "half": true
+    },
+    {
+      "name": "breed",
+      "label": "Breed",
+      "type": "text",
+      "half": true,
+      "placeholder": "Best guess is fine"
+    },
+    {
+      "name": "sex",
+      "label": "Sex",
+      "type": "select",
+      "half": true,
+      "options": [
+        {
+          "value": "",
+          "label": "—"
+        },
+        {
+          "value": "male",
+          "label": "Male"
+        },
+        {
+          "value": "female",
+          "label": "Female"
+        }
+      ]
+    },
+    {
+      "name": "birthdate",
+      "label": "Date of birth",
+      "type": "date",
+      "half": true
+    },
+    {
+      "name": "weight_lbs",
+      "label": "Weight (lbs)",
+      "type": "number",
+      "half": true,
+      "min": 0,
+      "step": "0.1"
+    },
+    {
+      "name": "color",
+      "label": "Colour / markings",
+      "type": "text",
+      "half": true
+    },
+    {
+      "name": "microchip",
+      "label": "Microchip number",
+      "type": "text",
+      "half": true
+    },
+    {
+      "name": "fixed",
+      "label": "Spayed or neutered",
+      "type": "checkbox"
+    },
+    {
+      "name": "feeding",
+      "label": "Feeding instructions",
+      "type": "textarea",
+      "rows": 2,
+      "placeholder": "How much, how often, and whether you are sending their own food."
+    },
+    {
+      "name": "medications",
+      "label": "Medications",
+      "type": "textarea",
+      "rows": 2,
+      "placeholder": "Name, dose, and when. Write \"none\" if none."
+    },
+    {
+      "name": "allergies",
+      "label": "Allergies",
+      "type": "textarea",
+      "rows": 2
+    },
+    {
+      "name": "behavior_notes",
+      "label": "Behaviour we should know about",
+      "type": "textarea",
+      "rows": 2,
+      "placeholder": "Resource guarding, dislikes men in hats, escape artist, terrified of thunder — the honest version helps us keep them safe."
+    }
+  ]
+}

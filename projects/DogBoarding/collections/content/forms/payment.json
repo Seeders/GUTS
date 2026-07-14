@@ -1,0 +1,38 @@
+{
+  "title": "Payment",
+  "order": 9,
+  "fields": [
+    {
+      "name": "amount",
+      "label": "Amount",
+      "type": "money",
+      "required": true,
+      "half": true
+    },
+    {
+      "name": "paid_on",
+      "label": "Received on",
+      "type": "date",
+      "half": true
+    },
+    {
+      "name": "method",
+      "label": "Method",
+      "type": "select",
+      "half": true,
+      "optionsFrom": "paymentMethods"
+    },
+    {
+      "name": "reference",
+      "label": "Reference",
+      "type": "text",
+      "placeholder": "Check number, last 4 digits, transaction id..."
+    },
+    {
+      "name": "notes",
+      "label": "Notes",
+      "type": "textarea",
+      "rows": 2
+    }
+  ]
+}

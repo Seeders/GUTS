@@ -1,0 +1,15 @@
+{
+  "title": "Checked in",
+  "order": 3,
+  "tone": "info",
+  "onSite": true,
+  "occupies": true,
+  "description": "The dog is here.",
+  "actions": [
+    {
+      "to": "checked_out",
+      "label": "← Check out",
+      "primary": true
+    }
+  ]
+}

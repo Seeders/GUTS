@@ -1,0 +1,10 @@
+{
+  "title": "Boarding - Standard Suite",
+  "order": 1,
+  "code": "BOARD-STD",
+  "unit": "night",
+  "price": 45,
+  "taxable": true,
+  "active": true,
+  "description": "Overnight boarding, standard kennel run."
+}

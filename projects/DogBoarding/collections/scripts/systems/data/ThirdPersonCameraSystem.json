@@ -1,0 +1,10 @@
+{
+  "filePath": "/projects/scripts/systems/js/ThirdPersonCameraSystem.js",
+  "fileName": "ThirdPersonCameraSystem",
+  "services": [
+    "setFollowTarget",
+    "getFollowTarget",
+    "getFacingAngle",
+    "getPitchAngle"
+  ]
+}

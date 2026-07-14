@@ -1,0 +1,10 @@
+{
+  "title": "Nail Trim",
+  "order": 9,
+  "code": "NAILS",
+  "unit": "each",
+  "price": 45,
+  "taxable": true,
+  "active": true,
+  "description": "Nail trim and file."
+}

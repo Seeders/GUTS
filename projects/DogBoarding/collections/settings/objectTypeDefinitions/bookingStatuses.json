@@ -1,0 +1,6 @@
+{
+  "id": "bookingStatuses",
+  "name": "Booking Statuses",
+  "singular": "bookingStatus",
+  "objectTypeCategory": "data"
+}

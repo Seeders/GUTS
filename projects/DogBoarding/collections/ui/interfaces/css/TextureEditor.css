@@ -1,0 +1,179 @@
+/* =============================================================================
+   TEXTURE EDITOR — rebuilt UI (Instrument / new-shell design language)
+   Layout: top toolbar · palette/color (left) | canvas (center).
+   Ids are load-bearing (TextureEditor.js binds at construction). The JS creates
+   the zoom status bar (.texture-editor__zoom-controls) and the transparency
+   checker inside the canvas parent (.tx__center) — do not author those.
+   ============================================================================= */
+
+.tx {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  background: var(--editor-bg-dark, #0b121c);
+  color: var(--editor-text-primary, #e7eef7);
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  overflow: hidden;
+}
+
+/* ---- Top toolbar ---- */
+.tx__toolbar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: var(--editor-bg-light, #16202f);
+  border-bottom: 1px solid var(--editor-border-color, #22303f);
+  flex-wrap: wrap;
+}
+.tx__tool-group { display: flex; align-items: center; gap: 5px; }
+.tx__tool-label {
+  font-family: var(--editor-font-mono, 'JetBrains Mono', monospace);
+  font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--editor-text-muted, #5e708a);
+  margin-right: 3px;
+}
+.tx__sep { width: 1px; height: 18px; background: var(--editor-border-color, #22303f); margin: 0 4px; }
+.tx__spacer { flex: 1 1 auto; }
+
+.tx__btn {
+  appearance: none; cursor: pointer;
+  font-family: var(--editor-font-mono, 'JetBrains Mono', monospace);
+  font-size: 11px; letter-spacing: 0.02em;
+  color: var(--editor-text-secondary, #90a2ba);
+  background: var(--editor-bg-medium, #111a27);
+  border: 1px solid var(--editor-border-color, #22303f);
+  border-radius: var(--editor-border-radius-sm, 4px);
+  padding: 4px 9px;
+  transition: var(--editor-transition, 0.15s);
+}
+.tx__btn:hover { color: var(--editor-text-primary, #e7eef7); border-color: var(--editor-border-color-hover, #35506e); }
+.tx__btn:disabled { opacity: 0.4; cursor: default; }
+.tx__btn--quiet { padding: 4px 7px; color: var(--editor-text-muted, #5e708a); }
+.tx__btn--primary {
+  color: #04231e; background: var(--editor-primary, #35e0c8);
+  border-color: var(--editor-primary, #35e0c8); font-weight: 600;
+}
+.tx__btn--primary:hover { filter: brightness(1.08); color: #04231e; }
+.tx__btn--block { display: block; width: 100%; }
+/* Active tool (JS toggles .active on .tx__tool) */
+.tx__tool.active {
+  color: var(--editor-primary, #35e0c8);
+  border-color: var(--editor-primary, #35e0c8);
+  background: var(--editor-cyan-dim, rgba(53, 224, 200, 0.14));
+  box-shadow: 0 0 10px -2px var(--editor-cyan-glow, rgba(53, 224, 200, 0.5));
+}
+
+/* Import = a button-styled label wrapping a hidden file input */
+.tx__import { display: inline-flex; align-items: center; }
+.tx__import input[type="file"] { display: none; }
+
+.tx__range { accent-color: var(--editor-primary, #35e0c8); width: 90px; }
+.tx__readout {
+  font-family: var(--editor-font-mono, 'JetBrains Mono', monospace);
+  font-size: 10.5px; color: var(--editor-primary, #35e0c8); min-width: 34px;
+}
+
+/* ---- Main split ---- */
+.tx__main { flex: 1 1 auto; min-height: 0; display: flex; }
+
+.tx__left {
+  flex: 0 0 224px;
+  display: flex; flex-direction: column; min-height: 0; overflow-y: auto;
+  background: var(--editor-bg-medium, #111a27);
+  border-right: 1px solid var(--editor-border-color, #22303f);
+}
+.tx__section { padding: 10px 10px 12px; border-bottom: 1px solid var(--editor-border-color, #22303f); }
+.tx__eyebrow {
+  font-family: var(--editor-font-mono, 'JetBrains Mono', monospace);
+  font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--editor-text-muted, #5e708a);
+  margin-bottom: 7px;
+  display: flex; align-items: center; gap: 6px;
+}
+.tx__eyebrow::before {
+  content: ""; width: 5px; height: 5px; border-radius: 1px;
+  background: var(--editor-primary, #35e0c8);
+  box-shadow: 0 0 6px var(--editor-cyan-glow, rgba(53, 224, 200, 0.5));
+}
+.tx__row { margin-top: 6px; }
+.tx__form-row { display: flex; align-items: center; gap: 7px; margin-bottom: 7px; }
+.tx__label {
+  flex: 0 0 52px;
+  font-family: var(--editor-font-mono, 'JetBrains Mono', monospace);
+  font-size: 10.5px; color: var(--editor-text-muted, #5e708a);
+}
+.tx__select {
+  width: 100%;
+  font-family: var(--editor-font-mono, 'JetBrains Mono', monospace); font-size: 11.5px;
+  color: var(--editor-text-primary, #e7eef7);
+  background: var(--editor-bg-dark, #0b121c);
+  border: 1px solid var(--editor-border-color, #22303f);
+  border-radius: var(--editor-border-radius-sm, 4px);
+  padding: 4px 7px; margin-bottom: 7px;
+}
+.tx__select:focus { outline: none; border-color: var(--editor-primary, #35e0c8); }
+.tx__color {
+  width: 100%; height: 26px; padding: 1px; cursor: pointer;
+  background: var(--editor-bg-dark, #0b121c);
+  border: 1px solid var(--editor-border-color, #22303f);
+  border-radius: var(--editor-border-radius-sm, 4px);
+}
+
+/* Swatch grid — children are JS-created .texture-editor__color-btn divs */
+.tx__swatches {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 3px;
+  margin-bottom: 4px;
+}
+.texture-editor__color-btn {
+  aspect-ratio: 1;
+  border-radius: 3px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  cursor: pointer;
+  transition: var(--editor-transition, 0.15s);
+}
+.texture-editor__color-btn:hover { transform: scale(1.12); }
+.texture-editor__color-btn.active {
+  border-color: var(--editor-primary, #35e0c8);
+  box-shadow: 0 0 0 2px var(--editor-primary, #35e0c8);
+}
+
+/* ---- Center canvas ---- */
+.tx__center {
+  flex: 1 1 auto; min-width: 0; position: relative; overflow: hidden;
+  background:
+    linear-gradient(var(--editor-grid-line, rgba(122, 152, 194, 0.06)) 1px, transparent 1px),
+    linear-gradient(90deg, var(--editor-grid-line, rgba(122, 152, 194, 0.06)) 1px, transparent 1px),
+    var(--editor-bg-dark, #0b121c);
+  background-size: 24px 24px, 24px 24px, auto;
+}
+#texture-canvas {
+  background-color: transparent;
+  image-rendering: pixelated;
+  border: 1px solid var(--editor-border-color, #22303f);
+  box-shadow: 0 12px 32px -12px rgba(0, 0, 0, 0.7);
+  position: absolute;
+  left: 50%; top: 50%;
+  transform: translate(-50%, -50%);
+}
+.tx__empty {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+  text-align: center; color: var(--editor-text-muted, #5e708a);
+}
+.tx__empty h2 { margin: 0; font-size: 15px; color: var(--editor-text-secondary, #90a2ba); font-weight: 600; }
+.tx__empty p { margin: 0; font-family: var(--editor-font-mono, monospace); font-size: 11px; }
+
+/* JS-created zoom status bar (inline styles position it; blend it in) */
+.texture-editor__zoom-controls {
+  background: rgba(11, 18, 28, 0.92) !important;
+  border-top: 1px solid var(--editor-border-color, #22303f);
+  font-family: var(--editor-font-mono, 'JetBrains Mono', monospace);
+  font-size: 10.5px;
+  color: var(--editor-text-muted, #5e708a);
+}

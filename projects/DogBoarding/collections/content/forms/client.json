@@ -1,0 +1,111 @@
+{
+  "title": "Client",
+  "order": 3,
+  "fields": [
+    {
+      "name": "first_name",
+      "label": "First name",
+      "type": "text",
+      "required": true,
+      "half": true
+    },
+    {
+      "name": "last_name",
+      "label": "Last name",
+      "type": "text",
+      "required": true,
+      "half": true
+    },
+    {
+      "name": "email",
+      "label": "Email",
+      "type": "email",
+      "required": true,
+      "half": true
+    },
+    {
+      "name": "phone",
+      "label": "Phone",
+      "type": "text",
+      "required": true,
+      "half": true
+    },
+    {
+      "name": "alt_phone",
+      "label": "Alt phone",
+      "type": "text",
+      "half": true
+    },
+    {
+      "name": "address1",
+      "label": "Address",
+      "type": "text"
+    },
+    {
+      "name": "address2",
+      "label": "Address line 2",
+      "type": "text"
+    },
+    {
+      "name": "city",
+      "label": "City",
+      "type": "text",
+      "half": true
+    },
+    {
+      "name": "state",
+      "label": "State",
+      "type": "text",
+      "half": true
+    },
+    {
+      "name": "postal_code",
+      "label": "ZIP",
+      "type": "text",
+      "half": true
+    },
+    {
+      "name": "emergency_name",
+      "label": "Emergency contact",
+      "type": "text",
+      "half": true
+    },
+    {
+      "name": "emergency_phone",
+      "label": "Emergency phone",
+      "type": "text",
+      "half": true
+    },
+    {
+      "name": "emergency_relationship",
+      "label": "Relationship",
+      "type": "text",
+      "half": true
+    },
+    {
+      "name": "status",
+      "label": "Status",
+      "type": "select",
+      "options": [
+        {
+          "value": "pending",
+          "label": "Pending"
+        },
+        {
+          "value": "active",
+          "label": "Active"
+        },
+        {
+          "value": "archived",
+          "label": "Archived"
+        }
+      ]
+    },
+    {
+      "name": "notes",
+      "label": "Internal notes",
+      "type": "textarea",
+      "hint": "The client never sees this."
+    }
+  ]
+}

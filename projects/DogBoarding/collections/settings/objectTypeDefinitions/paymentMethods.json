@@ -1,0 +1,6 @@
+{
+  "id": "paymentMethods",
+  "name": "Payment Methods",
+  "singular": "paymentMethod",
+  "objectTypeCategory": "data"
+}

@@ -1,0 +1,10 @@
+{
+  "title": "Holiday Surcharge",
+  "order": 13,
+  "code": "HOLIDAY",
+  "unit": "night",
+  "price": 10,
+  "taxable": true,
+  "active": true,
+  "description": "Per night, on posted holidays."
+}

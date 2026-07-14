@@ -1,0 +1,13 @@
+{
+  "filePath": "/projects/scripts/systems/js/VisionSystem.js",
+  "fileName": "VisionSystem",
+  "services": [
+    "hasLineOfSight",
+    "canSeePosition",
+    "getVisibleEnemiesInRange",
+    "findNearestVisibleEnemy",
+    "findWeakestVisibleEnemy",
+    "isEntityVisibleToTeam",
+    "isVisibleAt"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "title": "Boarding - Luxury Suite",
+  "order": 2,
+  "code": "BOARD-LUX",
+  "unit": "night",
+  "price": 65,
+  "taxable": true,
+  "active": true,
+  "description": "Overnight boarding, private suite with a cot."
+}

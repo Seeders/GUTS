@@ -1,0 +1,59 @@
+{
+  "title": "Veterinarian",
+  "order": 5,
+  "fields": [
+    {
+      "name": "clinic_name",
+      "label": "Clinic name",
+      "type": "text",
+      "required": true,
+      "half": true
+    },
+    {
+      "name": "vet_name",
+      "label": "Veterinarian",
+      "type": "text",
+      "half": true
+    },
+    {
+      "name": "phone",
+      "label": "Phone",
+      "type": "text",
+      "half": true
+    },
+    {
+      "name": "email",
+      "label": "Email",
+      "type": "email",
+      "half": true
+    },
+    {
+      "name": "address1",
+      "label": "Address",
+      "type": "text"
+    },
+    {
+      "name": "city",
+      "label": "City",
+      "type": "text",
+      "half": true
+    },
+    {
+      "name": "state",
+      "label": "State",
+      "type": "text",
+      "half": true
+    },
+    {
+      "name": "postal_code",
+      "label": "ZIP",
+      "type": "text",
+      "half": true
+    },
+    {
+      "name": "notes",
+      "label": "Notes",
+      "type": "textarea"
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+{
+  "id": "serviceCatalog",
+  "name": "Service Catalog",
+  "singular": "service",
+  "objectTypeCategory": "data"
+}

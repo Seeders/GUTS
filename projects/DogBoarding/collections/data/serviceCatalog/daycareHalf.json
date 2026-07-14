@@ -1,0 +1,10 @@
+{
+  "title": "Daycare - Half Day",
+  "order": 5,
+  "code": "DAYCARE-HF",
+  "unit": "day",
+  "price": 22,
+  "taxable": true,
+  "active": true,
+  "description": "Supervised play, up to five hours."
+}

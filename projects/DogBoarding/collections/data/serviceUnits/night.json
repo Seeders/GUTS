@@ -1,0 +1,6 @@
+{
+  "title": "Night",
+  "order": 1,
+  "perNight": true,
+  "description": "Boarding. Quantity is the number of nights stayed."
+}

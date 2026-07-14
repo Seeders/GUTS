@@ -1,0 +1,55 @@
+{
+  "title": "Admin console copy",
+  "order": 6,
+  "brand": {
+    "heading": "Back office",
+    "sub": "Boarding management"
+  },
+  "login": {
+    "heading": "Staff login",
+    "lede": "The back office. Client records, bookings and the books.",
+    "passwordLabel": "Staff password",
+    "submitLabel": "Log in",
+    "backLabel": "← Back to the public site"
+  },
+  "dashboard": {
+    "heading": "Today",
+    "newBookingLabel": "+ New booking",
+    "stats": [
+      {
+        "key": "onSite",
+        "label": "Dogs on site"
+      },
+      {
+        "key": "arriving",
+        "label": "Arriving today"
+      },
+      {
+        "key": "departing",
+        "label": "Leaving today"
+      },
+      {
+        "key": "unbilled",
+        "label": "Unbilled work",
+        "route": "/admin/billing"
+      },
+      {
+        "key": "ar",
+        "label": "Owed to us",
+        "route": "/admin/reports"
+      },
+      {
+        "key": "vaccines",
+        "label": "Vaccine alerts"
+      }
+    ],
+    "monthHeading": "This month so far",
+    "allVaccinesCurrent": "Every active dog has current vaccinations. Nice."
+  },
+  "vaccineSeverity": {
+    "expired": "Expired. The dog should not board until this is updated.",
+    "missing": "No record at all. Ask the owner before the next stay.",
+    "no_expiry": "We have a record but no expiry date. Worth chasing.",
+    "expiring": "Expires soon."
+  }
+}

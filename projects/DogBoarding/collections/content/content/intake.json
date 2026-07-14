@@ -1,0 +1,14 @@
+{
+  "title": "Registration page",
+  "order": 3,
+  "heading": "New client registration",
+  "lede": "This is everything we need before your dog’s first stay. It takes about five minutes. Fields marked * are required.",
+  "petsHeading": "Your dogs",
+  "petsHint": "Add one card per dog. Vet records are attached per dog.",
+  "addPetLabel": "+ Add another dog",
+  "recordsHeading": "Vet records",
+  "recordsHint": "Attach a photo or PDF of each certificate. If you do not have the document to hand, fill in the dates anyway and bring it with you.",
+  "addRecordLabel": "+ Add another record",
+  "submitLabel": "Submit registration",
+  "privacyNote": "We use this information to care for your dog and to bill you. We do not sell it."
+}

@@ -1,0 +1,6 @@
+{
+  "id": "serviceUnits",
+  "name": "Service Units",
+  "singular": "serviceUnit",
+  "objectTypeCategory": "data"
+}

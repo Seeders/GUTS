@@ -1,0 +1,7 @@
+{
+  "title": "Titer Test",
+  "order": 7,
+  "required": false,
+  "typicalValidMonths": 12,
+  "description": "Bloodwork showing immunity, in place of a vaccination."
+}

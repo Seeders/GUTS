@@ -1,0 +1,8 @@
+{
+  "filePath": "/projects/scripts/systems/js/ProjectileSystem.js",
+  "fileName": "ProjectileSystem",
+  "services": [
+    "deleteProjectileTrail",
+    "fireProjectile"
+  ]
+}

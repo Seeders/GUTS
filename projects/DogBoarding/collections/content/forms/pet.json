@@ -1,0 +1,121 @@
+{
+  "title": "Dog",
+  "order": 4,
+  "fields": [
+    {
+      "name": "name",
+      "label": "Name",
+      "type": "text",
+      "required": true,
+      "half": true
+    },
+    {
+      "name": "breed",
+      "label": "Breed",
+      "type": "text",
+      "half": true
+    },
+    {
+      "name": "sex",
+      "label": "Sex",
+      "type": "select",
+      "half": true,
+      "options": [
+        {
+          "value": "",
+          "label": "—"
+        },
+        {
+          "value": "male",
+          "label": "Male"
+        },
+        {
+          "value": "female",
+          "label": "Female"
+        }
+      ]
+    },
+    {
+      "name": "birthdate",
+      "label": "Date of birth",
+      "type": "date",
+      "half": true
+    },
+    {
+      "name": "weight_lbs",
+      "label": "Weight (lbs)",
+      "type": "number",
+      "half": true,
+      "step": "0.1"
+    },
+    {
+      "name": "color",
+      "label": "Colour",
+      "type": "text",
+      "half": true
+    },
+    {
+      "name": "microchip",
+      "label": "Microchip",
+      "type": "text",
+      "half": true
+    },
+    {
+      "name": "vet_id",
+      "label": "Veterinarian",
+      "type": "select",
+      "half": true,
+      "optionsFrom": "clientVets"
+    },
+    {
+      "name": "status",
+      "label": "Status",
+      "type": "select",
+      "half": true,
+      "options": [
+        {
+          "value": "active",
+          "label": "Active"
+        },
+        {
+          "value": "inactive",
+          "label": "Inactive"
+        },
+        {
+          "value": "deceased",
+          "label": "Deceased"
+        }
+      ]
+    },
+    {
+      "name": "fixed",
+      "label": "Spayed or neutered",
+      "type": "checkbox"
+    },
+    {
+      "name": "feeding",
+      "label": "Feeding",
+      "type": "textarea"
+    },
+    {
+      "name": "medications",
+      "label": "Medications",
+      "type": "textarea"
+    },
+    {
+      "name": "allergies",
+      "label": "Allergies",
+      "type": "textarea"
+    },
+    {
+      "name": "behavior_notes",
+      "label": "Behaviour",
+      "type": "textarea"
+    },
+    {
+      "name": "vet_notes",
+      "label": "Vet notes",
+      "type": "textarea"
+    }
+  ]
+}

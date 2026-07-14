@@ -1,0 +1,10 @@
+{
+  "title": "One-on-One Play Session",
+  "order": 7,
+  "code": "PLAY-1X1",
+  "unit": "each",
+  "price": 12,
+  "taxable": true,
+  "active": true,
+  "description": "Twenty minutes of individual attention."
+}

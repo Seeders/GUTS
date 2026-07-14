@@ -1,0 +1,9 @@
+{
+  "filePath": "/projects/scripts/systems/js/UnitOrderSystem.js",
+  "fileName": "UnitOrderSystem",
+  "services": [
+    "applySquadTargetPosition",
+    "applySquadsTargetPositions",
+    "applyUnitTargetPosition"
+  ]
+}

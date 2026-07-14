@@ -1,0 +1,190 @@
+{
+  "title": "New client registration",
+  "order": 1,
+  "description": "The public sign-up form. Fieldsets render top to bottom.",
+  "fieldsets": [
+    {
+      "legend": "About you",
+      "fields": [
+        {
+          "name": "first_name",
+          "label": "First name",
+          "type": "text",
+          "required": true,
+          "half": true
+        },
+        {
+          "name": "last_name",
+          "label": "Last name",
+          "type": "text",
+          "required": true,
+          "half": true
+        },
+        {
+          "name": "email",
+          "label": "Email",
+          "type": "email",
+          "required": true,
+          "half": true,
+          "hint": "Booking confirmations and invoices go here."
+        },
+        {
+          "name": "phone",
+          "label": "Mobile phone",
+          "type": "tel",
+          "required": true,
+          "half": true
+        },
+        {
+          "name": "alt_phone",
+          "label": "Another number we can try",
+          "type": "tel"
+        }
+      ]
+    },
+    {
+      "legend": "Where you live",
+      "hint": "If we ever have to bring your dog home, we need to know where home is.",
+      "fields": [
+        {
+          "name": "address1",
+          "label": "Street address",
+          "type": "text",
+          "required": true
+        },
+        {
+          "name": "address2",
+          "label": "Apartment, suite, etc.",
+          "type": "text"
+        },
+        {
+          "name": "city",
+          "label": "City",
+          "type": "text",
+          "required": true,
+          "half": true
+        },
+        {
+          "name": "state",
+          "label": "State",
+          "type": "text",
+          "required": true,
+          "half": true
+        },
+        {
+          "name": "postal_code",
+          "label": "ZIP",
+          "type": "text",
+          "required": true,
+          "half": true
+        }
+      ]
+    },
+    {
+      "legend": "Emergency contact",
+      "hint": "Someone who is not you, who can collect your dog if we cannot reach you.",
+      "fields": [
+        {
+          "name": "emergency_name",
+          "label": "Name",
+          "type": "text",
+          "required": true,
+          "half": true
+        },
+        {
+          "name": "emergency_phone",
+          "label": "Phone",
+          "type": "tel",
+          "required": true,
+          "half": true
+        },
+        {
+          "name": "emergency_relationship",
+          "label": "Relationship to you",
+          "type": "text",
+          "half": true,
+          "placeholder": "Partner, neighbour, sibling..."
+        }
+      ]
+    },
+    {
+      "legend": "Your veterinarian",
+      "hint": "In an emergency we call your vet first. We need to be able to find them.",
+      "fields": [
+        {
+          "name": "vet_clinic_name",
+          "label": "Clinic name",
+          "type": "text",
+          "required": true,
+          "half": true
+        },
+        {
+          "name": "vet_name",
+          "label": "Veterinarian’s name",
+          "type": "text",
+          "half": true
+        },
+        {
+          "name": "vet_phone",
+          "label": "Clinic phone",
+          "type": "tel",
+          "required": true,
+          "half": true
+        },
+        {
+          "name": "vet_email",
+          "label": "Clinic email",
+          "type": "email",
+          "half": true
+        },
+        {
+          "name": "vet_address1",
+          "label": "Clinic street address",
+          "type": "text"
+        },
+        {
+          "name": "vet_city",
+          "label": "City",
+          "type": "text",
+          "half": true
+        },
+        {
+          "name": "vet_state",
+          "label": "State",
+          "type": "text",
+          "half": true
+        },
+        {
+          "name": "vet_postal_code",
+          "label": "ZIP",
+          "type": "text",
+          "half": true
+        }
+      ]
+    },
+    {
+      "legend": "Boarding dates",
+      "hint": "Optional. Leave blank to get set up now and book later. Dates are a request — we confirm by email.",
+      "fields": [
+        {
+          "name": "check_in",
+          "label": "Drop off",
+          "type": "date",
+          "half": true
+        },
+        {
+          "name": "check_out",
+          "label": "Pick up",
+          "type": "date",
+          "half": true
+        },
+        {
+          "name": "booking_notes",
+          "label": "Anything we should know about this stay",
+          "type": "textarea",
+          "rows": 2
+        }
+      ]
+    }
+  ]
+}

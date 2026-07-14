@@ -1,0 +1,7 @@
+{
+  "title": "Canine Influenza",
+  "order": 4,
+  "required": false,
+  "typicalValidMonths": 12,
+  "description": "Not required, but recommended for frequent boarders."
+}

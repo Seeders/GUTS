@@ -1,0 +1,44 @@
+{
+  "title": "Vet record",
+  "order": 6,
+  "fields": [
+    {
+      "name": "record_type",
+      "label": "Record type",
+      "type": "select",
+      "required": true,
+      "half": true,
+      "optionsFrom": "recordTypes"
+    },
+    {
+      "name": "issued_on",
+      "label": "Issued",
+      "type": "date",
+      "half": true
+    },
+    {
+      "name": "expires_on",
+      "label": "Expires",
+      "type": "date",
+      "half": true
+    },
+    {
+      "name": "file",
+      "label": "Document (PDF or photo)",
+      "type": "file",
+      "accept": "application/pdf,image/*"
+    },
+    {
+      "name": "verified",
+      "label": "Mark as verified",
+      "type": "checkbox",
+      "hint": "Only tick this if you have actually looked at the certificate."
+    },
+    {
+      "name": "notes",
+      "label": "Notes",
+      "type": "textarea",
+      "rows": 2
+    }
+  ]
+}

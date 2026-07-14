@@ -1,0 +1,8 @@
+{
+  "filePath": "/projects/scripts/systems/js/AccuracySystem.js",
+  "fileName": "AccuracySystem",
+  "services": [
+    "rollHitChance",
+    "calculateHitChance"
+  ]
+}

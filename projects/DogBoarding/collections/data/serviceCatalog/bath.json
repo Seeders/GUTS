@@ -1,0 +1,10 @@
+{
+  "title": "Bath & Brush",
+  "order": 8,
+  "code": "BATH",
+  "unit": "each",
+  "price": 30,
+  "taxable": true,
+  "active": true,
+  "description": "Shampoo, blow dry, brush out."
+}

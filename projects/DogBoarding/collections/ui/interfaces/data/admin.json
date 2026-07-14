@@ -1,0 +1,7 @@
+{
+  "title": "Admin Console",
+  "description": "The back office: login wall, sidebar, and the section content area.",
+  "modals": [],
+  "fileName": "admin",
+  "filePath": "/projects/DogBoarding/collections/ui/interfaces/html/admin.html"
+}

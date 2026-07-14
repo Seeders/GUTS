@@ -1,0 +1,14 @@
+{
+  "title": "Cancelled",
+  "order": 5,
+  "tone": "bad",
+  "onSite": false,
+  "occupies": false,
+  "description": "Called off. Does not count towards occupancy.",
+  "actions": [
+    {
+      "to": "confirmed",
+      "label": "Reinstate"
+    }
+  ]
+}

@@ -1,0 +1,101 @@
+<!--
+  The back office. Two states: the login wall, and the console. The sidebar is
+  built from the `adminNav` collection, so adding a section there adds a link
+  here. Section content is rendered into [data-content] by the admin modules.
+-->
+
+<!-- ===================== login wall ===================== -->
+<div class="login" data-login>
+  <div class="login__card">
+    <h1 data-bind="admin.login.heading"></h1>
+    <p class="muted" data-bind="admin.login.lede"></p>
+
+    <!--
+      onsubmit="return false" is load-bearing, not decoration.
+
+      A form with no action and no method submits natively as GET, which would
+      put the typed password in the URL - in browser history, in the server's
+      access log, in any Referer header. AdminConsole binds a real handler here,
+      but if the bundle is stale, broken, or simply has not run yet, this
+      attribute is the only thing standing between a mistyped Enter and a
+      credential in a logfile. It costs nothing and it fails safe.
+    -->
+    <form class="login__form" data-login-form onsubmit="return false" method="post">
+      <label class="field">
+        <span class="field__label" data-bind="admin.login.passwordLabel"></span>
+        <input type="password" name="password" required autofocus autocomplete="current-password">
+      </label>
+      <p class="login__error" data-login-error></p>
+      <button type="submit" class="btn btn--primary btn--block" data-bind="admin.login.submitLabel"></button>
+    </form>
+
+    <a class="login__back" href="#/" data-bind="admin.login.backLabel"></a>
+  </div>
+</div>
+
+<!-- ===================== the console ===================== -->
+<div class="admin" data-console hidden>
+
+  <aside class="side">
+    <div class="side__brand">
+      <span class="side__logo">🐾</span>
+      <div>
+        <strong data-bind="admin.brand.heading"></strong>
+        <small class="muted" data-bind="admin.brand.sub"></small>
+      </div>
+    </div>
+
+    <nav class="side__nav" data-list="adminNav"></nav>
+
+    <div class="side__foot">
+      <a class="side__link" href="#/"><span class="side__icon">↗</span>Public site</a>
+      <button type="button" class="side__link" data-logout><span class="side__icon">⏻</span>Log out</button>
+    </div>
+  </aside>
+
+  <div class="admin__main">
+    <div class="admin__content" data-content></div>
+  </div>
+</div>
+
+<!-- ============ templates ============ -->
+
+<template data-template="navLink">
+  <a class="side__link">
+    <span class="side__icon"></span>
+    <span data-nav-label></span>
+  </a>
+</template>
+
+<template data-template="stat">
+  <div class="stat">
+    <span class="stat__label"></span>
+    <strong class="stat__value"></strong>
+    <span class="stat__sub"></span>
+  </div>
+</template>
+
+<template data-template="panel">
+  <section class="panel">
+    <header class="panel__head">
+      <h2></h2>
+    </header>
+    <div data-panel-body></div>
+  </section>
+</template>
+
+<template data-template="modal">
+  <div class="modal-overlay">
+    <div class="modal">
+      <header class="modal__head">
+        <h2 data-modal-title></h2>
+        <button type="button" class="modal__x" data-modal-close title="Close">×</button>
+      </header>
+      <div class="modal__body" data-modal-body></div>
+      <footer class="modal__foot">
+        <button type="button" class="btn" data-modal-cancel>Cancel</button>
+        <button type="button" class="btn btn--primary" data-modal-confirm>Save</button>
+      </footer>
+    </div>
+  </div>
+</template>

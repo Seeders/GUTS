@@ -1,0 +1,52 @@
+{
+  "title": "Home page",
+  "order": 1,
+  "hero": {
+    "eyebrow": "Boarding · Daycare · Grooming",
+    "headline": "Your dog is somebody here.",
+    "lede": "Small-group boarding with real yard time, individual attention, and staff who learn your dog’s name before they learn their breed. Every stay is logged, every service is on the invoice, no surprises.",
+    "primaryCta": {
+      "label": "Register your dog",
+      "route": "/register"
+    },
+    "secondaryCta": {
+      "label": "See rates",
+      "route": "/services"
+    }
+  },
+  "panel": {
+    "heading": "Before the first stay",
+    "body": "We need current vet records for every dog. Bring or upload:",
+    "footnote": "Upload them with the registration form and we’ll have you checked in before you reach the front desk."
+  },
+  "steps": {
+    "heading": "How it works",
+    "items": [
+      {
+        "title": "Register",
+        "body": "Fill in the new client form: your details, your emergency contact, your vet, and a profile for each dog."
+      },
+      {
+        "title": "Upload records",
+        "body": "Attach vaccination certificates as a photo or PDF. We verify them before the first stay."
+      },
+      {
+        "title": "Book a stay",
+        "body": "Tell us your dates. We confirm by email, usually the same day."
+      },
+      {
+        "title": "Pick up a happy, tired dog",
+        "body": "You get an itemized invoice for exactly what we did — nothing else."
+      }
+    ]
+  },
+  "services": {
+    "heading": "What we do",
+    "body": "Boarding is the core, but the extras are what make a stay feel like a stay and not a kennel. Everything below is billed only if you ask for it.",
+    "cta": {
+      "label": "Full rate card",
+      "route": "/services"
+    },
+    "featuredCount": 4
+  }
+}

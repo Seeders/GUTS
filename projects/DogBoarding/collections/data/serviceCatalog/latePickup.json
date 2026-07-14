@@ -1,0 +1,10 @@
+{
+  "title": "Late Pickup Fee",
+  "order": 12,
+  "code": "LATE",
+  "unit": "each",
+  "price": 25,
+  "taxable": true,
+  "active": true,
+  "description": "Pickup after posted closing time."
+}

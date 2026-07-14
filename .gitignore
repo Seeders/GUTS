@@ -49,3 +49,8 @@ package-lock.json
 .claude/
 projects/TurnBasedWarfare/simulation_results/
 projects/HeroArena/simulation_results/
+
+# Per-project secure storage: databases and uploaded documents. For DogBoarding
+# that means vet records, which carry client addresses and phone numbers.
+# Never commit, never serve statically.
+projects/**/secure/

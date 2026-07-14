@@ -1,0 +1,10 @@
+{
+  "title": "Medication Administration",
+  "order": 10,
+  "code": "MEDS",
+  "unit": "day",
+  "price": 5,
+  "taxable": true,
+  "active": true,
+  "description": "Per day, however many doses."
+}

@@ -1,0 +1,10 @@
+{
+  "title": "Solo Walk (30 min)",
+  "order": 6,
+  "code": "WALK-30",
+  "unit": "each",
+  "price": 15,
+  "taxable": true,
+  "active": true,
+  "description": "One-on-one leashed walk."
+}

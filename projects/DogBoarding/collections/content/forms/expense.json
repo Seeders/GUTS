@@ -1,0 +1,95 @@
+{
+  "title": "Expense",
+  "order": 8,
+  "fields": [
+    {
+      "name": "incurred_on",
+      "label": "Date",
+      "type": "date",
+      "half": true
+    },
+    {
+      "name": "category",
+      "label": "Category",
+      "type": "select",
+      "required": true,
+      "half": true,
+      "optionsFrom": "expenseCategories"
+    },
+    {
+      "name": "amount",
+      "label": "Amount",
+      "type": "money",
+      "required": true,
+      "half": true
+    },
+    {
+      "name": "vendor",
+      "label": "Vendor",
+      "type": "text",
+      "half": true,
+      "placeholder": "Who did you pay?"
+    },
+    {
+      "name": "payment_method",
+      "label": "Paid by",
+      "type": "select",
+      "half": true,
+      "optionsFrom": "paymentMethods"
+    },
+    {
+      "name": "description",
+      "label": "Description",
+      "type": "text",
+      "placeholder": "40lb bags of kibble, quarterly HVAC service..."
+    },
+    {
+      "name": "is_maintenance",
+      "label": "This is maintenance / repair",
+      "type": "checkbox",
+      "hint": "Tick for anything that keeps the facility working: repairs, servicing, upkeep."
+    },
+    {
+      "name": "asset",
+      "label": "What was maintained",
+      "type": "text",
+      "placeholder": "Kennel run 3, HVAC, perimeter fence, van..."
+    },
+    {
+      "name": "recurring",
+      "label": "Recurs",
+      "type": "select",
+      "options": [
+        {
+          "value": "none",
+          "label": "One off"
+        },
+        {
+          "value": "monthly",
+          "label": "Monthly"
+        },
+        {
+          "value": "quarterly",
+          "label": "Quarterly"
+        },
+        {
+          "value": "annual",
+          "label": "Annually"
+        }
+      ],
+      "hint": "A label for reporting - it does not create future entries by itself."
+    },
+    {
+      "name": "receipt",
+      "label": "Receipt",
+      "type": "file",
+      "accept": "application/pdf,image/*"
+    },
+    {
+      "name": "notes",
+      "label": "Notes",
+      "type": "textarea",
+      "rows": 2
+    }
+  ]
+}

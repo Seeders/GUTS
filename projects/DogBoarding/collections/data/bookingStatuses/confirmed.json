@@ -1,0 +1,19 @@
+{
+  "title": "Confirmed",
+  "order": 2,
+  "tone": "good",
+  "onSite": false,
+  "occupies": true,
+  "description": "We have agreed to it. The dog has not arrived yet.",
+  "actions": [
+    {
+      "to": "checked_in",
+      "label": "→ Check in",
+      "primary": true
+    },
+    {
+      "to": "cancelled",
+      "label": "Cancel"
+    }
+  ]
+}

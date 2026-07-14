@@ -1,0 +1,24 @@
+{
+  "title": "Ad-hoc charge",
+  "order": 10,
+  "fields": [
+    {
+      "name": "performed_on",
+      "label": "Date",
+      "type": "date",
+      "half": true
+    },
+    {
+      "name": "staff",
+      "label": "Who did it",
+      "type": "text",
+      "half": true
+    },
+    {
+      "name": "notes",
+      "label": "Notes",
+      "type": "textarea",
+      "rows": 2
+    }
+  ]
+}

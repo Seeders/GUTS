@@ -1,0 +1,11 @@
+{
+  "filePath": "/projects/scripts/systems/js/UnitCreationSystem.js",
+  "fileName": "UnitCreationSystem",
+  "services": [
+    "createPlacement",
+    "createUnit",
+    "createEntityFromPrefab",
+    "getTerrainHeight",
+    "incrementSquadsCreated"
+  ]
+}

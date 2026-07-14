@@ -1,0 +1,221 @@
+<!--
+  The public site. Every page lives here as a <section data-page>; the router
+  shows one at a time. Text is filled from the `content` collection via
+  data-bind, lists from data-list. Nothing here is generated in JavaScript.
+-->
+<div class="site">
+
+  <header class="site__header">
+    <a class="brand" href="#/">
+      <svg class="brand__mark" viewBox="0 0 24 24" aria-hidden="true">
+        <circle cx="7" cy="8" r="2.4"/><circle cx="12" cy="6" r="2.4"/><circle cx="17" cy="8" r="2.4"/>
+        <path d="M12 11c3.1 0 5.6 2.3 5.6 4.8 0 1.9-1.6 3-3.6 3-1 0-1.4-.4-2-.4s-1 .4-2 .4c-2 0-3.6-1.1-3.6-3C6.4 13.3 8.9 11 12 11z"/>
+      </svg>
+      <span class="brand__name" data-bind="business.name">Dog Boarding</span>
+    </a>
+    <nav class="nav" data-list="navLinks"></nav>
+  </header>
+
+  <main class="site__main">
+
+    <!-- ===================== home ===================== -->
+    <section class="page" data-page="home">
+      <div class="hero">
+        <div class="hero__text">
+          <p class="eyebrow" data-bind="home.hero.eyebrow"></p>
+          <h1 data-bind="home.hero.headline"></h1>
+          <p class="lede" data-bind="home.hero.lede"></p>
+          <div class="hero__cta">
+            <a class="btn btn--primary btn--lg" data-cta="home.hero.primaryCta"></a>
+            <a class="btn btn--ghost btn--lg" data-cta="home.hero.secondaryCta"></a>
+          </div>
+        </div>
+        <aside class="hero__panel">
+          <h3 data-bind="home.panel.heading"></h3>
+          <p class="muted" data-bind="home.panel.body"></p>
+          <ul class="tick" data-list="requiredVaccines"></ul>
+          <p class="muted small" data-bind="home.panel.footnote"></p>
+        </aside>
+      </div>
+
+      <section class="section">
+        <h2 data-bind="home.steps.heading"></h2>
+        <ol class="steps" data-list="steps"></ol>
+      </section>
+
+      <section class="section section--split">
+        <div>
+          <h2 data-bind="home.services.heading"></h2>
+          <p class="muted" data-bind="home.services.body"></p>
+          <a class="btn btn--ghost" data-cta="home.services.cta"></a>
+        </div>
+        <ul class="cards" data-list="featuredServices"></ul>
+      </section>
+    </section>
+
+    <!-- ===================== rates ===================== -->
+    <section class="page narrow" data-page="rates" hidden>
+      <header class="page-head">
+        <h1 data-bind="rates.heading"></h1>
+        <p class="lede" data-bind="rates.lede"></p>
+      </header>
+
+      <div data-list="rateGroups"></div>
+
+      <div class="callout">
+        <h3 data-bind="rates.callout.heading"></h3>
+        <p data-bind="rates.callout.body"></p>
+      </div>
+
+      <div class="center">
+        <a class="btn btn--primary btn--lg" data-cta="rates.cta"></a>
+      </div>
+    </section>
+
+    <!-- ===================== registration ===================== -->
+    <section class="page narrow" data-page="intake" hidden>
+      <!--
+        onsubmit="return false" for the same reason as the login form: with no
+        action and no method this would submit natively as GET, and every answer
+        on it - name, home address, phone, emergency contact - would end up in
+        the URL and the server's access log. PublicSite binds the real handler;
+        this is what happens if it ever fails to.
+      -->
+      <form class="intake" data-form="intake" onsubmit="return false" method="post">
+        <header class="page-head">
+          <h1 data-bind="intake.heading"></h1>
+          <p class="lede" data-bind="intake.lede"></p>
+        </header>
+
+        <!-- Fieldsets are rendered from the `intake` form schema. -->
+        <div data-fieldsets></div>
+
+        <section class="fieldset">
+          <header class="fieldset__head">
+            <h2 data-bind="intake.petsHeading"></h2>
+            <p class="muted" data-bind="intake.petsHint"></p>
+          </header>
+          <div class="pets" data-pets></div>
+          <button type="button" class="btn btn--ghost" data-add-pet></button>
+        </section>
+
+        <div class="intake__submit">
+          <button type="submit" class="btn btn--primary btn--lg" data-bind="intake.submitLabel"></button>
+          <p class="muted small" data-bind="intake.privacyNote"></p>
+        </div>
+      </form>
+    </section>
+
+    <!-- ===================== thanks ===================== -->
+    <section class="page narrow" data-page="success" hidden>
+      <div class="success">
+        <div class="success__mark">✓</div>
+        <h1 data-bind="success.heading"></h1>
+        <p class="lede" data-result-message></p>
+        <p class="muted" data-result-detail></p>
+        <a class="btn btn--ghost" data-cta="success.cta"></a>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site__footer">
+    <div class="site__footer-inner">
+      <div>
+        <strong data-bind="business.name"></strong>
+        <p class="muted" data-bind="business.address"></p>
+      </div>
+      <div>
+        <p><a data-tel data-bind="business.phone"></a></p>
+        <p><a data-mailto data-bind="business.email"></a></p>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<!-- ============ templates the intake form clones ============ -->
+
+<template data-template="petCard">
+  <div class="pet-card">
+    <header class="pet-card__head">
+      <h3 data-pet-title></h3>
+      <button type="button" class="link-btn" data-remove-pet>Remove</button>
+    </header>
+    <!-- fields come from the `intakePet` form schema -->
+    <div class="fieldset__body" data-pet-fields></div>
+
+    <div class="records-block">
+      <header class="records-block__head">
+        <h4 data-bind="intake.recordsHeading"></h4>
+        <p class="muted small" data-bind="intake.recordsHint"></p>
+      </header>
+      <div class="records" data-records></div>
+      <button type="button" class="link-btn" data-add-record></button>
+    </div>
+  </div>
+</template>
+
+<template data-template="recordRow">
+  <div class="record-row">
+    <label class="field">
+      <span class="field__label">Record</span>
+      <select name="record_type" data-options="recordTypes"></select>
+    </label>
+    <label class="field">
+      <span class="field__label">Issued</span>
+      <input type="date" name="issued_on">
+    </label>
+    <label class="field">
+      <span class="field__label">Expires</span>
+      <input type="date" name="expires_on">
+    </label>
+    <label class="field field--file">
+      <span class="field__label">Document</span>
+      <input type="file" name="record_file" accept="application/pdf,image/*">
+    </label>
+    <button type="button" class="record-row__x" data-remove-record title="Remove this record">×</button>
+  </div>
+</template>
+
+<template data-template="navLink">
+  <a class="nav__link"></a>
+</template>
+
+<template data-template="step">
+  <li class="step">
+    <span class="step__n"></span>
+    <div>
+      <h3 data-step-title></h3>
+      <p class="muted" data-step-body></p>
+    </div>
+  </li>
+</template>
+
+<template data-template="serviceCard">
+  <li class="card">
+    <h4 data-service-name></h4>
+    <p class="muted small" data-service-description></p>
+    <p class="price"><span data-service-price></span><span class="per" data-service-unit></span></p>
+  </li>
+</template>
+
+<template data-template="rateGroup">
+  <section class="rates">
+    <h2 data-group-heading></h2>
+    <table class="table table--rates">
+      <tbody data-group-rows></tbody>
+    </table>
+  </section>
+</template>
+
+<template data-template="rateRow">
+  <tr>
+    <td>
+      <strong data-service-name></strong>
+      <p class="muted small" data-service-description></p>
+    </td>
+    <td class="num price">
+      <span data-service-price></span><span class="per" data-service-unit></span>
+    </td>
+  </tr>
+</template>
