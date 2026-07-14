@@ -37,7 +37,7 @@ class Portal {
         this.ui.bind(root, this.bindingData());
 
         if (!this.api.portalToken) {
-            return this.showAuth(root);
+            return this.showAuth(root, path);
         }
 
         let me;
@@ -48,7 +48,7 @@ class Portal {
         }
         if (!me || !me.authenticated) {
             this.api.setPortalToken(null);
-            return this.showAuth(root);
+            return this.showAuth(root, path);
         }
 
         this.client = me.client;
@@ -58,7 +58,7 @@ class Portal {
 
     /* ---------------- auth wall ---------------- */
 
-    showAuth(root) {
+    showAuth(root, path = '') {
         const auth = root.querySelector('[data-portal-auth]');
         const app = root.querySelector('[data-portal-app]');
         if (app) app.hidden = true;
@@ -77,7 +77,10 @@ class Portal {
         const toLogin = auth.querySelector('[data-show-login]');
         if (toSignup) toSignup.onclick = () => show('signup');
         if (toLogin) toLogin.onclick = () => show('login');
-        show('login');
+
+        // /portal/signup deep-links straight to the create-account view; anything
+        // else (/portal) opens sign-in.
+        show(this.section(path) === 'signup' ? 'signup' : 'login');
     }
 
     async submitLogin(form) {
