@@ -544,11 +544,21 @@ portalRouter.get('/availability', (req, res, next) => {
         if (availability.nights(from, to).length > 400) throw fail(400, 'That date range is too long.');
 
         const client = clientSummary(req.clientId);
+
+        // Their own stays overlapping the window, so the calendar can show them
+        // which nights are already theirs.
+        const mine = db.all(
+            `SELECT id, check_in, check_out, status FROM bookings
+             WHERE client_id = ? AND status != 'cancelled'
+               AND check_in <= ? AND check_out > ?
+             ORDER BY check_in`, req.clientId, to, from);
+
         res.json({
             capacity: collections.capacity(),
             kennels: collections.kennels(),
             can_book: client.status === 'active',
-            days: availability.days(from, to)
+            days: availability.days(from, to),
+            mine
         });
     } catch (err) { next(err); }
 });

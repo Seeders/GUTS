@@ -350,6 +350,63 @@ class Portal {
         const monthLabel = new Date(Date.UTC(year, month - 1, 1))
             .toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' });
 
+        /* Nights this client already has booked, so the calendar can mark them. */
+        const mineNights = new Set();
+        for (const b of (avail.mine || [])) {
+            const end = String(b.check_out).slice(0, 10);
+            for (let d = String(b.check_in).slice(0, 10); d < end; d = this.ui.addDays(d, 1)) {
+                mineNights.add(d);
+            }
+        }
+
+        // Declared here so the calendar's click handler can drive them.
+        let checkIn = null;
+        let checkOut = null;
+        const cellByDate = new Map();
+
+        /* Re-colour the grid (and the date inputs) for the current selection. */
+        const paint = () => {
+            for (const [d, cell] of cellByDate) {
+                cell.classList.remove('cal__cell--sel', 'cal__cell--sel-start', 'cal__cell--sel-end');
+                if (!this.selStart) continue;
+                if (d === this.selStart) cell.classList.add('cal__cell--sel-start');
+                if (this.selEnd) {
+                    if (d > this.selStart && d < this.selEnd) cell.classList.add('cal__cell--sel');
+                    if (d === this.selEnd) cell.classList.add('cal__cell--sel-end');
+                }
+            }
+            if (checkIn) checkIn.value = this.selStart || '';
+            if (checkOut) checkOut.value = this.selEnd || '';
+        };
+
+        /**
+         * Click once for drop-off, again for pick-up. Clicking a date on or
+         * before the current start begins a new range instead of an empty one.
+         */
+        const pick = d => {
+            if (!this.selStart || this.selEnd || d <= this.selStart) {
+                this.selStart = d;
+                this.selEnd = null;
+                paint();
+                return;
+            }
+
+            // Every night from drop-off up to (not including) pick-up must be free.
+            // Nights outside the month we fetched are left to the server to judge.
+            const blocked = [];
+            for (let n = this.selStart; n < d; n = this.ui.addDays(n, 1)) {
+                const info = byDate.get(n);
+                if (info && info.full) blocked.push(n);
+            }
+            if (blocked.length) {
+                this.ui.toast(`We are full on ${this.ui.date(blocked[0])}. Try other dates.`, 'bad');
+                return;
+            }
+
+            this.selEnd = d;
+            paint();
+        };
+
         /* the availability grid */
         const cells = [];
         const leading = new Date(Date.UTC(year, month - 1, 1)).getUTCDay();
@@ -363,9 +420,20 @@ class Portal {
                 cells.push(el('div.cal__cell.cal__cell--past', el('span.cal__day', String(day))));
                 continue;
             }
-            cells.push(el('div.cal__cell', { class: info.full ? 'cal__cell--full' : 'cal__cell--open' },
+
+            const mine = mineNights.has(d);
+            const cell = el('button.cal__cell', {
+                type: 'button',
+                class: `${info.full ? 'cal__cell--full' : 'cal__cell--open'}${mine ? ' cal__cell--mine' : ''}`,
+                disabled: info.full || !avail.can_book,
+                onclick: () => pick(d)
+            },
                 el('span.cal__day', String(day)),
-                el('span.cal__free', info.full ? 'Full' : `${info.available} free`)));
+                el('span.cal__free', info.full ? 'Full' : `${info.available} free`),
+                mine ? el('span.cal__mine', 'Your stay') : null);
+
+            cellByDate.set(d, cell);
+            cells.push(cell);
         }
 
         const calendar = el('div',
@@ -375,9 +443,17 @@ class Portal {
                     el('button.btn.btn--sm', { type: 'button', onclick: () => shift(-1) }, '‹'),
                     el('strong.cal__month', monthLabel),
                     el('button.btn.btn--sm', { type: 'button', onclick: () => shift(1) }, '›'))),
+            avail.can_book
+                ? el('p.muted.small', 'Click a drop-off date, then a pick-up date.')
+                : null,
             el('div.cal',
                 ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(w => el('div.cal__weekday', w)),
-                cells));
+                cells),
+            el('div.cal__legend',
+                el('span.cal__key.cal__key--open', 'Space free'),
+                el('span.cal__key.cal__key--full', 'Full'),
+                el('span.cal__key.cal__key--mine', 'Your stay'),
+                el('span.cal__key.cal__key--sel', 'Selected')));
 
         /* upcoming stays, with the option to cancel */
         const upcoming = (overview.bookings?.upcoming || []).filter(b => b.status !== 'cancelled');
@@ -403,8 +479,20 @@ class Portal {
         } else if (!dogs.length) {
             form = this.ui.empty('Add a dog before booking a stay.');
         } else {
-            const checkIn = el('input', { type: 'date', min: today });
-            const checkOut = el('input', { type: 'date', min: today });
+            // Typing in the inputs and clicking the calendar drive the same
+            // selection, so the two can never disagree.
+            checkIn = el('input', {
+                type: 'date', min: today,
+                onchange: () => {
+                    this.selStart = checkIn.value || null;
+                    if (this.selEnd && this.selStart && this.selEnd <= this.selStart) this.selEnd = null;
+                    paint();
+                }
+            });
+            checkOut = el('input', {
+                type: 'date', min: today,
+                onchange: () => { this.selEnd = checkOut.value || null; paint(); }
+            });
             const boxes = dogs.map(p => el('label.field.field--check',
                 el('input', { type: 'checkbox', value: String(p.id), checked: dogs.length === 1 }),
                 el('span', p.name)));
@@ -436,6 +524,8 @@ class Portal {
                         notes: notes.value.trim()
                     });
                     this.ui.toast('Booked! We will see you then.', 'good');
+                    this.selStart = null;
+                    this.selEnd = null;
                     this.route();
                 } catch (err) {
                     this.ui.toast(err.message || 'Could not book those dates.', 'bad');
@@ -461,6 +551,9 @@ class Portal {
                 el('header.portal-panel__head', el('h2', 'Book a stay')),
                 form),
             upcomingPanel);
+
+        // Restore any selection made before the month was flipped.
+        paint();
     }
 
     async cancelBooking(booking) {

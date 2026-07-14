@@ -203,3 +203,38 @@
     background: rgba(217, 160, 30, 0.12);
     border: 1px solid rgba(180, 120, 10, 0.35);
 }
+
+/* selectable cells */
+.cal__cell:not(:disabled) { cursor: pointer; }
+.cal__cell:not(:disabled):hover { filter: brightness(0.97); }
+.cal__cell:disabled { cursor: default; }
+
+/* the client's own stays */
+.cal__cell--mine { border-color: rgba(37, 99, 235, 0.45); background: rgba(37, 99, 235, 0.10); }
+.cal__mine { font-size: 0.68rem; font-weight: 600; color: #1d4ed8; }
+
+/* click-to-select range */
+.cal__cell--sel-start,
+.cal__cell--sel-end {
+    background: #111827;
+    border-color: #111827;
+    color: #fff;
+}
+.cal__cell--sel-start .cal__free, .cal__cell--sel-end .cal__free,
+.cal__cell--sel-start .cal__mine, .cal__cell--sel-end .cal__mine { color: rgba(255, 255, 255, 0.8); }
+.cal__cell--sel { background: rgba(17, 24, 39, 0.12); border-color: rgba(17, 24, 39, 0.35); }
+
+/* legend */
+.cal__legend { display: flex; flex-wrap: wrap; gap: 1rem; margin: -0.75rem 0 1.25rem; font-size: 0.8rem; color: #4b5563; }
+.cal__key { display: inline-flex; align-items: center; gap: 0.35rem; }
+.cal__key::before {
+    content: '';
+    width: 0.85rem;
+    height: 0.85rem;
+    border-radius: 4px;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+}
+.cal__key--open::before { background: rgba(21, 128, 61, 0.25); }
+.cal__key--full::before { background: rgba(185, 28, 28, 0.25); }
+.cal__key--mine::before { background: rgba(37, 99, 235, 0.25); }
+.cal__key--sel::before  { background: #111827; }
