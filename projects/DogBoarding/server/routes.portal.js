@@ -23,6 +23,7 @@ const mailer = require('./mailer');
 const collections = require('./collections');
 const availability = require('./availability');
 const acct = require('./accounting');
+const stripe = require('./stripe');
 const { upload } = require('./uploads');
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -613,7 +614,46 @@ portalRouter.get('/billing', (req, res) => {
         "SELECT * FROM invoices WHERE client_id = ? AND status != 'draft' ORDER BY issued_on DESC", clientId);
     const payments = db.all(
         'SELECT * FROM payments WHERE client_id = ? ORDER BY paid_on DESC', clientId);
-    res.json({ invoices, payments, balance_cents: balanceCents(clientId) });
+    res.json({
+        invoices, payments,
+        balance_cents: balanceCents(clientId),
+        online_pay: stripe.configured()
+    });
+});
+
+/**
+ * Start an online payment for one invoice. Returns a Stripe Checkout URL to send
+ * the client to. The payment is recorded by the webhook, never here - this only
+ * opens the door.
+ */
+portalRouter.post('/invoices/:id/checkout', async (req, res, next) => {
+    try {
+        if (!stripe.configured()) {
+            throw fail(503, 'Online payment is not set up yet. Please contact us to pay.');
+        }
+        const invoice = db.get(
+            "SELECT * FROM invoices WHERE id = ? AND client_id = ? AND status NOT IN ('draft', 'void')",
+            req.params.id, req.clientId);
+        if (!invoice) throw fail(404, 'Not found.');
+
+        const balance = invoice.total_cents - acct.amountPaid(invoice.id);
+        if (balance <= 0) throw fail(400, 'This invoice is already paid.');
+
+        const client = clientSummary(req.clientId);
+        const origin = `${req.get('x-forwarded-proto') || req.protocol}://${req.get('host')}`;
+
+        const session = await stripe.createCheckoutSession({
+            amountCents: balance,
+            name: `Invoice ${invoice.number} — ${collections.business().name}`,
+            email: client.email,
+            invoiceId: invoice.id,
+            clientId: req.clientId,
+            successUrl: `${origin}/#/portal/billing?paid=1`,
+            cancelUrl: `${origin}/#/portal/billing`
+        });
+
+        res.json({ url: session.url });
+    } catch (err) { next(err); }
 });
 
 portalRouter.get('/invoices/:id', (req, res, next) => {

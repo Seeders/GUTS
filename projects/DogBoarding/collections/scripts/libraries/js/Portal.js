@@ -808,21 +808,41 @@ class Portal {
     /* ---------------- billing ---------------- */
 
     async billing(content) {
+        // Coming back from a successful Stripe redirect. The webhook records the
+        // payment; this just reassures them while the balance catches up.
+        if (window.location.hash.includes('paid=1')) {
+            this.ui.toast('Payment received — thank you! Your balance will update shortly.', 'good');
+            window.history.replaceState(null, '', '#/portal/billing');
+        }
+
         const data = await this.api.portalBilling();
         const { el, money, date } = this.ui;
         const balance = data.balance_cents || 0;
+        const payable = i => data.online_pay && i.status !== 'paid' && i.status !== 'void';
+
+        const columns = [
+            { label: 'Invoice', render: i => i.number },
+            { label: 'Issued', render: i => date(i.issued_on) },
+            { label: 'Due', render: i => date(i.due_on) },
+            { label: 'Total', align: 'right', render: i => money(i.total_cents) },
+            { label: 'Status', render: i => this.ui.badge(i.status, this.ui.statusTone(i.status)) }
+        ];
+        if (data.online_pay) {
+            columns.push({
+                label: '', render: i => payable(i)
+                    ? el('button.btn.btn--sm.btn--primary', {
+                        type: 'button',
+                        onclick: e => { e.stopPropagation(); this.payInvoice(i); }
+                    }, 'Pay')
+                    : null
+            });
+        }
 
         const invoices = this.ui.table({
-            columns: [
-                { label: 'Invoice', render: i => i.number },
-                { label: 'Issued', render: i => date(i.issued_on) },
-                { label: 'Due', render: i => date(i.due_on) },
-                { label: 'Total', align: 'right', render: i => money(i.total_cents) },
-                { label: 'Status', render: i => this.ui.badge(i.status, this.ui.statusTone(i.status)) }
-            ],
+            columns,
             rows: data.invoices,
             empty: 'No invoices yet.',
-            onRowClick: i => this.showInvoice(i.id)
+            onRowClick: i => this.showInvoice(i.id, data.online_pay)
         });
 
         const payments = this.ui.table({
@@ -846,7 +866,7 @@ class Portal {
             el('section.portal-panel', el('header.portal-panel__head', el('h2', 'Payments')), payments));
     }
 
-    async showInvoice(id) {
+    async showInvoice(id, onlinePay = false) {
         const { invoice } = await this.api.portalInvoice(id);
         const { el, money, date } = this.ui;
         const items = this.ui.table({
@@ -859,14 +879,39 @@ class Portal {
             rows: invoice.items,
             empty: 'No line items.'
         });
+
+        const paid = (invoice.payments || []).reduce((s, p) => s + (p.amount_cents || 0), 0);
+        const outstanding = invoice.total_cents - paid;
+        const canPay = onlinePay && invoice.status !== 'void' && outstanding > 0;
+
         this.ui.modal({
             title: `Invoice ${invoice.number}`,
             width: 640,
             body: el('div',
                 el('p.muted', `Issued ${date(invoice.issued_on)} · Due ${date(invoice.due_on)}`),
                 items,
-                el('p.portal-invoice-total', el('strong', `Total: ${money(invoice.total_cents)}`)))
+                el('p.portal-invoice-total', el('strong', `Total: ${money(invoice.total_cents)}`)),
+                outstanding > 0 && paid > 0
+                    ? el('p.portal-invoice-total', el('strong', `Balance due: ${money(outstanding)}`))
+                    : null,
+                canPay
+                    ? el('div.portal-form-actions',
+                        el('button.btn.btn--primary', {
+                            type: 'button',
+                            onclick: () => this.payInvoice(invoice)
+                        }, `Pay ${money(outstanding)} online`))
+                    : null)
         });
+    }
+
+    /** Off to Stripe's hosted page; the webhook records the payment on the way back. */
+    async payInvoice(invoice) {
+        try {
+            const { url } = await this.api.portalInvoiceCheckout(invoice.id);
+            window.location.href = url;
+        } catch (err) {
+            this.ui.toast(err.message || 'Could not start the payment.', 'bad');
+        }
     }
 
     /* ---------------- profile ---------------- */

@@ -20,6 +20,7 @@ const auth = require('./server/auth');
 const publicRoutes = require('./server/routes.public');
 const { sessionRouter, adminRouter } = require('./server/routes.admin');
 const { portalSessionRouter, portalRouter } = require('./server/routes.portal');
+const { webhook: stripeWebhook } = require('./server/routes.stripe');
 const { handleUploadError } = require('./server/uploads');
 
 function mount(app, { base = '' } = {}) {
@@ -27,6 +28,11 @@ function mount(app, { base = '' } = {}) {
     auth.ensureAdminPassword();
 
     const router = express.Router();
+
+    // Stripe verifies its webhook against the exact bytes it sent, so this route
+    // must see the RAW body - it goes BEFORE the JSON parser that would otherwise
+    // consume and re-shape it. It has no auth of its own; the signature is the auth.
+    router.post('/api/stripe/webhook', express.raw({ type: '*/*' }), stripeWebhook);
 
     // The root server already parses JSON, but a standalone host might not, and
     // parsing twice is harmless.

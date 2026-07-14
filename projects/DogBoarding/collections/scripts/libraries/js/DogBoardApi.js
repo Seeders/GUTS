@@ -333,6 +333,7 @@ class DogBoardApi {
 
     portalBilling() { return this.portalRequest('GET', '/api/portal/billing'); }
     portalInvoice(id) { return this.portalRequest('GET', `/api/portal/invoices/${id}`); }
+    portalInvoiceCheckout(id) { return this.portalRequest('POST', `/api/portal/invoices/${id}/checkout`); }
 
     portalAvailability(params) {
         return this.portalRequest('GET', `/api/portal/availability${DogBoardApi.qs(params)}`);

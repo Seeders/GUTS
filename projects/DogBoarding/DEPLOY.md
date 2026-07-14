@@ -278,3 +278,38 @@ sudo systemctl restart guts
 
 The volume at `/mnt/dogboard` is untouched by this, so client data survives the
 update.
+
+---
+
+## Online payments (Stripe)
+
+Clients can pay an invoice from the portal via Stripe's hosted Checkout page. No
+card data touches this server (lowest PCI tier). Payments are recorded by a
+webhook, not the browser redirect, so a closed tab can't desync the books.
+
+**Setup:**
+
+1. In the Stripe dashboard, grab your API keys. Use **test** keys first
+   (`sk_test_…`).
+2. Add a **webhook endpoint** in Stripe → Developers → Webhooks, listening for
+   `checkout.session.completed`, pointed at:
+   ```
+   https://<your-domain>/projects/DogBoarding/api/stripe/webhook
+   ```
+   Copy its signing secret (`whsec_…`).
+3. Set these on the server (systemd `EnvironmentFile`, or `/etc/guts.env`):
+   ```
+   STRIPE_SECRET_KEY=sk_test_...
+   STRIPE_WEBHOOK_SECRET=whsec_...
+   ```
+   With no key set, the portal simply omits the "Pay" button and staff record
+   payments by hand — nothing breaks.
+4. Restart the service.
+
+**Caddy note:** the webhook and the portal API live under `/api/…`. If you use
+the clean-URL rewrite, make sure the reverse proxy forwards `/api/stripe/*` and
+`/api/portal/*` to the app (add them alongside `/api/public/*` and `/api/admin/*`
+in the rewrite matcher), or Stripe's POST will 404.
+
+**Testing:** with test keys, pay with card `4242 4242 4242 4242`, any future
+expiry, any CVC. The invoice should show `paid` a moment after the webhook fires.
