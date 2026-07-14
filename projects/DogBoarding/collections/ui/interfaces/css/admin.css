@@ -360,50 +360,58 @@
 .dot--in { background: var(--sage); }
 .dot--out { background: var(--clay); }
 
+/* The hamburger bar and the scrim exist only on mobile. */
+.admin__bar { display: none; }
+.admin__scrim { display: none; }
+
 @media (max-width: 860px) {
     .admin { flex-direction: column; }
 
-    /* The sidebar becomes a top bar. A compact brand on the left with the
-       public-site / log-out links on the right, and the section links in a
-       horizontal, swipeable strip underneath — not a tall stack of full-width
-       links sitting on top of the page. */
-    .side {
-        position: sticky; top: 0; z-index: 40;
-        width: 100%; height: auto;
-        flex-direction: row; flex-wrap: wrap; align-items: center;
-        gap: 8px 10px; padding: 10px 14px;
+    /* Slim top bar with the hamburger. */
+    .admin__bar {
+        display: flex; align-items: center; gap: 8px;
+        position: sticky; top: 0; z-index: 45;
+        padding: 8px 10px;
+        background: var(--ink); color: #fff;
     }
+    .admin__menu {
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 40px; height: 40px;
+        font-size: 21px; line-height: 1;
+        color: #fff; background: none; border: 0;
+        border-radius: var(--radius-sm); cursor: pointer;
+    }
+    .admin__menu:hover { background: rgba(255, 255, 255, .1); }
+    .admin__bar-brand { font-weight: 650; font-size: 15px; }
+
+    /* Dim the page behind the open drawer; tapping it closes. */
+    .admin__scrim {
+        display: block;
+        position: fixed; inset: 0; z-index: 55;
+        background: rgba(20, 18, 16, .5);
+    }
+
+    /* The sidebar is an off-canvas drawer, hidden until the hamburger opens it.
+       Its contents go back to the natural vertical list. */
+    .side {
+        position: fixed; top: 0; left: 0; z-index: 60;
+        width: 264px; max-width: 82vw; height: 100dvh;
+        flex-direction: column; align-items: stretch;
+        gap: 2px; padding: 16px 12px;
+        overflow-y: auto;
+        transform: translateX(-100%);
+        transition: transform .22s ease;
+    }
+    .admin.side-open .side { transform: none; box-shadow: 0 0 40px rgba(0, 0, 0, .4); }
 
     .side__brand {
-        order: 1; flex: 1 1 auto; min-width: 0;
-        border: 0; margin: 0; padding: 0;
+        border-bottom: 1px solid rgba(255, 255, 255, .09);
+        margin-bottom: 14px; padding: 6px 10px 20px;
     }
-    .side__brand strong { font-size: 15px; }
-    .side__brand small { display: none; }        /* drop "Boarding management" */
-
-    .side__foot {
-        order: 2; flex: 0 0 auto;
-        flex-direction: row; gap: 4px;
-        border: 0; padding: 0;
-    }
-    .side__foot .side__link { padding: 8px 10px; font-size: 13px; }
-
-    .side__nav {
-        order: 3; flex: 1 1 100%;
-        min-width: 0;                   /* let the strip shrink; its own scroll takes over */
-        flex-direction: row; flex-wrap: nowrap;
-        gap: 4px;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        padding-bottom: 2px;
-        scrollbar-width: none;
-    }
-    .side__nav::-webkit-scrollbar { display: none; }
-    .side__nav .side__link {
-        width: auto; flex: 0 0 auto;
-        white-space: nowrap;
-        padding: 8px 12px;
-    }
+    .side__brand small { display: block; }
+    .side__nav { flex-direction: column; flex-wrap: nowrap; gap: 2px; }
+    .side__nav .side__link { width: 100%; }
+    .side__foot { flex-direction: column; }
 
     .admin__main { min-width: 0; max-width: 100%; }
     .admin__content { padding: 20px 16px 60px; max-width: 100%; }

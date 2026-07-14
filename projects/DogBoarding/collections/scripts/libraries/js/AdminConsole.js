@@ -61,6 +61,7 @@ class AdminConsole {
 
         this.renderNav(root, section);
         this.wireLogout(root);
+        this.wireDrawer(root);
 
         const content = root.querySelector('[data-content]');
         this.ui.mount(content, this.ui.spinner());
@@ -99,6 +100,32 @@ class AdminConsole {
             await this.api.logout();
             this.app.navigate('/admin');
         };
+    }
+
+    /**
+     * The mobile hamburger. The sidebar is an off-canvas drawer on a phone; this
+     * opens and closes it. Everything is idempotent (.onclick, not
+     * addEventListener) because render() runs on every route and re-wires here.
+     */
+    wireDrawer(root) {
+        const admin = root.querySelector('[data-console]');
+        const toggle = root.querySelector('[data-side-toggle]');
+        const scrim = root.querySelector('[data-side-close]');
+        const side = root.querySelector('.side');
+
+        const setOpen = open => {
+            admin.classList.toggle('side-open', open);
+            if (scrim) scrim.hidden = !open;
+            if (toggle) toggle.setAttribute('aria-expanded', String(open));
+        };
+
+        if (toggle) toggle.onclick = () => setOpen(!admin.classList.contains('side-open'));
+        if (scrim) scrim.onclick = () => setOpen(false);
+
+        // Tapping any link in the drawer (a section, Public site, Log out) closes it.
+        if (side) side.onclick = e => { if (e.target.closest('a, button')) setOpen(false); };
+
+        setOpen(false); // always start closed after a route change
     }
 
     /** Clear whatever the last attempt left behind. The submit itself is delegated. */

@@ -36,6 +36,18 @@
 <!-- ===================== the console ===================== -->
 <div class="admin" data-console hidden>
 
+  <!-- Mobile only: a slim bar with the hamburger. On desktop the sidebar is
+       always shown and this is hidden. -->
+  <header class="admin__bar">
+    <button type="button" class="admin__menu" data-side-toggle aria-label="Open menu" aria-expanded="false">
+      <span class="admin__menu-icon">☰</span>
+    </button>
+    <span class="admin__bar-brand" data-bind="admin.brand.heading"></span>
+  </header>
+
+  <!-- Tapping outside the drawer closes it. -->
+  <div class="admin__scrim" data-side-close hidden></div>
+
   <aside class="side">
     <div class="side__brand">
       <span class="side__logo">🐾</span>
