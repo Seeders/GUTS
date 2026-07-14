@@ -55,6 +55,13 @@ CREATE TABLE IF NOT EXISTS clients (
     emergency_relationship TEXT,
     notes           TEXT,
     status          TEXT NOT NULL DEFAULT 'pending',
+    -- When the client finished the new-client form. NULL means they have signed
+    -- up but not filled it in yet (the portal shows them onboarding). This is
+    -- deliberately NOT the status column: status is the staff's review of the
+    -- client (pending until someone approves them), and the two are different
+    -- questions. Overloading one for both is what made a brand-new client look
+    -- pre-approved.
+    onboarded_at    TEXT,
     created_at      TEXT NOT NULL,
     updated_at      TEXT NOT NULL
 );
@@ -287,8 +294,27 @@ function open() {
 
     migrateOffServicesTable();
     migrateSessionsForAccounts();
+    migrateClientsOnboarded();
     seed();
     return db;
+}
+
+/**
+ * Add clients.onboarded_at to databases that predate it.
+ *
+ * Every client already on file filled the form the old way, so backfill them
+ * from created_at - otherwise the portal would decide they had never onboarded
+ * and march them back through it. The stub clients the new signup creates have
+ * an empty first_name and are left NULL, which is exactly what marks them as
+ * still needing to fill the form in.
+ */
+function migrateClientsOnboarded() {
+    const cols = db.prepare('PRAGMA table_info(clients)').all().map(c => c.name);
+    if (cols.includes('onboarded_at')) return;
+
+    db.exec('ALTER TABLE clients ADD COLUMN onboarded_at TEXT;');
+    db.exec(`UPDATE clients SET onboarded_at = created_at
+             WHERE onboarded_at IS NULL AND TRIM(COALESCE(first_name, '')) != ''`);
 }
 
 /**

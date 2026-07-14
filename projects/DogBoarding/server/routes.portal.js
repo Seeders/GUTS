@@ -217,7 +217,7 @@ portalSessionRouter.get('/me', (req, res) => {
         return res.json({ authenticated: false });
     }
     const client = clientSummary(account.client_id);
-    res.json({ authenticated: true, client, needs_onboarding: client.status === 'pending' });
+    res.json({ authenticated: true, client, needs_onboarding: !client.onboarded_at });
 });
 
 /* =====================================================================
@@ -249,7 +249,7 @@ portalRouter.get('/overview', (req, res) => {
         bookings: { upcoming, past },
         recentServices,
         balance_cents: balanceCents(clientId),
-        needs_onboarding: client.status === 'pending'
+        needs_onboarding: !client.onboarded_at
     });
 });
 
@@ -281,7 +281,10 @@ portalRouter.post('/onboarding', (req, res, next) => {
                 const e = auth.normalizeEmail(data.email);
                 if (EMAIL_RE.test(e)) data.email = e; else delete data.email;
             }
-            data.status = 'active';
+            // They have filled the form in - but that is not the same as staff
+            // having approved them. Mark the form done and leave `status` alone
+            // ('pending'), so the client shows up for review in the back office.
+            data.onboarded_at = now;
             data.updated_at = now;
             db.update('clients', clientId, data);
 
