@@ -24,6 +24,7 @@ const chokidar = require('chokidar');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const vm = require('vm');
+const { makeEditorGate } = require('./editor-auth');
 
 // CLI Arguments
 const args = process.argv.slice(2);
@@ -139,6 +140,24 @@ app.use((req, res, next) => {
     }
     next();
 });
+
+/**
+ * Editor authentication.
+ *
+ * The editor endpoints below (/save-file, /delete-folder, /save-compiled-game,
+ * …) can write, read and delete arbitrary files under projects/ and compile the
+ * game bundle the server serves — unauthenticated, they are remote code
+ * execution and data exfiltration to anyone who reaches the port. This gate
+ * stands in front of every editor surface (the endpoints and the /projects/Editor
+ * page); non-editor requests — games, static assets, the sprite-atlas read
+ * endpoint, sockets, project backends — pass straight through untouched.
+ *
+ * It sits before express.static so it can also gate the editor page itself.
+ * Mounted after mountProjectBackends() above, so DogBoarding's own auth is
+ * unaffected. See editor-auth.js for the GUTS_EDITOR_PASSWORD / GUTS_EDITOR_USER
+ * configuration and the dev-open / prod-fail-closed behaviour.
+ */
+app.use(makeEditorGate({ isProduction }));
 
 // Serve static files from the entire repo
 app.use(express.static(BASE_DIR, {

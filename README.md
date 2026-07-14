@@ -70,6 +70,43 @@ A comprehensive data-driven game development framework providing a flexible ECS 
 
 ---
 
+## Exposing the server to the internet
+
+`npm run server` (`server.js`) hosts every project **and the editor**. The editor's
+filesystem endpoints (`/save-file`, `/delete-folder`, `/save-compiled-game`, …) can
+read, write and delete arbitrary files under `projects/` and compile the game bundle
+the server serves. On localhost that is a convenience; open to the internet it is
+remote code execution. The editor is therefore gated behind authentication.
+
+| Environment variable | Default | Purpose |
+|----------------------|---------|---------|
+| `GUTS_EDITOR_PASSWORD` | *(unset)* | Enables editor auth. **Required to expose the server.** |
+| `GUTS_EDITOR_USER` | `admin` | Username for the editor login prompt. |
+
+Behaviour:
+
+- **Password set** — the editor page and every editor endpoint require an HTTP
+  Basic login (the browser shows its native dialog; no editor code changes). Games,
+  static assets, multiplayer sockets and each project's own backend stay public.
+- **Password unset, production** (`--prod`) — editor endpoints are refused (`503`),
+  fail-closed. Games still serve.
+- **Password unset, development** — editor stays open for the local workflow; the
+  server warns at boot. Do not expose a dev server without a password.
+
+```bash
+# behind a TLS-terminating proxy (Caddy/nginx), never plain HTTP on the internet
+GUTS_EDITOR_PASSWORD='choose-a-strong-one' \
+GUTS_EDITOR_USER='admin' \
+node server.js 8080 --prod
+```
+
+TLS is still your responsibility: Basic Auth sends the password base64-encoded on
+every request, so it must ride over HTTPS. Terminate TLS at a reverse proxy in front
+of this server. Per-project private data (e.g. `projects/DogBoarding/secure/`) is
+blocked from static serving independently of this gate.
+
+---
+
 ## Example Projects
 
 ### Turn-Based Warfare
