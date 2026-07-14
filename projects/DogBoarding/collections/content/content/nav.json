@@ -12,10 +12,6 @@
       "route": "/services"
     },
     {
-      "label": "New Client Form",
-      "route": "/register"
-    },
-    {
       "label": "My Account",
       "route": "/portal"
     }

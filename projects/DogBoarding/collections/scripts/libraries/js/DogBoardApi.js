@@ -290,9 +290,12 @@ class DogBoardApi {
     }
 
     portalMe() { return this.portalRequest('GET', '/api/portal/session/me'); }
-    portalSignup(email, password) {
-        return this.portalRequest('POST', '/api/portal/session/signup', { email, password });
+    async portalSignup(email, password) {
+        const result = await this.portalRequest('POST', '/api/portal/session/signup', { email, password });
+        if (result.token) this.setPortalToken(result.token); // signup logs you straight in
+        return result;
     }
+    portalOnboarding(payload) { return this.portalRequest('POST', '/api/portal/onboarding', payload); }
     async portalLogin(email, password) {
         const result = await this.portalRequest('POST', '/api/portal/session/login', { email, password });
         this.setPortalToken(result.token);

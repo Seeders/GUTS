@@ -150,3 +150,12 @@
     .portal-top { flex-direction: column; align-items: stretch; }
     .portal-actions { flex-direction: column; align-items: stretch; }
 }
+
+/* ===== onboarding (first-run New Client Form inside the portal) ===== */
+.portal-onboard { max-width: 42rem; margin: 0 auto; }
+.portal-onboard > h1 { margin: 0 0 0.25rem; }
+.portal-onboard .fieldset { margin: 1.25rem 0; }
+.portal-onboard .fieldset__head h2 { font-size: 1.1rem; margin: 0 0 0.15rem; }
+.portal-onboard .fieldset__body { display: grid; gap: 0.75rem; }
+.portal-onboard .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+@media (max-width: 520px) { .portal-onboard .field-row { grid-template-columns: 1fr; } }

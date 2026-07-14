@@ -57,6 +57,9 @@ const CLIENT_PROFILE_FIELDS = ['first_name', 'last_name', 'email', 'phone', 'alt
     'address1', 'address2', 'city', 'state', 'postal_code', 'country',
     'emergency_name', 'emergency_phone', 'emergency_relationship'];
 
+// Onboarding writes the same client fields as the profile screen.
+const ONBOARD_CLIENT_FIELDS = CLIENT_PROFILE_FIELDS;
+
 const PET_FIELDS = ['name', 'breed', 'sex', 'birthdate', 'weight_lbs', 'color', 'fixed',
     'microchip', 'feeding', 'medications', 'allergies', 'behavior_notes', 'vet_notes', 'vet_id'];
 
@@ -107,7 +110,7 @@ const portalSessionRouter = express.Router();
  * record, not a way to create strangers. The account starts pending until the
  * email is verified (or an admin approves it when no mailer is configured).
  */
-portalSessionRouter.post('/signup', async (req, res, next) => {
+portalSessionRouter.post('/signup', (req, res, next) => {
     try {
         const email = auth.normalizeEmail(req.body.email);
         const password = String(req.body.password || '');
@@ -116,48 +119,30 @@ portalSessionRouter.post('/signup', async (req, res, next) => {
         if (password.length < MIN_PASSWORD) {
             throw fail(400, `Choose a password of at least ${MIN_PASSWORD} characters.`);
         }
-
-        const existing = auth.getAccountByEmail(email);
-        if (existing && existing.status === 'active') {
-            throw fail(409, 'An account with this email already exists. Try logging in or resetting your password.');
+        if (auth.getAccountByEmail(email)) {
+            throw fail(409, 'An account with this email already exists. Try logging in instead.');
         }
 
-        const client = db.get('SELECT id FROM clients WHERE lower(email) = ?', email);
-        if (!client) {
-            throw fail(404, "We couldn't find a client on file with that email. If you're new, please fill out the registration form first, or contact us.");
-        }
-
-        const verifyToken = crypto.randomBytes(24).toString('hex');
-        const verifyExpires = new Date(Date.now() + VERIFY_DAYS * 86400_000).toISOString();
-
-        if (existing) {
-            // A pending account trying again: reset its password and re-issue the token.
-            auth.setAccountPassword(existing.id, password);
-            db.update('accounts', existing.id, {
-                client_id: client.id, verify_token: verifyToken,
-                verify_expires: verifyExpires, updated_at: db.nowIso()
+        // The account comes first, with a stub client attached. The client fills
+        // in who they are and their dogs after they log in (onboarding), so there
+        // is exactly one way to register - this form - and no approval step.
+        const now = db.nowIso();
+        const account = db.tx(() => {
+            const clientId = db.insert('clients', {
+                first_name: '', last_name: '', email, phone: '',
+                status: 'pending', created_at: now, updated_at: now
             });
-        } else {
-            auth.createAccount({
-                role: 'client', email, password, client_id: client.id,
-                status: 'pending', email_verified: 0,
-                verify_token: verifyToken, verify_expires: verifyExpires
+            return auth.createAccount({
+                role: 'client', email, password, client_id: clientId,
+                status: 'active', email_verified: 1
             });
-        }
-
-        const link = `${absoluteBase(req)}/verify?token=${verifyToken}`;
-        await mailer.send({
-            to: email,
-            subject: 'Confirm your Dog Boarding account',
-            text: `Welcome! Confirm your account by opening this link:\n\n${link}\n\n` +
-                `If you did not request this, you can ignore this email.`
         });
 
-        const activation = mailer.configured()
-            ? 'Check your email for a link to confirm your account.'
-            : 'Your account is awaiting approval. We will activate it shortly.';
-
-        res.json({ ok: true, pending: true, message: `Account created. ${activation}` });
+        const session = auth.createAccountSession(account);
+        res.json({
+            ok: true, token: session.token, expiresAt: session.expiresAt,
+            client: clientSummary(account.client_id), needs_onboarding: true
+        });
     } catch (err) { next(err); }
 });
 
@@ -231,7 +216,8 @@ portalSessionRouter.get('/me', (req, res) => {
     if (!account || account.status !== 'active' || !account.client_id) {
         return res.json({ authenticated: false });
     }
-    res.json({ authenticated: true, client: clientSummary(account.client_id) });
+    const client = clientSummary(account.client_id);
+    res.json({ authenticated: true, client, needs_onboarding: client.status === 'pending' });
 });
 
 /* =====================================================================
@@ -262,8 +248,62 @@ portalRouter.get('/overview', (req, res) => {
         pets,
         bookings: { upcoming, past },
         recentServices,
-        balance_cents: balanceCents(clientId)
+        balance_cents: balanceCents(clientId),
+        needs_onboarding: client.status === 'pending'
     });
+});
+
+/**
+ * Onboarding: the first thing a new account does after signing up. It fills in
+ * the stub client record with who they are, their vet, and their dogs, and flips
+ * the client from 'pending' to 'active'. Scoped to req.clientId - it can only
+ * ever complete the caller's own record.
+ */
+portalRouter.post('/onboarding', (req, res, next) => {
+    try {
+        const clientId = req.clientId;
+        const c = req.body.client || {};
+        const v = req.body.vet || {};
+        const pets = Array.isArray(req.body.pets) ? req.body.pets : [];
+
+        if (!String(c.first_name || '').trim() || !String(c.last_name || '').trim()) {
+            throw fail(400, 'Your first and last name are required.');
+        }
+        if (!String(c.phone || '').trim()) throw fail(400, 'A phone number is required.');
+        if (!pets.length || !String(pets[0].name || '').trim()) {
+            throw fail(400, 'Please tell us about at least one dog.');
+        }
+
+        const now = db.nowIso();
+        db.tx(() => {
+            const data = pick(c, ONBOARD_CLIENT_FIELDS);
+            if (data.email) {
+                const e = auth.normalizeEmail(data.email);
+                if (EMAIL_RE.test(e)) data.email = e; else delete data.email;
+            }
+            data.status = 'active';
+            data.updated_at = now;
+            db.update('clients', clientId, data);
+
+            let vetId = null;
+            if (String(v.clinic_name || '').trim()) {
+                vetId = db.insert('vets', { ...pick(v, VET_FIELDS), created_at: now });
+            }
+
+            for (const p of pets) {
+                if (!String(p.name || '').trim()) continue;
+                const pd = pick(p, PET_FIELDS);
+                if (pd.fixed !== undefined) pd.fixed = pd.fixed ? 1 : 0;
+                if (pd.weight_lbs) pd.weight_lbs = Number(pd.weight_lbs);
+                pd.vet_id = vetId;
+                db.insert('pets', {
+                    ...pd, client_id: clientId, status: 'active', created_at: now, updated_at: now
+                });
+            }
+        });
+
+        res.json({ ok: true, client: clientSummary(clientId), needs_onboarding: false });
+    } catch (err) { next(err); }
 });
 
 /* ---- profile ---- */

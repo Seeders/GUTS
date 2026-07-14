@@ -52,6 +52,7 @@ class Portal {
         }
 
         this.client = me.client;
+        if (me.needs_onboarding) return this.showOnboarding(root);
         this.showApp(root, this.section(path));
     }
 
@@ -94,13 +95,8 @@ class Portal {
         const errEl = form.querySelector('[data-portal-error]');
         const { email, password } = this.ui.readForm(form);
         try {
-            const result = await this.api.portalSignup(email, password);
-            this.ui.toast(result.message || 'Account created.', 'good');
-            // Drop them back on the sign-in view.
-            const auth = this.root.querySelector('[data-portal-auth]');
-            auth.querySelectorAll('[data-auth-view]').forEach(node => {
-                node.hidden = node.dataset.authView !== 'login';
-            });
+            await this.api.portalSignup(email, password); // creates the account and logs in
+            this.app.navigate('/portal');                 // -> onboarding, since the client is a stub
         } catch (err) {
             if (errEl) errEl.textContent = err.message || 'Could not create the account.';
         }
@@ -156,6 +152,114 @@ class Portal {
             if (err.status === 401) return; // portal-unauthorized event will re-route
             this.ui.mount(content, this.ui.el('div.empty',
                 this.ui.el('p', err.message || 'Something went wrong.')));
+        }
+    }
+
+    /* ---------------- onboarding (first run) ---------------- */
+
+    showOnboarding(root) {
+        root.querySelector('[data-portal-auth]').hidden = true;
+        root.querySelector('[data-portal-app]').hidden = false;
+
+        const user = root.querySelector('[data-portal-user]');
+        if (user) user.textContent = this.client.email || '';
+        const logout = root.querySelector('[data-portal-logout]');
+        if (logout) logout.onclick = () => this.logout();
+        const tabs = root.querySelector('[data-portal-tabs]');
+        if (tabs) this.ui.clear(tabs); // no navigation until they finish setup
+
+        this.onboarding(root.querySelector('[data-portal-content]'));
+    }
+
+    onboarding(content) {
+        const { el } = this.ui;
+
+        const intake = this.forms.render('intake');
+        const dogsHost = el('div.portal-cards');
+        let dogCount = 0;
+
+        const addDog = () => {
+            const index = dogCount++;
+            const card = el('div.portal-card',
+                el('header.portal-card__head',
+                    el('h3', `Dog ${index + 1}`),
+                    el('button.linkbtn.linkbtn--danger', {
+                        type: 'button',
+                        onclick: () => {
+                            if (dogsHost.children.length > 1) card.remove();
+                            else this.ui.toast('You need at least one dog.', 'warn');
+                        }
+                    }, 'Remove')),
+                this.forms.renderFields('intakePet'));
+            dogsHost.appendChild(card);
+        };
+        addDog();
+
+        const submit = el('button.btn.btn--primary', { type: 'button' }, 'Finish setup');
+        submit.onclick = () => this.submitOnboarding(intake, dogsHost, submit);
+
+        this.ui.mount(content,
+            el('div.portal-onboard',
+                el('h1', 'Welcome! Let’s set up your account'),
+                el('p.muted', 'Tell us about you and your dogs. You can change any of this later.'),
+                intake,
+                el('div.portal-actions',
+                    el('h2', 'Your dogs'),
+                    el('button.btn', { type: 'button', onclick: addDog }, '+ Add another dog')),
+                dogsHost,
+                el('div.portal-form-actions', submit)));
+    }
+
+    async submitOnboarding(intakeContainer, dogsHost, btn) {
+        const top = this.forms.read('intake', intakeContainer);
+        const specs = this.forms.fieldSpecs('intakePet');
+
+        const pets = [];
+        [...dogsHost.children].forEach(card => {
+            const pet = {};
+            for (const spec of specs) {
+                const input = card.querySelector(`[name="${spec.name}"]`);
+                if (!input) continue;
+                pet[spec.name] = spec.type === 'checkbox' ? input.checked : input.value.trim();
+            }
+            if (pet.name) pets.push(pet);
+        });
+
+        const payload = {
+            client: {
+                first_name: top.first_name, last_name: top.last_name,
+                email: top.email, phone: top.phone, alt_phone: top.alt_phone,
+                address1: top.address1, address2: top.address2,
+                city: top.city, state: top.state, postal_code: top.postal_code,
+                emergency_name: top.emergency_name, emergency_phone: top.emergency_phone,
+                emergency_relationship: top.emergency_relationship
+            },
+            vet: {
+                clinic_name: top.vet_clinic_name, vet_name: top.vet_name,
+                phone: top.vet_phone, email: top.vet_email,
+                address1: top.vet_address1, city: top.vet_city,
+                state: top.vet_state, postal_code: top.vet_postal_code
+            },
+            pets
+        };
+
+        if (!payload.client.first_name || !payload.client.last_name) {
+            this.ui.toast('Please enter your name.', 'bad'); return;
+        }
+        if (!payload.client.phone) { this.ui.toast('Please enter a phone number.', 'bad'); return; }
+        if (!pets.length) { this.ui.toast('Please add at least one dog.', 'bad'); return; }
+
+        btn.disabled = true;
+        const original = btn.textContent;
+        btn.textContent = 'Saving…';
+        try {
+            await this.api.portalOnboarding(payload);
+            this.ui.toast('You’re all set!', 'good');
+            this.app.navigate('/portal');
+        } catch (err) {
+            this.ui.toast(err.message || 'Could not save.', 'bad');
+            btn.disabled = false;
+            btn.textContent = original;
         }
     }
 
