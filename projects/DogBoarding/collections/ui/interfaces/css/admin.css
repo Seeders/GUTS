@@ -361,17 +361,53 @@
 .dot--out { background: var(--clay); }
 
 @media (max-width: 860px) {
-    .side {
-        position: static;
-        width: 100%; height: auto;
-        flex-direction: row; align-items: center; flex-wrap: wrap;
-        gap: 6px; padding: 12px;
-    }
     .admin { flex-direction: column; }
-    .side__brand { border: 0; margin: 0; padding: 0 10px 0 0; }
-    .side__nav { flex-direction: row; flex-wrap: wrap; flex: 1; }
-    .side__foot { flex-direction: row; border: 0; padding: 0; }
-    .admin__content { padding: 20px 16px 60px; }
+
+    /* The sidebar becomes a top bar. A compact brand on the left with the
+       public-site / log-out links on the right, and the section links in a
+       horizontal, swipeable strip underneath — not a tall stack of full-width
+       links sitting on top of the page. */
+    .side {
+        position: sticky; top: 0; z-index: 40;
+        width: 100%; height: auto;
+        flex-direction: row; flex-wrap: wrap; align-items: center;
+        gap: 8px 10px; padding: 10px 14px;
+    }
+
+    .side__brand {
+        order: 1; flex: 1 1 auto; min-width: 0;
+        border: 0; margin: 0; padding: 0;
+    }
+    .side__brand strong { font-size: 15px; }
+    .side__brand small { display: none; }        /* drop "Boarding management" */
+
+    .side__foot {
+        order: 2; flex: 0 0 auto;
+        flex-direction: row; gap: 4px;
+        border: 0; padding: 0;
+    }
+    .side__foot .side__link { padding: 8px 10px; font-size: 13px; }
+
+    .side__nav {
+        order: 3; flex: 1 1 100%;
+        flex-direction: row; flex-wrap: nowrap;
+        gap: 4px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        margin: 2px -14px -2px;         /* bleed to the edges, pad back in */
+        padding: 2px 14px;
+        scrollbar-width: none;
+    }
+    .side__nav::-webkit-scrollbar { display: none; }
+    .side__nav .side__link {
+        width: auto; flex: 0 0 auto;
+        white-space: nowrap;
+        padding: 8px 12px;
+    }
+
+    .admin__main { min-width: 0; max-width: 100%; }
+    .admin__content { padding: 20px 16px 60px; max-width: 100%; }
+    .panel, .month-strip, .stat, .table-wrap { min-width: 0; max-width: 100%; }
 }
 
 /* ===== calendar (month grid) ===== */
