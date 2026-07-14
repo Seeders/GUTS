@@ -1,0 +1,8 @@
+{
+  "title": "My Account",
+  "description": "The client portal: sign in / sign up, and everything a client can see and edit about their own dogs and billing.",
+  "route": "/portal",
+  "page": "portal",
+  "interface": "portal",
+  "systems": []
+}

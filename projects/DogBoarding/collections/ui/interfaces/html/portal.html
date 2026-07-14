@@ -1,0 +1,90 @@
+<!--
+  The client portal. Two states, like the back office: an auth wall (sign in /
+  sign up) and the signed-in app. The Portal library fills [data-portal-content]
+  and toggles between the two panes; login and signup submit through the app's
+  one delegated submit handler.
+-->
+
+<!-- ===================== auth wall ===================== -->
+<div class="portal-auth" data-portal-auth hidden>
+  <div class="portal-auth__card">
+    <div class="portal-brand">
+      <span class="portal-brand__logo">🐾</span>
+      <strong data-bind="portal.brand.heading">My Account</strong>
+    </div>
+
+    <!-- sign in -->
+    <div data-auth-view="login">
+      <h1 data-bind="portal.login.heading">Welcome back</h1>
+      <p class="muted" data-bind="portal.login.lede">Sign in to see your dogs and billing.</p>
+      <form class="portal-form" data-portal-login-form onsubmit="return false" method="post">
+        <label class="field">
+          <span class="field__label">Email</span>
+          <input type="email" name="email" required autocomplete="email">
+        </label>
+        <label class="field">
+          <span class="field__label">Password</span>
+          <input type="password" name="password" required autocomplete="current-password">
+        </label>
+        <p class="portal-error" data-portal-error></p>
+        <button type="submit" class="btn btn--primary btn--block">Sign in</button>
+      </form>
+      <p class="portal-switch">New here? <button type="button" class="linkbtn" data-show-signup>Create an account</button></p>
+    </div>
+
+    <!-- sign up -->
+    <div data-auth-view="signup" hidden>
+      <h1 data-bind="portal.signup.heading">Create your account</h1>
+      <p class="muted" data-bind="portal.signup.lede">Use the email address we have on file for you.</p>
+      <form class="portal-form" data-portal-signup-form onsubmit="return false" method="post">
+        <label class="field">
+          <span class="field__label">Email</span>
+          <input type="email" name="email" required autocomplete="email">
+        </label>
+        <label class="field">
+          <span class="field__label">Password</span>
+          <input type="password" name="password" required minlength="8" autocomplete="new-password">
+        </label>
+        <p class="portal-error" data-portal-error></p>
+        <button type="submit" class="btn btn--primary btn--block">Create account</button>
+      </form>
+      <p class="portal-switch">Already have an account? <button type="button" class="linkbtn" data-show-login>Sign in</button></p>
+    </div>
+
+    <a class="portal-back" href="#/">← Back to the main site</a>
+  </div>
+</div>
+
+<!-- ===================== signed-in app ===================== -->
+<div class="portal" data-portal-app hidden>
+  <header class="portal-top">
+    <div class="portal-top__brand">
+      <span class="portal-top__logo">🐾</span>
+      <strong data-bind="portal.brand.heading">My Account</strong>
+    </div>
+    <nav class="portal-tabs" data-portal-tabs></nav>
+    <div class="portal-top__user">
+      <span class="portal-top__name" data-portal-user></span>
+      <button type="button" class="btn btn--ghost btn--sm" data-portal-logout>Log out</button>
+    </div>
+  </header>
+
+  <main class="portal-main" data-portal-content></main>
+</div>
+
+<!-- ============ modal chrome (shared with the app) ============ -->
+<template data-template="modal">
+  <div class="modal-overlay">
+    <div class="modal">
+      <header class="modal__head">
+        <h2 data-modal-title></h2>
+        <button type="button" class="modal__x" data-modal-close title="Close">×</button>
+      </header>
+      <div class="modal__body" data-modal-body></div>
+      <footer class="modal__foot">
+        <button type="button" class="btn" data-modal-cancel>Cancel</button>
+        <button type="button" class="btn btn--primary" data-modal-confirm>Save</button>
+      </footer>
+    </div>
+  </div>
+</template>

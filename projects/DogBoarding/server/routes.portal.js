@@ -1,0 +1,491 @@
+/**
+ * DogBoarding - client portal.
+ *
+ * Two routers:
+ *   portalSessionRouter  (unauthenticated)  signup / login / logout / me / verify
+ *   portalRouter         (requireClient)     everything a logged-in client can see
+ *
+ * The one rule that matters here: a client may only ever touch their own data.
+ * requireClient sets req.clientId, and EVERY query in the authenticated router
+ * is scoped to it - either `WHERE client_id = ?` or an ownership check that
+ * returns 404 (not 403) for anything that isn't theirs, so the portal never even
+ * confirms that another client's row exists.
+ */
+
+const express = require('express');
+const crypto = require('crypto');
+const path = require('path');
+const fs = require('fs');
+
+const db = require('./db');
+const auth = require('./auth');
+const mailer = require('./mailer');
+const { upload } = require('./uploads');
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const MIN_PASSWORD = 8;
+const VERIFY_DAYS = 3;
+
+/* ------------------------------ helpers ------------------------------ */
+
+function fail(status, message) {
+    const err = new Error(message);
+    err.status = status;
+    return err;
+}
+
+/** Keep only allowed keys; drop undefined so partial updates stay partial. */
+function pick(body, fields) {
+    const out = {};
+    for (const key of fields) {
+        if (body[key] !== undefined) out[key] = body[key] === '' ? null : body[key];
+    }
+    return out;
+}
+
+function toCents(value) {
+    if (value === null || value === undefined || value === '') return null;
+    return Math.round(Number(value) * 100);
+}
+
+function absoluteBase(req) {
+    const proto = req.get('x-forwarded-proto') || req.protocol;
+    return `${proto}://${req.get('host')}${req.baseUrl}`;
+}
+
+const CLIENT_PROFILE_FIELDS = ['first_name', 'last_name', 'email', 'phone', 'alt_phone',
+    'address1', 'address2', 'city', 'state', 'postal_code', 'country',
+    'emergency_name', 'emergency_phone', 'emergency_relationship'];
+
+const PET_FIELDS = ['name', 'breed', 'sex', 'birthdate', 'weight_lbs', 'color', 'fixed',
+    'microchip', 'feeding', 'medications', 'allergies', 'behavior_notes', 'vet_notes', 'vet_id'];
+
+const VET_FIELDS = ['clinic_name', 'vet_name', 'phone', 'email',
+    'address1', 'address2', 'city', 'state', 'postal_code', 'notes'];
+
+const RECORD_FIELDS = ['record_type', 'issued_on', 'expires_on', 'notes'];
+
+/** A pet that belongs to this client, or null. */
+function ownedPet(clientId, petId) {
+    return db.get('SELECT * FROM pets WHERE id = ? AND client_id = ?', petId, clientId) || null;
+}
+
+/** A vet linked to at least one of this client's pets, or null. */
+function ownedVet(clientId, vetId) {
+    return db.get(
+        `SELECT v.* FROM vets v
+         WHERE v.id = ?
+           AND EXISTS (SELECT 1 FROM pets p WHERE p.vet_id = v.id AND p.client_id = ?)`,
+        vetId, clientId) || null;
+}
+
+function clientSummary(clientId) {
+    const c = db.get('SELECT * FROM clients WHERE id = ?', clientId);
+    if (!c) return null;
+    return c;
+}
+
+/** Outstanding balance in cents: issued (non-void) invoices minus payments. */
+function balanceCents(clientId) {
+    const invoiced = db.get(
+        `SELECT COALESCE(SUM(total_cents), 0) AS n FROM invoices
+         WHERE client_id = ? AND status != 'void'`, clientId).n;
+    const paid = db.get(
+        'SELECT COALESCE(SUM(amount_cents), 0) AS n FROM payments WHERE client_id = ?', clientId).n;
+    return invoiced - paid;
+}
+
+/* =====================================================================
+ * Session router (unauthenticated): signup, login, logout, me, verify
+ * ===================================================================== */
+
+const portalSessionRouter = express.Router();
+
+/**
+ * Self-service signup. The email must already be on file as a client (created by
+ * the registration form or by staff) - the portal is a door into an existing
+ * record, not a way to create strangers. The account starts pending until the
+ * email is verified (or an admin approves it when no mailer is configured).
+ */
+portalSessionRouter.post('/signup', async (req, res, next) => {
+    try {
+        const email = auth.normalizeEmail(req.body.email);
+        const password = String(req.body.password || '');
+
+        if (!EMAIL_RE.test(email)) throw fail(400, 'Enter a valid email address.');
+        if (password.length < MIN_PASSWORD) {
+            throw fail(400, `Choose a password of at least ${MIN_PASSWORD} characters.`);
+        }
+
+        const existing = auth.getAccountByEmail(email);
+        if (existing && existing.status === 'active') {
+            throw fail(409, 'An account with this email already exists. Try logging in or resetting your password.');
+        }
+
+        const client = db.get('SELECT id FROM clients WHERE lower(email) = ?', email);
+        if (!client) {
+            throw fail(404, "We couldn't find a client on file with that email. If you're new, please fill out the registration form first, or contact us.");
+        }
+
+        const verifyToken = crypto.randomBytes(24).toString('hex');
+        const verifyExpires = new Date(Date.now() + VERIFY_DAYS * 86400_000).toISOString();
+
+        if (existing) {
+            // A pending account trying again: reset its password and re-issue the token.
+            auth.setAccountPassword(existing.id, password);
+            db.update('accounts', existing.id, {
+                client_id: client.id, verify_token: verifyToken,
+                verify_expires: verifyExpires, updated_at: db.nowIso()
+            });
+        } else {
+            auth.createAccount({
+                role: 'client', email, password, client_id: client.id,
+                status: 'pending', email_verified: 0,
+                verify_token: verifyToken, verify_expires: verifyExpires
+            });
+        }
+
+        const link = `${absoluteBase(req)}/verify?token=${verifyToken}`;
+        await mailer.send({
+            to: email,
+            subject: 'Confirm your Dog Boarding account',
+            text: `Welcome! Confirm your account by opening this link:\n\n${link}\n\n` +
+                `If you did not request this, you can ignore this email.`
+        });
+
+        const activation = mailer.configured()
+            ? 'Check your email for a link to confirm your account.'
+            : 'Your account is awaiting approval. We will activate it shortly.';
+
+        res.json({ ok: true, pending: true, message: `Account created. ${activation}` });
+    } catch (err) { next(err); }
+});
+
+/** Verify an email from the link in the signup message. Renders a small page. */
+portalSessionRouter.get('/verify', (req, res) => {
+    const token = String(req.query.token || '');
+    const account = token
+        ? db.get("SELECT * FROM accounts WHERE verify_token = ? AND role = 'client'", token)
+        : null;
+
+    const page = (title, body) => `<!doctype html><html><head><meta charset="utf-8">` +
+        `<meta name="viewport" content="width=device-width, initial-scale=1">` +
+        `<title>${title}</title><style>body{font-family:system-ui,sans-serif;max-width:32rem;` +
+        `margin:4rem auto;padding:0 1rem;line-height:1.5;color:#1f2937}a{color:#2563eb}` +
+        `.card{border:1px solid #e5e7eb;border-radius:12px;padding:1.5rem}</style></head>` +
+        `<body><div class="card">${body}</div></body></html>`;
+
+    if (!account) {
+        return res.status(400).send(page('Link expired',
+            '<h1>That link is invalid or expired.</h1><p>Please sign in again to request a new one.</p>'));
+    }
+    if (account.verify_expires && account.verify_expires < db.nowIso()) {
+        return res.status(400).send(page('Link expired',
+            '<h1>That confirmation link has expired.</h1><p>Please sign up again to get a new one.</p>'));
+    }
+
+    db.update('accounts', account.id, {
+        email_verified: 1, status: 'active', verify_token: null,
+        verify_expires: null, updated_at: db.nowIso()
+    });
+
+    res.send(page('Account confirmed',
+        '<h1>Your account is confirmed.</h1><p>You can now sign in to your account.</p>' +
+        '<p><a href="../../../#/portal">Go to sign in</a></p>'));
+});
+
+/** Client login. Clients only - staff use the back office. */
+portalSessionRouter.post('/login', (req, res, next) => {
+    try {
+        const email = auth.normalizeEmail(req.body.email);
+        const password = String(req.body.password || '');
+
+        const account = auth.verifyAccountPassword(email, password);
+        if (!account || account.role !== 'client') {
+            throw fail(401, 'Invalid email or password.');
+        }
+        if (account.status === 'disabled') throw fail(403, 'This account has been disabled. Please contact us.');
+        if (account.status !== 'active') {
+            throw fail(403, mailer.configured()
+                ? 'Please confirm your email before signing in - check your inbox.'
+                : 'Your account is awaiting approval. We will activate it shortly.');
+        }
+
+        const session = auth.createAccountSession(account);
+        res.json({ ok: true, token: session.token, expiresAt: session.expiresAt, client: clientSummary(account.client_id) });
+    } catch (err) { next(err); }
+});
+
+portalSessionRouter.post('/logout', (req, res) => {
+    auth.logout(auth.tokenFromRequest(req));
+    res.json({ ok: true });
+});
+
+/** Answer whether the presented token is a live client session. Never 401s. */
+portalSessionRouter.get('/me', (req, res) => {
+    const info = auth.sessionInfo(auth.tokenFromRequest(req));
+    if (!info || info.role !== 'client' || !info.accountId) {
+        return res.json({ authenticated: false });
+    }
+    const account = auth.getAccountById(info.accountId);
+    if (!account || account.status !== 'active' || !account.client_id) {
+        return res.json({ authenticated: false });
+    }
+    res.json({ authenticated: true, client: clientSummary(account.client_id) });
+});
+
+/* =====================================================================
+ * Portal router (requireClient): everything scoped to req.clientId
+ * ===================================================================== */
+
+const portalRouter = express.Router();
+
+/** The dashboard payload: who they are, their dogs, bookings, balance, services. */
+portalRouter.get('/overview', (req, res) => {
+    const clientId = req.clientId;
+    const client = clientSummary(clientId);
+    const pets = db.all("SELECT * FROM pets WHERE client_id = ? ORDER BY status, name", clientId);
+    const today = db.today();
+
+    const upcoming = db.all(
+        `SELECT * FROM bookings WHERE client_id = ? AND check_out >= ?
+         ORDER BY check_in ASC LIMIT 10`, clientId, today);
+    const past = db.all(
+        `SELECT * FROM bookings WHERE client_id = ? AND check_out < ?
+         ORDER BY check_out DESC LIMIT 10`, clientId, today);
+    const recentServices = db.all(
+        `SELECT id, pet_id, description, performed_on, amount_cents
+         FROM service_events WHERE client_id = ? ORDER BY performed_on DESC LIMIT 15`, clientId);
+
+    res.json({
+        client,
+        pets,
+        bookings: { upcoming, past },
+        recentServices,
+        balance_cents: balanceCents(clientId)
+    });
+});
+
+/* ---- profile ---- */
+
+portalRouter.get('/profile', (req, res) => {
+    res.json({ client: clientSummary(req.clientId) });
+});
+
+portalRouter.put('/profile', (req, res, next) => {
+    try {
+        const data = pick(req.body, CLIENT_PROFILE_FIELDS);
+        if (data.email !== undefined) {
+            const email = auth.normalizeEmail(data.email);
+            if (!EMAIL_RE.test(email)) throw fail(400, 'Enter a valid email address.');
+            data.email = email;
+        }
+        if (Object.keys(data).length) {
+            data.updated_at = db.nowIso();
+            db.update('clients', req.clientId, data);
+        }
+        res.json({ ok: true, client: clientSummary(req.clientId) });
+    } catch (err) { next(err); }
+});
+
+portalRouter.post('/password', (req, res, next) => {
+    try {
+        const current = String(req.body.current_password || '');
+        const next_ = String(req.body.new_password || '');
+        if (next_.length < MIN_PASSWORD) throw fail(400, `Choose a password of at least ${MIN_PASSWORD} characters.`);
+        if (!auth.verifyPassword(current, req.account.password_hash)) {
+            throw fail(403, 'Your current password is incorrect.');
+        }
+        auth.setAccountPassword(req.account.id, next_);
+        // Changing the password dropped this session too; the client must log in again.
+        res.json({ ok: true, message: 'Password changed. Please sign in again.' });
+    } catch (err) { next(err); }
+});
+
+/* ---- dogs (pets) ---- */
+
+portalRouter.get('/pets', (req, res) => {
+    const pets = db.all('SELECT * FROM pets WHERE client_id = ? ORDER BY status, name', req.clientId);
+    for (const pet of pets) {
+        pet.records = db.all('SELECT * FROM vet_records WHERE pet_id = ? ORDER BY issued_on DESC', pet.id);
+    }
+    res.json({ pets });
+});
+
+portalRouter.get('/pets/:id', (req, res, next) => {
+    try {
+        const pet = ownedPet(req.clientId, req.params.id);
+        if (!pet) throw fail(404, 'Not found.');
+        pet.records = db.all('SELECT * FROM vet_records WHERE pet_id = ? ORDER BY issued_on DESC', pet.id);
+        res.json({ pet });
+    } catch (err) { next(err); }
+});
+
+portalRouter.post('/pets', (req, res, next) => {
+    try {
+        const data = pick(req.body, PET_FIELDS);
+        if (!data.name) throw fail(400, "Your dog's name is required.");
+        if (data.fixed !== undefined) data.fixed = data.fixed ? 1 : 0;
+        if (data.weight_lbs !== undefined && data.weight_lbs !== null) data.weight_lbs = Number(data.weight_lbs);
+        if (data.vet_id) {
+            if (!ownedVet(req.clientId, data.vet_id)) data.vet_id = null;
+        }
+        const now = db.nowIso();
+        const id = db.insert('pets', {
+            ...data, client_id: req.clientId, status: 'active', created_at: now, updated_at: now
+        });
+        res.json({ ok: true, pet: db.get('SELECT * FROM pets WHERE id = ?', id) });
+    } catch (err) { next(err); }
+});
+
+portalRouter.put('/pets/:id', (req, res, next) => {
+    try {
+        const pet = ownedPet(req.clientId, req.params.id);
+        if (!pet) throw fail(404, 'Not found.');
+        const data = pick(req.body, PET_FIELDS);
+        if (data.fixed !== undefined) data.fixed = data.fixed ? 1 : 0;
+        if (data.weight_lbs !== undefined && data.weight_lbs !== null) data.weight_lbs = Number(data.weight_lbs);
+        if (data.vet_id) {
+            if (!ownedVet(req.clientId, data.vet_id)) throw fail(400, 'That veterinarian is not on your account.');
+        }
+        if (Object.keys(data).length) {
+            data.updated_at = db.nowIso();
+            db.update('pets', pet.id, data);
+        }
+        res.json({ ok: true, pet: db.get('SELECT * FROM pets WHERE id = ?', pet.id) });
+    } catch (err) { next(err); }
+});
+
+/**
+ * Remove a dog. If it carries history (charges, invoice lines, past stays) it is
+ * archived, not deleted - the books must not lose the record of a real service.
+ * A dog with no history is deleted outright.
+ */
+portalRouter.delete('/pets/:id', (req, res, next) => {
+    try {
+        const pet = ownedPet(req.clientId, req.params.id);
+        if (!pet) throw fail(404, 'Not found.');
+
+        const referenced =
+            db.get('SELECT COUNT(*) AS n FROM service_events WHERE pet_id = ?', pet.id).n +
+            db.get('SELECT COUNT(*) AS n FROM invoice_items WHERE pet_id = ?', pet.id).n +
+            db.get('SELECT COUNT(*) AS n FROM booking_pets WHERE pet_id = ?', pet.id).n;
+
+        if (referenced > 0) {
+            db.update('pets', pet.id, { status: 'archived', updated_at: db.nowIso() });
+            return res.json({ ok: true, archived: true, message: `${pet.name} was archived (it has past activity on file).` });
+        }
+        db.remove('pets', pet.id);
+        res.json({ ok: true, deleted: true, message: `${pet.name} was removed.` });
+    } catch (err) { next(err); }
+});
+
+/* ---- vet records ---- */
+
+portalRouter.post('/pets/:id/records', upload.single('file'), (req, res, next) => {
+    try {
+        const pet = ownedPet(req.clientId, req.params.id);
+        if (!pet) throw fail(404, 'Not found.');
+        const data = pick(req.body, RECORD_FIELDS);
+        if (!data.record_type) throw fail(400, 'Choose a record type.');
+
+        const file = req.file;
+        const id = db.insert('vet_records', {
+            pet_id: pet.id,
+            record_type: data.record_type,
+            issued_on: data.issued_on || null,
+            expires_on: data.expires_on || null,
+            file_path: file ? path.basename(file.path) : null,
+            original_name: file ? file.originalname : null,
+            mime_type: file ? file.mimetype : null,
+            size_bytes: file ? file.size : null,
+            notes: data.notes || null,
+            verified: 0,
+            created_at: db.nowIso()
+        });
+        res.json({ ok: true, record: db.get('SELECT * FROM vet_records WHERE id = ?', id) });
+    } catch (err) { next(err); }
+});
+
+portalRouter.delete('/records/:id', (req, res, next) => {
+    try {
+        const record = db.get(
+            `SELECT r.* FROM vet_records r JOIN pets p ON p.id = r.pet_id
+             WHERE r.id = ? AND p.client_id = ?`, req.params.id, req.clientId);
+        if (!record) throw fail(404, 'Not found.');
+        db.remove('vet_records', record.id);
+        res.json({ ok: true });
+    } catch (err) { next(err); }
+});
+
+/** Serve an uploaded record file - only if it belongs to this client's pet. */
+portalRouter.get('/files/record/:id', (req, res, next) => {
+    try {
+        const record = db.get(
+            `SELECT r.* FROM vet_records r JOIN pets p ON p.id = r.pet_id
+             WHERE r.id = ? AND p.client_id = ?`, req.params.id, req.clientId);
+        if (!record || !record.file_path) throw fail(404, 'Not found.');
+
+        const safe = path.basename(record.file_path);
+        const full = path.join(db.UPLOAD_DIR, safe);
+        if (!fs.existsSync(full)) throw fail(404, 'File is missing.');
+
+        if (record.mime_type) res.type(record.mime_type);
+        res.setHeader('Content-Disposition',
+            `inline; filename="${(record.original_name || safe).replace(/"/g, '')}"`);
+        fs.createReadStream(full).pipe(res);
+    } catch (err) { next(err); }
+});
+
+/* ---- veterinarians ---- */
+
+portalRouter.get('/vets', (req, res) => {
+    const vets = db.all(
+        `SELECT DISTINCT v.* FROM vets v
+         JOIN pets p ON p.vet_id = v.id
+         WHERE p.client_id = ? ORDER BY v.clinic_name`, req.clientId);
+    res.json({ vets });
+});
+
+portalRouter.post('/vets', (req, res, next) => {
+    try {
+        const data = pick(req.body, VET_FIELDS);
+        if (!data.clinic_name) throw fail(400, 'The clinic name is required.');
+        const id = db.insert('vets', { ...data, created_at: db.nowIso() });
+        res.json({ ok: true, vet: db.get('SELECT * FROM vets WHERE id = ?', id) });
+    } catch (err) { next(err); }
+});
+
+portalRouter.put('/vets/:id', (req, res, next) => {
+    try {
+        if (!ownedVet(req.clientId, req.params.id)) throw fail(404, 'Not found.');
+        const data = pick(req.body, VET_FIELDS);
+        if (Object.keys(data).length) db.update('vets', req.params.id, data);
+        res.json({ ok: true, vet: db.get('SELECT * FROM vets WHERE id = ?', req.params.id) });
+    } catch (err) { next(err); }
+});
+
+/* ---- billing (read-only) ---- */
+
+portalRouter.get('/billing', (req, res) => {
+    const clientId = req.clientId;
+    const invoices = db.all(
+        "SELECT * FROM invoices WHERE client_id = ? AND status != 'draft' ORDER BY issued_on DESC", clientId);
+    const payments = db.all(
+        'SELECT * FROM payments WHERE client_id = ? ORDER BY paid_on DESC', clientId);
+    res.json({ invoices, payments, balance_cents: balanceCents(clientId) });
+});
+
+portalRouter.get('/invoices/:id', (req, res, next) => {
+    try {
+        const invoice = db.get(
+            "SELECT * FROM invoices WHERE id = ? AND client_id = ? AND status != 'draft'",
+            req.params.id, req.clientId);
+        if (!invoice) throw fail(404, 'Not found.');
+        invoice.items = db.all('SELECT * FROM invoice_items WHERE invoice_id = ? ORDER BY id', invoice.id);
+        invoice.payments = db.all('SELECT * FROM payments WHERE invoice_id = ? ORDER BY paid_on', invoice.id);
+        res.json({ invoice });
+    } catch (err) { next(err); }
+});
+
+module.exports = { portalSessionRouter, portalRouter };

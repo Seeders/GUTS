@@ -1,0 +1,13 @@
+{
+  "title": "Client portal copy",
+  "order": 7,
+  "brand": { "heading": "My Account" },
+  "login": {
+    "heading": "Welcome back",
+    "lede": "Sign in to see your dogs, records and billing."
+  },
+  "signup": {
+    "heading": "Create your account",
+    "lede": "Use the same email address we have on file for you. If we can't find you, fill out the registration form first."
+  }
+}

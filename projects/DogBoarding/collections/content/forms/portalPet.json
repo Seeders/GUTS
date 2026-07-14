@@ -1,0 +1,25 @@
+{
+  "title": "Your dog",
+  "order": 20,
+  "fields": [
+    { "name": "name", "label": "Name", "type": "text", "required": true, "half": true },
+    { "name": "breed", "label": "Breed", "type": "text", "half": true },
+    { "name": "sex", "label": "Sex", "type": "select", "half": true,
+      "options": [
+        { "value": "", "label": "—" },
+        { "value": "male", "label": "Male" },
+        { "value": "female", "label": "Female" }
+      ] },
+    { "name": "birthdate", "label": "Birthdate", "type": "date", "half": true },
+    { "name": "weight_lbs", "label": "Weight (lbs)", "type": "number", "step": "0.1", "half": true },
+    { "name": "color", "label": "Color", "type": "text", "half": true },
+    { "name": "fixed", "label": "Spayed / neutered", "type": "checkbox" },
+    { "name": "microchip", "label": "Microchip #", "type": "text" },
+    { "name": "vet_id", "label": "Veterinarian", "type": "select", "optionsFrom": "clientVets",
+      "hint": "Add a vet below first if theirs isn't listed." },
+    { "name": "feeding", "label": "Feeding instructions", "type": "textarea", "rows": 2 },
+    { "name": "medications", "label": "Medications", "type": "textarea", "rows": 2 },
+    { "name": "allergies", "label": "Allergies", "type": "textarea", "rows": 2 },
+    { "name": "behavior_notes", "label": "Behavior notes", "type": "textarea", "rows": 2 }
+  ]
+}

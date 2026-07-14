@@ -1,0 +1,470 @@
+/**
+ * Portal - the client-facing account area.
+ *
+ * A logged-in client sees only their own dogs, records, vets, bookings and
+ * billing. The server enforces that (every /api/portal call is scoped to the
+ * session's own client id); this class just renders it. It mirrors AdminConsole:
+ * an auth wall when logged out, a tabbed app when logged in, all built from the
+ * same DogBoardUI helpers and FormRenderer schemas the rest of the app uses.
+ *
+ * Login and signup submit through the app's one delegated submit handler
+ * (DogBoardingApp), which calls submitLogin / submitSignup here.
+ */
+class Portal {
+    constructor(app) {
+        this.app = app;
+        this.engine = app.engine;
+        this.api = app.api;
+        this.ui = app.ui;
+        this.forms = app.forms;
+    }
+
+    get collections() {
+        return this.engine.collections;
+    }
+
+    bindingData() {
+        return { portal: this.collections.content?.portal || {} };
+    }
+
+    section(path) {
+        const rest = String(path).replace(/^\/portal\/?/, '');
+        return rest.split('/')[0] || 'dashboard';
+    }
+
+    async render(root, path) {
+        this.root = root;
+        this.ui.bind(root, this.bindingData());
+
+        if (!this.api.portalToken) {
+            return this.showAuth(root);
+        }
+
+        let me;
+        try {
+            me = await this.api.portalMe();
+        } catch {
+            me = { authenticated: false };
+        }
+        if (!me || !me.authenticated) {
+            this.api.setPortalToken(null);
+            return this.showAuth(root);
+        }
+
+        this.client = me.client;
+        this.showApp(root, this.section(path));
+    }
+
+    /* ---------------- auth wall ---------------- */
+
+    showAuth(root) {
+        const auth = root.querySelector('[data-portal-auth]');
+        const app = root.querySelector('[data-portal-app]');
+        if (app) app.hidden = true;
+        if (!auth) return;
+        auth.hidden = false;
+
+        const show = view => {
+            auth.querySelectorAll('[data-auth-view]').forEach(node => {
+                node.hidden = node.dataset.authView !== view;
+            });
+            const err = auth.querySelector(`[data-auth-view="${view}"] [data-portal-error]`);
+            if (err) err.textContent = '';
+        };
+
+        const toSignup = auth.querySelector('[data-show-signup]');
+        const toLogin = auth.querySelector('[data-show-login]');
+        if (toSignup) toSignup.onclick = () => show('signup');
+        if (toLogin) toLogin.onclick = () => show('login');
+        show('login');
+    }
+
+    async submitLogin(form) {
+        const errEl = form.querySelector('[data-portal-error]');
+        const { email, password } = this.ui.readForm(form);
+        try {
+            await this.api.portalLogin(email, password);
+            this.app.navigate('/portal');
+        } catch (err) {
+            if (errEl) errEl.textContent = err.message || 'Could not sign in.';
+        }
+    }
+
+    async submitSignup(form) {
+        const errEl = form.querySelector('[data-portal-error]');
+        const { email, password } = this.ui.readForm(form);
+        try {
+            const result = await this.api.portalSignup(email, password);
+            this.ui.toast(result.message || 'Account created.', 'good');
+            // Drop them back on the sign-in view.
+            const auth = this.root.querySelector('[data-portal-auth]');
+            auth.querySelectorAll('[data-auth-view]').forEach(node => {
+                node.hidden = node.dataset.authView !== 'login';
+            });
+        } catch (err) {
+            if (errEl) errEl.textContent = err.message || 'Could not create the account.';
+        }
+    }
+
+    async logout() {
+        await this.api.portalLogout();
+        this.app.navigate('/portal');
+    }
+
+    /* ---------------- signed-in shell ---------------- */
+
+    showApp(root, section) {
+        root.querySelector('[data-portal-auth]').hidden = true;
+        const app = root.querySelector('[data-portal-app]');
+        app.hidden = false;
+
+        const user = root.querySelector('[data-portal-user]');
+        if (user) user.textContent = `${this.client.first_name} ${this.client.last_name}`;
+        const logout = root.querySelector('[data-portal-logout]');
+        if (logout) logout.onclick = () => this.logout();
+
+        this.renderTabs(root, section);
+
+        const content = root.querySelector('[data-portal-content]');
+        this.ui.mount(content, this.ui.spinner());
+        this.renderSection(section, content);
+    }
+
+    renderTabs(root, active) {
+        const tabs = [
+            { id: 'dashboard', label: 'Overview', route: '/portal' },
+            { id: 'dogs', label: 'My Dogs', route: '/portal/dogs' },
+            { id: 'billing', label: 'Billing', route: '/portal/billing' },
+            { id: 'profile', label: 'Profile', route: '/portal/profile' }
+        ];
+        const host = root.querySelector('[data-portal-tabs]');
+        if (!host) return;
+        this.ui.mount(host, tabs.map(tab =>
+            this.ui.el('a.portal-tab', {
+                href: `#${tab.route}`,
+                class: tab.id === active ? 'portal-tab--active' : ''
+            }, tab.label)));
+    }
+
+    async renderSection(section, content) {
+        try {
+            if (section === 'dogs') return await this.dogs(content);
+            if (section === 'billing') return await this.billing(content);
+            if (section === 'profile') return await this.profile(content);
+            return await this.dashboard(content);
+        } catch (err) {
+            if (err.status === 401) return; // portal-unauthorized event will re-route
+            this.ui.mount(content, this.ui.el('div.empty',
+                this.ui.el('p', err.message || 'Something went wrong.')));
+        }
+    }
+
+    /* ---------------- dashboard ---------------- */
+
+    async dashboard(content) {
+        const data = await this.api.portalOverview();
+        const { el, money, date } = this.ui;
+
+        const stat = (label, value, tone) => el('div.portal-stat',
+            el('span.portal-stat__label', label),
+            el('strong.portal-stat__value', { class: tone ? `portal-stat__value--${tone}` : '' }, value));
+
+        const balance = data.balance_cents || 0;
+
+        const bookingRows = [...(data.bookings.upcoming || [])].map(b =>
+            el('li.portal-line',
+                el('span', `${date(b.check_in)} → ${date(b.check_out)}`),
+                this.ui.badge(b.status, this.ui.statusTone(b.status))));
+
+        const serviceRows = (data.recentServices || []).slice(0, 8).map(s =>
+            el('li.portal-line',
+                el('span', s.description),
+                el('span.muted', `${date(s.performed_on)} · ${money(s.amount_cents)}`)));
+
+        this.ui.mount(content,
+            el('div.portal-grid',
+                stat('Dogs on file', String((data.pets || []).filter(p => p.status !== 'archived').length)),
+                stat('Upcoming stays', String((data.bookings.upcoming || []).length)),
+                stat('Balance due', money(balance), balance > 0 ? 'due' : 'ok')),
+
+            el('section.portal-panel',
+                el('header.portal-panel__head', el('h2', 'Upcoming stays')),
+                bookingRows.length
+                    ? el('ul.portal-list', bookingRows)
+                    : this.ui.empty('No upcoming stays booked.')),
+
+            el('section.portal-panel',
+                el('header.portal-panel__head', el('h2', 'Recent services')),
+                serviceRows.length
+                    ? el('ul.portal-list', serviceRows)
+                    : this.ui.empty('No services yet.')));
+    }
+
+    /* ---------------- dogs ---------------- */
+
+    vetOptions() {
+        return [{ value: '', label: '— none on file —' }].concat(
+            (this.vets || []).map(v => ({ value: String(v.id), label: v.clinic_name })));
+    }
+
+    async dogs(content) {
+        const [{ pets }, { vets }] = await Promise.all([
+            this.api.portalPets(), this.api.portalVets()
+        ]);
+        this.vets = vets;
+        const { el } = this.ui;
+
+        const petCards = pets.map(pet => this.petCard(pet));
+
+        this.ui.mount(content,
+            el('div.portal-actions',
+                el('h2', 'My Dogs'),
+                el('button.btn.btn--primary', { onclick: () => this.editDog(null) }, '+ Add a dog')),
+            pets.length
+                ? el('div.portal-cards', petCards)
+                : this.ui.empty('No dogs on file yet.'),
+
+            el('div.portal-actions',
+                el('h2', 'Veterinarians'),
+                el('button.btn', { onclick: () => this.editVet(null) }, '+ Add a vet')),
+            vets.length
+                ? el('div.portal-cards', vets.map(v => this.vetCard(v)))
+                : this.ui.empty('No veterinarians on file yet.'));
+    }
+
+    petCard(pet) {
+        const { el, date } = this.ui;
+        const vet = (this.vets || []).find(v => String(v.id) === String(pet.vet_id));
+
+        const records = (pet.records || []).map(r =>
+            el('li.portal-line',
+                el('span', `${this.ui.titleCase(r.record_type)}${r.expires_on ? ' · exp ' + date(r.expires_on) : ''}`),
+                el('span.portal-line__actions',
+                    r.file_path
+                        ? el('a.linkbtn', { href: this.api.portalRecordFileUrl(r.id), target: '_blank' }, 'View')
+                        : null,
+                    el('button.linkbtn.linkbtn--danger',
+                        { onclick: () => this.removeRecord(r) }, 'Remove'))));
+
+        return el('div.portal-card',
+            pet.status === 'archived' ? el('span.badge.badge--neutral', 'Archived') : null,
+            el('header.portal-card__head',
+                el('h3', pet.name),
+                el('span.muted', [pet.breed, pet.sex].filter(Boolean).join(' · ') || '')),
+            el('div.portal-card__body',
+                el('ul.portal-list',
+                    el('li.portal-line', el('span.muted', 'Vet'), el('span', vet ? vet.clinic_name : '—')),
+                    records.length ? records : el('li.portal-line', el('span.muted', 'No records on file'), null))),
+            el('footer.portal-card__foot',
+                el('button.btn.btn--sm', { onclick: () => this.editDog(pet) }, 'Edit'),
+                el('button.btn.btn--sm', { onclick: () => this.addRecord(pet) }, 'Add record'),
+                el('button.btn.btn--sm.btn--danger', { onclick: () => this.removeDog(pet) }, 'Remove')));
+    }
+
+    vetCard(vet) {
+        const { el } = this.ui;
+        return el('div.portal-card',
+            el('header.portal-card__head', el('h3', vet.clinic_name),
+                el('span.muted', vet.vet_name || '')),
+            el('div.portal-card__body',
+                el('ul.portal-list',
+                    vet.phone ? el('li.portal-line', el('span.muted', 'Phone'), el('span', vet.phone)) : null,
+                    vet.email ? el('li.portal-line', el('span.muted', 'Email'), el('span', vet.email)) : null,
+                    el('li.portal-line', el('span.muted', 'City'),
+                        el('span', [vet.city, vet.state].filter(Boolean).join(', ') || '—')))),
+            el('footer.portal-card__foot',
+                el('button.btn.btn--sm', { onclick: () => this.editVet(vet) }, 'Edit')));
+    }
+
+    editDog(pet) {
+        const values = pet ? { ...pet } : {};
+        const body = this.forms.renderFields('portalPet', values, { clientVets: this.vetOptions() });
+        this.ui.modal({
+            title: pet ? `Edit ${pet.name}` : 'Add a dog',
+            body,
+            confirmLabel: pet ? 'Save' : 'Add dog',
+            onConfirm: async (container) => {
+                const data = this.forms.read('portalPet', container);
+                if (!data.name) { this.ui.toast('Your dog needs a name.', 'bad'); return false; }
+                if (pet) await this.api.portalUpdatePet(pet.id, data);
+                else await this.api.portalCreatePet(data);
+                this.ui.toast('Saved.', 'good');
+                this.route();
+            }
+        });
+    }
+
+    async removeDog(pet) {
+        const ok = await this.ui.confirm(
+            `Remove ${pet.name}? If ${pet.name} has past stays or charges, the record is archived rather than deleted.`,
+            { title: 'Remove dog', confirmLabel: 'Remove' });
+        if (!ok) return;
+        const result = await this.api.portalDeletePet(pet.id);
+        this.ui.toast(result.message || 'Removed.', 'good');
+        this.route();
+    }
+
+    addRecord(pet) {
+        const body = this.forms.renderFields('portalRecord', {});
+        this.ui.modal({
+            title: `Add a record for ${pet.name}`,
+            body,
+            confirmLabel: 'Add record',
+            onConfirm: async (container) => {
+                const data = this.forms.read('portalRecord', container);
+                if (!data.record_type) { this.ui.toast('Choose a record type.', 'bad'); return false; }
+                const fd = new FormData();
+                for (const [k, v] of Object.entries(data)) {
+                    if (k === 'file') { if (v) fd.append('file', v); }
+                    else if (v !== null && v !== undefined && v !== '') fd.append(k, v);
+                }
+                await this.api.portalAddRecord(pet.id, fd);
+                this.ui.toast('Record added.', 'good');
+                this.route();
+            }
+        });
+    }
+
+    async removeRecord(record) {
+        const ok = await this.ui.confirm('Remove this record?', { title: 'Remove record', confirmLabel: 'Remove' });
+        if (!ok) return;
+        await this.api.portalDeleteRecord(record.id);
+        this.ui.toast('Removed.', 'good');
+        this.route();
+    }
+
+    editVet(vet) {
+        const body = this.forms.renderFields('portalVet', vet ? { ...vet } : {});
+        this.ui.modal({
+            title: vet ? `Edit ${vet.clinic_name}` : 'Add a veterinarian',
+            body,
+            confirmLabel: 'Save',
+            onConfirm: async (container) => {
+                const data = this.forms.read('portalVet', container);
+                if (!data.clinic_name) { this.ui.toast('The clinic name is required.', 'bad'); return false; }
+                if (vet) await this.api.portalUpdateVet(vet.id, data);
+                else await this.api.portalCreateVet(data);
+                this.ui.toast('Saved.', 'good');
+                this.route();
+            }
+        });
+    }
+
+    /* ---------------- billing ---------------- */
+
+    async billing(content) {
+        const data = await this.api.portalBilling();
+        const { el, money, date } = this.ui;
+        const balance = data.balance_cents || 0;
+
+        const invoices = this.ui.table({
+            columns: [
+                { label: 'Invoice', render: i => i.number },
+                { label: 'Issued', render: i => date(i.issued_on) },
+                { label: 'Due', render: i => date(i.due_on) },
+                { label: 'Total', align: 'right', render: i => money(i.total_cents) },
+                { label: 'Status', render: i => this.ui.badge(i.status, this.ui.statusTone(i.status)) }
+            ],
+            rows: data.invoices,
+            empty: 'No invoices yet.',
+            onRowClick: i => this.showInvoice(i.id)
+        });
+
+        const payments = this.ui.table({
+            columns: [
+                { label: 'Date', render: p => date(p.paid_on) },
+                { label: 'Method', render: p => this.ui.titleCase(p.method) },
+                { label: 'Amount', align: 'right', render: p => money(p.amount_cents) }
+            ],
+            rows: data.payments,
+            empty: 'No payments recorded.'
+        });
+
+        this.ui.mount(content,
+            el('div.portal-billing-head',
+                el('div.portal-stat',
+                    el('span.portal-stat__label', 'Balance due'),
+                    el('strong.portal-stat__value',
+                        { class: balance > 0 ? 'portal-stat__value--due' : 'portal-stat__value--ok' },
+                        money(balance)))),
+            el('section.portal-panel', el('header.portal-panel__head', el('h2', 'Invoices')), invoices),
+            el('section.portal-panel', el('header.portal-panel__head', el('h2', 'Payments')), payments));
+    }
+
+    async showInvoice(id) {
+        const { invoice } = await this.api.portalInvoice(id);
+        const { el, money, date } = this.ui;
+        const items = this.ui.table({
+            columns: [
+                { label: 'Description', render: r => r.description },
+                { label: 'When', render: r => date(r.performed_on) },
+                { label: 'Qty', align: 'right', render: r => r.qty },
+                { label: 'Amount', align: 'right', render: r => money(r.amount_cents) }
+            ],
+            rows: invoice.items,
+            empty: 'No line items.'
+        });
+        this.ui.modal({
+            title: `Invoice ${invoice.number}`,
+            width: 640,
+            body: el('div',
+                el('p.muted', `Issued ${date(invoice.issued_on)} · Due ${date(invoice.due_on)}`),
+                items,
+                el('p.portal-invoice-total', el('strong', `Total: ${money(invoice.total_cents)}`)))
+        });
+    }
+
+    /* ---------------- profile ---------------- */
+
+    async profile(content) {
+        const { client } = await this.api.portalProfile();
+        const { el } = this.ui;
+
+        const form = el('form.portal-profile-form', { onsubmit: e => e.preventDefault() },
+            this.forms.renderFields('portalProfile', client),
+            el('div.portal-form-actions',
+                el('button.btn.btn--primary', { type: 'submit' }, 'Save changes')));
+
+        form.addEventListener('submit', async () => {
+            const data = this.forms.read('portalProfile', form);
+            try {
+                await this.api.portalUpdateProfile(data);
+                this.ui.toast('Profile updated.', 'good');
+            } catch (err) {
+                this.ui.toast(err.message || 'Could not save.', 'bad');
+            }
+        });
+
+        this.ui.mount(content,
+            el('div.portal-actions',
+                el('h2', 'Your details'),
+                el('button.btn', { onclick: () => this.changePassword() }, 'Change password')),
+            el('section.portal-panel', form));
+    }
+
+    changePassword() {
+        const body = this.forms.renderFields('portalPassword', {});
+        this.ui.modal({
+            title: 'Change password',
+            body,
+            confirmLabel: 'Change password',
+            onConfirm: async (container) => {
+                const data = this.forms.read('portalPassword', container);
+                if (!data.new_password || data.new_password.length < 8) {
+                    this.ui.toast('Choose a password of at least 8 characters.', 'bad');
+                    return false;
+                }
+                const result = await this.api.portalChangePassword(data.current_password, data.new_password);
+                this.ui.toast(result.message || 'Password changed. Please sign in again.', 'good');
+                this.api.setPortalToken(null);
+                this.app.navigate('/portal');
+            }
+        });
+    }
+
+    /* ---------------- misc ---------------- */
+
+    route() {
+        this.app.route();
+    }
+}

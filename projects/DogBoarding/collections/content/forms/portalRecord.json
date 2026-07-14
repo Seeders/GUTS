@@ -1,0 +1,11 @@
+{
+  "title": "Vet record",
+  "order": 24,
+  "fields": [
+    { "name": "record_type", "label": "Record type", "type": "select", "required": true, "optionsFrom": "recordTypes" },
+    { "name": "issued_on", "label": "Issued", "type": "date", "half": true },
+    { "name": "expires_on", "label": "Expires", "type": "date", "half": true },
+    { "name": "file", "label": "Upload (PDF or photo)", "type": "file", "accept": ".pdf,image/*" },
+    { "name": "notes", "label": "Notes", "type": "textarea", "rows": 2 }
+  ]
+}

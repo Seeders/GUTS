@@ -7,6 +7,7 @@
  */
 
 const express = require('express');
+const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 const db = require('./db');
@@ -1337,6 +1338,121 @@ adminRouter.get('/reports/export/:kind', (req, res, next) => {
     res.setHeader('Content-Disposition',
         `attachment; filename="${kind}-${from}-to-${to}.csv"`);
     res.send(toCsv(rows));
+});
+
+/* ------------------------------------------------------------------ */
+/* Accounts - staff logins and client portal logins                    */
+/* ------------------------------------------------------------------ */
+
+const ACCOUNT_EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function tempPassword() {
+    return crypto.randomBytes(6).toString('base64url');
+}
+
+function accountRow(id) {
+    return db.get(
+        `SELECT a.id, a.role, a.email, a.status, a.email_verified, a.client_id,
+                a.created_at, a.updated_at, a.last_login_at,
+                c.first_name, c.last_name
+         FROM accounts a LEFT JOIN clients c ON c.id = a.client_id
+         WHERE a.id = ?`, id);
+}
+
+adminRouter.get('/accounts', (req, res) => {
+    const accounts = db.all(
+        `SELECT a.id, a.role, a.email, a.status, a.email_verified, a.client_id,
+                a.created_at, a.last_login_at,
+                c.first_name, c.last_name
+         FROM accounts a LEFT JOIN clients c ON c.id = a.client_id
+         ORDER BY a.role, a.status, a.email`);
+    const pending = accounts.filter(a => a.role === 'client' && a.status === 'pending').length;
+    res.json({ accounts, pending });
+});
+
+/** Create a named staff login (active immediately). */
+adminRouter.post('/accounts/staff', (req, res, next) => {
+    try {
+        const email = auth.normalizeEmail(req.body.email);
+        const password = String(req.body.password || '');
+        if (!ACCOUNT_EMAIL_RE.test(email)) throw fail(400, 'Enter a valid email address.');
+        if (password.length < 8) throw fail(400, 'Choose a password of at least 8 characters.');
+        if (auth.getAccountByEmail(email)) throw fail(409, 'An account with that email already exists.');
+        const account = auth.createAccount({
+            role: 'staff', email, password, client_id: null, status: 'active', email_verified: 1
+        });
+        res.json({ ok: true, account: accountRow(account.id) });
+    } catch (err) { next(err); }
+});
+
+/** Create a portal login for an existing client and hand back a temp password. */
+adminRouter.post('/accounts/client', (req, res, next) => {
+    try {
+        const clientId = Number(req.body.client_id);
+        const client = db.get('SELECT * FROM clients WHERE id = ?', clientId);
+        if (!client) throw fail(404, 'Client not found.');
+        const email = auth.normalizeEmail(req.body.email || client.email);
+        if (!ACCOUNT_EMAIL_RE.test(email)) throw fail(400, 'Enter a valid email address.');
+        if (auth.getAccountByEmail(email)) throw fail(409, 'An account with that email already exists.');
+        const password = tempPassword();
+        const account = auth.createAccount({
+            role: 'client', email, password, client_id: clientId, status: 'active', email_verified: 1
+        });
+        res.json({ ok: true, account: accountRow(account.id), temp_password: password });
+    } catch (err) { next(err); }
+});
+
+/** Approve a pending client signup (the fallback when no mailer is configured). */
+adminRouter.post('/accounts/:id/approve', (req, res, next) => {
+    try {
+        const account = auth.getAccountById(req.params.id);
+        if (!account) throw fail(404, 'Not found.');
+        db.update('accounts', account.id, {
+            status: 'active', email_verified: 1, verify_token: null,
+            verify_expires: null, updated_at: db.nowIso()
+        });
+        res.json({ ok: true, account: accountRow(account.id) });
+    } catch (err) { next(err); }
+});
+
+adminRouter.post('/accounts/:id/disable', (req, res, next) => {
+    try {
+        const account = auth.getAccountById(req.params.id);
+        if (!account) throw fail(404, 'Not found.');
+        db.update('accounts', account.id, { status: 'disabled', updated_at: db.nowIso() });
+        db.run('DELETE FROM sessions WHERE account_id = ?', account.id);
+        res.json({ ok: true, account: accountRow(account.id) });
+    } catch (err) { next(err); }
+});
+
+adminRouter.post('/accounts/:id/enable', (req, res, next) => {
+    try {
+        const account = auth.getAccountById(req.params.id);
+        if (!account) throw fail(404, 'Not found.');
+        db.update('accounts', account.id, { status: 'active', updated_at: db.nowIso() });
+        res.json({ ok: true, account: accountRow(account.id) });
+    } catch (err) { next(err); }
+});
+
+/** Reset an account's password to a fresh temporary one and log it out. */
+adminRouter.post('/accounts/:id/reset', (req, res, next) => {
+    try {
+        const account = auth.getAccountById(req.params.id);
+        if (!account) throw fail(404, 'Not found.');
+        const password = tempPassword();
+        auth.setAccountPassword(account.id, password);
+        res.json({ ok: true, temp_password: password });
+    } catch (err) { next(err); }
+});
+
+adminRouter.delete('/accounts/:id', (req, res, next) => {
+    try {
+        const account = auth.getAccountById(req.params.id);
+        if (!account) throw fail(404, 'Not found.');
+        db.run('DELETE FROM sessions WHERE account_id = ?', account.id);
+        db.remove('accounts', account.id);
+        res.json({ ok: true });
+    } catch (err) { next(err); }
 });
 
 module.exports = { sessionRouter, adminRouter };

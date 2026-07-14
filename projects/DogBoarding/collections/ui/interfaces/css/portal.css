@@ -1,0 +1,152 @@
+/* Client portal. Leans on base.css for tokens and .btn/.field/.badge/.table,
+   and defines the portal-specific layout plus a few small helpers it introduces
+   (.linkbtn, .btn--sm, .btn--ghost). */
+
+/* ---- small helpers this interface introduces ---- */
+.linkbtn {
+    background: none;
+    border: none;
+    padding: 0;
+    color: #2563eb;
+    font: inherit;
+    cursor: pointer;
+    text-decoration: underline;
+}
+.linkbtn--danger { color: #b91c1c; }
+.btn--sm { padding: 0.35rem 0.7rem; font-size: 0.85rem; }
+.btn--ghost { background: transparent; border: 1px solid rgba(0, 0, 0, 0.15); }
+
+/* ===== auth wall ===== */
+.portal-auth {
+    min-height: 70vh;
+    display: grid;
+    place-items: center;
+    padding: 2rem 1rem;
+}
+.portal-auth__card {
+    width: 100%;
+    max-width: 26rem;
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.06);
+}
+.portal-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.1rem;
+    margin-bottom: 1.25rem;
+}
+.portal-brand__logo { font-size: 1.5rem; }
+.portal-auth__card h1 { margin: 0 0 0.25rem; font-size: 1.4rem; }
+.portal-form { display: grid; gap: 0.9rem; margin: 1.25rem 0 0.5rem; }
+.portal-error { color: #b91c1c; min-height: 1.2em; margin: 0; font-size: 0.9rem; }
+.portal-switch { margin-top: 1rem; font-size: 0.92rem; color: #4b5563; }
+.portal-back { display: inline-block; margin-top: 1.25rem; color: #6b7280; font-size: 0.9rem; }
+.btn--block { width: 100%; }
+
+/* ===== signed-in shell ===== */
+.portal-top {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    padding: 0.9rem 1.25rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    background: #fff;
+}
+.portal-top__brand { display: flex; align-items: center; gap: 0.5rem; font-size: 1.05rem; }
+.portal-top__logo { font-size: 1.35rem; }
+.portal-tabs { display: flex; gap: 0.25rem; flex: 1; flex-wrap: wrap; }
+.portal-tab {
+    padding: 0.45rem 0.9rem;
+    border-radius: 999px;
+    color: #4b5563;
+    text-decoration: none;
+    font-weight: 500;
+}
+.portal-tab:hover { background: rgba(0, 0, 0, 0.05); }
+.portal-tab--active { background: #111827; color: #fff; }
+.portal-top__user { display: flex; align-items: center; gap: 0.75rem; }
+.portal-top__name { font-weight: 600; }
+.portal-main { padding: 1.5rem 1.25rem; max-width: 60rem; margin: 0 auto; }
+
+/* ===== dashboard ===== */
+.portal-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+.portal-stat {
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 12px;
+    padding: 1rem 1.1rem;
+}
+.portal-stat__label { display: block; color: #6b7280; font-size: 0.85rem; }
+.portal-stat__value { font-size: 1.6rem; }
+.portal-stat__value--due { color: #b91c1c; }
+.portal-stat__value--ok { color: #15803d; }
+
+.portal-panel {
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 12px;
+    padding: 1.1rem 1.25rem;
+    margin-bottom: 1.25rem;
+}
+.portal-panel__head { margin-bottom: 0.5rem; }
+.portal-panel__head h2 { margin: 0; font-size: 1.1rem; }
+
+.portal-list { list-style: none; margin: 0; padding: 0; }
+.portal-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.55rem 0;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+.portal-line:last-child { border-bottom: none; }
+.portal-line__actions { display: flex; gap: 0.75rem; }
+
+/* ===== cards (dogs / vets) ===== */
+.portal-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin: 1.5rem 0 0.75rem;
+}
+.portal-actions h2 { margin: 0; font-size: 1.2rem; }
+.portal-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+    gap: 1rem;
+}
+.portal-card {
+    background: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 12px;
+    padding: 1rem 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+}
+.portal-card__head h3 { margin: 0; }
+.portal-card__body { flex: 1; }
+.portal-card__foot { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+/* ===== billing / profile ===== */
+.portal-billing-head { margin-bottom: 1.25rem; }
+.portal-invoice-total { text-align: right; margin-top: 0.75rem; }
+.portal-profile-form { display: block; }
+.portal-form-actions { margin-top: 1rem; }
+
+@media (max-width: 640px) {
+    .portal-top { flex-direction: column; align-items: stretch; }
+    .portal-actions { flex-direction: column; align-items: stretch; }
+}

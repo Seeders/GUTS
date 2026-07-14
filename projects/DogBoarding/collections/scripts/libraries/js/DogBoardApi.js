@@ -9,6 +9,10 @@ class DogBoardApi {
     constructor() {
         this.base = DogBoardApi.detectBase();
         this.token = localStorage.getItem('dogboard_token') || null;
+        // The client portal is a separate identity from the staff console, so it
+        // holds its own token - a client and a staff member can be signed in in
+        // the same browser without one clobbering the other.
+        this.portalToken = localStorage.getItem('dogboard_portal_token') || null;
     }
 
     /**
@@ -229,4 +233,96 @@ class DogBoardApi {
     reportServices(params) { return this.get(`/api/admin/reports/services${DogBoardApi.qs(params)}`); }
     reportOccupancy(params) { return this.get(`/api/admin/reports/occupancy${DogBoardApi.qs(params)}`); }
     reportVaccinations() { return this.get('/api/admin/reports/vaccinations'); }
+
+    /* ---------------- accounts (staff-managed) ---------------- */
+
+    accounts() { return this.get('/api/admin/accounts'); }
+    createStaffAccount(data) { return this.post('/api/admin/accounts/staff', data); }
+    createClientAccount(data) { return this.post('/api/admin/accounts/client', data); }
+    approveAccount(id) { return this.post(`/api/admin/accounts/${id}/approve`, {}); }
+    disableAccount(id) { return this.post(`/api/admin/accounts/${id}/disable`, {}); }
+    enableAccount(id) { return this.post(`/api/admin/accounts/${id}/enable`, {}); }
+    resetAccount(id) { return this.post(`/api/admin/accounts/${id}/reset`, {}); }
+    deleteAccount(id) { return this.del(`/api/admin/accounts/${id}`); }
+
+    /* ---------------- client portal ---------------- */
+
+    setPortalToken(token) {
+        this.portalToken = token;
+        if (token) localStorage.setItem('dogboard_portal_token', token);
+        else localStorage.removeItem('dogboard_portal_token');
+    }
+
+    /**
+     * The portal's own request path. It carries the portal token (not the staff
+     * token), and a 401 from a guarded portal route drops that token and fires
+     * dogboard:portal-unauthorized - mirroring how the admin side behaves, but
+     * for the client identity, so the two never interfere.
+     */
+    async portalRequest(method, path, body = null) {
+        const headers = {};
+        if (this.portalToken) headers.Authorization = `Bearer ${this.portalToken}`;
+
+        let payload = body;
+        if (body && !(body instanceof FormData)) {
+            headers['Content-Type'] = 'application/json';
+            payload = JSON.stringify(body);
+        }
+
+        const response = await fetch(`${this.base}${path}`, { method, headers, body: payload });
+
+        const isAuthRoute = path.includes('/session/');
+        if (response.status === 401 && path.startsWith('/api/portal') && !isAuthRoute) {
+            this.setPortalToken(null);
+            window.dispatchEvent(new CustomEvent('dogboard:portal-unauthorized'));
+        }
+
+        const isJson = (response.headers.get('content-type') || '').includes('application/json');
+        const data = isJson ? await response.json() : await response.text();
+
+        if (!response.ok) {
+            const message = (data && data.error) || `Request failed (${response.status}).`;
+            const error = new Error(message);
+            error.status = response.status;
+            throw error;
+        }
+        return data;
+    }
+
+    portalMe() { return this.portalRequest('GET', '/api/portal/session/me'); }
+    portalSignup(email, password) {
+        return this.portalRequest('POST', '/api/portal/session/signup', { email, password });
+    }
+    async portalLogin(email, password) {
+        const result = await this.portalRequest('POST', '/api/portal/session/login', { email, password });
+        this.setPortalToken(result.token);
+        return result;
+    }
+    async portalLogout() {
+        try { await this.portalRequest('POST', '/api/portal/session/logout', {}); }
+        finally { this.setPortalToken(null); }
+    }
+
+    portalOverview() { return this.portalRequest('GET', '/api/portal/overview'); }
+    portalProfile() { return this.portalRequest('GET', '/api/portal/profile'); }
+    portalUpdateProfile(data) { return this.portalRequest('PUT', '/api/portal/profile', data); }
+    portalChangePassword(current, next) {
+        return this.portalRequest('POST', '/api/portal/password',
+            { current_password: current, new_password: next });
+    }
+
+    portalPets() { return this.portalRequest('GET', '/api/portal/pets'); }
+    portalCreatePet(data) { return this.portalRequest('POST', '/api/portal/pets', data); }
+    portalUpdatePet(id, data) { return this.portalRequest('PUT', `/api/portal/pets/${id}`, data); }
+    portalDeletePet(id) { return this.portalRequest('DELETE', `/api/portal/pets/${id}`); }
+    portalAddRecord(petId, formData) { return this.portalRequest('POST', `/api/portal/pets/${petId}/records`, formData); }
+    portalDeleteRecord(id) { return this.portalRequest('DELETE', `/api/portal/records/${id}`); }
+    portalRecordFileUrl(id) { return `${this.base}/api/portal/files/record/${id}?token=${this.portalToken}`; }
+
+    portalVets() { return this.portalRequest('GET', '/api/portal/vets'); }
+    portalCreateVet(data) { return this.portalRequest('POST', '/api/portal/vets', data); }
+    portalUpdateVet(id, data) { return this.portalRequest('PUT', `/api/portal/vets/${id}`, data); }
+
+    portalBilling() { return this.portalRequest('GET', '/api/portal/billing'); }
+    portalInvoice(id) { return this.portalRequest('GET', `/api/portal/invoices/${id}`); }
 }

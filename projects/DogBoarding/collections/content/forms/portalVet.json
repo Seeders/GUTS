@@ -1,0 +1,16 @@
+{
+  "title": "Veterinarian",
+  "order": 21,
+  "fields": [
+    { "name": "clinic_name", "label": "Clinic name", "type": "text", "required": true },
+    { "name": "vet_name", "label": "Veterinarian", "type": "text", "half": true },
+    { "name": "phone", "label": "Phone", "type": "text", "half": true },
+    { "name": "email", "label": "Email", "type": "email" },
+    { "name": "address1", "label": "Address", "type": "text" },
+    { "name": "address2", "label": "Address line 2", "type": "text" },
+    { "name": "city", "label": "City", "type": "text", "half": true },
+    { "name": "state", "label": "State", "type": "text", "half": true },
+    { "name": "postal_code", "label": "ZIP", "type": "text", "half": true },
+    { "name": "notes", "label": "Notes", "type": "textarea", "rows": 2 }
+  ]
+}

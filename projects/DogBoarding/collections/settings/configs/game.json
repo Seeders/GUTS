@@ -1,23 +1,25 @@
 {
-  "title": "Dog Boarding",
-  "libraries": [
-    "DogBoardApi",
-    "DogBoardUI",
-    "InterfaceLoader",
-    "FormRenderer",
-    "PublicSite",
-    "AdminClients",
-    "AdminBookings",
-    "AdminBilling",
-    "AdminExpenses",
-    "AdminReports",
-    "AdminConsole",
-    "DogBoardingApp",
-    "SimpleLoader"
-  ],
-  "interface": "public",
-  "baseInterface": "base",
-  "initialScene": "home",
-  "appLibrary": "DogBoardingApp",
-  "appLoaderLibrary": "SimpleLoader"
+    "title": "Dog Boarding",
+    "libraries": [
+        "DogBoardApi",
+        "DogBoardUI",
+        "InterfaceLoader",
+        "FormRenderer",
+        "PublicSite",
+        "Portal",
+        "AdminClients",
+        "AdminBookings",
+        "AdminBilling",
+        "AdminExpenses",
+        "AdminReports",
+        "AdminAccounts",
+        "AdminConsole",
+        "DogBoardingApp",
+        "SimpleLoader"
+    ],
+    "interface": "public",
+    "baseInterface": "base",
+    "initialScene": "home",
+    "appLibrary": "DogBoardingApp",
+    "appLoaderLibrary": "SimpleLoader"
 }

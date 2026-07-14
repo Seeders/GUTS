@@ -19,6 +19,7 @@ const db = require('./server/db');
 const auth = require('./server/auth');
 const publicRoutes = require('./server/routes.public');
 const { sessionRouter, adminRouter } = require('./server/routes.admin');
+const { portalSessionRouter, portalRouter } = require('./server/routes.portal');
 const { handleUploadError } = require('./server/uploads');
 
 function mount(app, { base = '' } = {}) {
@@ -52,6 +53,11 @@ function mount(app, { base = '' } = {}) {
     router.use('/api/public', publicRoutes);
     router.use('/api/admin/session', sessionRouter);
     router.use('/api/admin', auth.requireAdmin, adminRouter);
+
+    // Client portal: an unauthenticated door (signup/login/verify) and everything
+    // behind it scoped, by requireClient, to the logged-in client's own record.
+    router.use('/api/portal/session', portalSessionRouter);
+    router.use('/api/portal', auth.requireClient, portalRouter);
 
     router.get('/api/health', (req, res) => {
         res.json({ ok: true, service: 'dogboarding', base, time: db.nowIso() });

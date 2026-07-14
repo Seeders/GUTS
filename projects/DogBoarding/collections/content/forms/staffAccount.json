@@ -1,0 +1,9 @@
+{
+  "title": "Staff login",
+  "order": 25,
+  "fields": [
+    { "name": "email", "label": "Email", "type": "email", "required": true },
+    { "name": "password", "label": "Temporary password", "type": "password", "required": true,
+      "hint": "At least 8 characters. They can change it after signing in." }
+  ]
+}

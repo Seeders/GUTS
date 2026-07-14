@@ -28,6 +28,7 @@ class DogBoardingApp {
 
         this.publicSite = new GUTS.PublicSite(this);
         this.admin = new GUTS.AdminConsole(this);
+        this.portal = new GUTS.Portal(this);
 
         // Business details live in the database (they are edited in Settings),
         // so the header and footer are filled from the API, not a collection.
@@ -71,6 +72,10 @@ class DogBoardingApp {
                 this.admin.submitLogin(form);
             } else if (form.matches('[data-form="intake"]')) {
                 this.publicSite.submitIntake(form);
+            } else if (form.matches('[data-portal-login-form]')) {
+                this.portal.submitLogin(form);
+            } else if (form.matches('[data-portal-signup-form]')) {
+                this.portal.submitSignup(form);
             }
             // Anything else is a form built in JS, which wires its own handler.
         }, true);
@@ -78,6 +83,13 @@ class DogBoardingApp {
         window.addEventListener('dogboard:unauthorized', () => {
             if (this.currentPath().startsWith('/admin')) {
                 this.ui.toast('Your session expired. Please log in again.', 'warn');
+                this.route();
+            }
+        });
+
+        window.addEventListener('dogboard:portal-unauthorized', () => {
+            if (this.currentPath().startsWith('/portal')) {
+                this.ui.toast('Please sign in again.', 'warn');
                 this.route();
             }
         });
@@ -137,6 +149,8 @@ class DogBoardingApp {
         try {
             if (scene.interface === 'admin') {
                 await this.admin.render(root, path);
+            } else if (scene.interface === 'portal') {
+                await this.portal.render(root, path);
             } else {
                 await this.publicSite.render(root, scene, path);
             }

@@ -210,6 +210,23 @@ CREATE TABLE IF NOT EXISTS settings (
     value TEXT
 );
 
+CREATE TABLE IF NOT EXISTS accounts (
+    id             INTEGER PRIMARY KEY AUTOINCREMENT,
+    role           TEXT NOT NULL DEFAULT 'client',   -- 'client' | 'staff'
+    email          TEXT NOT NULL,
+    password_hash  TEXT NOT NULL,
+    client_id      INTEGER REFERENCES clients(id) ON DELETE CASCADE,
+    status         TEXT NOT NULL DEFAULT 'pending',  -- 'pending' | 'active' | 'disabled'
+    email_verified INTEGER NOT NULL DEFAULT 0,
+    verify_token   TEXT,
+    verify_expires TEXT,
+    reset_token    TEXT,
+    reset_expires  TEXT,
+    last_login_at  TEXT,
+    created_at     TEXT NOT NULL,
+    updated_at     TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS sessions (
     token      TEXT PRIMARY KEY,
     created_at TEXT NOT NULL,
@@ -231,6 +248,9 @@ CREATE INDEX IF NOT EXISTS idx_payments_invoice  ON payments(invoice_id);
 CREATE INDEX IF NOT EXISTS idx_payments_paid_on  ON payments(paid_on);
 CREATE INDEX IF NOT EXISTS idx_expenses_date     ON expenses(incurred_on);
 CREATE INDEX IF NOT EXISTS idx_invoices_client   ON invoices(client_id);
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_accounts_email  ON accounts(lower(email));
+CREATE INDEX IF NOT EXISTS idx_accounts_client        ON accounts(client_id);
 `;
 
 /*
@@ -266,8 +286,22 @@ function open() {
     db.exec(SCHEMA);
 
     migrateOffServicesTable();
+    migrateSessionsForAccounts();
     seed();
     return db;
+}
+
+/**
+ * The sessions table predates user accounts: a session used to be nothing but an
+ * opaque admin token. Now a session belongs to an account and carries its role,
+ * so a client's token can never be mistaken for a staff token. Add the columns
+ * to any database that still has the old two-column table. Existing admin tokens
+ * keep account_id NULL, which requireAdmin treats as the bootstrap operator.
+ */
+function migrateSessionsForAccounts() {
+    const cols = db.prepare('PRAGMA table_info(sessions)').all().map(c => c.name);
+    if (!cols.includes('account_id')) db.exec('ALTER TABLE sessions ADD COLUMN account_id INTEGER;');
+    if (!cols.includes('role')) db.exec('ALTER TABLE sessions ADD COLUMN role TEXT;');
 }
 
 /**
