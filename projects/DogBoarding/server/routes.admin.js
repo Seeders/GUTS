@@ -627,6 +627,19 @@ adminRouter.post('/bookings', (req, res, next) => {
     if (checkOut < checkIn) return next(fail(400, 'Check-out cannot be before check-in.'));
     if (petIds.length === 0) return next(fail(400, 'A booking needs at least one dog.'));
 
+    // Staff are warned, not stopped: the owner is often standing there with the
+    // paperwork. Send override:true to book anyway.
+    if (!req.body.override) {
+        const blockers = acct.vaccinationBlockers(petIds, checkOut);
+        if (blockers.length) {
+            return res.status(409).json({
+                error: acct.vaccinationBlockerMessage(blockers),
+                vaccination_blockers: blockers,
+                overridable: true
+            });
+        }
+    }
+
     const stamp = db.nowIso();
     const id = db.tx(() => {
         const bookingId = db.insert('bookings', {

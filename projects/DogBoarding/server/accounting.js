@@ -492,10 +492,76 @@ function vaccinationAlerts() {
     return { as_of: today, warn_days: warnDays, required, alerts };
 }
 
+/**
+ * Which required vaccinations stand between these dogs and a stay that runs
+ * until `throughDate`.
+ *
+ * This is NOT the same question as "is the vaccine valid today". A rabies shot
+ * that lapses halfway through a two-week stay is no good for that stay, so the
+ * date we measure against is the day the dog goes home.
+ *
+ * A required record type that carries an expiry (typicalValidMonths) needs a
+ * date, and that date has to outlast the stay - otherwise an uploaded record
+ * with the expiry left blank would quietly walk straight through this check.
+ * A required type with no expiry at all just needs a record on file.
+ */
+function vaccinationBlockers(petIds, throughDate) {
+    if (!petIds || !petIds.length) return [];
+
+    const required = collections.requiredVaccines();
+    if (!required.length) return [];
+
+    const types = new Map(collections.recordTypes().map(t => [t.id, t]));
+    const blockers = [];
+
+    for (const petId of petIds) {
+        const pet = db.get('SELECT id, name FROM pets WHERE id = ?', petId);
+        if (!pet) continue;
+
+        const records = db.all('SELECT * FROM vet_records WHERE pet_id = ?', pet.id);
+
+        for (const vaccine of required) {
+            const type = types.get(vaccine) || {};
+            const title = type.title || vaccine;
+
+            const match = records
+                .filter(r => (r.record_type || '').toLowerCase() === vaccine)
+                .sort((a, b) => String(b.expires_on || '').localeCompare(String(a.expires_on || '')))[0];
+
+            const flag = severity => blockers.push({
+                pet_id: pet.id,
+                pet_name: pet.name,
+                vaccine,
+                vaccine_title: title,
+                severity,
+                expires_on: match ? match.expires_on : null
+            });
+
+            if (!match) { flag('missing'); continue; }
+            if (!type.typicalValidMonths) continue;         // never expires; having it is enough
+            if (!match.expires_on) { flag('no_expiry'); continue; }
+            if (match.expires_on < throughDate) flag('expired');
+        }
+    }
+
+    return blockers;
+}
+
+/** The blockers as one sentence a dog owner can act on. */
+function vaccinationBlockerMessage(blockers) {
+    const bits = blockers.map(b => {
+        if (b.severity === 'missing') return `${b.pet_name} has no ${b.vaccine_title} record on file`;
+        if (b.severity === 'no_expiry') return `${b.pet_name}'s ${b.vaccine_title} record has no expiry date`;
+        return `${b.pet_name}'s ${b.vaccine_title} expires ${b.expires_on}, before the stay ends`;
+    });
+    return `${bits.join('; ')}. Please add an up-to-date record before booking.`;
+}
+
 module.exports = {
     lineAmount, taxRateBps, nextInvoiceNumber,
     recomputeInvoice, amountPaid, invoiceDetail,
     unbilledEvents, createInvoiceFromUnbilled, voidInvoice,
     clientBalance,
-    arAging, profitAndLoss, servicesByPet, occupancy, vaccinationAlerts
+    arAging, profitAndLoss, servicesByPet, occupancy, vaccinationAlerts,
+    vaccinationBlockers, vaccinationBlockerMessage
 };

@@ -80,6 +80,7 @@ class DogBoardApi {
             const message = (data && data.error) || `Request failed (${response.status}).`;
             const error = new Error(message);
             error.status = response.status;
+            error.data = data; // e.g. vaccination_blockers, so a caller can offer an override
             throw error;
         }
         return data;
@@ -287,6 +288,7 @@ class DogBoardApi {
             const message = (data && data.error) || `Request failed (${response.status}).`;
             const error = new Error(message);
             error.status = response.status;
+            error.data = data; // e.g. vaccination_blockers, so a caller can offer an override
             throw error;
         }
         return data;

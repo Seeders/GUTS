@@ -22,6 +22,7 @@ const auth = require('./auth');
 const mailer = require('./mailer');
 const collections = require('./collections');
 const availability = require('./availability');
+const acct = require('./accounting');
 const { upload } = require('./uploads');
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -105,6 +106,16 @@ function validateStay({ clientId, checkIn, checkOut, petIds }) {
         "SELECT id FROM pets WHERE client_id = ? AND status = 'active'", clientId)
         .map(p => Number(p.id));
     if (petIds.some(id => !owned.includes(id))) throw fail(400, 'That dog is not on your account.');
+
+    // Required shots must still be good the day the dog goes home. A client
+    // cannot book their way around this; staff can override it in the back
+    // office, because sometimes the owner is bringing the paperwork with them.
+    const blockers = acct.vaccinationBlockers(petIds, checkOut);
+    if (blockers.length) {
+        const err = fail(409, acct.vaccinationBlockerMessage(blockers));
+        err.blockers = blockers;
+        throw err;
+    }
 }
 
 /**

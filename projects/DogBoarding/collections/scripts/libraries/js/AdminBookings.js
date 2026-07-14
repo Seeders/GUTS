@@ -344,13 +344,31 @@ class AdminBookings {
                     .map(input => Number(input.value));
                 if (!petIds.length) throw new Error('Pick at least one dog.');
 
-                const created = await this.api.createBooking({
+                const payload = {
                     client_id: clientId,
                     pet_ids: petIds,
                     check_in: checkIn.value,
                     check_out: checkOut.value,
                     notes: content.querySelector('[name="notes"]').value
-                });
+                };
+
+                let created;
+                try {
+                    created = await this.api.createBooking(payload);
+                } catch (err) {
+                    // A vaccination problem stops a client dead, but staff are only
+                    // warned - the owner is often standing there with the paperwork.
+                    if (!err.data || !err.data.overridable) throw err;
+
+                    const ok = await this.ui.confirm(err.message, {
+                        title: 'Vaccinations out of date',
+                        confirmLabel: 'Book anyway',
+                        danger: true
+                    });
+                    if (!ok) return false; // keep the dialog open
+
+                    created = await this.api.createBooking({ ...payload, override: true });
+                }
 
                 this.ui.toast('Booking created.', 'good');
                 this.app.navigate(`/admin/bookings/${created.id}`);
