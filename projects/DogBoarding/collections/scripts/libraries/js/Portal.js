@@ -350,12 +350,12 @@ class Portal {
         const monthLabel = new Date(Date.UTC(year, month - 1, 1))
             .toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' });
 
-        /* Nights this client already has booked, so the calendar can mark them. */
-        const mineNights = new Set();
+        /* Nights this client already has booked -> which dogs are in that night. */
+        const mineNights = new Map();
         for (const b of (avail.mine || [])) {
             const end = String(b.check_out).slice(0, 10);
             for (let d = String(b.check_in).slice(0, 10); d < end; d = this.ui.addDays(d, 1)) {
-                mineNights.add(d);
+                mineNights.set(d, b.dog_names || 'Your stay');
             }
         }
 
@@ -384,7 +384,21 @@ class Portal {
          * before the current start begins a new range instead of an empty one.
          */
         const pick = d => {
-            if (!this.selStart || this.selEnd || d <= this.selStart) {
+            // Clicking a date you already picked clears it, so a mis-click is undoable.
+            if (d === this.selStart) {
+                this.selStart = null;
+                this.selEnd = null;
+                paint();
+                return;
+            }
+            if (d === this.selEnd) {
+                this.selEnd = null;
+                paint();
+                return;
+            }
+
+            // No start yet, a finished range, or a date before the start: begin again.
+            if (!this.selStart || this.selEnd || d < this.selStart) {
                 this.selStart = d;
                 this.selEnd = null;
                 paint();
@@ -421,16 +435,18 @@ class Portal {
                 continue;
             }
 
-            const mine = mineNights.has(d);
+            const myDogs = mineNights.get(d); // the dogs of theirs staying that night
             const cell = el('button.cal__cell', {
                 type: 'button',
-                class: `${info.full ? 'cal__cell--full' : 'cal__cell--open'}${mine ? ' cal__cell--mine' : ''}`,
-                disabled: info.full || !avail.can_book,
+                class: `${info.full ? 'cal__cell--full' : 'cal__cell--open'}${myDogs ? ' cal__cell--mine' : ''}`,
+                // A night that is full is still selectable if it is already theirs
+                // - it is full *because* of them.
+                disabled: (info.full && !myDogs) || !avail.can_book,
                 onclick: () => pick(d)
             },
                 el('span.cal__day', String(day)),
                 el('span.cal__free', info.full ? 'Full' : `${info.available} free`),
-                mine ? el('span.cal__mine', 'Your stay') : null);
+                myDogs ? el('span.cal__mine', myDogs) : null);
 
             cellByDate.set(d, cell);
             cells.push(cell);

@@ -548,10 +548,13 @@ portalRouter.get('/availability', (req, res, next) => {
         // Their own stays overlapping the window, so the calendar can show them
         // which nights are already theirs.
         const mine = db.all(
-            `SELECT id, check_in, check_out, status FROM bookings
-             WHERE client_id = ? AND status != 'cancelled'
-               AND check_in <= ? AND check_out > ?
-             ORDER BY check_in`, req.clientId, to, from);
+            `SELECT b.id, b.check_in, b.check_out, b.status,
+                    (SELECT GROUP_CONCAT(p.name, ', ') FROM booking_pets bp
+                       JOIN pets p ON p.id = bp.pet_id WHERE bp.booking_id = b.id) AS dog_names
+             FROM bookings b
+             WHERE b.client_id = ? AND b.status != 'cancelled'
+               AND b.check_in <= ? AND b.check_out > ?
+             ORDER BY b.check_in`, req.clientId, to, from);
 
         res.json({
             capacity: collections.capacity(),

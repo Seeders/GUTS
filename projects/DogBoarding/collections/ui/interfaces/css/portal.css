@@ -209,20 +209,39 @@
 .cal__cell:not(:disabled):hover { filter: brightness(0.97); }
 .cal__cell:disabled { cursor: default; }
 
-/* the client's own stays */
-.cal__cell--mine { border-color: rgba(37, 99, 235, 0.45); background: rgba(37, 99, 235, 0.10); }
-.cal__mine { font-size: 0.68rem; font-weight: 600; color: #1d4ed8; }
+/* The client's own stays. Two classes deep so it beats .cal__cell--open,
+   which every bookable night also carries. */
+.cal__cell.cal__cell--mine {
+    border-color: rgba(37, 99, 235, 0.5);
+    background: rgba(37, 99, 235, 0.12);
+}
+.cal__mine {
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: #1d4ed8;
+    line-height: 1.2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+}
 
-/* click-to-select range */
-.cal__cell--sel-start,
-.cal__cell--sel-end {
-    background: #111827;
-    border-color: #111827;
+/* Click-to-select range. Also two classes deep, so a selected night wins over
+   both --open and --mine. */
+.cal__cell.cal__cell--sel-start,
+.cal__cell.cal__cell--sel-end {
+    background: #6d28d9;
+    border-color: #6d28d9;
     color: #fff;
 }
 .cal__cell--sel-start .cal__free, .cal__cell--sel-end .cal__free,
-.cal__cell--sel-start .cal__mine, .cal__cell--sel-end .cal__mine { color: rgba(255, 255, 255, 0.8); }
-.cal__cell--sel { background: rgba(17, 24, 39, 0.12); border-color: rgba(17, 24, 39, 0.35); }
+.cal__cell--sel-start .cal__mine, .cal__cell--sel-end .cal__mine {
+    color: rgba(255, 255, 255, 0.85);
+}
+.cal__cell.cal__cell--sel {
+    background: rgba(109, 40, 217, 0.15);
+    border-color: rgba(109, 40, 217, 0.45);
+}
 
 /* legend */
 .cal__legend { display: flex; flex-wrap: wrap; gap: 1rem; margin: -0.75rem 0 1.25rem; font-size: 0.8rem; color: #4b5563; }
@@ -237,4 +256,4 @@
 .cal__key--open::before { background: rgba(21, 128, 61, 0.25); }
 .cal__key--full::before { background: rgba(185, 28, 28, 0.25); }
 .cal__key--mine::before { background: rgba(37, 99, 235, 0.25); }
-.cal__key--sel::before  { background: #111827; }
+.cal__key--sel::before  { background: #6d28d9; }
