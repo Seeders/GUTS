@@ -19,7 +19,8 @@ class AdminConsole {
             billing: new GUTS.AdminBilling(app, this),
             expenses: new GUTS.AdminExpenses(app, this),
             reports: new GUTS.AdminReports(app, this),
-            accounts: new GUTS.AdminAccounts(app, this)
+            accounts: new GUTS.AdminAccounts(app, this),
+            calendar: new GUTS.AdminCalendar(app, this)
         };
     }
 

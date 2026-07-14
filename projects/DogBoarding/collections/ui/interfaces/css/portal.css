@@ -164,3 +164,42 @@
    auto-fill, which inside the narrower onboarding column left a lone dog card
    sitting at half the width of the rest of the form. */
 .portal-onboard .portal-cards { grid-template-columns: 1fr; }
+
+/* ===== availability calendar ===== */
+.cal {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+    margin: 0.5rem 0 1.5rem;
+}
+.cal__weekday {
+    text-align: center;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #6b7280;
+}
+.cal__cell {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-height: 3.6rem;
+    padding: 0.4rem 0.5rem;
+    border-radius: 10px;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    background: #fff;
+}
+.cal__cell--empty { border: none; background: none; min-height: 0; }
+.cal__cell--past { opacity: 0.35; }
+.cal__cell--open { border-color: rgba(21, 128, 61, 0.35); background: rgba(21, 128, 61, 0.08); }
+.cal__cell--full { border-color: rgba(185, 28, 28, 0.4); background: rgba(185, 28, 28, 0.10); }
+.cal__day { font-weight: 700; }
+.cal__free { font-size: 0.72rem; color: #4b5563; }
+.cal__nav { display: flex; align-items: center; gap: 0.4rem; }
+.cal__month { min-width: 9rem; text-align: center; }
+.notice {
+    padding: 0.9rem 1rem;
+    border-radius: 10px;
+    background: rgba(217, 160, 30, 0.12);
+    border: 1px solid rgba(180, 120, 10, 0.35);
+}

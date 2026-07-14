@@ -1,0 +1,8 @@
+{
+  "title": "Suite 1",
+  "order": 6,
+  "size": "suite",
+  "capacity": 2,
+  "active": true,
+  "description": "Private suite with a raised bed."
+}

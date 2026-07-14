@@ -13,6 +13,7 @@
         "AdminExpenses",
         "AdminReports",
         "AdminAccounts",
+        "AdminCalendar",
         "AdminConsole",
         "DogBoardingApp",
         "SimpleLoader"

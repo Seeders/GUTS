@@ -20,6 +20,8 @@ const fs = require('fs');
 const db = require('./db');
 const auth = require('./auth');
 const mailer = require('./mailer');
+const collections = require('./collections');
+const availability = require('./availability');
 const { upload } = require('./uploads');
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -528,6 +530,104 @@ portalRouter.get('/invoices/:id', (req, res, next) => {
         invoice.items = db.all('SELECT * FROM invoice_items WHERE invoice_id = ? ORDER BY id', invoice.id);
         invoice.payments = db.all('SELECT * FROM payments WHERE invoice_id = ? ORDER BY paid_on', invoice.id);
         res.json({ invoice });
+    } catch (err) { next(err); }
+});
+
+/* ---- booking a stay ---- */
+
+/** What is free, night by night. Anyone signed in may look. */
+portalRouter.get('/availability', (req, res, next) => {
+    try {
+        const from = String(req.query.from || db.today()).slice(0, 10);
+        const to = String(req.query.to || availability.addDays(from, 60)).slice(0, 10);
+        if (to < from) throw fail(400, 'That date range is backwards.');
+        if (availability.nights(from, to).length > 400) throw fail(400, 'That date range is too long.');
+
+        const client = clientSummary(req.clientId);
+        res.json({
+            capacity: collections.capacity(),
+            kennels: collections.kennels(),
+            can_book: client.status === 'active',
+            days: availability.days(from, to)
+        });
+    } catch (err) { next(err); }
+});
+
+/**
+ * Book a stay. Confirmed on the spot if there is room every night.
+ *
+ * Only an approved client may book - a sign-up that staff has not vetted can see
+ * the calendar but not take a bed. The capacity check runs INSIDE the
+ * transaction: SQLite takes one writer at a time, so two clients racing for the
+ * last kennel cannot both be told yes.
+ */
+portalRouter.post('/bookings', (req, res, next) => {
+    try {
+        const client = clientSummary(req.clientId);
+        if (client.status !== 'active') {
+            throw fail(403, 'Your account is still awaiting approval, so you cannot book yet. We will be in touch shortly.');
+        }
+
+        const checkIn = String(req.body.check_in || '').slice(0, 10);
+        const checkOut = String(req.body.check_out || '').slice(0, 10);
+        const petIds = (Array.isArray(req.body.pet_ids) ? req.body.pet_ids : [])
+            .map(Number).filter(Boolean);
+
+        const isDate = d => /^\d{4}-\d{2}-\d{2}$/.test(d);
+        if (!isDate(checkIn) || !isDate(checkOut)) throw fail(400, 'Choose a drop-off and a pick-up date.');
+        if (checkOut <= checkIn) throw fail(400, 'Pick-up has to be after drop-off.');
+        if (checkIn < db.today()) throw fail(400, 'Choose a drop-off date in the future.');
+        if (!petIds.length) throw fail(400, 'Choose at least one dog.');
+
+        const owned = db.all(
+            "SELECT id FROM pets WHERE client_id = ? AND status = 'active'", req.clientId)
+            .map(p => Number(p.id));
+        if (petIds.some(id => !owned.includes(id))) throw fail(400, 'That dog is not on your account.');
+
+        const now = db.nowIso();
+        const bookingId = db.tx(() => {
+            const check = availability.checkRange(checkIn, checkOut, petIds.length);
+            if (!check.ok) {
+                throw fail(409, check.reason ||
+                    `We are full on ${check.full.map(d => d).join(', ')}. Please try other dates.`);
+            }
+
+            const id = db.insert('bookings', {
+                client_id: req.clientId,
+                check_in: checkIn,
+                check_out: checkOut,
+                status: 'confirmed',
+                source: 'portal',
+                notes: req.body.notes ? String(req.body.notes).trim() : null,
+                created_at: now,
+                updated_at: now
+            });
+            for (const petId of petIds) {
+                db.run('INSERT OR IGNORE INTO booking_pets (booking_id, pet_id) VALUES (?, ?)', id, petId);
+            }
+            return id;
+        });
+
+        res.json({ ok: true, booking: db.get('SELECT * FROM bookings WHERE id = ?', bookingId) });
+    } catch (err) { next(err); }
+});
+
+/** Cancel a stay that has not started yet. */
+portalRouter.delete('/bookings/:id', (req, res, next) => {
+    try {
+        const booking = db.get('SELECT * FROM bookings WHERE id = ? AND client_id = ?',
+            req.params.id, req.clientId);
+        if (!booking) throw fail(404, 'Not found.');
+        if (booking.status === 'cancelled') return res.json({ ok: true });
+        if (booking.status === 'checked_in' || booking.status === 'checked_out') {
+            throw fail(400, 'That stay has already started. Please call us.');
+        }
+        if (booking.check_in <= db.today()) {
+            throw fail(400, 'That stay starts today. Please call us to change it.');
+        }
+
+        db.update('bookings', booking.id, { status: 'cancelled', updated_at: db.nowIso() });
+        res.json({ ok: true });
     } catch (err) { next(err); }
 });
 

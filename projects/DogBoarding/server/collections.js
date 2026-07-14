@@ -137,6 +137,35 @@ function requiredVaccines() {
     return recordTypes().filter(type => type.required).map(type => type.id);
 }
 
+/**
+ * The kennels, and how many dogs the place can hold on any one night.
+ *
+ * Like the rate card, this is configuration rather than data: it is not secret,
+ * not per-client, and it is exactly what someone should be able to change in the
+ * editor when they build another run. So it is a collection, not a table, and
+ * capacity is simply the sum of what the active kennels hold.
+ */
+function kennels({ includeInactive = false, fresh = true } = {}) {
+    if (fresh) clearCache('data', 'kennels');
+
+    return ordered('data', 'kennels')
+        .filter(k => includeInactive || k.active !== false)
+        .map(k => ({
+            id: k.id,
+            name: k.title,
+            size: k.size || 'standard',
+            capacity: Number(k.capacity) > 0 ? Number(k.capacity) : 1,
+            description: k.description || null,
+            active: k.active === false ? 0 : 1,
+            order: k.order ?? 999
+        }));
+}
+
+/** Total dogs the place can hold on one night. */
+function capacity() {
+    return kennels().reduce((total, k) => total + k.capacity, 0);
+}
+
 /** Valid ids, for validating what the client sends us. */
 const ids = list => list.map(item => item.id);
 
@@ -144,7 +173,7 @@ module.exports = {
     load, ordered, clearCache,
     services, service, business,
     serviceCatalog, recordTypes, expenseCategories, paymentMethods,
-    bookingStatuses, serviceUnits,
+    bookingStatuses, serviceUnits, kennels, capacity,
     requiredVaccines, ids,
     COLLECTIONS_DIR
 };

@@ -234,6 +234,9 @@ class DogBoardApi {
     reportOccupancy(params) { return this.get(`/api/admin/reports/occupancy${DogBoardApi.qs(params)}`); }
     reportVaccinations() { return this.get('/api/admin/reports/vaccinations'); }
 
+    /** The month view: per-night occupancy against the kennels' capacity. */
+    calendar(params) { return this.get(`/api/admin/calendar${DogBoardApi.qs(params)}`); }
+
     /* ---------------- accounts (staff-managed) ---------------- */
 
     accounts() { return this.get('/api/admin/accounts'); }
@@ -328,4 +331,10 @@ class DogBoardApi {
 
     portalBilling() { return this.portalRequest('GET', '/api/portal/billing'); }
     portalInvoice(id) { return this.portalRequest('GET', `/api/portal/invoices/${id}`); }
+
+    portalAvailability(params) {
+        return this.portalRequest('GET', `/api/portal/availability${DogBoardApi.qs(params)}`);
+    }
+    portalCreateBooking(data) { return this.portalRequest('POST', '/api/portal/bookings', data); }
+    portalCancelBooking(id) { return this.portalRequest('DELETE', `/api/portal/bookings/${id}`); }
 }

@@ -373,3 +373,44 @@
     .side__foot { flex-direction: row; border: 0; padding: 0; }
     .admin__content { padding: 20px 16px 60px; }
 }
+
+/* ===== calendar (month grid) ===== */
+.cal {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+    margin: 1rem 0 1.5rem;
+}
+.cal__weekday {
+    text-align: center;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    opacity: 0.6;
+    padding-bottom: 0.25rem;
+}
+.cal__cell {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.15rem;
+    min-height: 4.5rem;
+    padding: 0.5rem 0.6rem;
+    border-radius: 10px;
+    border: 1px solid rgba(127, 127, 127, 0.22);
+    background: rgba(127, 127, 127, 0.05);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+.cal__cell:hover { filter: brightness(1.08); }
+.cal__cell--empty { border: none; background: none; cursor: default; min-height: 0; }
+.cal__day { font-weight: 700; }
+.cal__count { font-size: 0.85rem; opacity: 0.85; }
+.cal__free { font-size: 0.75rem; opacity: 0.7; }
+.cal__cell--open  { border-color: rgba(21, 128, 61, 0.35);  background: rgba(21, 128, 61, 0.10); }
+.cal__cell--tight { border-color: rgba(180, 120, 10, 0.45); background: rgba(217, 160, 30, 0.16); }
+.cal__cell--full  { border-color: rgba(185, 28, 28, 0.45);  background: rgba(185, 28, 28, 0.14); }
+.cal__cell--today { outline: 2px solid currentColor; outline-offset: -2px; }
+.cal__nav { display: flex; align-items: center; gap: 0.5rem; }
+.cal__month { min-width: 10rem; text-align: center; }

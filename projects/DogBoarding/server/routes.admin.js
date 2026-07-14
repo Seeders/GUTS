@@ -14,6 +14,7 @@ const db = require('./db');
 const auth = require('./auth');
 const acct = require('./accounting');
 const collections = require('./collections');
+const availability = require('./availability');
 const { upload } = require('./uploads');
 
 const sessionRouter = express.Router();
@@ -1338,6 +1339,38 @@ adminRouter.get('/reports/export/:kind', (req, res, next) => {
     res.setHeader('Content-Disposition',
         `attachment; filename="${kind}-${from}-to-${to}.csv"`);
     res.send(toCsv(rows));
+});
+
+/* ------------------------------------------------------------------ */
+/* Calendar - who is in, and when we are full                          */
+/* ------------------------------------------------------------------ */
+
+adminRouter.get('/calendar', (req, res, next) => {
+    try {
+        const from = String(req.query.from || db.today()).slice(0, 10);
+        const to = String(req.query.to || availability.addDays(from, 30)).slice(0, 10);
+        if (to < from) return next(fail(400, 'That date range is backwards.'));
+        if (availability.nights(from, to).length > 400) {
+            return next(fail(400, 'That date range is too long.'));
+        }
+
+        const bookings = db.all(
+            `SELECT b.*, c.first_name, c.last_name,
+                    (SELECT GROUP_CONCAT(p.name, ', ') FROM booking_pets bp
+                       JOIN pets p ON p.id = bp.pet_id WHERE bp.booking_id = b.id) AS dog_names,
+                    (SELECT COUNT(*) FROM booking_pets bp WHERE bp.booking_id = b.id) AS dogs
+             FROM bookings b JOIN clients c ON c.id = b.client_id
+             WHERE b.status != 'cancelled' AND b.check_in <= ? AND b.check_out > ?
+             ORDER BY b.check_in`, to, from);
+
+        res.json({
+            from, to,
+            capacity: collections.capacity(),
+            kennels: collections.kennels(),
+            days: availability.days(from, to),
+            bookings
+        });
+    } catch (err) { next(err); }
 });
 
 /* ------------------------------------------------------------------ */

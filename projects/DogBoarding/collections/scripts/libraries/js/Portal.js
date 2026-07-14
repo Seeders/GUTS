@@ -132,6 +132,7 @@ class Portal {
     renderTabs(root, active) {
         const tabs = [
             { id: 'dashboard', label: 'Overview', route: '/portal' },
+            { id: 'book', label: 'Book a Stay', route: '/portal/book' },
             { id: 'dogs', label: 'My Dogs', route: '/portal/dogs' },
             { id: 'billing', label: 'Billing', route: '/portal/billing' },
             { id: 'profile', label: 'Profile', route: '/portal/profile' }
@@ -147,6 +148,7 @@ class Portal {
 
     async renderSection(section, content) {
         try {
+            if (section === 'book') return await this.book(content);
             if (section === 'dogs') return await this.dogs(content);
             if (section === 'billing') return await this.billing(content);
             if (section === 'profile') return await this.profile(content);
@@ -310,6 +312,169 @@ class Portal {
                 serviceRows.length
                     ? el('ul.portal-list', serviceRows)
                     : this.ui.empty('No services yet.')));
+    }
+
+    /* ---------------- book a stay ---------------- */
+
+    async book(content) {
+        const { el, date } = this.ui;
+        const today = this.ui.today();
+        if (!this.bookMonth) this.bookMonth = today.slice(0, 7);
+
+        const [year, month] = this.bookMonth.split('-').map(Number);
+        const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
+        const first = `${this.bookMonth}-01`;
+        const last = `${this.bookMonth}-${String(daysInMonth).padStart(2, '0')}`;
+        const from = first < today ? today : first;
+
+        // Nothing to show for a month that is entirely in the past.
+        if (last < today) {
+            this.bookMonth = today.slice(0, 7);
+            return this.book(content);
+        }
+
+        const [avail, { pets }, overview] = await Promise.all([
+            this.api.portalAvailability({ from, to: last }),
+            this.api.portalPets(),
+            this.api.portalOverview()
+        ]);
+
+        const dogs = pets.filter(p => p.status !== 'archived');
+        const byDate = new Map(avail.days.map(d => [d.date, d]));
+
+        const shift = n => {
+            this.bookMonth = new Date(Date.UTC(year, month - 1 + n, 1)).toISOString().slice(0, 7);
+            this.route();
+        };
+
+        const monthLabel = new Date(Date.UTC(year, month - 1, 1))
+            .toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+
+        /* the availability grid */
+        const cells = [];
+        const leading = new Date(Date.UTC(year, month - 1, 1)).getUTCDay();
+        for (let i = 0; i < leading; i++) cells.push(el('div.cal__cell.cal__cell--empty'));
+
+        for (let day = 1; day <= daysInMonth; day++) {
+            const d = `${this.bookMonth}-${String(day).padStart(2, '0')}`;
+            const info = byDate.get(d);
+
+            if (d < today || !info) {
+                cells.push(el('div.cal__cell.cal__cell--past', el('span.cal__day', String(day))));
+                continue;
+            }
+            cells.push(el('div.cal__cell', { class: info.full ? 'cal__cell--full' : 'cal__cell--open' },
+                el('span.cal__day', String(day)),
+                el('span.cal__free', info.full ? 'Full' : `${info.available} free`)));
+        }
+
+        const calendar = el('div',
+            el('div.portal-actions',
+                el('h2', 'Availability'),
+                el('div.cal__nav',
+                    el('button.btn.btn--sm', { type: 'button', onclick: () => shift(-1) }, '‹'),
+                    el('strong.cal__month', monthLabel),
+                    el('button.btn.btn--sm', { type: 'button', onclick: () => shift(1) }, '›'))),
+            el('div.cal',
+                ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(w => el('div.cal__weekday', w)),
+                cells));
+
+        /* upcoming stays, with the option to cancel */
+        const upcoming = (overview.bookings?.upcoming || []).filter(b => b.status !== 'cancelled');
+        const upcomingPanel = el('section.portal-panel',
+            el('header.portal-panel__head', el('h2', 'Your upcoming stays')),
+            upcoming.length
+                ? el('ul.portal-list', upcoming.map(b => el('li.portal-line',
+                    el('span', `${date(b.check_in)} → ${date(b.check_out)}`),
+                    el('span.portal-line__actions',
+                        this.ui.badge(b.status, this.ui.statusTone(b.status)),
+                        b.check_in > today && b.status !== 'checked_in' && b.status !== 'checked_out'
+                            ? el('button.linkbtn.linkbtn--danger',
+                                { type: 'button', onclick: () => this.cancelBooking(b) }, 'Cancel')
+                            : null))))
+                : this.ui.empty('No stays booked yet.'));
+
+        /* the booking form - only for an approved client with a dog on file */
+        let form;
+        if (!avail.can_book) {
+            form = el('div.notice',
+                el('strong', 'Your account is awaiting approval. '),
+                'You can see what is free, but you cannot book yet. We will be in touch shortly.');
+        } else if (!dogs.length) {
+            form = this.ui.empty('Add a dog before booking a stay.');
+        } else {
+            const checkIn = el('input', { type: 'date', min: today });
+            const checkOut = el('input', { type: 'date', min: today });
+            const boxes = dogs.map(p => el('label.field.field--check',
+                el('input', { type: 'checkbox', value: String(p.id), checked: dogs.length === 1 }),
+                el('span', p.name)));
+            const notes = el('textarea', { rows: 2, placeholder: 'Anything we should know?' });
+            const button = el('button.btn.btn--primary', { type: 'button' }, 'Book these dates');
+
+            button.onclick = async () => {
+                const petIds = boxes
+                    .map(b => b.querySelector('input'))
+                    .filter(i => i.checked)
+                    .map(i => Number(i.value));
+
+                if (!checkIn.value || !checkOut.value) {
+                    return this.ui.toast('Choose a drop-off and a pick-up date.', 'bad');
+                }
+                if (checkOut.value <= checkIn.value) {
+                    return this.ui.toast('Pick-up has to be after drop-off.', 'bad');
+                }
+                if (!petIds.length) return this.ui.toast('Choose at least one dog.', 'bad');
+
+                button.disabled = true;
+                const label = button.textContent;
+                button.textContent = 'Booking…';
+                try {
+                    await this.api.portalCreateBooking({
+                        check_in: checkIn.value,
+                        check_out: checkOut.value,
+                        pet_ids: petIds,
+                        notes: notes.value.trim()
+                    });
+                    this.ui.toast('Booked! We will see you then.', 'good');
+                    this.route();
+                } catch (err) {
+                    this.ui.toast(err.message || 'Could not book those dates.', 'bad');
+                    button.disabled = false;
+                    button.textContent = label;
+                }
+            };
+
+            form = el('div',
+                el('div.field-row',
+                    el('label.field', el('span.field__label', 'Drop-off'), checkIn),
+                    el('label.field', el('span.field__label', 'Pick-up'), checkOut)),
+                el('div.field', el('span.field__label', 'Which dogs?'), el('div', boxes)),
+                el('label.field', el('span.field__label', 'Notes'), notes),
+                el('div.portal-form-actions', button));
+        }
+
+        this.ui.mount(content,
+            el('p.muted',
+                `We can take ${avail.capacity} dog${avail.capacity === 1 ? '' : 's'} a night.`),
+            calendar,
+            el('section.portal-panel',
+                el('header.portal-panel__head', el('h2', 'Book a stay')),
+                form),
+            upcomingPanel);
+    }
+
+    async cancelBooking(booking) {
+        const ok = await this.ui.confirm(
+            `Cancel your stay on ${this.ui.date(booking.check_in)}?`,
+            { title: 'Cancel stay', confirmLabel: 'Cancel stay' });
+        if (!ok) return;
+        try {
+            await this.api.portalCancelBooking(booking.id);
+            this.ui.toast('Your stay is cancelled.', 'good');
+            this.route();
+        } catch (err) {
+            this.ui.toast(err.message || 'Could not cancel that.', 'bad');
+        }
     }
 
     /* ---------------- dogs ---------------- */
