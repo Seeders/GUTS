@@ -18,5 +18,10 @@
   "description": "A long-aimed shot dealing massive damage.",
   "damage": 90,
   "element": "physical",
-  "requiresWeaponCategory": "ranged"
+  "requiresWeaponCategory": "ranged",
+  "tags": [
+    "attack",
+    "projectile"
+  ],
+  "increasedCriticalChance": 2.0
 }

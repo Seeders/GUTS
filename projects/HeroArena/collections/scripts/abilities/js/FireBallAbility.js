@@ -100,6 +100,9 @@ class FireBallAbility extends GUTS.BaseAbility {
             damage: this.damage,
             speed: 120,
             element: this.element,
+            // The bolt is this ability's damage — carry its tags so the hit
+            // resolves as a Spell, not as the caster's basic Attack.
+            abilityTags: this.tags,
             ballistic: true,
             splashRadius: this.splashRadius,
             homing: false,

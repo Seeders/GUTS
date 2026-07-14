@@ -19,5 +19,6 @@
   ],
   "impactParticleEffectSystems": [
     "fireball_impact"
-  ]
+  ],
+  "criticalChance": 0.1
 }

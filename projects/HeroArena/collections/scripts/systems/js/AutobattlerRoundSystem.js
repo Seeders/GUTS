@@ -14,8 +14,6 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
     static services = [
         'startLeaderSelect',
         'confirmLeaderSelection',
-        'confirmHeroSelection',
-        'startHeroSelect',
         'startPrep',
         'getAIPlayerIds'
     ];
@@ -53,8 +51,7 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
         'moveHero',
         'getStartingLocationsFromLevel',
         'tileToWorld',
-        'getOwnedBuildingIds',
-        'placeBuildingAuto'
+        'getOwnedBuildingIds'
     ];
 
     // Commander HP: each surviving enemy unit deals its deployment supply cost as
@@ -69,20 +66,6 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
     static FORM_ROW_SPACING = 48;    // gap between rows
     static FORM_FORWARD_OFFSET = 260; // distance the formation anchor sits ahead of base
 
-    // Legacy building-pick constants (building select removed from the loop; kept
-    // because ServerNetworkSystem still routes CONFIRM_HERO_SELECT here).
-    static ATTRIBUTE_BUILDINGS = ['barracks', 'fletchersHall', 'mageTower'];
-
-    // Hero class options (legacy — kept for reference; selection now picks a building)
-    static HERO_CLASSES = [
-        { id: 'barbarian',  label: 'Barbarian',  archetype: 'STR',     spawnType: '1_s_barbarian'  },
-        { id: 'apprentice', label: 'Apprentice', archetype: 'INT',     spawnType: '1_i_apprentice' },
-        { id: 'archer',     label: 'Archer',     archetype: 'DEX',     spawnType: '1_d_archer'     },
-        { id: 'acolyte',    label: 'Acolyte',    archetype: 'STR/INT', spawnType: '1_is_acolyte'   },
-        { id: 'soldier',    label: 'Soldier',    archetype: 'STR/DEX', spawnType: '1_sd_soldier'   },
-        { id: 'scout',      label: 'Scout',      archetype: 'INT/DEX', spawnType: '1_di_scout'     }
-    ];
-
     // Leader options come straight from LeaderSystem.LEADERS (the Mechabellum
     // starting specialists) — single source of truth for labels AND effects.
     static get LEADERS() {
@@ -93,8 +76,6 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
         super(game);
         this.game.autobattlerRoundSystem = this;
         this.pendingLeaderSelections = {}; // { numericPlayerId: leaderId }
-        this.pendingBuildingSelections = {}; // { numericPlayerId: buildingId }
-        this.isMilestoneSelect = false;
     }
 
     // ─── Lifecycle ──────────────────────────────────────────────────────────────
@@ -254,125 +235,13 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
         return { success: true };
     }
 
-    // The attribute buildings a player may still pick (not already owned).
-    _statsFor(numericPlayerId) {
-        for (const eid of this.call.getPlayerEntities()) {
-            const s = this.game.getComponent(eid, 'playerStats');
-            if (s?.playerId === numericPlayerId) return s;
-        }
-        return null;
-    }
-
-    // Attribute buildings this player's deck permits (deck ⇒ intersect with the deck's
-    // buildings; no deck ⇒ all three).
-    _attributeBuildingsFor(numericPlayerId) {
-        const deck = this._statsFor(numericPlayerId)?.deck;
-        const base = AutobattlerRoundSystem.ATTRIBUTE_BUILDINGS;
-        // No deck, or an incomplete deck with no building ⇒ all buildings (don't brick
-        // the building pick). A deck with a building restricts to it.
-        if (!deck || !Array.isArray(deck.buildings) || !deck.buildings.length) return base;
-        const allow = new Set(deck.buildings.map(b => b.buildingId));
-        return base.filter(id => allow.has(id));
-    }
-
-    // The local human player id (non-AI), used to build the shared select overlay.
-    _humanPid() {
-        const ai = new Set(this.getAIPlayerIds());
-        for (const eid of this.call.getPlayerEntities()) {
-            const s = this.game.getComponent(eid, 'playerStats');
-            if (s && !ai.has(s.playerId)) return s.playerId;
-        }
-        return 0;
-    }
-
-    _availableBuildingIds(numericPlayerId) {
-        const owned = new Set(this.call.getOwnedBuildingIds?.(numericPlayerId) || []);
-        return this._attributeBuildingsFor(numericPlayerId).filter(id => !owned.has(id));
-    }
-
-    // Option cards for the select overlay, built for the local human's deck (already-owned
-    // picks are rejected server-side in confirmHeroSelection, so one broadcast is valid).
-    _buildingSelectOptions(numericPlayerId = this._humanPid()) {
-        return this._attributeBuildingsFor(numericPlayerId).map(id => {
-            const def = this.collections.buildings?.[id] || {};
-            return { id, label: def.title || id, archetype: (def.archetype || '').toUpperCase() };
-        });
-    }
-
-    // True if any player can still pick a new attribute building (gates the milestone).
-    _anyPlayerCanPickBuilding() {
-        for (const entityId of this.call.getPlayerEntities()) {
-            const stats = this.game.getComponent(entityId, 'playerStats');
-            if (!stats) continue;
-            if (this._availableBuildingIds(stats.playerId).length > 0) return true;
-        }
-        return false;
-    }
-
-    // Called after leader select is complete (starting pick), or at the milestone.
-    // The player picks a BUILDING here, not a hero — it auto-places (free) in startPrep.
-    startHeroSelect(isMilestone = false) {
-        if (!this.game.isServer && !this.game.state?.isLocalGame) return;
-        this.isMilestoneSelect = isMilestone;
-        this.pendingBuildingSelections = {};
-        // Only players who still have an unowned attribute building are expected to pick;
-        // a milestone where someone already owns all three must not deadlock the advance.
-        this._expectedSelections = this.call.getPlayerEntities()
-            .map(eid => this.game.getComponent(eid, 'playerStats'))
-            .filter(s => s && this._availableBuildingIds(s.playerId).length > 0)
-            .length;
-        this.game.state.phase = this.enums.gamePhase.heroSelect;
-        const payload = { options: this._buildingSelectOptions(), isMilestone, round: this.game.state.round };
-        this.call.broadcastToRoom(null, 'HERO_SELECT_START', payload);
-        this.game.triggerEvent('onHeroSelectStart', payload);
-        // Game-time scheduler, not setTimeout — see startLeaderSelect.
-        for (const pid of this.getAIPlayerIds()) {
-            const available = this._availableBuildingIds(pid);
-            if (available.length === 0) continue; // owns all three; nothing to pick
-            const forced = this.game.state.skirmishConfig?.buildings?.[pid];
-            const buildingId = available.includes(forced)
-                ? forced
-                : this.game.rng.strand('ai').pick(available);
-            this.call.scheduleAction(() => this.confirmHeroSelection(pid, buildingId), 0.1, null);
-        }
-    }
-
-    // Receives a building selection from a player. Called by ServerNetworkSystem
-    // (the wire field is still named heroClassId; it now carries a building id).
-    // No hero is granted — the chosen building auto-places (free) in startPrep, and its
-    // archetype gates what the shop offers.
-    confirmHeroSelection(numericPlayerId, buildingId) {
-        if (!this.game.isServer && !this.game.state?.isLocalGame) return { success: false };
-        if (this.game.state.phase !== this.enums.gamePhase.heroSelect &&
-            this.game.state.phase !== this.enums.gamePhase.milestone) {
-            return { success: false, reason: 'wrong_phase' };
-        }
-
-        const def = this.collections.buildings?.[buildingId];
-        if (!this._attributeBuildingsFor(numericPlayerId).includes(buildingId) || def?.buyable !== true) {
-            return { success: false, reason: 'invalid_building' };
-        }
-        if ((this.call.getOwnedBuildingIds?.(numericPlayerId) || []).includes(buildingId)) {
-            return { success: false, reason: 'already_owned' };
-        }
-
-        // Record the pick; it's placed in startPrep (needs the Town Hall to exist first).
-        this.pendingBuildingSelections[numericPlayerId] = buildingId;
-
-        // Advance once every player who could pick has picked.
-        if (Object.keys(this.pendingBuildingSelections).length >= (this._expectedSelections || 1)) {
-            this._advanceToPrep();
-        }
-
-        return { success: true };
-    }
-
     startPrep() {
         if (!this.game.isServer && !this.game.state?.isLocalGame) return;
         this.call.grantRoundIncome();
         this.game.state.phase = this.enums.gamePhase.placement;
-        // Command buildings: Town Hall + the leader's production building, one
-        // per flank. Respawns any that fell last battle (fresh HP each round).
+        // Command buildings: Town Hall + the production slot (a Cottage until the
+        // player converts it), one per flank. Respawns any that fell last battle
+        // (fresh HP each round), as whatever the slot currently holds.
         this.call.spawnCommandBuildings?.();
         // Respawn the persistent army: every purchased squad returns at its saved
         // battle position (deployment is permanent — Mechabellum-style).
@@ -993,32 +862,6 @@ class AutobattlerRoundSystem extends GUTS.BaseSystem {
     }
 
     // ─── Private helpers ────────────────────────────────────────────────────────
-
-    _advanceToPrep() {
-        const payload = { selections: this.pendingBuildingSelections };
-        this.call.broadcastToRoom(null, 'HERO_SELECT_COMPLETE', payload);
-        this.game.triggerEvent('onHeroSelectComplete', payload);
-        this.startPrep();
-    }
-
-    // Auto-place each player's pending starting/milestone building. Called from startPrep
-    // AFTER autoSpawnTownHalls (placeBuildingAuto positions relative to the Town Hall) and
-    // is FREE (placeBuildingAuto never charges gold). Consumes the pending map so a
-    // building isn't re-placed on later rounds' startPrep.
-    _placePendingStartingBuildings() {
-        const selections = this.pendingBuildingSelections || {};
-        for (const pidStr of Object.keys(selections)) {
-            const pid = Number(pidStr);
-            const buildingId = selections[pidStr];
-            if (!buildingId) continue;
-            const res = this.call.placeBuildingAuto?.(pid, buildingId);
-            if (!res?.success) {
-                console.warn('[AutobattlerRoundSystem] starting building placement failed:',
-                    pid, buildingId, res?.reason);
-            }
-        }
-        this.pendingBuildingSelections = {};
-    }
 
     _updateStreaks(winningTeam) {
         const playerEntities = this.call.getPlayerEntities();

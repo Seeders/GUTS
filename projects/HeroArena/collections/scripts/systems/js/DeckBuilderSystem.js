@@ -5,9 +5,12 @@
 //     each; these become the unit's purchasable ability techs, replacing its default
 //     ability set — its inherent non-ability techs stay). Defaults to the unit's
 //     original abilities.
-//   • one building — buildings = [{ buildingId, upgrades:[upgradeId,...] }] (exactly
-//     one; only that building is fielded, and its tech tree is the chosen upgrades).
 //   • banned commanders — bannedCommanders[] (≤2) removed from the draft.
+//
+// Decks do NOT choose a building. Every player starts with a Cottage and converts it
+// into a Barracks / Mage Tower / Fletcher's Hall in-match (upgradeTrees/cottage.json),
+// so that decision belongs to the match, not the deck — and a deck naming one building
+// would silently delete the other two choices.
 //
 // Decks live in localStorage (heroarena_decks_v1). The runtime side is
 // ArmyShopSystem / AutobattlerRoundSystem (they read stats.deck); a null deck means
@@ -40,7 +43,7 @@ class DeckBuilderSystem extends GUTS.BaseSystem {
     // ─── Public API (lobby deck dropdown) ───────────────────────────────────────
     listDecks() { return this._decks.map(d => ({ id: d.id, name: d.name, valid: this._isValid(d) })); }
     getDeck(id) { return this._decks.find(d => d.id === id) || null; }
-    _isValid(d) { return !!d && (d.buildings || []).length === 1; }   // must field exactly one building
+    _isValid(d) { return !!d; }
 
     // ─── Persistence ────────────────────────────────────────────────────────────
     _storage() { try { return (typeof localStorage !== 'undefined') ? localStorage : null; } catch { return null; } }
@@ -62,14 +65,7 @@ class DeckBuilderSystem extends GUTS.BaseSystem {
             .filter(id => T?.unitTier?.(id) != null && !T?.NOT_OFFERED?.has?.(id))
             .sort((a, b) => (T.unitTier(a) - T.unitTier(b)) || a.localeCompare(b));
     }
-    _attributeBuildingIds() {
-        return GUTS.AutobattlerRoundSystem?.ATTRIBUTE_BUILDINGS || ['barracks', 'fletchersHall', 'mageTower'];
-    }
     _leaders() { return GUTS.LeaderSystem?.LEADERS || []; }
-    _treeUpgrades(bId) {
-        const tree = this.collections.upgradeTrees?.[bId];
-        return (tree?.branches || []).flatMap(b => (b.nodes || []).map(n => n.upgrade));
-    }
     // The unit's ORIGINAL techs as pool ids (≤MAX), pre-selected as the default.
     // unitTechs entries now reference the pool directly; drop innate entries
     // (transforms etc.) since those aren't customizable deck slots.
@@ -95,7 +91,7 @@ class DeckBuilderSystem extends GUTS.BaseSystem {
 
     // ─── Deck creation ──────────────────────────────────────────────────────────
     _newDeck(name = 'New Deck') {
-        const d = { id: this._uuid(), name, units: [], buildings: [], bannedCommanders: [] };
+        const d = { id: this._uuid(), name, units: [], bannedCommanders: [] };
         // Fill EVERY unit to its cap. Each ability belongs to one unit, so: take the
         // unit's own defaults first (shared ones go to whoever's first), then top up
         // from any unused ability the unit qualifies for. Universal filler passives
@@ -123,8 +119,7 @@ class DeckBuilderSystem extends GUTS.BaseSystem {
         this._decks.push(d); this._editingId = d.id; this._persist(); return d;
     }
     _seedDefault() {
-        const d = this._newDeck('Default');
-        d.buildings = [{ buildingId: 'barracks', upgrades: this._treeUpgrades('barracks') }];
+        this._newDeck('Default');
         this._persist();
     }
     _duplicate(id) {
@@ -169,33 +164,6 @@ class DeckBuilderSystem extends GUTS.BaseSystem {
         } else if (!holder || holder === unitId) {
             GUTS.NotificationSystem?.show?.(`Max ${DeckBuilderSystem.MAX_ABILITIES} abilities per unit`, 'error');
             return;
-        }
-        this._persist(); this._render();
-    }
-    // Exactly one building: selecting a new one replaces; clicking the current clears.
-    _selectBuilding(bId) {
-        const d = this._deck(); if (!d) return;
-        if (d.buildings[0]?.buildingId === bId) d.buildings = [];
-        else d.buildings = [{ buildingId: bId, upgrades: this._treeUpgrades(bId) }];   // default: whole tree
-        this._persist(); this._render();
-    }
-    _toggleUpgrade(upgradeId) {
-        const d = this._deck(); const b = d.buildings[0]; if (!b) return;
-        const tree = this.collections.upgradeTrees?.[b.buildingId];
-        const nodeByUp = {};
-        for (const br of (tree?.branches || [])) for (const n of (br.nodes || [])) nodeByUp[n.upgrade] = n;
-        const set = new Set(b.upgrades);
-        if (set.has(upgradeId)) {
-            const drop = new Set([upgradeId]); let changed = true;
-            while (changed) { changed = false;
-                for (const up of [...set]) {
-                    if (!drop.has(up) && (nodeByUp[up]?.requires || []).some(r => drop.has(r))) { drop.add(up); changed = true; }
-                }
-            }
-            b.upgrades = b.upgrades.filter(u => !drop.has(u));
-        } else {
-            const add = (up) => { if (set.has(up)) return; set.add(up); for (const r of (nodeByUp[up]?.requires || [])) add(r); };
-            add(upgradeId); b.upgrades = [...set];
         }
         this._persist(); this._render();
     }
@@ -374,22 +342,6 @@ class DeckBuilderSystem extends GUTS.BaseSystem {
                 </div>
               </div>`;
 
-            const chosen = d.buildings[0]?.buildingId || null;
-            const bldHtml = this._attributeBuildingIds().map(bId => {
-                const bdef = this.collections.buildings?.[bId] || {};
-                return `<span class="db-chip ${chosen === bId ? 'on' : ''}" data-bld="${bId}">${esc(bdef.title || bId)}</span>`;
-            }).join('');
-            let treeHtml = '';
-            if (chosen) {
-                const tree = this.collections.upgradeTrees?.[chosen];
-                const owned = new Set(d.buildings[0].upgrades);
-                treeHtml = '<div class="db-sub">' + (tree?.branches || []).map(br =>
-                    `<div class="db-muted">${esc(br.label || br.id)}</div>` + (br.nodes || []).map(n => {
-                        const up = this.collections.upgrades?.[n.upgrade] || {};
-                        return `<span class="db-ab ${owned.has(n.upgrade) ? 'on' : ''}" data-up="${n.upgrade}">${esc(up.title || n.upgrade)}</span>`;
-                    }).join('')).join('') + '</div>';
-            }
-
             const cmdHtml = this._leaders().map(l => {
                 const banned = (d.bannedCommanders || []).includes(l.id);
                 return `<span class="db-chip ${banned ? 'ban' : ''}" data-ban="${l.id}">${banned ? '🚫 ' : ''}${esc(l.label)}</span>`;
@@ -398,11 +350,9 @@ class DeckBuilderSystem extends GUTS.BaseSystem {
             editHtml = `
               <div class="db-head">
                 <input class="db-name" data-name value="${esc(d.name)}"/>
-                <div>${this._isValid(d) ? '' : '<span class="db-warn">Pick exactly one building</span> '}
-                  <button class="db-btn" data-dup>Duplicate</button><button class="db-btn" data-del>Delete</button></div>
+                <div><button class="db-btn" data-dup>Duplicate</button><button class="db-btn" data-del>Delete</button></div>
               </div>
               <div class="db-sec"><h2>Units &amp; Abilities — select a unit, then assign abilities (each ability belongs to one unit)</h2>${unitsHtml}</div>
-              <div class="db-sec"><h2>Building &amp; Tech (choose one)</h2>${bldHtml}${treeHtml}</div>
               <div class="db-sec"><h2>Banned Commanders (${d.bannedCommanders.length}/${DeckBuilderSystem.MAX_BANS})</h2>${cmdHtml}</div>`;
         }
 
@@ -480,8 +430,6 @@ class DeckBuilderSystem extends GUTS.BaseSystem {
         const name = r.querySelector('[data-name]'); if (name) name.oninput = () => this._rename(name.value);
         on('[data-unit]', el => { this._selectedUnitId = el.dataset.unit; this._render(); });
         on('[data-ab]', el => { const [u, p] = el.dataset.ab.split('::'); this._toggleAbility(u, p); });
-        on('[data-bld]', el => this._selectBuilding(el.dataset.bld));
-        on('[data-up]', el => this._toggleUpgrade(el.dataset.up));
         on('[data-ban]', el => this._toggleBan(el.dataset.ban));
     }
 }

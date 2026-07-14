@@ -20,5 +20,9 @@
   "description": "Dash forward, damaging anyone in your path.",
   "damage": 20,
   "dashDistance": 140,
-  "element": "physical"
+  "element": "physical",
+  "tags": [
+    "attack",
+    "melee"
+  ]
 }

@@ -35,5 +35,6 @@
   ],
   "expirationParticleEffectSystems": [
     "holy_sparkles"
-  ]
+  ],
+  "criticalChance": 0.03
 }

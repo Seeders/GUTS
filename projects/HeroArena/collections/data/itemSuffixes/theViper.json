@@ -1,16 +1,16 @@
 {
- "title": "of the Tiger",
+ "title": "of the Viper",
  "statModifiers": {
   "criticalChance": {
-   "pct": 0.6
+   "pct": 0.35
   }
  },
- "weight": 1,
+ "weight": 2,
  "itemTypes": [
   "meleeWeapon",
   "rangeWeapon",
   "magicWeapon",
   "gloves"
  ],
- "fileName": "theTiger"
+ "fileName": "theViper"
 }

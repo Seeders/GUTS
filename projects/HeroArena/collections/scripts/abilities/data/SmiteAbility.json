@@ -29,5 +29,6 @@
   "impactParticleEffectSystems": [
     "holy_explosion",
     "holy_sparkles"
-  ]
+  ],
+  "criticalChance": 0.0
 }

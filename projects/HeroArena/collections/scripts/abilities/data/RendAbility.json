@@ -17,5 +17,9 @@
   "fileName": "RendAbility",
   "filePath": "/projects/HeroArena/collections/scripts/abilities/js/RendAbility.js",
   "name": "Rend",
-  "description": "Open a deep wound on a tough enemy, bleeding it for damage over time."
+  "description": "Open a deep wound on a tough enemy, bleeding it for damage over time.",
+  "tags": [
+    "attack",
+    "melee"
+  ]
 }

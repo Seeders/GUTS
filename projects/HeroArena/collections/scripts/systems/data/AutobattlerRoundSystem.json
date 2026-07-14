@@ -4,8 +4,6 @@
   "services": [
     "startLeaderSelect",
     "confirmLeaderSelection",
-    "confirmHeroSelection",
-    "startHeroSelect",
     "startPrep",
     "getAIPlayerIds"
   ]

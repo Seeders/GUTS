@@ -1,7 +1,7 @@
 {
- "title": "Searing",
+ "title": "Shocking",
  "statModifiers": {
-  "fireDamage": {
+  "lightningDamage": {
    "pct": 0.3
   }
  },
@@ -11,5 +11,5 @@
   "rangeWeapon",
   "magicWeapon"
  ],
- "fileName": "searing"
+ "fileName": "shocking"
 }

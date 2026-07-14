@@ -23,5 +23,9 @@
   ],
   "expirationParticleEffectSystems": [
     "holy_sparkles"
+  ],
+  "tags": [
+    "attack",
+    "melee"
   ]
 }

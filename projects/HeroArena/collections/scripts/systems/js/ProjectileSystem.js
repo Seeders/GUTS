@@ -37,6 +37,11 @@ class ProjectileSystem extends GUTS.BaseSystem {
 
         // Callback storage for onHit and onTravel (functions can't be serialized in components)
         this.projectileCallbacks = new Map();
+        // Tags of the ability that fired each projectile (BaseAbility.tags), so the
+        // hit resolves as that ability's Attack or Spell. A projectile with no entry
+        // is a basic attack. Kept beside the component because the projectile schema
+        // is typed and can't hold an array.
+        this.projectileTags = new Map();
 
         // Get gravity from movement system
         this.GRAVITY = this.game.movementSystem?.GRAVITY;
@@ -180,6 +185,10 @@ class ProjectileSystem extends GUTS.BaseSystem {
             });
         }
 
+        if (Array.isArray(projectileData.abilityTags) && projectileData.abilityTags.length) {
+            this.projectileTags.set(projectileId, projectileData.abilityTags);
+        }
+
         const sourceTeam = this.game.getComponent(sourceId, "team");
    
         // Add UNIT_TYPE component for projectiles (numeric indices)
@@ -244,6 +253,7 @@ class ProjectileSystem extends GUTS.BaseSystem {
         this.projectileTrails.delete(projectileId);
         // Clean up callbacks
         this.projectileCallbacks.delete(projectileId);
+        this.projectileTags.delete(projectileId);
     }
 
     /**
@@ -831,6 +841,10 @@ class ProjectileSystem extends GUTS.BaseSystem {
         // Splash weapons (opt-in via projectile def `splashOnHit`) detonate on the
         // target instead of single-target damage — the direct-hit counterpart of
         // the ballistic ground explosion, so anti-swarm units splash reliably.
+        // A projectile launched by an ability resolves as THAT ability (spell or
+        // attack); one with no tags is a basic attack.
+        const abilityTags = this.projectileTags.get(projectileId);
+
         if (projectile.splashOnHit && projectile.splashRadius > 0) {
             const targetTransform = this.game.getComponent(targetId, 'transform');
             const burstPos = targetTransform?.position || _targetPos;
@@ -840,7 +854,8 @@ class ProjectileSystem extends GUTS.BaseSystem {
                 projectile.splashRadius, {
                     isProjectile: true,
                     projectileId: projectileId,
-                    allowFriendlyFire: false
+                    allowFriendlyFire: false,
+                    abilityTags
                 });
             this.destroyProjectile(projectileId);
             return;
@@ -849,7 +864,8 @@ class ProjectileSystem extends GUTS.BaseSystem {
         // Apply damage on both client and server for sync
         this.call.applyDamage( projectile.source, targetId, damage, element, {
             isProjectile: true,
-            projectileId: projectileId
+            projectileId: projectileId,
+            abilityTags
         });
 
         this.destroyProjectile(projectileId);
@@ -888,7 +904,8 @@ class ProjectileSystem extends GUTS.BaseSystem {
             {
                 isBallistic: true,
                 projectileId: entityId,
-                allowFriendlyFire: false
+                allowFriendlyFire: false,
+                abilityTags: this.projectileTags.get(entityId)
             }
         );
 
@@ -1080,6 +1097,7 @@ class ProjectileSystem extends GUTS.BaseSystem {
 
         // Clear all projectile callbacks
         this.projectileCallbacks.clear();
+        this.projectileTags.clear();
 
         // Clear active projectiles if tracked
         if (this.activeProjectiles) {

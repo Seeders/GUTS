@@ -21,5 +21,6 @@
   "chainParticleEffectSystems": [
     "lightning_sparks",
     "lightning_arc"
-  ]
+  ],
+  "criticalChance": 0.08
 }

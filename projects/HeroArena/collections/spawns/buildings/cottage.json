@@ -1,6 +1,6 @@
 {
   "title": "Cottage",
-  "info": "A structure that fires arrows.",
+  "info": "An unspecialized command building. Upgrade it into a Barracks, Mage Tower or Fletcher's Hall.",
   "value": 50,
   "category": "attribute",
   "render": {
@@ -56,9 +56,14 @@
   "height": 100,
   "size": 50,
   "icon": "building_cottage",
-  "hp": 500,
-  "supplyProvided": 8,
+  "hp": 220,
+  "supplyProvided": 0,
   "spriteAnimationSet": "cottage",
   "requiresUnits": [],
-  "requiresBuildings": []
+  "requiresBuildings": [],
+  "upgrades": [
+    "build_barracks",
+    "build_mageTower",
+    "build_fletchersHall"
+  ]
 }

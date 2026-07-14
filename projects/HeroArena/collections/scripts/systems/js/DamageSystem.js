@@ -16,6 +16,7 @@ class DamageSystem extends GUTS.BaseSystem {
         'showDamageNumber',
         'rollHitChance',
         'rollBlock',
+        'rollCritical',
         'getAggregatedDamageModifiers',
         'grantCombatExperience',
         'applyDamage',
@@ -76,43 +77,55 @@ class DamageSystem extends GUTS.BaseSystem {
      * @param {Object} options - Damage options
      * @returns {string[]} Array of damage tags
      */
+    // Every damage instance comes from an ability, and every ability is either an
+    // Attack or a Spell — the basic attack is just an Attack with no ability class
+    // behind it. `options.abilityTags` is the ability's own declared tag list
+    // (BaseAbility.tags); the rest of the tags are derived from how the hit was
+    // delivered. Modifiers match against this set: no tags = every hit, ['spell'] =
+    // spells only, ['fire'] = any fire hit whether attack or spell.
     buildDamageTags(element, options) {
         const tags = [];
+        const push = (t) => { if (t && !tags.includes(t)) tags.push(t); };
 
-        // Source type: attack vs spell
-        if (options.isSpell) {
-            tags.push('spell');
-        } else {
-            tags.push('attack');
-        }
+        // Source type: attack vs spell. The ability's own tags win; a raw
+        // applyDamage call (basic attack, trap, reflect) falls back to isSpell.
+        const declared = options.abilityTags || [];
+        const isSpell = declared.includes('spell')
+            || (!declared.includes('attack') && !!options.isSpell);
+        push(isSpell ? 'spell' : 'attack');
+
+        // Anything else the ability declared (fire, area, projectile, ...)
+        for (const tag of declared) push(tag);
 
         // Range type: melee vs ranged/projectile
         if (options.isMelee) {
-            tags.push('melee');
+            push('melee');
         } else if (options.isProjectile || options.isRanged) {
-            tags.push('ranged');
-            if (options.isProjectile) {
-                tags.push('projectile');
-            }
+            push('ranged');
+            if (options.isProjectile) push('projectile');
         }
 
         // Area vs single target
         if (options.isSplash || options.isArea || options.isAoE) {
-            tags.push('area');
-        } else {
-            tags.push('singleTarget');
+            push('area');
+        } else if (!tags.includes('area')) {
+            push('singleTarget');
         }
 
         // Damage over time
-        if (options.isDot) {
-            tags.push('dot');
-        }
+        if (options.isDot) push('dot');
 
         // Element tag
-        const elementName = this.reverseEnums.element?.[element] || 'physical';
-        tags.push(elementName);
+        push(this.reverseEnums.element?.[element] || 'physical');
 
         return tags;
+    }
+
+    // Attacks roll to hit and can be blocked; spells always land. Derived from the
+    // resolved tag set, so an attack ABILITY (Bash, AimedShot, LeapSlam) is subject
+    // to evasion and block exactly like the basic attack it is a variant of.
+    isSpellDamage(damageTags) {
+        return damageTags.includes('spell');
     }
 
     /**
@@ -176,10 +189,11 @@ class DamageSystem extends GUTS.BaseSystem {
 
         // STEP 1: Build damage tags for modifier matching
         const damageTags = this.buildDamageTags(element, options);
+        const isSpell = this.isSpellDamage(damageTags);
 
         // STEP 2: Accuracy check (attacks only, spells always hit; redistributed
         // shield-wall shares already hit their original target — not re-evadable)
-        if (!options.isSpell && !options.sharedDamage && this.game.hasService('rollHitChance')) {
+        if (!isSpell && !options.sharedDamage && this.game.hasService('rollHitChance')) {
             const hitResult = this.call.rollHitChance( sourceId, targetId, false);
             if (!hitResult.hit) {
                 log.debug('Damage', `MISS! ${sourceName}(${sourceId}) -> ${targetName}(${targetId})`, {
@@ -203,7 +217,7 @@ class DamageSystem extends GUTS.BaseSystem {
         // STEP 2.2: Block check (attacks only; the redistributed shield-wall shares
         // already resolved their own block on the original hit). A successful block
         // negates the hit entirely — shields turn blockChance into real mitigation.
-        if (!options.isSpell && !options.sharedDamage && this.game.hasService('rollBlock')) {
+        if (!isSpell && !options.sharedDamage && this.game.hasService('rollBlock')) {
             const blockResult = this.call.rollBlock(sourceId, targetId);
             if (blockResult.blocked) {
                 log.debug('Damage', `BLOCKED! ${sourceName}(${sourceId}) -> ${targetName}(${targetId})`, {
@@ -263,10 +277,27 @@ class DamageSystem extends GUTS.BaseSystem {
             }
         }
 
-        // STEP 6: Apply critical hit multiplier
-        if (options.isCritical) {
-            const critMultiplier = options.criticalMultiplier || 2.0;
-            damage *= critMultiplier;
+        // STEP 6: Critical strike. Attacks and spells both crit — the roll lives here
+        // rather than in the callers so every damage source gets it (before this, crit
+        // only ever happened for the three abilities that hardcoded isCritical, and
+        // every unit's criticalChance stat was dead).
+        //
+        // An explicit isCritical in the options still wins: ShadowStrike and Smite
+        // are *guaranteed* crits by design, and pass true.
+        // The skill's BASE crit chance; null for a basic attack, which falls back to
+        // the unit's own criticalChance. Gear/upgrades multiply this base — they do
+        // not add to it — so a 0-base skill can never crit.
+        let isCritical = options.isCritical;
+        let critMultiplier = options.criticalMultiplier;
+        if (isCritical === undefined && this.game.hasService('rollCritical')) {
+            const baseCrit = options.abilityCritChance != null ? options.abilityCritChance : null;
+            const critResult = this.call.rollCritical(
+                sourceId, targetId, baseCrit, damageTags, options.abilityIncreasedCrit || 0);
+            isCritical = critResult.critical;
+            critMultiplier = critMultiplier ?? critResult.multiplier;
+        }
+        if (isCritical) {
+            damage *= (critMultiplier || 2.0);
         }
 
         // Handle poison as special case (DoT)
@@ -296,7 +327,7 @@ class DamageSystem extends GUTS.BaseSystem {
             tags: damageTags,
             healthBefore: targetHealth.current + damageResult.finalDamage,
             healthAfter: targetHealth.current,
-            isCritical: options.isCritical
+            isCritical: isCritical
         });
 
         // Check for death
@@ -333,6 +364,7 @@ class DamageSystem extends GUTS.BaseSystem {
             element: element,
             tags: damageTags,
             modifiers: modifiers,
+            isCritical: !!isCritical,
             fatal: targetHealth.current <= 0,
             healthRemaining: targetHealth.current,
             healthMax: targetHealth.max

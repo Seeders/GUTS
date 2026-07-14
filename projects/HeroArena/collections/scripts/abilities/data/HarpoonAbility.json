@@ -17,5 +17,9 @@
   "fileName": "HarpoonAbility",
   "filePath": "/projects/HeroArena/collections/scripts/abilities/js/HarpoonAbility.js",
   "name": "Harpoon",
-  "description": "Hook the nearest enemy and yank it toward you, out of its formation."
+  "description": "Hook the nearest enemy and yank it toward you, out of its formation.",
+  "tags": [
+    "attack",
+    "projectile"
+  ]
 }

@@ -18,5 +18,10 @@
   "description": "A vicious strike from behind for massive damage.",
   "damage": 50,
   "element": "physical",
-  "requiresWeaponType": "dagger"
+  "requiresWeaponType": "dagger",
+  "tags": [
+    "attack",
+    "melee"
+  ],
+  "increasedCriticalChance": 2.0
 }

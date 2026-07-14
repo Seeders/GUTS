@@ -2,7 +2,7 @@
  "title": "Freezing",
  "statModifiers": {
   "coldDamage": {
-   "add": 8
+   "pct": 0.3
   }
  },
  "weight": 1,

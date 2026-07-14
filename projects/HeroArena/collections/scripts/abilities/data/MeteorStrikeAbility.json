@@ -38,5 +38,6 @@
   ],
   "targetParticleEffectSystems": [
     "fire_burst_secondary"
-  ]
+  ],
+  "criticalChance": 0.2
 }

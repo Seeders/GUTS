@@ -1,0 +1,11 @@
+{
+ "title": "Fletcher's Hall",
+ "description": "Convert the Cottage into a Fletcher's Hall. Unlocks the Dexterity tech tree.",
+ "value": 60,
+ "icon": "building_fletchershall",
+ "convertsBuilding": "fletchersHall",
+ "archetype": "DEX",
+ "requiresBuildings": [
+  "cottage"
+ ]
+}

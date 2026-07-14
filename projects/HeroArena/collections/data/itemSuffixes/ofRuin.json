@@ -1,16 +1,16 @@
 {
- "title": "of the Tiger",
+ "title": "of Ruin",
  "statModifiers": {
-  "criticalChance": {
-   "pct": 0.6
+  "criticalMultiplier": {
+   "add": 0.25
   }
  },
- "weight": 1,
+ "weight": 2,
  "itemTypes": [
   "meleeWeapon",
   "rangeWeapon",
   "magicWeapon",
   "gloves"
  ],
- "fileName": "theTiger"
+ "fileName": "ofRuin"
 }

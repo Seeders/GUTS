@@ -1,0 +1,11 @@
+{
+ "title": "Mage Tower",
+ "description": "Convert the Cottage into a Mage Tower. Unlocks the Intelligence tech tree.",
+ "value": 60,
+ "icon": "building_magetower",
+ "convertsBuilding": "mageTower",
+ "archetype": "INT",
+ "requiresBuildings": [
+  "cottage"
+ ]
+}

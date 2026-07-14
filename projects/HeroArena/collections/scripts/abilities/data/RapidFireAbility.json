@@ -17,5 +17,8 @@
   "name": "Rapid Fire",
   "description": "Drastically increased attack speed for a short time.",
   "duration": 6,
-  "requiresWeaponCategory": "ranged"
+  "requiresWeaponCategory": "ranged",
+  "tags": [
+    "attack"
+  ]
 }

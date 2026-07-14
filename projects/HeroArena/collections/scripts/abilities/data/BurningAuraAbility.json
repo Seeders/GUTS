@@ -20,5 +20,6 @@
   ],
   "tickParticleEffectSystems": [
     "fire_trail"
-  ]
+  ],
+  "criticalChance": 0.03
 }

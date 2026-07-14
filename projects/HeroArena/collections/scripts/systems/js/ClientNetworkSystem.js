@@ -28,7 +28,6 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
         'setLocalGame',
         'resetTeamReadyState',
         'submitLeaderSelection',
-        'submitHeroSelection',
         'submitHeroMove',
         'submitBuyOffer',
         'submitRerollOffers',
@@ -320,13 +319,6 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
                 this.game.commanderSkillSystem?.onCommanderSkillCastRemote?.(data);
             }),
 
-            // HeroArena: hero selection flow
-            nm.listen('HERO_SELECT_START', (data) => {
-                this.handleHeroSelectStart(data);
-            }),
-            nm.listen('HERO_SELECT_COMPLETE', (data) => {
-                this.handleHeroSelectComplete(data);
-            }),
             nm.listen('PREP_PHASE_START', (data) => {
                 // PREP_PHASE_START carries a flat { round } (no gameState), so update the
                 // client round here — otherwise it lags a round behind the server during
@@ -1641,16 +1633,6 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
         }, () => {});
     }
 
-    // ==================== HERO ARENA: HERO SELECTION ====================
-
-    submitHeroSelection(heroClassId) {
-        this.networkRequest({
-            eventName: 'HERO_SELECTED',
-            responseName: 'HERO_SELECTED_ACK',
-            data: { heroClassId }
-        }, () => {});
-    }
-
     // ==================== HERO ARENA: HERO REPOSITION ====================
 
     submitHeroMove(entityId, worldX, worldZ, rotationY) {
@@ -1870,16 +1852,6 @@ class ClientNetworkSystem extends GUTS.BaseNetworkSystem {
             data: {},
             onSuccess
         }, () => {});
-    }
-
-    handleHeroSelectStart(data) {
-        // Show the hero selection UI overlay with the offered options.
-        this.game.triggerEvent('onHeroSelectStart', data);
-    }
-
-    handleHeroSelectComplete(data) {
-        // Hero selection is done; hide the overlay and prepare for placement phase.
-        this.game.triggerEvent('onHeroSelectComplete', data);
     }
 
     cleanupNetworkListeners() {

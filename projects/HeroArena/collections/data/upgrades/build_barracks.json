@@ -1,0 +1,11 @@
+{
+ "title": "Barracks",
+ "description": "Convert the Cottage into a Barracks. Unlocks the Strength tech tree.",
+ "value": 60,
+ "icon": "building_barracks",
+ "convertsBuilding": "barracks",
+ "archetype": "STR",
+ "requiresBuildings": [
+  "cottage"
+ ]
+}

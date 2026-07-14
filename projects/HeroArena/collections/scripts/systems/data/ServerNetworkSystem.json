@@ -17,7 +17,6 @@
     "handleExecuteCheat",
     "handleTransformUnit",
     "handleLeaderSelected",
-    "handleHeroSelected",
     "handleHeroMoved",
     "handlePlayerLoaded",
     "handleClaimLoot",

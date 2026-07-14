@@ -37,6 +37,40 @@ class BaseAbility {
         this.priority = abilityData.priority || 5;
         this.castTime = abilityData.castTime ?? 1.5;
         this.autoTrigger = abilityData.autoTrigger || 'combat';
+
+        // Attacks and Spells are both abilities. `tags` is what the modifier
+        // pipeline matches against: "increased Damage" (no tags) hits every
+        // ability, "increased Spell Damage" only ['spell'] ones, "increased
+        // Attack Damage" only ['attack'] ones. Abilities may add descriptive tags
+        // of their own (fire, area, projectile) — an element tag is added
+        // automatically from the damage element, so it need not be declared.
+        //
+        // A skill is a SPELL unless it says otherwise: weapon-delivered abilities
+        // (shots, strikes, slams) declare "tags": ["attack"] in their data JSON.
+        // Attacks also roll accuracy and can be blocked; spells always land.
+        this.tags = (Array.isArray(abilityData.tags) && abilityData.tags.length)
+            ? abilityData.tags.slice()
+            : ['spell'];
+        this.isAttackSkill = this.tags.includes('attack');
+        // Which speed stat gates this ability: attack speed or cast speed.
+        this.speedTags = this.isAttackSkill ? ['attack'] : ['spell'];
+
+        // Base crit chance. SPELLS ONLY: a spell's base crit is its own, independent
+        // of the caster's weapon (a utility spell sets 0 and can then never crit,
+        // however much crit gear is stacked — increased crit multiplies a base).
+        //
+        // Attack abilities have NO base crit of their own — an attack's base is the
+        // WEAPON's crit rating (the unit's combat.criticalChance plus flat crit from
+        // gear), shared with the basic attack. See AccuracySystem.rollCritical.
+        this.criticalChance = this.isAttackSkill
+            ? null
+            : (abilityData.criticalChance ?? 0.05);
+
+        // INCREASED crit chance intrinsic to this skill (Backstab, Aimed Shot). It is
+        // summed with the wielder's increased crit from gear/upgrades and multiplies
+        // the base — so a high-crit attack skill scales with the weapon it is swung
+        // with, instead of overriding the weapon's rating with a flat number.
+        this.increasedCriticalChance = abilityData.increasedCriticalChance ?? 0;
         // Abilities only target enemies they can SEE (line of sight), matching basic
         // attacks. Abilities that fire blind at a position (AoE on a spot, etc.) opt
         // out by setting "requiresLineOfSight": false in their ability data.
@@ -177,8 +211,17 @@ class BaseAbility {
         // this helper benefit from item leveling without per-ability changes.
         const scaled = this.scaledDamage(damage);
         if (this.game.hasService('applyDamage')) {
-            // Use game.call to ensure damage is logged by CallLogger
-            const result = this.call.applyDamage( sourceId, targetId, scaled, element, { isSpell: true, ...options });
+            // Hand the ability's own tags to DamageSystem — they decide whether
+            // this lands as an Attack (rolls to hit, blockable, scales with
+            // attack-damage mods) or a Spell.
+            const result = this.call.applyDamage( sourceId, targetId, scaled, element,
+                {
+                    abilityTags: this.tags,
+                    isSpell: !this.isAttackSkill,
+                    abilityCritChance: this.criticalChance,
+                    abilityIncreasedCrit: this.increasedCriticalChance,
+                    ...options
+                });
 
             const transform = this.game.getComponent(targetId, "transform");
             const targetPos = transform?.position;

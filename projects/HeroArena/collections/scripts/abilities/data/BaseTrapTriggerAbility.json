@@ -6,5 +6,6 @@
   ],
   "expirationParticleEffectSystems": [
     "trap_destroy"
-  ]
+  ],
+  "criticalChance": 0.05
 }

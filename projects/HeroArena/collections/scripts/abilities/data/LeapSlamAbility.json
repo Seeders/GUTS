@@ -18,5 +18,10 @@
   ],
   "impactParticleEffectSystems": [
     "leap_slam_impact"
+  ],
+  "tags": [
+    "attack",
+    "melee",
+    "area"
   ]
 }

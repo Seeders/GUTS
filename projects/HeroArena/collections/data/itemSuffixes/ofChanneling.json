@@ -1,0 +1,13 @@
+{
+ "title": "of Channeling",
+ "statModifiers": {
+  "castSpeed": {
+   "pct": 0.12
+  }
+ },
+ "weight": 3,
+ "itemTypes": [
+  "magicWeapon"
+ ],
+ "fileName": "ofChanneling"
+}

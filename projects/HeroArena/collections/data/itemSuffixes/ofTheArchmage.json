@@ -1,0 +1,13 @@
+{
+ "title": "of the Archmage",
+ "statModifiers": {
+  "castSpeed": {
+   "pct": 0.2
+  }
+ },
+ "weight": 1,
+ "itemTypes": [
+  "magicWeapon"
+ ],
+ "fileName": "ofTheArchmage"
+}

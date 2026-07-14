@@ -109,8 +109,13 @@ class LeaderSystem extends GUTS.BaseSystem {
 
     // statModifiers: { <field>: { add?, pct? } }. maxHP maps to health (preserving the
     // current/max ratio); everything else maps to the combat component. Mirrors
-    // ArmyShopSystem._applyStatMods so leader + upgrade bonuses behave identically.
+    // ArmyShopSystem._applyStatMods so leader + upgrade bonuses behave identically —
+    // including skipping the `.pct` of the damage/speed fields, which are owned by
+    // StatAggregationSystem's tagged pipeline so they reach spells too.
     _applyStatMods(combat, health, mods) {
+        this.game.statAggregationSystem?.invalidateModifierCache();
+
+        const pipelinePct = GUTS.StatAggregationSystem.PIPELINE_PCT_FIELDS;
         for (const [field, spec] of Object.entries(mods || {})) {
             if (field === 'maxHP') {
                 if (!health) continue;
@@ -122,9 +127,28 @@ class LeaderSystem extends GUTS.BaseSystem {
                 continue;
             }
             if (!combat) continue;
+            const pct = pipelinePct.has(field) ? 0 : (spec.pct || 0);
             const base = combat[field] || 0;
-            combat[field] = base + (spec.add || 0) + base * (spec.pct || 0);
+            combat[field] = base + (spec.add || 0) + base * pct;
         }
+    }
+
+    // The leader's unbaked stat package for this hero — StatAggregationSystem reads
+    // it to build the tagged damage/speed modifiers. Same gate as applyLeaderBonuses.
+    getEntityGrants(entityId) {
+        const info = this.game.getComponent(entityId, 'heroRosterInfo');
+        if (!info) return null;
+        const stats = this._statsByPlayerId(info.playerId);
+        const def = this.getLeaderDef(stats?.leaderId);
+        if (!def?.mods) return null;
+        if (!def.allUnits && !(def.archetype && this._heroHasArchetype(entityId, def.archetype))) {
+            return null;
+        }
+        return {
+            statModifiers: def.mods,
+            damageModifiers: def.damageModifiers || [],
+            speedModifiers: def.speedModifiers || []
+        };
     }
 
     _statsByPlayerId(numericPlayerId) {

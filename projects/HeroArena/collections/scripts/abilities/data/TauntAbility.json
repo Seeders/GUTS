@@ -16,5 +16,6 @@
   "filePath": "/projects/HeroArena/collections/scripts/abilities/js/TauntAbility.js",
   "name": "Taunt",
   "description": "Force nearby enemies to focus on you.",
-  "duration": 5
+  "duration": 5,
+  "criticalChance": 0.0
 }

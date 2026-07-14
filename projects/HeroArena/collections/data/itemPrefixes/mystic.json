@@ -1,0 +1,13 @@
+{
+ "title": "Mystic",
+ "statModifiers": {
+  "spellDamage": {
+   "pct": 0.15
+  }
+ },
+ "weight": 3,
+ "itemTypes": [
+  "magicWeapon"
+ ],
+ "fileName": "mystic"
+}

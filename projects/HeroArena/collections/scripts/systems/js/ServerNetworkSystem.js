@@ -31,7 +31,6 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         'handleExecuteCheat',
         'handleTransformUnit',
         'handleLeaderSelected',
-        'handleHeroSelected',
         'handleHeroMoved',
         'handlePlayerLoaded',
         'handleClaimLoot',
@@ -75,7 +74,6 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         'getSerializedPlayerEntities',
         // HeroArena services
         'confirmLeaderSelection',
-        'confirmHeroSelection',
         'startLeaderSelect',
         'claimLootItem',
         'skipLoot',
@@ -391,7 +389,6 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         this.game.serverEventManager.subscribe('LEADER_SELECTED', this.handleLeaderSelected.bind(this));
 
         // HeroArena: hero selection
-        this.game.serverEventManager.subscribe('HERO_SELECTED', this.handleHeroSelected.bind(this));
 
         // HeroArena: hero reposition during prep
         this.game.serverEventManager.subscribe('HERO_MOVED', this.handleHeroMoved.bind(this));
@@ -1256,16 +1253,6 @@ class ServerNetworkSystem extends GUTS.BaseNetworkSystem {
         const leaderId = eventData.data?.leaderId ?? eventData.leaderId;
         const result = this.call.confirmLeaderSelection(numericPlayerId, leaderId);
         return this.respond(playerId, 'LEADER_SELECTED_ACK', result ?? { success: false, reason: 'no_system' }, callback);
-    }
-
-    // ==================== HERO ARENA: HERO SELECTION ====================
-
-    handleHeroSelected(eventData, callback) {
-        const { playerId } = eventData;
-        const numericPlayerId = eventData.numericPlayerId ?? eventData.playerId;
-        const heroClassId = eventData.data?.heroClassId ?? eventData.heroClassId;
-        const result = this.call.confirmHeroSelection(numericPlayerId, heroClassId);
-        return this.respond(playerId, 'HERO_SELECTED_ACK', result ?? { success: false, reason: 'no_system' }, callback);
     }
 
     // ==================== HERO ARENA: HERO REPOSITION ====================

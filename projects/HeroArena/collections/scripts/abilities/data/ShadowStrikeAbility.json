@@ -25,5 +25,9 @@
   "impactParticleEffectSystems": [
     "fire_burst_core",
     "dark_energy"
+  ],
+  "tags": [
+    "attack",
+    "melee"
   ]
 }

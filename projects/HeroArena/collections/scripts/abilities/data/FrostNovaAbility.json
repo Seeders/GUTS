@@ -21,5 +21,6 @@
   "duration": 3,
   "damage": 30,
   "radius": 150,
-  "element": "cold"
+  "element": "cold",
+  "criticalChance": 0.05
 }

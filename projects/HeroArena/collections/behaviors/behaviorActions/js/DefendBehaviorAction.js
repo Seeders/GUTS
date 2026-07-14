@@ -99,8 +99,15 @@ class DefendBehaviorAction extends GUTS.BaseBehaviorAction {
     performAttack(attackerId, targetId, game, combat) {
         if (!combat.lastAttack) combat.lastAttack = 0;
 
+        // Same Attack as AttackEnemyBehaviorAction fires, so it swings at the same
+        // modified rate (attack-speed gear, haste, slows, stuns).
+        const attackSpeed = game.statAggregationSystem
+            ? game.statAggregationSystem.getEffectiveAttackSpeed(attackerId, combat.attackSpeed)
+            : combat.attackSpeed;
+        if (attackSpeed <= 0) return; // attack-disabled (stun / freeze)
+
         const timeSinceLastAttack = game.state.now - combat.lastAttack;
-        if (timeSinceLastAttack < 1 / combat.attackSpeed) {
+        if (timeSinceLastAttack < 1 / attackSpeed) {
             return; // On cooldown
         }
 
@@ -122,7 +129,7 @@ class DefendBehaviorAction extends GUTS.BaseBehaviorAction {
         // Trigger attack
         if (game.has('triggerSinglePlayAnimation')) {
             const enums = game.getEnums();
-            this.call.triggerSinglePlayAnimation( attackerId, enums.animationType.attack, combat.attackSpeed);
+            this.call.triggerSinglePlayAnimation( attackerId, enums.animationType.attack, attackSpeed);
         }
 
         if (combat.projectile) {
@@ -134,7 +141,7 @@ class DefendBehaviorAction extends GUTS.BaseBehaviorAction {
                 });
             }
         } else if (combat.damage > 0) {
-            const damageDelay = (1 / combat.attackSpeed) * 0.5;
+            const damageDelay = (1 / attackSpeed) * 0.5;
             this.call.scheduleDamage( attackerId, targetId, combat.damage, 'physical', damageDelay);
         }
     }

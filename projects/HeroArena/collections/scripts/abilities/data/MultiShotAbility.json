@@ -12,5 +12,9 @@
   "requiresWeaponCategory": "ranged",
   "maxTargets": 3,
   "element": "physical",
-  "arrowDamageMult": 0.65
+  "arrowDamageMult": 0.65,
+  "tags": [
+    "attack",
+    "projectile"
+  ]
 }

@@ -19,5 +19,9 @@
   "damage": 30,
   "duration": 6,
   "element": "physical",
-  "requiresWeaponCategory": "ranged"
+  "requiresWeaponCategory": "ranged",
+  "tags": [
+    "attack",
+    "projectile"
+  ]
 }

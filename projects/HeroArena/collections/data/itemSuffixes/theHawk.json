@@ -1,0 +1,14 @@
+{
+ "title": "of the Hawk",
+ "statModifiers": {
+  "criticalChance": {
+   "add": 0.03
+  }
+ },
+ "weight": 3,
+ "itemTypes": [
+  "meleeWeapon",
+  "rangeWeapon"
+ ],
+ "fileName": "theHawk"
+}

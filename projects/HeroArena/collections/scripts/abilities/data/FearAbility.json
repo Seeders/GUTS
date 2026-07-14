@@ -21,5 +21,6 @@
   "filePath": "/projects/HeroArena/collections/scripts/abilities/js/FearAbility.js",
   "name": "Fear",
   "description": "Strike terror into an enemy, sending it fleeing for a few seconds.",
-  "duration": 4
+  "duration": 4,
+  "criticalChance": 0.0
 }

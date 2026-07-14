@@ -17,5 +17,9 @@
   "fileName": "BlindingShotAbility",
   "filePath": "/projects/HeroArena/collections/scripts/abilities/js/BlindingShotAbility.js",
   "name": "Blinding Shot",
-  "description": "Blind an enemy so its attacks miss for a short time."
+  "description": "Blind an enemy so its attacks miss for a short time.",
+  "tags": [
+    "attack",
+    "projectile"
+  ]
 }

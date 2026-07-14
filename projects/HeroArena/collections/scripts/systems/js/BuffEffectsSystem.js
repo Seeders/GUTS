@@ -205,9 +205,16 @@ class BuffEffectsSystem extends GUTS.BaseSystem {
 
     // ---- Per-tick effects ------------------------------------------------------
 
-    // Applies movement / attack-speed modifiers from active CC buffs each tick.
-    // Multipliers from MULTIPLE simultaneous buffs multiply together. Stores the
-    // entity's pre-debuff baseline so we can restore it when the buffs expire.
+    // Applies MOVEMENT modifiers from active CC buffs each tick. Multipliers from
+    // MULTIPLE simultaneous buffs multiply together. Stores the entity's pre-debuff
+    // baseline so we can restore it when the buffs expire.
+    //
+    // Attack speed is deliberately NOT handled here. It lives in
+    // StatAggregationSystem as a tagged ['attack'] speed modifier, alongside cast
+    // speed — that is what makes a haste buff or a slow debuff apply to attack
+    // ABILITIES and not just the basic attack. Mutating combat.attackSpeed in place
+    // here as well would apply it twice.
+    //
     // The other CC dimensions (action prevention for stun / freeze / polymorph /
     // silence) are handled inline by the gating code in
     // AttackEnemyBehaviorAction.execute and AbilitySystem.useAbility — those
@@ -215,8 +222,8 @@ class BuffEffectsSystem extends GUTS.BaseSystem {
     _tickCCEffects() {
         const now = this.game.state.now || 0;
 
-        // Aggregate combined move/attack multipliers per buffed target.
-        const combined = new Map(); // targetId -> { moveMult, atkMult }
+        // Aggregate combined movement multipliers per buffed target.
+        const combined = new Map(); // targetId -> moveMult
         for (const buffEntity of this.game.getEntitiesWith('buff')) {
             const buff = this.game.getComponent(buffEntity, 'buff');
             if (!buff || buff.targetEntity == null) continue;
@@ -227,56 +234,38 @@ class BuffEffectsSystem extends GUTS.BaseSystem {
             if (!buffTypeDef) continue;
 
             // Two CC representations exist in the buff data:
-            //   * multiplier form: movementSpeedMultiplier / attackSpeedMultiplier (0..N)
-            //   * disabled flag:   movementDisabled / attackDisabled (1 = fully blocked)
+            //   * multiplier form: movementSpeedMultiplier (0..N)
+            //   * disabled flag:   movementDisabled (1 = fully blocked)
             // Honor both. A disabled flag overrides the multiplier (sets it to 0).
             let moveMult = buffTypeDef.movementSpeedMultiplier;
-            let atkMult  = buffTypeDef.attackSpeedMultiplier;
             if (buffTypeDef.movementDisabled) moveMult = 0;
-            if (buffTypeDef.attackDisabled)   atkMult  = 0;
+            if (moveMult == null || moveMult === 1) continue;
 
-            const moveActive = (moveMult != null && moveMult !== 1);
-            const atkActive  = (atkMult  != null && atkMult  !== 1);
-            if (!moveActive && !atkActive) continue;
-
-            let agg = combined.get(targetId);
-            if (!agg) { agg = { moveMult: 1, atkMult: 1 }; combined.set(targetId, agg); }
-            if (moveActive) agg.moveMult *= moveMult;
-            if (atkActive)  agg.atkMult  *= atkMult;
+            combined.set(targetId, (combined.get(targetId) ?? 1) * moveMult);
         }
 
-        for (const [entityId, agg] of combined.entries()) {
-            // Cache original values once, then apply the modified ones each tick.
+        for (const [entityId, moveMult] of combined.entries()) {
+            // Cache original value once, then apply the modified one each tick.
             if (!this._ccBaselines.has(entityId)) {
-                const vel    = this.game.getComponent(entityId, 'velocity');
-                const combat = this.game.getComponent(entityId, 'combat');
-                this._ccBaselines.set(entityId, {
-                    maxSpeed:    vel?.maxSpeed,
-                    attackSpeed: combat?.attackSpeed
-                });
+                const vel = this.game.getComponent(entityId, 'velocity');
+                this._ccBaselines.set(entityId, { maxSpeed: vel?.maxSpeed });
             }
             const baseline = this._ccBaselines.get(entityId);
-            const vel    = this.game.getComponent(entityId, 'velocity');
-            const combat = this.game.getComponent(entityId, 'combat');
-            if (vel && baseline.maxSpeed != null && agg.moveMult !== 1) {
-                vel.maxSpeed = baseline.maxSpeed * agg.moveMult;
+            const vel = this.game.getComponent(entityId, 'velocity');
+            if (vel && baseline.maxSpeed != null) {
+                vel.maxSpeed = baseline.maxSpeed * moveMult;
                 // Hard stop: zero current velocity too so the unit halts immediately,
                 // not after gradual deceleration through the movement system.
-                if (agg.moveMult === 0) { vel.vx = 0; vel.vz = 0; }
-            }
-            if (combat && baseline.attackSpeed != null && agg.atkMult !== 1) {
-                combat.attackSpeed = baseline.attackSpeed * agg.atkMult;
+                if (moveMult === 0) { vel.vx = 0; vel.vz = 0; }
             }
         }
 
-        // Restore baselines for entities no longer under speed-modifying CC.
+        // Restore baselines for entities no longer under movement CC.
         for (const entityId of [...this._ccBaselines.keys()]) {
             if (combined.has(entityId)) continue;
             const baseline = this._ccBaselines.get(entityId);
-            const vel    = this.game.getComponent(entityId, 'velocity');
-            const combat = this.game.getComponent(entityId, 'combat');
-            if (vel && baseline.maxSpeed != null)       vel.maxSpeed = baseline.maxSpeed;
-            if (combat && baseline.attackSpeed != null) combat.attackSpeed = baseline.attackSpeed;
+            const vel = this.game.getComponent(entityId, 'velocity');
+            if (vel && baseline.maxSpeed != null) vel.maxSpeed = baseline.maxSpeed;
             this._ccBaselines.delete(entityId);
         }
     }

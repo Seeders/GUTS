@@ -1,0 +1,14 @@
+{
+ "title": "of the Eagle",
+ "statModifiers": {
+  "criticalChance": {
+   "add": 0.06
+  }
+ },
+ "weight": 1,
+ "itemTypes": [
+  "meleeWeapon",
+  "rangeWeapon"
+ ],
+ "fileName": "theEagle"
+}

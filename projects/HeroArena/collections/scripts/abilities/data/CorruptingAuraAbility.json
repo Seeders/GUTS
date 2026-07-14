@@ -25,5 +25,6 @@
   "auraParticleEffectSystems": [
     "dark_energy",
     "dark_sparkles"
-  ]
+  ],
+  "criticalChance": 0.03
 }

@@ -16,5 +16,6 @@
   "filePath": "/projects/HeroArena/collections/scripts/abilities/js/SilenceAbility.js",
   "name": "Silence",
   "description": "Silence an enemy, preventing them from casting.",
-  "duration": 5
+  "duration": 5,
+  "criticalChance": 0.0
 }

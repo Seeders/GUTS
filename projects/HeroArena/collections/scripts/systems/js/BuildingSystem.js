@@ -29,6 +29,7 @@ class BuildingSystem extends GUTS.BaseSystem {
         'getOwnedBuildingArchetypes',
         'townhallLevel',
         'upgradeTownHall',
+        'convertProductionBuilding',
         'canMoveBuilding'
     ];
 
@@ -60,15 +61,28 @@ class BuildingSystem extends GUTS.BaseSystem {
 
     // ─── Lifecycle hooks (called by AutobattlerRoundSystem) ──────────────────────
 
-    // Create a Town Hall per player at their starting location, once, at game start.
-    // Which production building a leader commands (Mechabellum-style tech tower).
+    // The second command building is NOT assigned at match start. Every player opens
+    // with an unspecialized Cottage, and chooses when — and into which of the three
+    // stat buildings — to convert it, by buying a node from the Cottage's upgrade tree
+    // (upgradeTrees/cottage.json -> upgrades/build_*.json -> convertProductionBuilding).
+    static STARTING_PRODUCTION = 'cottage';
+
+    // Everything that can occupy the production slot: the Cottage and the three
+    // buildings it converts into. Used to find the slot's current occupant and to
+    // decide what counts as a morale-breaking command building.
+    static PRODUCTION_BUILDINGS = ['cottage', 'barracks', 'fletchersHall', 'mageTower'];
+
+    // Which stat building a leader's archetype favours. This no longer decides what
+    // SPAWNS — every player now starts with a Cottage and picks for themselves — but
+    // ArmyShopSystem's AI still reads it to choose which conversion to buy.
     static PRODUCTION_BY_ARCHETYPE = {
         str: 'barracks', int: 'mageTower', dex: 'fletchersHall'
     };
 
-    productionBuildingFor(stats) {
-        const leader = this.call.getLeaderDef?.(stats.leaderId);
-        return BuildingSystem.PRODUCTION_BY_ARCHETYPE[leader?.archetype] || 'barracks';
+    // The player's production-slot building record, whatever it currently is.
+    _productionRecord(stats) {
+        return (stats.buildings || []).find(
+            b => BuildingSystem.PRODUCTION_BUILDINGS.includes(b.buildingId)) || null;
     }
 
     // Each side fields TWO command buildings, spaced evenly across its half:
@@ -96,9 +110,15 @@ class BuildingSystem extends GUTS.BaseSystem {
             const a = { x: -fdz / flen, z: fdx / flen };   // across the field
             const FLANK = 400;
 
+            // The production slot holds a Cottage until the player converts it. Respawn
+            // whatever it currently IS — reading the id back off the record, not from a
+            // fixed guess, or a converted Mage Tower would be joined by a fresh Cottage.
+            const prodId = this._productionRecord(stats)?.buildingId
+                ?? BuildingSystem.STARTING_PRODUCTION;
+
             const wanted = [
                 { buildingId: 'townHall', x: my.x + a.x * FLANK, z: my.z + a.z * FLANK },
-                { buildingId: this.productionBuildingFor(stats), x: my.x - a.x * FLANK, z: my.z - a.z * FLANK }
+                { buildingId: prodId,     x: my.x - a.x * FLANK, z: my.z - a.z * FLANK }
             ];
             for (const w of wanted) {
                 const rec = (stats.buildings || []).find(b => b.buildingId === w.buildingId);
@@ -125,10 +145,12 @@ class BuildingSystem extends GUTS.BaseSystem {
         if (this.game.state.phase !== this.enums.gamePhase.battle) return;
         const owner = this.game.getComponent(destroyedEntityId, 'buildingOwner');
         if (!owner) return;
-        // Only the two command buildings break morale (not sentries/mines).
+        // Only the two command buildings break morale (not sentries/mines). The
+        // production slot counts whether or not it has been converted yet — an
+        // unconverted Cottage is still one of the player's two command buildings.
         const bid = owner.buildingId;
         if (!BuildingSystem.TOWNHALL_LEVEL[bid]
-            && !Object.values(BuildingSystem.PRODUCTION_BY_ARCHETYPE).includes(bid)) return;
+            && !BuildingSystem.PRODUCTION_BUILDINGS.includes(bid)) return;
 
         const buffType = this.enums.buffTypes?.moraleBroken;
         if (buffType == null) return;
@@ -398,6 +420,45 @@ class BuildingSystem extends GUTS.BaseSystem {
         }
         rec.buildingId = next;
         return { success: true, buildingId: next };
+    }
+
+    // Convert the production slot's Cottage into one of the three stat buildings, in
+    // place, keeping its position and placementId. Gold is charged by the caller
+    // (ArmyShopSystem.buyUpgradeNode). One-way and one-time: once it is a Mage Tower
+    // there is no Cottage left to convert, so the other two nodes disappear with the
+    // Cottage's tree and the Mage Tower's own tree takes its place.
+    convertProductionBuilding(numericPlayerId, toBuildingId) {
+        if (!this._auth()) return { success: false, reason: 'no_auth' };
+        if (!BuildingSystem.PRODUCTION_BUILDINGS.includes(toBuildingId)
+            || toBuildingId === BuildingSystem.STARTING_PRODUCTION) {
+            return { success: false, reason: 'bad_target' };
+        }
+        const stats = this._stats(numericPlayerId);
+        if (!stats) return { success: false, reason: 'no_player' };
+
+        const rec = this._productionRecord(stats);
+        if (!rec) return { success: false, reason: 'no_production_building' };
+        if (rec.buildingId !== BuildingSystem.STARTING_PRODUCTION) {
+            return { success: false, reason: 'already_converted' };
+        }
+
+        const eid = this._findBuildingEntity(numericPlayerId, rec.placementId);
+        if (eid == null) return { success: false, reason: 'not_found' };
+
+        if (this.game.hasService?.('replaceUnit')) {
+            const newId = this.call.replaceUnit(eid, toBuildingId);
+            const finalId = (newId != null) ? newId : eid;
+            const owner = this.game.getComponent(finalId, 'buildingOwner');
+            if (owner) { owner.buildingId = toBuildingId; }
+            else { this.game.addComponent(finalId, 'buildingOwner', {
+                playerId: numericPlayerId, buildingId: toBuildingId,
+                placementId: rec.placementId, roundPlaced: 0 }); }
+        }
+        rec.buildingId = toBuildingId;
+
+        this.call.broadcastToRoom?.(null, 'BUILDING_CONVERTED',
+            { playerId: numericPlayerId, buildingId: toBuildingId });
+        return { success: true, buildingId: toBuildingId };
     }
 
     // ─── Queries (used by the shop) ─────────────────────────────────────────────

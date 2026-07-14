@@ -1,0 +1,13 @@
+{
+ "title": "Eldritch",
+ "statModifiers": {
+  "spellDamage": {
+   "pct": 0.25
+  }
+ },
+ "weight": 1,
+ "itemTypes": [
+  "magicWeapon"
+ ],
+ "fileName": "eldritch"
+}

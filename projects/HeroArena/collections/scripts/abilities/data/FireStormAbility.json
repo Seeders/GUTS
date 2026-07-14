@@ -24,5 +24,6 @@
     "fire_burst_secondary",
     "fire_ring",
     "smoke_burst"
-  ]
+  ],
+  "criticalChance": 0.05
 }

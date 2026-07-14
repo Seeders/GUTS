@@ -1,0 +1,41 @@
+{
+  "id": "cottage",
+  "building": "cottage",
+  "title": "Cottage",
+  "archetype": "NONE",
+  "branches": [
+    {
+      "id": "str",
+      "label": "Barracks",
+      "focus": "STR",
+      "nodes": [
+        {
+          "upgrade": "build_barracks",
+          "requires": []
+        }
+      ]
+    },
+    {
+      "id": "int",
+      "label": "Mage Tower",
+      "focus": "INT",
+      "nodes": [
+        {
+          "upgrade": "build_mageTower",
+          "requires": []
+        }
+      ]
+    },
+    {
+      "id": "dex",
+      "label": "Fletcher's Hall",
+      "focus": "DEX",
+      "nodes": [
+        {
+          "upgrade": "build_fletchersHall",
+          "requires": []
+        }
+      ]
+    }
+  ]
+}

@@ -219,8 +219,16 @@ class AbilitySystem extends GUTS.BaseSystem {
         // Face the target before casting (unless targeting self)
         this.faceTarget(entityId, ability);
 
+        // Attack Speed drives attack abilities, Cast Speed drives spells — same
+        // mechanic, different tag (BaseAbility.speedTags). It scales cast time AND
+        // cooldown: in an autobattler what a speed stat buys is throughput, and the
+        // cooldown is where nearly all of an ability's period lives.
+        const speed = this.getAbilitySpeedMultiplier(entityId, ability);
+        const castTime = ability.castTime / speed;
+        const cooldown = ability.cooldown / speed;
+
         if (!ability.isPassive) {
-            this.startAbilityAnimation(entityId, ability);
+            this.startAbilityAnimation(entityId, ability, castTime);
         }
         // Convert ability string ID to numeric index for TypedArray storage
         // If no numeric index available, store string ID for local execution
@@ -233,11 +241,11 @@ class AbilitySystem extends GUTS.BaseSystem {
             // Release at 25% through the cast animation (tuned by feel — 50%
             // still read as delayed). The animation itself still spans the
             // full castTime (minAnimationTime).
-            executeTime: this.game.state.now + ability.castTime * 0.25
+            executeTime: this.game.state.now + castTime * 0.25
         });
 
         // Cooldown includes cast time so it doesn't expire until after the ability executes
-        this.setCooldown(entityId, abilityId, ability.castTime + ability.cooldown);
+        this.setCooldown(entityId, abilityId, castTime + cooldown);
 
         // The cast CONSUMES the attack slot: treat it like an attack swing so
         // the next basic attack waits a full attack period from cast start
@@ -260,22 +268,39 @@ class AbilitySystem extends GUTS.BaseSystem {
         return true;
     }
     
-    startAbilityAnimation(entityId, ability) {
+    // How much faster this entity uses this ability. Attack abilities scale with
+    // Attack Speed, spells with Cast Speed, and both with untagged Speed.
+    getAbilitySpeedMultiplier(entityId, ability) {
+        const agg = this.game.statAggregationSystem;
+        if (!agg) return 1;
+
+        const mods = agg.getAggregatedSpeedModifiers(entityId, ability.speedTags || ['spell']);
+        let multiplier = 1 + mods.increased;
+        for (const more of mods.more) multiplier *= (1 + more);
+
+        // A big enough slow must not stall an ability forever (or divide by zero).
+        return Math.max(0.1, multiplier);
+    }
+
+    startAbilityAnimation(entityId, ability, castTime = null) {
         // Use ability's configured animation or default to cast
         const anim = ability.animation !== undefined ? ability.animation : this.enums.animationType.attack;
+
+        // Animate at the speed the ability is ACTUALLY cast at, not its base rate.
+        const effectiveCastTime = castTime ?? ability?.castTime ?? 0;
 
         // For abilities, calculate animation speed based on cast time
         let animationSpeed = 1.0;
         // Use ability's castTime for minAnimationTime (0 for instant abilities like traps)
-        let minAnimationTime = ability?.castTime || 0;
+        let minAnimationTime = effectiveCastTime;
 
-        if (ability && ability.castTime > 0) {
+        if (effectiveCastTime > 0) {
             // Convert cast time to rate (casts per second)
-            const castRate = 1 / ability.castTime;
+            const castRate = 1 / effectiveCastTime;
             animationSpeed = this.call.calculateAnimationSpeed( entityId, castRate);
         }
         this.call.triggerSinglePlayAnimation( entityId, anim, animationSpeed, minAnimationTime);
-      
+
     }
 
     faceTarget(entityId, ability) {

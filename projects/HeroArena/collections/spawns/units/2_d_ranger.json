@@ -152,5 +152,7 @@
   "requiresBuildings": [],
   "spriteAnimationSet": "ranger2d",
   "visionRange": 320,
-  "canTargetAir": true
+  "canTargetAir": true,
+  "criticalChance": 0.08,
+  "criticalMultiplier": 2.0
 }

@@ -17,5 +17,10 @@
   "fileName": "ShockwaveAbility",
   "filePath": "/projects/HeroArena/collections/scripts/abilities/js/ShockwaveAbility.js",
   "name": "Shockwave",
-  "description": "Slam the ground, knocking nearby enemies back and dealing light damage."
+  "description": "Slam the ground, knocking nearby enemies back and dealing light damage.",
+  "tags": [
+    "attack",
+    "melee",
+    "area"
+  ]
 }

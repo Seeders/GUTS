@@ -18,5 +18,6 @@
   "filePath": "/projects/HeroArena/collections/scripts/abilities/js/PolymorphAbility.js",
   "name": "Polymorph",
   "description": "Transform an enemy into a harmless creature.",
-  "duration": 6
+  "duration": 6,
+  "criticalChance": 0.0
 }

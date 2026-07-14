@@ -49,6 +49,7 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         'getOwnedBuildingIds',
         'getOwnedBuildingArchetypes',
         'upgradeTownHall',
+        'convertProductionBuilding',
         'placeBuildingAuto',
         'getAIPlayerIds',
         'removeRosterEntry',
@@ -724,26 +725,46 @@ class ArmyShopSystem extends GUTS.BaseSystem {
     // Human summary of a merged stat map, e.g. "+25% damage, +6 armor".
     static STAT_LABEL = {
         maxHP: 'HP', damage: 'damage', attackSpeed: 'attack speed', armor: 'armor',
-        range: 'range', criticalChance: 'crit', criticalMultiplier: 'crit dmg',
+        // criticalChance's `pct` is INCREASED crit chance (it multiplies a skill's
+        // base crit), so it reads "+60% increased crit chance" — not "+60% crit".
+        range: 'range', criticalChance: 'increased crit chance',
+        criticalMultiplier: 'crit dmg',
         evasion: 'evasion', blockChance: 'block', accuracy: 'accuracy',
         lifeLeech: 'lifesteal', fireDamage: 'fire dmg', coldDamage: 'cold dmg',
         visionRange: 'vision', awareness: 'awareness', stealth: 'stealth',
         thorns: 'thorns',
+        // Tagged-modifier shorthands (see StatAggregationSystem's taxonomy):
+        // `damage` above is now global (attacks AND spells); these narrow it.
+        // fireDamage/coldDamage are listed further up — they now mean "% increased
+        // <element> damage", not the flat added damage nothing ever read.
+        attackDamage: 'attack damage', spellDamage: 'spell damage',
+        lightningDamage: 'lightning dmg', physicalDamage: 'physical dmg',
+        poisonDamage: 'poison dmg',
+        speed: 'attack & cast speed', castSpeed: 'cast speed',
     };
     // These stats are stored as 0..1 fractions, so a flat `add` reads as a percent
-    // ("+8% block", not "+0.08 block").
+    // ("+8% block", not "+0.08 block"). criticalMultiplier is a raw multiplier on a
+    // 1.5 base, so a +0.5 add likewise reads as "+50% crit dmg".
     static PCT_ADD_FIELDS = new Set([
-        'criticalChance', 'evasion', 'blockChance', 'lifeLeech', 'thorns'
+        'criticalChance', 'evasion', 'blockChance', 'lifeLeech', 'thorns',
+        'criticalMultiplier'
     ]);
+    // A few fields mean genuinely different things on their `.add` and `.pct` halves,
+    // so the flat half needs its own wording. criticalChance: `.add` is flat BASE crit
+    // (a weapon's crit rating), `.pct` is INCREASED crit chance, which multiplies a base.
+    static STAT_ADD_LABEL = {
+        criticalChance: 'base crit chance',
+    };
     static statModsSummary(mods) {
         const parts = [];
         for (const field of Object.keys(mods || {})) {
             const m = mods[field]; const label = ArmyShopSystem.STAT_LABEL[field] || field;
             if (m.pct) parts.push(`${m.pct > 0 ? '+' : ''}${Math.round(m.pct * 100)}% ${label}`);
             if (m.add) {
+                const addLabel = ArmyShopSystem.STAT_ADD_LABEL[field] || label;
                 const isPct = ArmyShopSystem.PCT_ADD_FIELDS.has(field);
                 const val = isPct ? `${Math.round(m.add * 100)}%` : `${m.add}`;
-                parts.push(`${m.add > 0 ? '+' : ''}${val} ${label}`);
+                parts.push(`${m.add > 0 ? '+' : ''}${val} ${addLabel}`);
             }
         }
         return parts.join(', ');
@@ -828,6 +849,7 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         inv.splice(invIdx, 1);
         // Places into its slot, auto-swapping any displaced item back to inventory.
         this._placeItemInSlot(stats, rosterIndex, inst, item);
+        this.game.statAggregationSystem?.invalidateModifierCache();
         this._broadcastShop(stats);
         return { success: true, state: this.getShopStateForPlayer(numericPlayerId) };
     }
@@ -846,6 +868,7 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         const inst = entry.items[i];
         entry.items.splice(i, 1);
         this._bankItem(stats, inst);
+        this.game.statAggregationSystem?.invalidateModifierCache();
         this.call.respawnRosterEntry?.(stats.playerId, rosterIndex);   // rebuild → mods drop
         this._broadcastShop(stats);
         return { success: true, state: this.getShopStateForPlayer(numericPlayerId) };
@@ -1430,6 +1453,17 @@ class ArmyShopSystem extends GUTS.BaseSystem {
 
         const cost = ArmyShopSystem.shopCost(def.value);
         if ((stats.gold || 0) < cost) return { success: false, reason: 'insufficient_gold' };
+
+        // Building-conversion node (Cottage -> Barracks / Mage Tower / Fletcher's Hall).
+        // Swap the building FIRST: if the conversion can't happen there is nothing to
+        // buy, and the player must not be charged for it.
+        if (def.convertsBuilding) {
+            const res = this.call.convertProductionBuilding?.(numericPlayerId, def.convertsBuilding);
+            if (!res?.success) {
+                return { success: false, reason: res?.reason || 'convert_failed' };
+            }
+        }
+
         stats.gold -= cost;
         if (!Array.isArray(stats.ownedUpgrades)) stats.ownedUpgrades = [];
         stats.ownedUpgrades.push(upgradeId);
@@ -1600,6 +1634,12 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         const profiles = this.ownedUnitProfiles(stats);
         const round = this.game.state.round || 1;
 
+        // The stat building this AI's leader is built around — it converts its Cottage
+        // into this one when it can.
+        const leaderArchetype = this.call.getLeaderDef?.(stats.leaderId)?.archetype;
+        const favouredBuilding =
+            GUTS.BuildingSystem?.PRODUCTION_BY_ARCHETYPE?.[leaderArchetype] || 'barracks';
+
         const candidates = [];
         for (const tree of Object.values(this.collections.upgradeTrees || {})) {
             if (!ownedBuildings.has(tree.building)) continue;
@@ -1609,6 +1649,18 @@ class ArmyShopSystem extends GUTS.BaseSystem {
                     if (!(node.requires || []).every(r => owned.has(r))) continue;
                     const def = this.collections.upgrades?.[node.upgrade];
                     if (!def) continue;
+
+                    // Converting the Cottage is the gateway to every other upgrade in
+                    // the game — buy it first, and buy the one this leader is built for.
+                    if (def.convertsBuilding) {
+                        candidates.push({
+                            id: node.upgrade,
+                            cost: ArmyShopSystem.shopCost(def.value),
+                            score: 500 + (def.convertsBuilding === favouredBuilding ? 100 : 0)
+                        });
+                        continue;
+                    }
+
                     const isEco = !!def.economy;
                     const matches = isEco ? 0
                         : profiles.filter(p => this.matchesCombo(p, def.target || {})).length;
@@ -1979,20 +2031,11 @@ class ArmyShopSystem extends GUTS.BaseSystem {
         return out;
     }
 
-    // Effective building tech tree. With a deck, each branch's nodes are filtered to
-    // the upgrades the deck chose for that building. No deck ⇒ the raw tree.
+    // A building's tech tree. Decks no longer customize buildings at all — every player
+    // starts with a Cottage and converts it in-match, so which building you field and
+    // which of its upgrades you can buy are both match decisions, not deck ones.
     _treeFor(stats, buildingId) {
-        const tree = this.collections.upgradeTrees?.[buildingId];
-        if (!tree) return null;
-        const deck = this._deckFor(stats);
-        if (!deck) return tree;
-        const b = (deck.buildings || []).find(x => x.buildingId === buildingId);
-        if (!b) return { ...tree, branches: [] };
-        const allow = new Set(b.upgrades || []);
-        const branches = (tree.branches || []).map(br => ({
-            ...br, nodes: (br.nodes || []).filter(n => allow.has(n.upgrade))
-        }));
-        return { ...tree, branches };
+        return this.collections.upgradeTrees?.[buildingId] || null;
     }
 
     // ─── Private ──────────────────────────────────────────────────────────────
@@ -2201,7 +2244,20 @@ class ArmyShopSystem extends GUTS.BaseSystem {
 
     // statModifiers: { <field>: { add?, pct? } }. maxHP maps to the health component;
     // everything else maps to the combat component.
+    // Bake a stat package into the entity's components.
+    //
+    // The `.pct` half of the damage/speed fields is NOT applied here — those are
+    // owned by StatAggregationSystem's tagged-modifier pipeline, so that "+25%
+    // damage" reaches spells and attack abilities too, not just the basic attack.
+    // Baking them into combat.damage as well would double-count them. What stays
+    // here is the `.add` half: flat damage / attack speed are WEAPON BASE, and
+    // only the basic Attack reads combat.damage.
     _applyStatMods(combat, health, mods) {
+        // Any stat package landing on a unit can also change its tagged modifiers
+        // (the `.pct` half). Drop the aggregator's static cache so it re-resolves.
+        this.game.statAggregationSystem?.invalidateModifierCache();
+
+        const pipelinePct = GUTS.StatAggregationSystem.PIPELINE_PCT_FIELDS;
         for (const [field, spec] of Object.entries(mods || {})) {
             if (field === 'maxHP') {
                 if (!health) continue;
@@ -2213,11 +2269,63 @@ class ArmyShopSystem extends GUTS.BaseSystem {
                 continue;
             }
             if (!combat) continue;
+            const pct = pipelinePct.has(field) ? 0 : (spec.pct || 0);
             const base = combat[field] || 0;
-            const next = base + (spec.add || 0) + base * (spec.pct || 0);
+            const next = base + (spec.add || 0) + base * pct;
             // combat is a schema-guarded proxy — skip fields it doesn't define.
             try { combat[field] = next; } catch (e) { /* not a combat stat */ }
         }
+    }
+
+    // Everything the shop has granted THIS entity, unbaked: the merged stat
+    // package plus any explicitly-tagged modifier arrays. StatAggregationSystem
+    // reads this to build the tagged damage/speed modifiers, so the two stay in
+    // lockstep with applyArmyUpgrades below (same sources, same target filters).
+    getEntityGrants(entityId) {
+        const info = this.game.getComponent(entityId, 'heroRosterInfo');
+        if (!info) return null;
+        const stats = this._getStats(info.playerId);
+        const entry = stats?.heroRoster?.[info.rosterIndex];
+        if (!entry) return null;
+
+        const profile = this._profileForEntry(entry);
+        const spawnType = this._resolveSpawnType(entry);
+        const statSources = [];
+        const damageModifiers = [];
+        const speedModifiers = [];
+
+        const take = (def) => {
+            if (!def) return;
+            if (def.statModifiers) statSources.push(def.statModifiers);
+            if (Array.isArray(def.damageModifiers)) damageModifiers.push(...def.damageModifiers);
+            if (Array.isArray(def.speedModifiers)) speedModifiers.push(...def.speedModifiers);
+        };
+
+        // Upgrades contribute only their statModifiers here — their explicitly
+        // tagged damageModifiers/speedModifiers arrays are team-wide and are
+        // collected straight off the upgrade bitmask in StatAggregationSystem.
+        // Taking them in both places would count them twice.
+        for (const upgradeId of (stats.ownedUpgrades || [])) {
+            const up = this.collections.upgrades?.[upgradeId];
+            if (!up?.statModifiers) continue;
+            if (!this.matchesCombo(profile, up.target || {})) continue;
+            statSources.push(up.statModifiers);
+        }
+
+        const ownedTechs = new Set(stats.unitTechs?.[spawnType] || []);
+        for (const t of this._unitTechsFor(stats, spawnType)) {
+            if (ownedTechs.has(t.id)) take(t);
+        }
+
+        for (const m of (stats.unitModifiers?.[spawnType] || [])) take(m);
+
+        for (const inst of (entry.items || [])) take(this._resolveItem(inst));
+
+        return {
+            statModifiers: ArmyShopSystem.mergeStatMods(...statSources),
+            damageModifiers,
+            speedModifiers
+        };
     }
 
     _profileForEntry(entry) {

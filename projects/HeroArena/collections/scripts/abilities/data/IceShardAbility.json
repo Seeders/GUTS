@@ -28,5 +28,6 @@
   "impactParticleEffectSystems": [
     "ice_shatter",
     "frost_ring"
-  ]
+  ],
+  "criticalChance": 0.1
 }

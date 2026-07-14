@@ -28,5 +28,6 @@
   "tickParticleEffectSystems": [
     "fire_burst_core",
     "fire_burst_secondary"
-  ]
+  ],
+  "criticalChance": 0.05
 }

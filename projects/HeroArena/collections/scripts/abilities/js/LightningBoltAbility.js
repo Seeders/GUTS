@@ -2,9 +2,10 @@ class LightningBoltAbility extends GUTS.BaseAbility {
     constructor(game, abilityData = {}) {
         super(game, abilityData);
 
-        this.damage         = abilityData.damage         ?? 55;
-        this.criticalChance = abilityData.criticalChance ?? 0.3;
-        this.element        = this.enums.element[abilityData.element || 'lightning'] ?? this.enums.element.lightning;
+        this.damage  = abilityData.damage ?? 55;
+        // criticalChance comes from BaseAbility (data JSON keeps its high 0.3 base —
+        // a big slow nuke that crits often). The roll itself is DamageSystem's now.
+        this.element = this.enums.element[abilityData.element || 'lightning'] ?? this.enums.element.lightning;
     }
 
     canExecute(casterEntity) {
@@ -61,24 +62,13 @@ class LightningBoltAbility extends GUTS.BaseAbility {
             this.game.effectsSystem.playScreenFlash('#ffffaa', 0.15);
         }
 
-        // DESYNC SAFE: Determine critical hit deterministically instead of random
-        const isCritical = this.isDeterministicCritical(casterEntity, targetId);
-        const damage = isCritical ? this.damage * 2 : this.damage;
-
-        // Apply lightning damage
-        this.dealDamageWithEffects(casterEntity, targetId, damage, this.element, {
-            isCritical: isCritical,
+        // Crit is rolled by DamageSystem against this ability's criticalChance plus
+        // the caster's. It used to be rolled here AND doubled here, while still
+        // passing isCritical:true — so a crit multiplied twice (×2 locally, then
+        // ×critMultiplier again in applyDamage).
+        this.dealDamageWithEffects(casterEntity, targetId, this.damage, this.element, {
             isInstant: true
         });
-    }
-
-    // DESYNC SAFE: Deterministic critical hit calculation
-    isDeterministicCritical(casterId, targetId) {
-        // Create a deterministic "random" value based on entity IDs and game time
-        const seed = parseInt(casterId) + parseInt(targetId) + Math.floor(this.game.state.now * 100);
-        const pseudoRandom = (seed * 9301 + 49297) % 233280 / 233280; // Simple PRNG
-
-        return pseudoRandom < this.criticalChance;
     }
 
     // DESYNC SAFE: Deterministic highest health enemy finding

@@ -199,15 +199,20 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
         if (!combat.lastAttack) combat.lastAttack = 0;
         const effectiveAttackSpeed = this.getEffectiveAttackSpeed(attackerId, game, combat.attackSpeed);
 
-        if (effectiveAttackSpeed > 0) {
-            const timeSinceLastAttack = game.state.now - combat.lastAttack;
-            if (timeSinceLastAttack < 1 / effectiveAttackSpeed) {
-                log.trace('AttackEnemy', `${unitName}(${attackerId}) [${teamName}] attack on cooldown`, {
-                    timeSinceLastAttack: timeSinceLastAttack.toFixed(2),
-                    cooldown: (1 / effectiveAttackSpeed).toFixed(2)
-                });
-                return;
-            }
+        // Zero attack speed means the unit CANNOT attack (a stun/freeze debuff
+        // multiplied it to 0), not that it attacks with no cooldown.
+        if (effectiveAttackSpeed <= 0) {
+            log.trace('AttackEnemy', `${unitName}(${attackerId}) [${teamName}] attack disabled (0 attack speed)`);
+            return;
+        }
+
+        const timeSinceLastAttack = game.state.now - combat.lastAttack;
+        if (timeSinceLastAttack < 1 / effectiveAttackSpeed) {
+            log.trace('AttackEnemy', `${unitName}(${attackerId}) [${teamName}] attack on cooldown`, {
+                timeSinceLastAttack: timeSinceLastAttack.toFixed(2),
+                cooldown: (1 / effectiveAttackSpeed).toFixed(2)
+            });
+            return;
         }
 
         combat.lastAttack = game.state.now;
@@ -215,8 +220,9 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
         // Trigger attack animation (sprite direction is derived from rotation.y set above)
         if (!game.isServer && game.hasService('triggerSinglePlayAnimation') && effectiveAttackSpeed > 0) {
             const enums = game.getEnums();
-            const animationSpeed = combat.attackSpeed;
-            const minAnimationTime = 1 / combat.attackSpeed * 0.8;
+            // Swing at the rate we actually attack at, not the unteched base rate.
+            const animationSpeed = effectiveAttackSpeed;
+            const minAnimationTime = 1 / effectiveAttackSpeed * 0.8;
             this.call.triggerSinglePlayAnimation( attackerId, enums.animationType.attack, animationSpeed, minAnimationTime);
         }
 
@@ -237,8 +243,11 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
                 damage: totalDamage,
                 bonus: bonusDamage
             });
-            // Schedule projectile to fire at 50% through the attack animation (release point)
-            const projectileDelay = effectiveAttackSpeed > 0 ? (1 / combat.attackSpeed) * 0.5 : 0;
+            // Schedule projectile to fire at 50% through the attack animation (release
+            // point). Keyed to the EFFECTIVE rate — otherwise a big attack-speed buff
+            // shortens the swing cooldown while the release point stays put, and the
+            // release drifts past the next swing.
+            const projectileDelay = effectiveAttackSpeed > 0 ? (1 / effectiveAttackSpeed) * 0.5 : 0;
             game.schedulingSystem.scheduleAction(() => {
                 // A cast queued between swing start and the release point
                 // ABORTS the swing — otherwise the unit visibly casts (one
@@ -256,7 +265,7 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
                 if (ms) this.fireMultishotExtras(attackerId, targetId, game, combat, arrowDamage, ms);
             }, projectileDelay, attackerId);
         } else if (combat.damage > 0) {
-            const damageDelay = effectiveAttackSpeed > 0 ? (1 / combat.attackSpeed) * 0.5 : 0;
+            const damageDelay = effectiveAttackSpeed > 0 ? (1 / effectiveAttackSpeed) * 0.5 : 0;
             const element = this.getDamageElement(attackerId, game, combat);
 
             log.trace('AttackEnemy', `${unitName}(${attackerId}) [${teamName}] melee attack on target ${targetId}`, {
@@ -426,8 +435,14 @@ class AttackEnemyBehaviorAction extends GUTS.BaseBehaviorAction {
         return true;
     }
 
+    // The basic attack is just an Attack, so it takes the same speed modifiers an
+    // attack ABILITY does: "increased Attack Speed" (tags ['attack']) and untagged
+    // "increased Speed". Cast Speed does not touch it. StatAggregationSystem owns
+    // the maths — buff CC (haste/slow/stun) comes through the same path.
     getEffectiveAttackSpeed(entityId, game, baseAttackSpeed) {
-        return baseAttackSpeed;
+        const agg = game.statAggregationSystem;
+        if (!agg) return baseAttackSpeed;
+        return agg.getEffectiveAttackSpeed(entityId, baseAttackSpeed);
     }
 
     // ×1 against units. Against buildings, scale by the attacker's shop tier so

@@ -1,8 +1,8 @@
 {
- "title": "of the Tiger",
+ "title": "of Destruction",
  "statModifiers": {
-  "criticalChance": {
-   "pct": 0.6
+  "criticalMultiplier": {
+   "add": 0.5
   }
  },
  "weight": 1,
@@ -12,5 +12,5 @@
   "magicWeapon",
   "gloves"
  ],
- "fileName": "theTiger"
+ "fileName": "ofDestruction"
 }

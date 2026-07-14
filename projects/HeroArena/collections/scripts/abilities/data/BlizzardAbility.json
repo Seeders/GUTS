@@ -38,5 +38,6 @@
     "ice_shatter",
     "frost_ring",
     "ice_mist"
-  ]
+  ],
+  "criticalChance": 0.05
 }

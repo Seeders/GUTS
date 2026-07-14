@@ -54,7 +54,6 @@ class PlacementUISystem extends GUTS.BaseSystem {
         'hidePreview',
         'clearPreview',
         'submitLeaderSelection',
-        'submitHeroSelection',
         'submitHeroMove',
         'getPlayerEntities',
         'submitBuyOffer',
@@ -413,18 +412,6 @@ class PlacementUISystem extends GUTS.BaseSystem {
         overlay.classList.remove('hidden');
     }
 
-    // Set of buildingIds the local player currently owns (from their playerStats).
-    _myOwnedBuildingIds() {
-        const myId = this.game.clientNetworkManager?.numericPlayerId ?? 0;
-        for (const eid of this.game.getEntitiesWith('playerStats')) {
-            const s = this.game.getComponent(eid, 'playerStats');
-            if (s && s.playerId === myId) {
-                return new Set((s.buildings || []).map(b => b.buildingId));
-            }
-        }
-        return new Set();
-    }
-
     // Round resolution feedback: how much commander damage each side took.
     onRoundResult(data) {
         this._hideSpeedButton();
@@ -733,45 +720,6 @@ class PlacementUISystem extends GUTS.BaseSystem {
         });
         grid.appendChild(skip);
         overlay.classList.remove('hidden');
-    }
-
-    // Called by game.triggerEvent('onHeroSelectStart', data)
-    onHeroSelectStart(data) {
-        const overlay  = document.getElementById('heroSelectOverlay');
-        const grid     = document.getElementById('heroOptions');
-        const title    = document.getElementById('heroSelectTitle');
-        const subtitle = document.getElementById('heroSelectSubtitle');
-        if (!overlay || !grid) return;
-
-        if (title)    title.textContent    = data?.isMilestone ? 'Choose Another Building' : 'Choose Your Starting Building';
-        if (subtitle) subtitle.textContent = data?.isMilestone ? 'Adds an archetype — unlocks its units in the shop' : 'Its archetype sets which units your shop offers';
-
-        // Hide buildings this player already owns (the server rejects re-picks). At the
-        // round-1 start nothing is owned, so all options show; at a milestone the starter
-        // is filtered out. If nothing is left to pick, don't show the overlay at all.
-        const owned = this._myOwnedBuildingIds();
-        const options = (data?.options || []).filter(o => !owned.has(o.id));
-        if (options.length === 0) { overlay.classList.add('hidden'); return; }
-
-        grid.innerHTML = '';
-        options.forEach(option => {
-            const card = document.createElement('div');
-            card.className = 'arena-option-card';
-            card.innerHTML = `
-                <div class="arena-option-name">${option.label}</div>
-                <div class="arena-option-tag">${option.archetype}</div>`;
-            card.addEventListener('click', () => {
-                this.call.submitHeroSelection(option.id);
-                overlay.classList.add('hidden');
-            });
-            grid.appendChild(card);
-        });
-        overlay.classList.remove('hidden');
-    }
-
-    // Called by game.triggerEvent('onHeroSelectComplete')
-    onHeroSelectComplete() {
-        document.getElementById('heroSelectOverlay')?.classList.add('hidden');
     }
 
     // Called by game.triggerEvent('onSpecializeSelectStart', data) when one of our

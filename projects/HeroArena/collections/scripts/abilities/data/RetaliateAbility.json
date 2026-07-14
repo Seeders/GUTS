@@ -16,5 +16,8 @@
   "filePath": "/projects/HeroArena/collections/scripts/abilities/js/RetaliateAbility.js",
   "name": "Retaliate",
   "description": "Reflect a portion of damage taken back to attackers.",
-  "duration": 12
+  "duration": 12,
+  "tags": [
+    "attack"
+  ]
 }

@@ -17,5 +17,9 @@
   "fileName": "SunderArmorAbility",
   "filePath": "/projects/HeroArena/collections/scripts/abilities/js/SunderArmorAbility.js",
   "name": "Sunder Armor",
-  "description": "Shatter nearby enemies' armor for a while, so all your hits land harder."
+  "description": "Shatter nearby enemies' armor for a while, so all your hits land harder.",
+  "tags": [
+    "attack",
+    "melee"
+  ]
 }

@@ -29,7 +29,6 @@
     "setLocalGame",
     "resetTeamReadyState",
     "submitLeaderSelection",
-    "submitHeroSelection",
     "submitHeroMove",
     "submitBuyOffer",
     "submitRerollOffers",

@@ -22,16 +22,6 @@
  "evasion": 5,
  "criticalChance": 0.05,
  "criticalMultiplier": 2,
- "passives": [
-  {
-   "type": "increased",
-   "tags": [
-    "spell",
-    "fire"
-   ],
-   "value": 0.2
-  }
- ],
  "render": {
   "animations": {
    "idle": [

@@ -25,5 +25,6 @@
   "healParticleEffectSystems": [
     "dark_heal",
     "dark_sparkles"
-  ]
+  ],
+  "criticalChance": 0.08
 }
