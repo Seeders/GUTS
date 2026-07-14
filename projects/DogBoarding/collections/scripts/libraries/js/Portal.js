@@ -178,6 +178,11 @@ class Portal {
         const { el } = this.ui;
 
         const intake = this.forms.render('intake');
+        // The account already owns the email address; don't ask for it again.
+        // (Onboarding never overwrites the email, so leaving it out is safe.)
+        const emailField = intake.querySelector('[name="email"]');
+        if (emailField) (emailField.closest('.field') || emailField).remove();
+
         const dogsHost = el('div.portal-cards');
         let dogCount = 0;
 
@@ -204,7 +209,7 @@ class Portal {
         this.ui.mount(content,
             el('div.portal-onboard',
                 el('h1', 'Welcome! Let’s set up your account'),
-                el('p.muted', 'Tell us about you and your dogs. You can change any of this later.'),
+                el('p.muted', `Signed in as ${this.client.email}. Tell us about you and your dogs — you can change any of this later.`),
                 intake,
                 el('div.portal-actions',
                     el('h2', 'Your dogs'),
