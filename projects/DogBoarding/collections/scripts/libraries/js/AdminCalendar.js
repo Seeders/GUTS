@@ -70,8 +70,7 @@ class AdminCalendar {
                         onclick: () => { this.month = today.slice(0, 7); this.app.route(); }
                     }, 'Today'))),
 
-            el('p.muted',
-                `${data.capacity} dogs a night across ${data.kennels.length} kennel${data.kennels.length === 1 ? '' : 's'}.`),
+            el('p.muted', this.capacityLine(data)),
 
             el('div.cal',
                 ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => el('div.cal__weekday', d)),
@@ -83,13 +82,21 @@ class AdminCalendar {
                 this.ui.table({
                     columns: [
                         { label: 'Kennel', render: k => el('strong', k.name) },
-                        { label: 'Size', render: k => this.ui.titleCase(k.size) },
-                        { label: 'Holds', align: 'right', render: k => `${k.capacity} dog${k.capacity === 1 ? '' : 's'}` },
+                        { label: 'Size', render: k => this.ui.badge(k.size, k.size === 'large' ? 'info' : 'neutral') },
                         { label: 'Notes', render: k => el('span.muted.small', k.description || '') }
                     ],
                     rows: data.kennels,
                     empty: 'No kennels defined yet. Add some in the kennels collection.'
                 })));
+    }
+
+    /** "6 dogs a night — 6 kennels (4 small, 2 large)." One dog per kennel. */
+    capacityLine(data) {
+        const small = data.kennels.filter(k => k.size !== 'large').length;
+        const large = data.kennels.filter(k => k.size === 'large').length;
+        const n = data.kennels.length;
+        return `${data.capacity} dog${data.capacity === 1 ? '' : 's'} a night — ` +
+            `${n} kennel${n === 1 ? '' : 's'} (${small} small, ${large} large), one dog each.`;
     }
 
     /** Everyone staying on one night. */

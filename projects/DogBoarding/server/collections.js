@@ -138,12 +138,13 @@ function requiredVaccines() {
 }
 
 /**
- * The kennels, and how many dogs the place can hold on any one night.
+ * The kennels. A kennel is one sleeping space for one dog - it is a bed, not a
+ * room that several dogs share - so a kennel has a name and a size, and never a
+ * count. Size says which dogs FIT in it, not how many.
  *
- * Like the rate card, this is configuration rather than data: it is not secret,
- * not per-client, and it is exactly what someone should be able to change in the
- * editor when they build another run. So it is a collection, not a table, and
- * capacity is simply the sum of what the active kennels hold.
+ * Like the rate card, this is configuration rather than data: not secret, not
+ * per-client, and exactly the sort of thing someone should be able to change in
+ * the editor when they build another one. So it is a collection, not a table.
  */
 function kennels({ includeInactive = false, fresh = true } = {}) {
     if (fresh) clearCache('data', 'kennels');
@@ -153,17 +154,26 @@ function kennels({ includeInactive = false, fresh = true } = {}) {
         .map(k => ({
             id: k.id,
             name: k.title,
-            size: k.size || 'standard',
-            capacity: Number(k.capacity) > 0 ? Number(k.capacity) : 1,
+            size: k.size || 'small',
             description: k.description || null,
             active: k.active === false ? 0 : 1,
             order: k.order ?? 999
         }));
 }
 
-/** Total dogs the place can hold on one night. */
+/** Dogs we can sleep on one night: one per kennel. */
 function capacity() {
-    return kennels().reduce((total, k) => total + k.capacity, 0);
+    return kennels().length;
+}
+
+/** How many of each size, for the calendar's summary line. */
+function kennelCounts() {
+    const list = kennels();
+    return {
+        total: list.length,
+        small: list.filter(k => k.size !== 'large').length,
+        large: list.filter(k => k.size === 'large').length
+    };
 }
 
 /** Valid ids, for validating what the client sends us. */
@@ -173,7 +183,7 @@ module.exports = {
     load, ordered, clearCache,
     services, service, business,
     serviceCatalog, recordTypes, expenseCategories, paymentMethods,
-    bookingStatuses, serviceUnits, kennels, capacity,
+    bookingStatuses, serviceUnits, kennels, capacity, kennelCounts,
     requiredVaccines, ids,
     COLLECTIONS_DIR
 };

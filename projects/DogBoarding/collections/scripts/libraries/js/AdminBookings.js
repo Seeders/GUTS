@@ -194,24 +194,39 @@ class AdminBookings {
                 })));
     }
 
+    /**
+     * Which kennel this dog sleeps in. A kennel is one bed for one dog, and the
+     * kennels are a collection with names, so this is a list to choose from
+     * rather than a box to type a name into. The server refuses a kennel that is
+     * already taken on any of these nights.
+     */
     kennelInput(booking, pet) {
         const { el } = this.ui;
-        const input = el('input.kennel-input', {
-            type: 'text',
-            value: pet.kennel || '',
-            placeholder: '—',
+        const kennels = this.ui.ordered(this.collections.kennels)
+            .filter(k => k.active !== false);
+
+        const select = el('select.kennel-input', {
             onchange: async () => {
+                const previous = pet.kennel || '';
                 try {
                     await this.api.updateBooking(booking.id, {
-                        kennels: { [pet.id]: input.value }
+                        kennels: { [pet.id]: select.value }
                     });
-                    this.ui.toast(`${pet.name} → ${input.value || 'unassigned'}`, 'good');
+                    pet.kennel = select.value;
+                    this.ui.toast(`${pet.name} → ${select.value || 'unassigned'}`, 'good');
                 } catch (err) {
+                    select.value = previous; // put it back; the change did not take
                     this.ui.toast(err.message, 'bad');
                 }
             }
-        });
-        return input;
+        },
+            el('option', { value: '', selected: !pet.kennel }, '—'),
+            kennels.map(k => el('option', {
+                value: k.title,
+                selected: k.title === pet.kennel
+            }, `${k.title} (${k.size})`)));
+
+        return select;
     }
 
     /**

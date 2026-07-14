@@ -685,9 +685,39 @@ adminRouter.put('/bookings/:id', (req, res, next) => {
         }
 
         if (req.body.kennels && typeof req.body.kennels === 'object') {
-            for (const [petId, kennel] of Object.entries(req.body.kennels)) {
+            // A kennel is one bed for one dog, so it cannot hold two dogs on the
+            // same night. Read the dates back AFTER the update above, so moving a
+            // booking and its kennel in one request is checked against the new dates.
+            const known = new Set(collections.kennels().map(k => k.name));
+            const stay = db.get('SELECT check_in, check_out FROM bookings WHERE id = ?', id);
+
+            for (const [petId, raw] of Object.entries(req.body.kennels)) {
+                const kennel = clean(raw);
+
+                if (kennel && !known.has(kennel)) {
+                    throw fail(400, `There is no kennel called "${kennel}".`);
+                }
+
+                if (kennel) {
+                    const taken = db.get(
+                        `SELECT p.name AS dog
+                         FROM booking_pets bp
+                         JOIN bookings b ON b.id = bp.booking_id
+                         JOIN pets p     ON p.id = bp.pet_id
+                         WHERE bp.kennel = ?
+                           AND b.status != 'cancelled'
+                           AND b.check_in < ? AND b.check_out > ?
+                           AND NOT (bp.booking_id = ? AND bp.pet_id = ?)
+                         LIMIT 1`,
+                        kennel, stay.check_out, stay.check_in, id, Number(petId));
+
+                    if (taken) {
+                        throw fail(409, `${kennel} is already taken by ${taken.dog} on those nights.`);
+                    }
+                }
+
                 db.run('UPDATE booking_pets SET kennel = ? WHERE booking_id = ? AND pet_id = ?',
-                    clean(kennel), id, Number(petId));
+                    kennel, id, Number(petId));
             }
         }
     });
