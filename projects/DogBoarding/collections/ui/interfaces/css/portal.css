@@ -159,3 +159,8 @@
 .portal-onboard .fieldset__body { display: grid; gap: 0.75rem; }
 .portal-onboard .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
 @media (max-width: 520px) { .portal-onboard .field-row { grid-template-columns: 1fr; } }
+
+/* Dog cards stack full-width here. The shared .portal-cards grid is a two-up
+   auto-fill, which inside the narrower onboarding column left a lone dog card
+   sitting at half the width of the rest of the form. */
+.portal-onboard .portal-cards { grid-template-columns: 1fr; }
