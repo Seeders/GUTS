@@ -257,3 +257,40 @@
 .cal__key--full::before { background: rgba(185, 28, 28, 0.25); }
 .cal__key--mine::before { background: rgba(37, 99, 235, 0.25); }
 .cal__key--sel::before  { background: #6d28d9; }
+
+/* ==========================================================================
+   Mobile
+   ========================================================================== */
+
+@media (max-width: 720px) {
+    .portal-main { padding: 1rem 0.85rem; }
+    .portal-top { padding: 0.75rem 0.85rem; }
+    .portal-auth__card { padding: 1.5rem 1.25rem; }
+
+    .cal { gap: 3px; }
+    .cal__cell {
+        min-height: 3.1rem;
+        padding: 0.3rem 0.15rem;
+        align-items: center;
+        text-align: center;
+    }
+    .cal__day { font-size: 0.85rem; }
+    .cal__free { font-size: 0.58rem; }
+    .cal__weekday { font-size: 0.6rem; }
+    .cal__nav { width: 100%; justify-content: space-between; }
+    .cal__month { min-width: 0; flex: 1; }
+
+    /* A dog's name cannot fit in a 45px cell. The blue already says the night is
+       yours, so swap the name for a dot — the stays list below still names them. */
+    .cal__mine { font-size: 0; }
+    .cal__mine::before { content: '●'; font-size: 0.55rem; }
+
+    .cal__legend { gap: 0.6rem; font-size: 0.72rem; }
+    .portal-line { flex-wrap: wrap; }
+}
+
+@media (max-width: 400px) {
+    .cal { gap: 2px; }
+    .cal__cell { min-height: 2.7rem; padding: 0.2rem 0.05rem; }
+    .cal__free { display: none; }
+}

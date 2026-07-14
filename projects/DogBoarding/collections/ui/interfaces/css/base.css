@@ -335,3 +335,26 @@ input:focus, select:focus, textarea:focus {
     border-radius: var(--radius);
 }
 
+
+/* ==========================================================================
+   Mobile — shared
+   ========================================================================== */
+
+/* A long email address or dog name should wrap, not shove the page sideways. */
+body { overflow-wrap: break-word; }
+
+@media (max-width: 560px) {
+    .modal-overlay { padding: 14px 10px; }
+    .modal__head { padding: 14px 16px; }
+    .modal__body { padding: 16px; }
+    .modal__foot {
+        /* column-reverse puts the confirm button on top, where the thumb is */
+        flex-direction: column-reverse;
+        padding: 14px 16px;
+    }
+    .modal__foot .btn { width: 100%; }
+
+    /* Thumbs, not mice. */
+    .btn { padding: 11px 16px; }
+    .toast { left: 12px; right: 12px; }
+}

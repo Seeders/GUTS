@@ -414,3 +414,38 @@
 .cal__cell--today { outline: 2px solid currentColor; outline-offset: -2px; }
 .cal__nav { display: flex; align-items: center; gap: 0.5rem; }
 .cal__month { min-width: 10rem; text-align: center; }
+
+/* ==========================================================================
+   Mobile
+   ========================================================================== */
+
+/* The kennel picker is a dropdown now ("The Oak (large)"), not a 90px text box. */
+.kennel-input { width: auto !important; min-width: 132px; }
+
+@media (max-width: 720px) {
+    .search { min-width: 0; max-width: none; flex: 1 1 100%; }
+    .toolbar select, .toolbar input[type="date"] { flex: 1; }
+    .page-head__actions { width: 100%; }
+
+    /* Seven columns on a phone: keep the day and the count, drop the rest. */
+    .cal { gap: 3px; }
+    .cal__cell {
+        min-height: 3.1rem;
+        padding: 0.3rem 0.15rem;
+        align-items: center;
+        text-align: center;
+        border-radius: 8px;
+    }
+    .cal__day { font-size: 0.85rem; }
+    .cal__count { font-size: 0.68rem; }
+    .cal__free { display: none; }          /* "4/6" already says it */
+    .cal__weekday { font-size: 0.6rem; }
+    .cal__nav { width: 100%; justify-content: space-between; }
+    .cal__month { min-width: 0; flex: 1; font-size: 0.95rem; }
+}
+
+@media (max-width: 400px) {
+    .cal { gap: 2px; }
+    .cal__cell { min-height: 2.7rem; padding: 0.2rem 0.05rem; }
+    .cal__count { font-size: 0.6rem; }
+}
