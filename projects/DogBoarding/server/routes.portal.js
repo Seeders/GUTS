@@ -90,6 +90,84 @@ function clientSummary(clientId) {
     return c;
 }
 
+/**
+ * The checks a stay must pass, whether it is being booked or changed.
+ * Throws with a message the client can read.
+ */
+function validateStay({ clientId, checkIn, checkOut, petIds }) {
+    const isDate = d => /^\d{4}-\d{2}-\d{2}$/.test(d);
+    if (!isDate(checkIn) || !isDate(checkOut)) throw fail(400, 'Choose a drop-off and a pick-up date.');
+    if (checkOut <= checkIn) throw fail(400, 'Pick-up has to be after drop-off.');
+    if (checkIn < db.today()) throw fail(400, 'Choose a drop-off date in the future.');
+    if (!petIds.length) throw fail(400, 'Choose at least one dog.');
+
+    const owned = db.all(
+        "SELECT id FROM pets WHERE client_id = ? AND status = 'active'", clientId)
+        .map(p => Number(p.id));
+    if (petIds.some(id => !owned.includes(id))) throw fail(400, 'That dog is not on your account.');
+}
+
+/**
+ * A dog cannot be in two places at once. Returns the names of any dogs already
+ * booked over this range, ignoring the booking being edited.
+ *
+ * Two stays overlap when one starts before the other ends and ends after the
+ * other starts - so a pick-up on the same day as another drop-off is fine.
+ */
+function clashingDogs(petIds, checkIn, checkOut, excludeBookingId = null) {
+    if (!petIds.length) return [];
+    const marks = petIds.map(() => '?').join(',');
+
+    return db.all(
+        `SELECT DISTINCT p.name
+         FROM booking_pets bp
+         JOIN bookings b ON b.id = bp.booking_id
+         JOIN pets p   ON p.id = bp.pet_id
+         WHERE bp.pet_id IN (${marks})
+           AND b.status != 'cancelled'
+           AND b.check_in < ? AND b.check_out > ?
+           AND (? IS NULL OR b.id != ?)`,
+        ...petIds, checkOut, checkIn, excludeBookingId, excludeBookingId)
+        .map(r => r.name);
+}
+
+/** A booking of this client's, with the dogs on it. */
+function ownBooking(clientId, bookingId) {
+    const booking = db.get('SELECT * FROM bookings WHERE id = ? AND client_id = ?',
+        bookingId, clientId);
+    if (!booking) return null;
+
+    const pets = db.all(
+        `SELECT p.id, p.name FROM booking_pets bp JOIN pets p ON p.id = bp.pet_id
+         WHERE bp.booking_id = ? ORDER BY p.name`, booking.id);
+
+    booking.pet_ids = pets.map(p => p.id);
+    booking.dog_names = pets.map(p => p.name).join(', ');
+    return booking;
+}
+
+/**
+ * A client may change or cancel a stay right up until the dog is checked in.
+ * Once the dog is here, it is ours to sort out on the phone - not something a
+ * booking form should be quietly rewriting.
+ */
+function assertChangeable(booking) {
+    if (booking.status === 'cancelled') throw fail(400, 'That stay is already cancelled.');
+    if (booking.status === 'checked_in') {
+        throw fail(400, 'Your dog is already checked in. Please call us.');
+    }
+    if (booking.status === 'checked_out') {
+        throw fail(400, 'That stay is already finished.');
+    }
+}
+
+/** Can the client still touch this stay? Mirrors assertChangeable, without throwing. */
+function isChangeable(booking) {
+    return booking.status !== 'cancelled'
+        && booking.status !== 'checked_in'
+        && booking.status !== 'checked_out';
+}
+
 /** Outstanding balance in cents: issued (non-void) invoices minus payments. */
 function balanceCents(clientId) {
     const invoiced = db.get(
@@ -235,12 +313,18 @@ portalRouter.get('/overview', (req, res) => {
     const pets = db.all("SELECT * FROM pets WHERE client_id = ? ORDER BY status, name", clientId);
     const today = db.today();
 
+    const withDogs = `
+        SELECT b.*,
+               (SELECT GROUP_CONCAT(p.name, ', ') FROM booking_pets bp
+                  JOIN pets p ON p.id = bp.pet_id WHERE bp.booking_id = b.id) AS dog_names
+        FROM bookings b WHERE b.client_id = ?`;
+
     const upcoming = db.all(
-        `SELECT * FROM bookings WHERE client_id = ? AND check_out >= ?
-         ORDER BY check_in ASC LIMIT 10`, clientId, today);
+        `${withDogs} AND b.check_out >= ? ORDER BY b.check_in ASC LIMIT 10`, clientId, today)
+        .map(b => ({ ...b, changeable: isChangeable(b) }));
     const past = db.all(
-        `SELECT * FROM bookings WHERE client_id = ? AND check_out < ?
-         ORDER BY check_out DESC LIMIT 10`, clientId, today);
+        `${withDogs} AND b.check_out < ? ORDER BY b.check_out DESC LIMIT 10`, clientId, today)
+        .map(b => ({ ...b, changeable: false }));
     const recentServices = db.all(
         `SELECT id, pet_id, description, performed_on, amount_cents
          FROM service_events WHERE client_id = ? ORDER BY performed_on DESC LIMIT 15`, clientId);
@@ -586,19 +670,15 @@ portalRouter.post('/bookings', (req, res, next) => {
         const petIds = (Array.isArray(req.body.pet_ids) ? req.body.pet_ids : [])
             .map(Number).filter(Boolean);
 
-        const isDate = d => /^\d{4}-\d{2}-\d{2}$/.test(d);
-        if (!isDate(checkIn) || !isDate(checkOut)) throw fail(400, 'Choose a drop-off and a pick-up date.');
-        if (checkOut <= checkIn) throw fail(400, 'Pick-up has to be after drop-off.');
-        if (checkIn < db.today()) throw fail(400, 'Choose a drop-off date in the future.');
-        if (!petIds.length) throw fail(400, 'Choose at least one dog.');
-
-        const owned = db.all(
-            "SELECT id FROM pets WHERE client_id = ? AND status = 'active'", req.clientId)
-            .map(p => Number(p.id));
-        if (petIds.some(id => !owned.includes(id))) throw fail(400, 'That dog is not on your account.');
+        validateStay({ clientId: req.clientId, checkIn, checkOut, petIds });
 
         const now = db.nowIso();
         const bookingId = db.tx(() => {
+            const clash = clashingDogs(petIds, checkIn, checkOut);
+            if (clash.length) {
+                throw fail(409, `${clash.join(' and ')} ${clash.length === 1 ? 'is' : 'are'} already booked for those dates.`);
+            }
+
             const check = availability.checkRange(checkIn, checkOut, petIds.length);
             if (!check.ok) {
                 throw fail(409, check.reason ||
@@ -625,19 +705,79 @@ portalRouter.post('/bookings', (req, res, next) => {
     } catch (err) { next(err); }
 });
 
+/** One of their stays, with the dogs on it - what the change dialog loads. */
+portalRouter.get('/bookings/:id', (req, res, next) => {
+    try {
+        const booking = ownBooking(req.clientId, req.params.id);
+        if (!booking) throw fail(404, 'Not found.');
+        res.json({ booking });
+    } catch (err) { next(err); }
+});
+
+/**
+ * Change a stay that has not started: new dates, different dogs, or both.
+ *
+ * The capacity and same-dog checks both ignore this booking, so a stay does not
+ * compete with itself - shortening it, or dropping a dog from it, can never be
+ * refused for being "full" because of the version we are about to replace.
+ */
+portalRouter.put('/bookings/:id', (req, res, next) => {
+    try {
+        const client = clientSummary(req.clientId);
+        if (client.status !== 'active') {
+            throw fail(403, 'Your account is still awaiting approval.');
+        }
+
+        const booking = ownBooking(req.clientId, req.params.id);
+        if (!booking) throw fail(404, 'Not found.');
+        assertChangeable(booking);
+
+        const checkIn = String(req.body.check_in || booking.check_in).slice(0, 10);
+        const checkOut = String(req.body.check_out || booking.check_out).slice(0, 10);
+        const petIds = (Array.isArray(req.body.pet_ids) ? req.body.pet_ids : booking.pet_ids)
+            .map(Number).filter(Boolean);
+
+        validateStay({ clientId: req.clientId, checkIn, checkOut, petIds });
+
+        db.tx(() => {
+            const clash = clashingDogs(petIds, checkIn, checkOut, booking.id);
+            if (clash.length) {
+                throw fail(409, `${clash.join(' and ')} ${clash.length === 1 ? 'is' : 'are'} already booked for those dates.`);
+            }
+
+            const check = availability.checkRange(checkIn, checkOut, petIds.length,
+                { excludeBookingId: booking.id });
+            if (!check.ok) {
+                throw fail(409, check.reason ||
+                    `We are full on ${check.full.join(', ')}. Please try other dates.`);
+            }
+
+            db.update('bookings', booking.id, {
+                check_in: checkIn,
+                check_out: checkOut,
+                notes: req.body.notes !== undefined
+                    ? (String(req.body.notes).trim() || null) : booking.notes,
+                updated_at: db.nowIso()
+            });
+
+            db.run('DELETE FROM booking_pets WHERE booking_id = ?', booking.id);
+            for (const petId of petIds) {
+                db.run('INSERT OR IGNORE INTO booking_pets (booking_id, pet_id) VALUES (?, ?)',
+                    booking.id, petId);
+            }
+        });
+
+        res.json({ ok: true, booking: ownBooking(req.clientId, booking.id) });
+    } catch (err) { next(err); }
+});
+
 /** Cancel a stay that has not started yet. */
 portalRouter.delete('/bookings/:id', (req, res, next) => {
     try {
-        const booking = db.get('SELECT * FROM bookings WHERE id = ? AND client_id = ?',
-            req.params.id, req.clientId);
+        const booking = ownBooking(req.clientId, req.params.id);
         if (!booking) throw fail(404, 'Not found.');
         if (booking.status === 'cancelled') return res.json({ ok: true });
-        if (booking.status === 'checked_in' || booking.status === 'checked_out') {
-            throw fail(400, 'That stay has already started. Please call us.');
-        }
-        if (booking.check_in <= db.today()) {
-            throw fail(400, 'That stay starts today. Please call us to change it.');
-        }
+        assertChangeable(booking);
 
         db.update('bookings', booking.id, { status: 'cancelled', updated_at: db.nowIso() });
         res.json({ ok: true });

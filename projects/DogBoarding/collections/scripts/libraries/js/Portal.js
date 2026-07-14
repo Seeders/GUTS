@@ -477,10 +477,17 @@ class Portal {
             el('header.portal-panel__head', el('h2', 'Your upcoming stays')),
             upcoming.length
                 ? el('ul.portal-list', upcoming.map(b => el('li.portal-line',
-                    el('span', `${date(b.check_in)} → ${date(b.check_out)}`),
+                    el('span',
+                        el('strong', `${date(b.check_in)} → ${date(b.check_out)}`),
+                        b.dog_names ? el('span.muted.small', ` · ${b.dog_names}`) : null),
                     el('span.portal-line__actions',
                         this.ui.badge(b.status, this.ui.statusTone(b.status)),
-                        b.check_in > today && b.status !== 'checked_in' && b.status !== 'checked_out'
+                        // Changeable right up until the dog is checked in.
+                        b.changeable
+                            ? el('button.linkbtn',
+                                { type: 'button', onclick: () => this.editBooking(b) }, 'Change')
+                            : null,
+                        b.changeable
                             ? el('button.linkbtn.linkbtn--danger',
                                 { type: 'button', onclick: () => this.cancelBooking(b) }, 'Cancel')
                             : null))))
@@ -570,6 +577,68 @@ class Portal {
 
         // Restore any selection made before the month was flipped.
         paint();
+    }
+
+    /** Change a stay: new dates, different dogs, or both. Only before check-in. */
+    async editBooking(booking) {
+        const { el } = this.ui;
+        const today = this.ui.today();
+
+        const [{ booking: stay }, { pets }] = await Promise.all([
+            this.api.portalBooking(booking.id),
+            this.api.portalPets()
+        ]);
+        const dogs = pets.filter(p => p.status !== 'archived');
+
+        const checkIn = el('input', { type: 'date', min: today, value: stay.check_in });
+        const checkOut = el('input', { type: 'date', min: today, value: stay.check_out });
+        const boxes = dogs.map(p => el('label.field.field--check',
+            el('input', {
+                type: 'checkbox',
+                value: String(p.id),
+                checked: stay.pet_ids.includes(p.id)
+            }),
+            el('span', p.name)));
+        const notes = el('textarea', { rows: 2, value: stay.notes || '' });
+
+        this.ui.modal({
+            title: 'Change your stay',
+            width: 520,
+            confirmLabel: 'Save changes',
+            body: el('div',
+                el('div.field-row',
+                    el('label.field', el('span.field__label', 'Drop-off'), checkIn),
+                    el('label.field', el('span.field__label', 'Pick-up'), checkOut)),
+                el('div.field', el('span.field__label', 'Which dogs?'), el('div', boxes)),
+                el('label.field', el('span.field__label', 'Notes'), notes)),
+            onConfirm: async () => {
+                const petIds = boxes
+                    .map(b => b.querySelector('input'))
+                    .filter(i => i.checked)
+                    .map(i => Number(i.value));
+
+                if (!checkIn.value || !checkOut.value) {
+                    this.ui.toast('Choose both dates.', 'bad'); return false;
+                }
+                if (checkOut.value <= checkIn.value) {
+                    this.ui.toast('Pick-up has to be after drop-off.', 'bad'); return false;
+                }
+                if (!petIds.length) {
+                    this.ui.toast('Choose at least one dog.', 'bad'); return false;
+                }
+
+                // A failure here throws, which the modal catches and shows -
+                // so a clash or a full night keeps the dialog open to fix.
+                await this.api.portalUpdateBooking(stay.id, {
+                    check_in: checkIn.value,
+                    check_out: checkOut.value,
+                    pet_ids: petIds,
+                    notes: notes.value.trim()
+                });
+                this.ui.toast('Your stay is updated.', 'good');
+                this.route();
+            }
+        });
     }
 
     async cancelBooking(booking) {

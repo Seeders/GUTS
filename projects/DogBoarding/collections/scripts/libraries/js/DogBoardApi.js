@@ -336,5 +336,7 @@ class DogBoardApi {
         return this.portalRequest('GET', `/api/portal/availability${DogBoardApi.qs(params)}`);
     }
     portalCreateBooking(data) { return this.portalRequest('POST', '/api/portal/bookings', data); }
+    portalBooking(id) { return this.portalRequest('GET', `/api/portal/bookings/${id}`); }
+    portalUpdateBooking(id, data) { return this.portalRequest('PUT', `/api/portal/bookings/${id}`, data); }
     portalCancelBooking(id) { return this.portalRequest('DELETE', `/api/portal/bookings/${id}`); }
 }
