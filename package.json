@@ -12,7 +12,7 @@
     "engine/",
     "global/",
     "style/",
-    "projects/Editor/",
+    "projects/Editor/index.html",
     "webpack.config.js",
     "server.js",
     "server_editor.js",
