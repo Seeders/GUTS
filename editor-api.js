@@ -598,15 +598,17 @@ function mountEditor(app, opts = {}) {
 
     let gate = opts.gate;
     if (gate === undefined) {
-        // Default gate: the shared editor-auth basic gate. If no password is set
-        // it fails closed in production (the mount is skipped below) and stays
-        // open in dev — same policy as the root server's editor.
+        // Default gate: the shared editor-auth basic gate. These endpoints read,
+        // write and delete files, so this fails CLOSED everywhere — with no
+        // password set the editor is simply not mounted, regardless of NODE_ENV
+        // (a standalone host may signal production by other means). Set
+        // GUTS_EDITOR_PASSWORD to enable it, or pass an explicit `gate`.
         const editorAuth = require('./editor-auth');
-        if (!editorAuth.ENABLED && process.env.NODE_ENV === 'production') {
-            console.warn('[editor-api] GUTS_EDITOR_PASSWORD is not set — project editor DISABLED (production).');
+        if (!editorAuth.ENABLED) {
+            console.warn('[editor-api] GUTS_EDITOR_PASSWORD is not set — project editor not mounted.');
             return false;
         }
-        gate = editorAuth.makeBasicGate ? editorAuth.makeBasicGate() : null;
+        gate = editorAuth.makeBasicGate();
     }
 
     const router = express.Router();
