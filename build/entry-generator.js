@@ -508,12 +508,17 @@ class EntryGenerator {
             const sanitizedModuleName = this.sanitizeVarName(moduleName);
             const requirePath = mod.path.replace(/\\/g, '/');
 
-            // Require the module and extract the actual class from exports
+            // Require the module and extract the actual class from exports.
             requires.push(`const ${varName}_module = require('${requirePath}');`);
             requires.push(`const ${varName} = ${varName}_module.default || ${varName}_module.${moduleName} || ${varName}_module;`);
-            // Immediately assign to global.GUTS so it's available for inheritance
-            requires.push(`global.GUTS.${sanitizedModuleName} = ${varName};`);
-            exports.push(`  ${sanitizedModuleName}: ${varName}`);
+            // Assign to global.GUTS for inheritance — but do NOT clobber a class that
+            // the module already self-registered (via class-export-loader) with a
+            // non-constructor require result. Webpack can compile a `module.exports =
+            // Class` file to an EMPTY harmony namespace ({}), and overwriting the good
+            // class with {} breaks every `class Sub extends GUTS.X`. So only assign
+            // when the extracted value is usable, or when nothing is registered yet.
+            requires.push(`if (typeof ${varName} === 'function' || global.GUTS.${sanitizedModuleName} == null) global.GUTS.${sanitizedModuleName} = ${varName};`);
+            exports.push(`  ${sanitizedModuleName}: (typeof ${varName} === 'function' ? ${varName} : (global.GUTS.${sanitizedModuleName} || ${varName}))`);
         });
 
         return { requires, exports };

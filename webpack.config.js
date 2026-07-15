@@ -64,15 +64,18 @@ const baseConfig = {
         rules: [
             {
                 test: /\.js$/,
-                // Skip node_modules, EXCEPT the GUTS framework's own sources. When
-                // GUTS is installed as a dependency it lives at node_modules/guts/,
-                // so engine/ and global/ would otherwise be excluded — and then the
-                // class-export-loader never registers GUTS.Engine et al.
+                // Skip node_modules, EXCEPT the GUTS framework's own files. When GUTS
+                // is installed as a dependency it lives at node_modules/guts/, so its
+                // engine/, global/ AND the generated build/.temp entries would other-
+                // wise be excluded — leaving the class-export-loader unrun, so classes
+                // like GUTS.Engine / GUTS.BaseBehaviorNode never register. Process
+                // everything under GUTS_ROOT except GUTS's own nested dependencies.
                 exclude: (modulePath) => {
                     const p = modulePath.replace(/\\/g, '/');
-                    const engineDir = path.join(GUTS_ROOT, 'engine').replace(/\\/g, '/');
-                    const globalDir = path.join(GUTS_ROOT, 'global').replace(/\\/g, '/');
-                    if (p.startsWith(engineDir) || p.startsWith(globalDir)) return false;
+                    const gutsRoot = GUTS_ROOT.replace(/\\/g, '/');
+                    if (p.startsWith(gutsRoot + '/') && !p.startsWith(gutsRoot + '/node_modules/')) {
+                        return false;
+                    }
                     return /[\\/]node_modules[\\/]/.test(p);
                 },
                 use: [
