@@ -54,3 +54,6 @@ projects/HeroArena/simulation_results/
 # that means vet records, which carry client addresses and phone numbers.
 # Never commit, never serve statically.
 projects/**/secure/
+
+# Packed GUTS release artifacts (built with npm pack)
+*.tgz
