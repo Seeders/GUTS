@@ -146,9 +146,7 @@
   }
 }
 if (typeof PerformanceProfiler != 'undefined') {
-  if ( true && module.exports) {
-    module.exports = PerformanceProfiler;
-  }
+  try { if (typeof module !== "undefined" && module.exports) { module.exports = PerformanceProfiler; } } catch (e) {}
 }
 
 // Auto-generated exports
