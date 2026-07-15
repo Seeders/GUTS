@@ -642,14 +642,21 @@ portalRouter.post('/invoices/:id/checkout', async (req, res, next) => {
         const client = clientSummary(req.clientId);
         const origin = `${req.get('x-forwarded-proto') || req.protocol}://${req.get('host')}`;
 
+        // The app is served at different paths in different places (root on the
+        // live site, /projects/DogBoarding/index.html locally), so the client
+        // tells us where to send them back. Only honour a same-origin URL - never
+        // redirect off to somewhere a request body chose.
+        let returnTo = String(req.body.return_to || '').split('#')[0];
+        if (!returnTo.startsWith(`${origin}/`)) returnTo = `${origin}/`;
+
         const session = await stripe.createCheckoutSession({
             amountCents: balance,
             name: `Invoice ${invoice.number} — ${collections.business().name}`,
             email: client.email,
             invoiceId: invoice.id,
             clientId: req.clientId,
-            successUrl: `${origin}/#/portal/billing?paid=1`,
-            cancelUrl: `${origin}/#/portal/billing`
+            successUrl: `${returnTo}#/portal/billing?paid=1`,
+            cancelUrl: `${returnTo}#/portal/billing`
         });
 
         res.json({ url: session.url });

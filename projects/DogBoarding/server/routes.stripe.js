@@ -16,7 +16,10 @@ const stripe = require('./stripe');
 function webhook(req, res) {
     let event;
     try {
-        event = stripe.verifyWebhook(req.body, req.get('stripe-signature'));
+        // req.rawBody is the untouched bytes, stashed by the root server's JSON
+        // parser (which runs before this route). Standalone, express.raw leaves
+        // the Buffer on req.body instead. Either way, verify the exact bytes.
+        event = stripe.verifyWebhook(req.rawBody || req.body, req.get('stripe-signature'));
     } catch (err) {
         console.warn('[stripe] webhook rejected:', err.message);
         return res.status(400).send(`Webhook Error: ${err.message}`);
