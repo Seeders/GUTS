@@ -19,6 +19,7 @@
  */
 
 const path = require('path');
+const fs = require('fs');
 
 // The GUTS framework root: parent of this build/ directory.
 const GUTS_ROOT = path.resolve(__dirname, '..');
@@ -46,12 +47,30 @@ function resolveProjectRoot(projectName) {
  * @returns {string|null} Absolute path to the package directory, or null if not installed.
  */
 function resolvePackageDir(pkg) {
+    // Fast path: most packages let you resolve their package.json directly.
     try {
-        const pkgJson = require.resolve(`${pkg}/package.json`, { paths: [GUTS_ROOT] });
-        return path.dirname(pkgJson);
-    } catch (e) {
-        return null;
-    }
+        return path.dirname(require.resolve(`${pkg}/package.json`, { paths: [GUTS_ROOT] }));
+    } catch (e) { /* fall through */ }
+
+    // Fallback: packages with a restrictive "exports" map (e.g. `three`) refuse
+    // deep access to package.json (ERR_PACKAGE_PATH_NOT_EXPORTED). Resolve the
+    // package's main entry instead and walk up to the directory whose
+    // package.json actually belongs to this package.
+    try {
+        let dir = path.dirname(require.resolve(pkg, { paths: [GUTS_ROOT] }));
+        const root = path.parse(dir).root;
+        while (dir && dir !== root) {
+            const pj = path.join(dir, 'package.json');
+            if (fs.existsSync(pj)) {
+                try {
+                    if (JSON.parse(fs.readFileSync(pj, 'utf8')).name === pkg) return dir;
+                } catch (e) { /* keep walking */ }
+            }
+            dir = path.dirname(dir);
+        }
+    } catch (e) { /* not installed */ }
+
+    return null;
 }
 
 module.exports = { GUTS_ROOT, resolveProjectRoot, resolvePackageDir };
