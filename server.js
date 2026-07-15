@@ -59,9 +59,14 @@ app.use(cors({
     credentials: true,
 }));
 
-// Configure Express middleware
-app.use(bodyParser.json({ limit: '50mb' }));
-app.use(express.json({ limit: '10mb' }));
+// Configure Express middleware.
+//
+// Capture the raw request body as req.rawBody while parsing JSON. A webhook that
+// verifies a signature over the exact bytes it received (Stripe) needs those
+// bytes, and the parser would otherwise be the only thing to read the stream.
+const captureRawBody = (req, res, buf) => { if (buf && buf.length) req.rawBody = buf; };
+app.use(bodyParser.json({ limit: '50mb', verify: captureRawBody }));
+app.use(express.json({ limit: '10mb', verify: captureRawBody }));
 
 // ===== PROJECT BACKENDS =====
 
