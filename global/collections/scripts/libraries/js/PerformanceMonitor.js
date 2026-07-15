@@ -256,9 +256,7 @@ if (typeof PerformanceMonitor != 'undefined') {
   }
 
   // Make available as ES module export (new for server)
-  if ( true && module.exports) {
-    module.exports = PerformanceMonitor;
-  }
+  try { if (typeof module !== "undefined" && module.exports) { module.exports = PerformanceMonitor; } } catch (e) {}
 
   // Make available as ES6 export (also new for server)
   if (true) {

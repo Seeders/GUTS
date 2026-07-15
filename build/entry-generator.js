@@ -77,10 +77,14 @@ class EntryGenerator {
             // Use namespace import because class-export-loader exports both default and named exports
             else {
                 importStatement = `import * as ${varName} from '${importPath}';`;
-                // Extract the actual class from the module object
-                // The class-export-loader exports both .default and .ClassName
-                // Try named export first, then default, then the module itself
-                exportValue = `(${varName}.${moduleName} || ${varName}.default || ${varName})`;
+                // Extract the actual class from the module object. The class-export-loader
+                // exports both .default and .ClassName AND self-registers window.GUTS.<Name>
+                // as a side effect. Webpack can compile a `module.exports = Class` library
+                // to an EMPTY harmony namespace ({}) in the installed-dependency layout — so
+                // prefer named/default, then the already self-registered global, and only
+                // then the (possibly empty) namespace. Otherwise Object.assign(GUTS, ...)
+                // clobbers the good class with {} and `new GUTS.<Name>()` throws.
+                exportValue = `(${varName}.${moduleName} || ${varName}.default || (typeof window !== 'undefined' && window.GUTS && window.GUTS['${moduleName}']) || ${varName})`;
             }
 
             imports.push(importStatement);
