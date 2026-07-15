@@ -9,6 +9,7 @@ const webpack = require('webpack');
 const path = require('path');
 const fs = require('fs');
 const { copyResources } = require('./copy-resources');
+const { resolveProjectRoot } = require('./paths');
 
 // Parse command line arguments
 const args = process.argv.slice(2);
@@ -50,7 +51,7 @@ Or use npm scripts:
 }
 
 // Verify project exists
-const projectPath = path.join(__dirname, '..', 'projects', projectName);
+const projectPath = resolveProjectRoot(projectName);
 if (!fs.existsSync(projectPath)) {
     console.error(`Error: Project "${projectName}" not found at ${projectPath}`);
     process.exit(1);

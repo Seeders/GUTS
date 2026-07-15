@@ -8,6 +8,7 @@ const webpack = require('webpack');
 const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
 const ConfigParser = require('./build/config-parser');
 const EntryGenerator = require('./build/entry-generator');
+const { GUTS_ROOT, resolveProjectRoot, resolvePackageDir } = require('./build/paths');
 
 // Get project name from environment (required - set by build.js)
 const projectName = process.env.PROJECT_NAME;
@@ -30,11 +31,15 @@ const buildConfig = parser.generateBuildConfig();
 const generator = new EntryGenerator(buildConfig);
 const entries = generator.generateAll();
 
+// Project root: monorepo (projects/<name>) or external (GUTS_PROJECT_ROOT).
+const projectRoot = resolveProjectRoot(projectName);
+
 // Output directories
-const clientOutput = path.resolve(__dirname, 'projects', projectName, 'dist', 'client');
-const serverOutput = path.resolve(__dirname, 'projects', projectName, 'dist', 'server');
-const headlessOutput = path.resolve(__dirname, 'projects', projectName, 'dist', 'headless');
-const editorOutput = path.resolve(__dirname, 'projects', 'Editor', 'dist');
+const clientOutput = path.join(projectRoot, 'dist', 'client');
+const serverOutput = path.join(projectRoot, 'dist', 'server');
+const headlessOutput = path.join(projectRoot, 'dist', 'headless');
+// The Editor is shared framework tooling and always lives inside GUTS.
+const editorOutput = path.resolve(GUTS_ROOT, 'projects', 'Editor', 'dist');
 
 // Base webpack configuration
 const baseConfig = {
@@ -43,18 +48,33 @@ const baseConfig = {
     resolve: {
         extensions: ['.js', '.json'],
         alias: {
-            '@engine': path.resolve(__dirname, 'engine'),
-            '@global': path.resolve(__dirname, 'global', 'collections'),
-            '@project': path.resolve(__dirname, 'projects', projectName),
-            // Ensure 'three' resolves to the npm package
-            'three': path.resolve(__dirname, 'node_modules', 'three')
+            '@engine': path.resolve(GUTS_ROOT, 'engine'),
+            '@global': path.resolve(GUTS_ROOT, 'global', 'collections'),
+            '@project': projectRoot,
+            // Ensure 'three' resolves to the npm package, wherever it is hoisted.
+            'three': resolvePackageDir('three') || path.resolve(GUTS_ROOT, 'node_modules', 'three')
         }
+    },
+    // Loaders (babel-loader, etc.) live in GUTS's node_modules. When building an
+    // external project the cwd is that project, so make webpack look here too.
+    resolveLoader: {
+        modules: [path.resolve(GUTS_ROOT, 'node_modules'), 'node_modules']
     },
     module: {
         rules: [
             {
                 test: /\.js$/,
-                exclude: /node_modules/,
+                // Skip node_modules, EXCEPT the GUTS framework's own sources. When
+                // GUTS is installed as a dependency it lives at node_modules/guts/,
+                // so engine/ and global/ would otherwise be excluded — and then the
+                // class-export-loader never registers GUTS.Engine et al.
+                exclude: (modulePath) => {
+                    const p = modulePath.replace(/\\/g, '/');
+                    const engineDir = path.join(GUTS_ROOT, 'engine').replace(/\\/g, '/');
+                    const globalDir = path.join(GUTS_ROOT, 'global').replace(/\\/g, '/');
+                    if (p.startsWith(engineDir) || p.startsWith(globalDir)) return false;
+                    return /[\\/]node_modules[\\/]/.test(p);
+                },
                 use: [
                     {
                         loader: 'babel-loader',

@@ -8,12 +8,13 @@
 
 const fs = require('fs');
 const path = require('path');
+const { GUTS_ROOT, resolveProjectRoot, resolvePackageDir } = require('./paths');
 
 class ConfigParser {
     constructor(projectName) {
         this.projectName = projectName;
-        this.projectRoot = path.join(__dirname, '..', 'projects', projectName);
-        this.globalRoot = path.join(__dirname, '..', 'global', 'collections');
+        this.projectRoot = resolveProjectRoot(projectName);
+        this.globalRoot = path.join(GUTS_ROOT, 'global', 'collections');
         this.collectionsRoot = path.join(this.projectRoot, 'collections');
 
         // Cache for library metadata loaded from data JSON files
@@ -376,8 +377,9 @@ class ConfigParser {
 
             // Handle threejs special case - npm package
             if (libName === 'threejs' || libName === 'THREE') {
-                const threePath = path.join(__dirname, '..', 'node_modules', 'three', 'build', 'three.module.min.js');
-                if (fs.existsSync(threePath)) {
+                const threeDir = resolvePackageDir('three');
+                const threePath = threeDir && path.join(threeDir, 'build', 'three.module.min.js');
+                if (threePath && fs.existsSync(threePath)) {
                     console.log(`    Library THREE: npm three`);
                     paths.push({
                         name: 'threejs',
@@ -393,11 +395,13 @@ class ConfigParser {
 
             // Handle Rapier special case (check before CDN skip)
             if (libName === 'Rapier' || (metadata && metadata.href && (metadata.href.includes('rapier3d') || metadata.href.includes('rapier')))) {
-                let rapierPath = path.join(__dirname, '..', 'node_modules', '@dimforge', 'rapier3d', 'rapier.es.js');
-                if (!fs.existsSync(rapierPath)) {
-                    rapierPath = path.join(__dirname, '..', 'node_modules', '@dimforge', 'rapier3d-compat', 'rapier.es.js');
+                const rapierDir = resolvePackageDir('@dimforge/rapier3d');
+                const rapierCompatDir = resolvePackageDir('@dimforge/rapier3d-compat');
+                let rapierPath = rapierDir && path.join(rapierDir, 'rapier.es.js');
+                if (!rapierPath || !fs.existsSync(rapierPath)) {
+                    rapierPath = rapierCompatDir && path.join(rapierCompatDir, 'rapier.es.js');
                 }
-                if (fs.existsSync(rapierPath)) {
+                if (rapierPath && fs.existsSync(rapierPath)) {
                     console.log(`    Library Rapier: npm @dimforge/rapier3d`);
                     paths.push({
                         name: 'Rapier',
@@ -415,9 +419,10 @@ class ConfigParser {
                 const match = metadata.href.match(/\/examples\/jsm\/(.+)\.js$/);
                 if (match) {
                     const examplePath = match[1];
-                    const absolutePath = path.join(__dirname, '..', 'node_modules', 'three', 'examples', 'jsm', `${examplePath}.js`);
+                    const threeDir = resolvePackageDir('three');
+                    const absolutePath = threeDir && path.join(threeDir, 'examples', 'jsm', `${examplePath}.js`);
 
-                    if (fs.existsSync(absolutePath)) {
+                    if (absolutePath && fs.existsSync(absolutePath)) {
                         console.log(`    Library ${libName}: npm three.js addon`);
                         paths.push({
                             name: libName,
@@ -433,8 +438,9 @@ class ConfigParser {
 
             // Handle socket.io from CDN - use socket.io-client npm package
             if (metadata && metadata.href && metadata.href.includes('socket.io')) {
-                const socketPath = path.join(__dirname, '..', 'node_modules', 'socket.io-client', 'build', 'esm', 'index.js');
-                if (fs.existsSync(socketPath)) {
+                const socketDir = resolvePackageDir('socket.io-client');
+                const socketPath = socketDir && path.join(socketDir, 'build', 'esm', 'index.js');
+                if (socketPath && fs.existsSync(socketPath)) {
                     console.log(`    Library io: npm socket.io-client`);
                     paths.push({
                         name: 'io',
@@ -482,7 +488,7 @@ class ConfigParser {
 
             // If metadata has a filePath, use that as fallback
             if (!foundPath && metadata && metadata.filePath) {
-                const configuredPath = path.join(__dirname, '..', metadata.filePath);
+                const configuredPath = path.join(GUTS_ROOT, metadata.filePath);
                 if (fs.existsSync(configuredPath)) {
                     foundPath = configuredPath;
                     source = 'configured';
@@ -838,7 +844,7 @@ class ConfigParser {
      * Get engine files
      */
     getEnginePaths() {
-        const engineDir = path.join(__dirname, '..', 'engine');
+        const engineDir = path.join(GUTS_ROOT, 'engine');
         return {
             baseEngine: path.join(engineDir, 'BaseEngine.js'),
             engine: path.join(engineDir, 'Engine.js')
