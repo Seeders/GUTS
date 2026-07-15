@@ -16,8 +16,11 @@
     "webpack.config.js",
     "server.js",
     "server_editor.js",
+    "editor-auth.js",
+    "editor-api.js",
     "version.js",
     "index.html",
+    "logo.png",
     "favicon.ico"
   ],
   "scripts": {

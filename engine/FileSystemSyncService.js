@@ -22,9 +22,21 @@ class FileSystemSyncService {
         this.currentCollections = {};
         this.collectionCategories = {}; // Track actual category for each collection from folder structure
 
-        if (window.location.hostname === 'localhost') {
+        // Enable filesystem sync on localhost (dev) or wherever an editor host
+        // has declared the API reachable (window.GUTS_EDITOR_ENABLED, injected by
+        // the project-scoped editor page — see editor-api.js).
+        if (window.GUTS_EDITOR_ENABLED || window.location.hostname === 'localhost') {
             this.setupHooks();
         }
+    }
+
+    /**
+     * Prefix an editor filesystem API path with the mount base. Empty under the
+     * root server and on localhost; set to the project's base (e.g.
+     * "/projects/DogBoarding") when an external project serves its own editor.
+     */
+    _api(p) {
+        return (window.GUTS_EDITOR_API_BASE || '') + p;
     }
 
     setPropertyConfig(config) {
@@ -73,7 +85,7 @@ class FileSystemSyncService {
         const jsonContent = JSON.stringify(data, null, 2);
 
         try {
-            const response = await fetch('/save-file', {
+            const response = await fetch(this._api('/save-file'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ path: filePath, content: jsonContent })
@@ -96,7 +108,7 @@ class FileSystemSyncService {
         const defFilePath = `${projectId}/${this.projectScriptDirectoryName}/Settings/objectTypeDefinitions/${typeId}.json`;
 
         try {
-            const response = await fetch('/delete-file', {
+            const response = await fetch(this._api('/delete-file'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ path: defFilePath })
@@ -116,7 +128,7 @@ class FileSystemSyncService {
             const folderPath = `${projectId}/${this.projectScriptDirectoryName}/${category}/${typeId}`;
 
             try {
-                const response = await fetch('/delete-folder', {
+                const response = await fetch(this._api('/delete-folder'), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ path: folderPath })
@@ -247,7 +259,7 @@ class FileSystemSyncService {
             const projectPath = `${projectId}/${this.projectScriptDirectoryName}`;
             console.log('Importing project from filesystem:', projectPath);
     
-            const response = await fetch('/list-files', {
+            const response = await fetch(this._api('/list-files'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -272,7 +284,7 @@ class FileSystemSyncService {
         try {
             console.log('Importing modules from filesystem');
     
-            const response = await fetch('/list-files', {
+            const response = await fetch(this._api('/list-files'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -393,7 +405,7 @@ class FileSystemSyncService {
 
     async batchReadFiles(filePaths, isModule) {
         try {
-            const response = await fetch('/read-files', {
+            const response = await fetch(this._api('/read-files'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ files: filePaths, isModule })
@@ -426,7 +438,7 @@ class FileSystemSyncService {
             if (fileContents && fileContents[jsonFile.name]) {
                 content = fileContents[jsonFile.name];
             } else {
-                const jsonResponse = await fetch('/read-file', {
+                const jsonResponse = await fetch(this._api('/read-file'), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ path: jsonFile.name, isModule })
@@ -455,7 +467,7 @@ class FileSystemSyncService {
                 if (fileContents && fileContents[fileInfo.name]) {
                     content = fileContents[fileInfo.name];
                 } else {
-                    const response = await fetch('/read-file', {
+                    const response = await fetch(this._api('/read-file'), {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ path: fileInfo.name, isModule })
@@ -568,7 +580,7 @@ class FileSystemSyncService {
             const jsonContent = JSON.stringify(def, null, 2);
 
             try {
-                const response = await fetch('/save-file', {
+                const response = await fetch(this._api('/save-file'), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ path: filePath, content: jsonContent })
@@ -607,7 +619,7 @@ class FileSystemSyncService {
         const jsonContent = JSON.stringify(categoryData, null, 2);
 
         try {
-            const response = await fetch('/save-file', {
+            const response = await fetch(this._api('/save-file'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ path: filePath, content: jsonContent })
@@ -632,7 +644,7 @@ class FileSystemSyncService {
     
         // Process JSON file if it exists
         if (jsonFile) {
-            const jsonResponse = await fetch('/read-file', {
+            const jsonResponse = await fetch(this._api('/read-file'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ path: jsonFile.name, isModule })
@@ -656,7 +668,7 @@ class FileSystemSyncService {
             const propertyConfig = this.propertyConfig.find(config => config.ext === fileExt);
 
             if (propertyConfig) {
-                const response = await fetch('/read-file', {
+                const response = await fetch(this._api('/read-file'), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ path: fileInfo.name })
@@ -749,7 +761,7 @@ class FileSystemSyncService {
 
         try {
             // Save the JSON file
-            const jsonResponse = await fetch('/save-file', {
+            const jsonResponse = await fetch(this._api('/save-file'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ path: jsonFilePath, content: jsonContent })
@@ -768,7 +780,7 @@ class FileSystemSyncService {
                     const filePath = `${fileDir}/${fileName}.${propData.ext}`;
                     const fileContent = propData.content;
 
-                    const response = await fetch('/save-file', {
+                    const response = await fetch(this._api('/save-file'), {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ path: filePath, content: fileContent })
@@ -822,7 +834,7 @@ class FileSystemSyncService {
 
         for (const path of paths) {
             try {
-                await fetch('/delete-file', {
+                await fetch(this._api('/delete-file'), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ path })
@@ -843,7 +855,7 @@ class FileSystemSyncService {
         const projectPath = `${projectId}/${this.projectScriptDirectoryName}`;
         console.log('Checking filesystem for changes in:', projectPath);
 
-        const response = await fetch('/list-files', {
+        const response = await fetch(this._api('/list-files'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -930,7 +942,7 @@ class FileSystemSyncService {
             let canonicalId = objectId;
             
             if (jsonFile) {
-                const jsonResponse = await fetch('/read-file', {
+                const jsonResponse = await fetch(this._api('/read-file'), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ path: jsonFile.name })
@@ -975,7 +987,7 @@ class FileSystemSyncService {
                 
                 if (propertyConfig) {
                     // This is a special property file (HTML, CSS, JS)
-                    const response = await fetch('/read-file', {
+                    const response = await fetch(this._api('/read-file'), {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ path: file.name })
@@ -1039,7 +1051,7 @@ class FileSystemSyncService {
 
         const projectPath = `${projectId}/${this.projectScriptDirectoryName}`;
 
-        fetch('/list-files', {
+        fetch(this._api('/list-files'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({

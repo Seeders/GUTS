@@ -52,6 +52,13 @@ class EditorModel {
      * @returns {string} Project ID to load
      */
     getInitialProject() {
+        // A project-scoped editor host pins its one project (see editor-api.js
+        // editorPageHtml). Honor it above everything else.
+        const pinned = window.GUTS_EDITOR_PROJECT;
+        if (pinned && this.projects.includes(pinned)) {
+            return pinned;
+        }
+
         // Check URL parameter first
         const urlParams = new URLSearchParams(window.location.search);
         const urlProject = urlParams.get('project');
@@ -286,7 +293,7 @@ class EditorModel {
      */
     async syncProjectsFromFilesystem() {
         try {
-            const response = await fetch('/list-projects');
+            const response = await fetch((window.GUTS_EDITOR_API_BASE || '') + '/list-projects');
             if (!response.ok) {
                 console.warn('Could not fetch projects from filesystem');
                 return this.projects;

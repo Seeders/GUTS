@@ -23,9 +23,34 @@ const { portalSessionRouter, portalRouter } = require('./server/routes.portal');
 const { webhook: stripeWebhook } = require('./server/routes.stripe');
 const { handleUploadError } = require('./server/uploads');
 
+// The GUTS editor filesystem API. Optional, and reachable by two different paths
+// depending on how this project is deployed: as a dependency (`guts/editor-api`)
+// when the project is its own repo, or via a relative path when it lives inside
+// the GUTS monorepo. Resolve whichever is present; a miss just means no editor.
+let mountEditor = null;
+try {
+    ({ mountEditor } = require('guts/editor-api'));
+} catch {
+    try { ({ mountEditor } = require('../../editor-api')); } catch { /* editor unavailable */ }
+}
+
 function mount(app, { base = '' } = {}) {
     db.open();
     auth.ensureAdminPassword();
+
+    // A project-scoped editor at <base>/editor for editing this project's own
+    // collections, scripts and resources — guarded by GUTS_EDITOR_PASSWORD, and
+    // skipped in production when no password is set. Mounted before the app
+    // routes so its paths get first look. Build its bundle with:
+    //   node build/build.js DogBoarding --target editor   (monorepo)
+    //   npx guts build --target editor                    (standalone)
+    if (mountEditor) {
+        try {
+            mountEditor(app, { base, projectRoot: __dirname });
+        } catch (err) {
+            console.warn('[dogboarding] editor not mounted:', err.message);
+        }
+    }
 
     const router = express.Router();
 

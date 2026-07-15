@@ -38,8 +38,13 @@ const projectRoot = resolveProjectRoot(projectName);
 const clientOutput = path.join(projectRoot, 'dist', 'client');
 const serverOutput = path.join(projectRoot, 'dist', 'server');
 const headlessOutput = path.join(projectRoot, 'dist', 'headless');
-// The Editor is shared framework tooling and always lives inside GUTS.
-const editorOutput = path.resolve(GUTS_ROOT, 'projects', 'Editor', 'dist');
+// The shared "Editor" project builds into projects/Editor/dist — the editor the
+// root server serves at /projects/Editor. Every OTHER project builds its editor
+// into its own dist/editor, so that project's own server can serve a
+// project-scoped editor with just its chosen modules (see editor-api.js).
+const editorOutput = projectName === 'Editor'
+    ? path.resolve(GUTS_ROOT, 'projects', 'Editor', 'dist')
+    : path.join(projectRoot, 'dist', 'editor');
 
 // Base webpack configuration
 const baseConfig = {

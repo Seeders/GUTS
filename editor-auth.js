@@ -109,6 +109,44 @@ function challenge(res) {
 }
 
 /**
+ * Is this request already authenticated (good cookie), or does it carry a valid
+ * Basic credential? On a fresh Basic success, mint the session cookie so later
+ * XHR/fetch calls are authorized by the cookie. Returns true when authorized.
+ * Callers handle the unauthorized case (challenge()).
+ */
+function passesAuth(req, res) {
+    const cookies = parseCookies(req.headers.cookie);
+    if (validSession(cookies[COOKIE])) return true;
+
+    const auth = req.headers.authorization || '';
+    if (auth.startsWith('Basic ')) {
+        let decoded = '';
+        try {
+            decoded = Buffer.from(auth.slice(6), 'base64').toString('utf8');
+        } catch { /* malformed header */ }
+        const sep = decoded.indexOf(':');
+        const user = sep === -1 ? '' : decoded.slice(0, sep);
+        const pass = sep === -1 ? '' : decoded.slice(sep + 1);
+
+        // Bitwise & (not &&) so both compares always run — no early-out leak.
+        const ok = safeEqual(user, USER) & safeEqual(pass, PASSWORD);
+        if (ok) {
+            const token = newSession();
+            const secure = req.secure || req.headers['x-forwarded-proto'] === 'https';
+            res.cookie(COOKIE, token, {
+                httpOnly: true,
+                sameSite: 'Strict',
+                secure,
+                maxAge: TTL_MS,
+                path: '/'
+            });
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
  * Build the gate middleware. Non-editor requests pass straight through, so this
  * is safe to mount globally ahead of express.static.
  */
@@ -133,39 +171,24 @@ function makeEditorGate({ isProduction } = {}) {
             return next(); // dev convenience, localhost only
         }
 
-        // Already carrying a good session cookie? Let it through.
-        const cookies = parseCookies(req.headers.cookie);
-        if (validSession(cookies[COOKIE])) return next();
-
-        // Otherwise require a Basic credential, and on success mint the cookie.
-        const auth = req.headers.authorization || '';
-        if (auth.startsWith('Basic ')) {
-            let decoded = '';
-            try {
-                decoded = Buffer.from(auth.slice(6), 'base64').toString('utf8');
-            } catch { /* malformed header */ }
-            const sep = decoded.indexOf(':');
-            const user = sep === -1 ? '' : decoded.slice(0, sep);
-            const pass = sep === -1 ? '' : decoded.slice(sep + 1);
-
-            // Bitwise & (not &&) so both compares always run — no early-out leak.
-            const ok = safeEqual(user, USER) & safeEqual(pass, PASSWORD);
-            if (ok) {
-                const token = newSession();
-                const secure = req.secure || req.headers['x-forwarded-proto'] === 'https';
-                res.cookie(COOKIE, token, {
-                    httpOnly: true,
-                    sameSite: 'Strict',
-                    secure,
-                    maxAge: TTL_MS,
-                    path: '/'
-                });
-                return next();
-            }
-        }
-
+        if (passesAuth(req, res)) return next();
         return challenge(res);
     };
 }
 
-module.exports = { makeEditorGate, isEditorRequest, ENABLED };
+/**
+ * Build a gate that protects EVERY request it sees, for mounting on a router
+ * that carries nothing but editor surface (see editor-api.js mountEditor). It
+ * assumes the caller has already decided the editor should be exposed — when
+ * the password is unset it stays open (dev); mountEditor refuses to mount at
+ * all in production without one, so this never leaves an open door there.
+ */
+function makeBasicGate() {
+    return function basicGate(req, res, next) {
+        if (!ENABLED) return next(); // dev only; production is gated upstream
+        if (passesAuth(req, res)) return next();
+        return challenge(res);
+    };
+}
+
+module.exports = { makeEditorGate, makeBasicGate, isEditorRequest, ENABLED };
