@@ -6,6 +6,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { resolveProjectRoot } = require('./paths');
 
 /**
  * Copy resources from project/resources to dist/client/resources
@@ -14,7 +15,7 @@ const path = require('path');
  * @returns {boolean} - True if successful
  */
 function copyResources(projectName, verbose = true) {
-    const projectRoot = path.resolve(__dirname, '..', 'projects', projectName);
+    const projectRoot = resolveProjectRoot(projectName);
     const resourcesSource = path.join(projectRoot, 'resources');
     const resourcesDest = path.join(projectRoot, 'dist', 'client', 'resources');
 
@@ -76,7 +77,7 @@ Examples:
         process.exit(1);
     }
 
-    const projectRoot = path.resolve(__dirname, '..', 'projects', projectName);
+    const projectRoot = resolveProjectRoot(projectName);
     if (!fs.existsSync(projectRoot)) {
         console.error(`Error: Project "${projectName}" not found at ${projectRoot}`);
         process.exit(1);
