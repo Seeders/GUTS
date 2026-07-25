@@ -1,9 +1,0 @@
-{
- "unit": "2_d_beastMaster",
- "abilityPool": [
-  "pool_ab_SummonWolfAbility",
-  "pool_ab_NaturesGraspAbility",
-  "pool_ab_TrackingMark"
- ],
- "fileName": "2_d_beastMaster"
-}

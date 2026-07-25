@@ -1,9 +1,0 @@
-{
- "unit": "2_di_trickster",
- "abilityPool": [
-  "pool_ab_MirrorImagesAbility",
-  "pool_ab_SmokeBombAbility",
-  "pool_ab_PoisonCoatAbility"
- ],
- "fileName": "2_di_trickster"
-}

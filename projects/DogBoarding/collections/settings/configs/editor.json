@@ -1,9 +1,0 @@
-{
-  "title": "Editor Config",
-  "theme": "instrument",
-  "editorModules": [
-    "scriptModule",
-    "textureEditor"
-  ],
-  "fileName": "editor"
-}

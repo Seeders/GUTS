@@ -1,9 +1,0 @@
-{
-  "title": "THREE.OrbitControls",
-  "href": "https://cdn.jsdelivr.net/npm/three@0.176.0/examples/jsm/controls/OrbitControls.js",
-  "isModule": true,
-  "windowContext": "THREE",
-  "requireName": "OrbitControls",
-  "importName": "OrbitControls",
-  "fileName": "three_OrbitControls"
-}

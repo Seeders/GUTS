@@ -1,9 +1,0 @@
-{
- "unit": "0_golemFire",
- "abilityPool": [
-  "pool_ab_BurningAuraAbility",
-  "pool_ab_InfernoAbility",
-  "pool_ab_FireBallAbility"
- ],
- "fileName": "0_golemFire"
-}

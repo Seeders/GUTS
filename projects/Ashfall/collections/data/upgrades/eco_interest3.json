@@ -1,6 +1,0 @@
-{
-  "title": "Treasury",
-  "description": "Raises the interest cap by +2 each round (max +5).",
-  "value": 80,
-  "economy": { "interestCap": 2 }
-}

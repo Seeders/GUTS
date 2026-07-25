@@ -1,9 +1,0 @@
-{
- "unit": "0_golemStone",
- "abilityPool": [
-  "pool_ab_TauntAbility",
-  "pool_ab_IronSkinAbility",
-  "pool_ab_ThornsAuraAbility"
- ],
- "fileName": "0_golemStone"
-}

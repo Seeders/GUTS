@@ -1,9 +1,0 @@
-{
- "unit": "4_ancientTreant",
- "abilityPool": [
-  "pool_ab_EntangleAbility",
-  "pool_ab_ThornsAuraAbility",
-  "pool_ab_RegenerationAbility"
- ],
- "fileName": "4_ancientTreant"
-}

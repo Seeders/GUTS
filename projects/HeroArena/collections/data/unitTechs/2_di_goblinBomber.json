@@ -1,9 +1,0 @@
-{
- "unit": "2_di_goblinBomber",
- "abilityPool": [
-  "pool_ab_DisruptionBombAbility",
-  "pool_ab_ExplosiveTrapAbility",
-  "pool_tech_gob_payload"
- ],
- "fileName": "2_di_goblinBomber"
-}

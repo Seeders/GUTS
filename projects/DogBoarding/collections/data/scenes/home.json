@@ -1,8 +1,0 @@
-{
-  "title": "Home",
-  "description": "The public front page.",
-  "route": "/",
-  "page": "home",
-  "interface": "public",
-  "systems": []
-}

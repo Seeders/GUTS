@@ -1,7 +1,0 @@
-{
-  "title": "Camera Type",
-  "enum": [
-    "perspective",
-    "orthographic"
-  ]
-}

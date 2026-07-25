@@ -1,8 +1,0 @@
-{
-  "filePath": "/projects/Ashfall/collections/scripts/systems/js/HuntMissionSystem.js",
-  "fileName": "HuntMissionSystem",
-  "services": [
-    "dropLoot",
-    "pickupLoot"
-  ]
-}

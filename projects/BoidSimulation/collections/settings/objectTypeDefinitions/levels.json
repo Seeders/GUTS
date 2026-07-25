@@ -1,7 +1,0 @@
-{
-  "id": "levels",
-  "name": "Levels",
-  "singular": "Level",
-  "objectTypeCategory": "terrain",
-  "isCore": true
-}

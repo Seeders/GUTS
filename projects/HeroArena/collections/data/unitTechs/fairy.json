@@ -1,9 +1,0 @@
-{
- "unit": "fairy",
- "abilityPool": [
-  "pool_ab_MagicShieldAbility",
-  "pool_ab_WindShieldAbility",
-  "pool_ab_FearAbility"
- ],
- "fileName": "fairy"
-}

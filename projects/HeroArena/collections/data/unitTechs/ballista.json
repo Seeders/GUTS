@@ -1,9 +1,0 @@
-{
- "unit": "ballista",
- "abilityPool": [
-  "pool_ab_PiercingShotAbility",
-  "pool_tech_bal_range",
-  "pool_tech_bal_rapid"
- ],
- "fileName": "ballista"
-}

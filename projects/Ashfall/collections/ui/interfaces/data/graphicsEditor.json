@@ -1,9 +1,0 @@
-{
-  "title": "Graphics Editor",
-  "modals": [
-    "moveAllShapes",
-    "generateIsoSprites"
-  ],
-  "fileName": "graphicsEditor",
-  "filePath": "/projects/ui/interfaces/html/graphicsEditor.html"
-}

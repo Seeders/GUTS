@@ -1,6 +1,0 @@
-{
-  "title": "Banking",
-  "description": "Interest: +1 gold each round per 10 banked (max +2).",
-  "value": 30,
-  "economy": { "interestPer": 10, "interestCap": 2 }
-}

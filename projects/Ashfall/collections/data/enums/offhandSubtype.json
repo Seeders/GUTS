@@ -1,9 +1,0 @@
-{
-  "title": "OffhandSubtype",
-  "enum": [
-    "shield",
-    "orb",
-    "quiver",
-    "tome"
-  ]
-}

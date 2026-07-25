@@ -1,8 +1,0 @@
-{
-  "title": "arpgEquipment",
-  "description": "ARPG equipped items by slot. Object-stored (item objects in slots).",
-  "schema": {
-    "kind": "arpg",
-    "slots": {}
-  }
-}

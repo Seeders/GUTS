@@ -1,9 +1,0 @@
-{
- "unit": "2_sd_crossbowman",
- "abilityPool": [
-  "pool_ab_PiercingShotAbility",
-  "pool_ab_RapidFireAbility",
-  "pool_tech_cro_siege"
- ],
- "fileName": "2_sd_crossbowman"
-}

@@ -1,9 +1,0 @@
-{
- "unit": "2_d_ranger",
- "abilityPool": [
-  "pool_ab_MultiShotAbility",
-  "pool_ab_AimedShotAbility",
-  "pool_ab_CripplingShotAbility"
- ],
- "fileName": "2_d_ranger"
-}

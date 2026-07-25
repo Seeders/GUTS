@@ -1,9 +1,0 @@
-{
- "unit": "2_sd_knight",
- "abilityPool": [
-  "pool_ab_ChargeAbility",
-  "pool_ab_BashAbility",
-  "pool_ab_LastStandAbility"
- ],
- "fileName": "2_sd_knight"
-}

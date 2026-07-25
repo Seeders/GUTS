@@ -1,6 +1,0 @@
-{
-  "title": "Place Explosive Trap",
-  "icon": "bomb",
-  "order": "placeExplosiveTrap",
-  "ability": "ExplosiveTrapAbility"
-}

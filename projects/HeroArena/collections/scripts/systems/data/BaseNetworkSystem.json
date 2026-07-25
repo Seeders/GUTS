@@ -1,8 +1,0 @@
-{
-  "filePath": "/projects/scripts/systems/js/BaseNetworkSystem.js",
-  "fileName": "BaseNetworkSystem",
-  "services": [
-    "broadcastToRoom",
-    "replaceUnit"
-  ]
-}

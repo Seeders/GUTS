@@ -1,7 +1,0 @@
-{
-  "title": "Selector",
-  "description": "Composite node that evaluates children in order until one succeeds. First success wins (OR logic).",
-  "color": "#10b981",
-  "fillColor": "#1e3a2f",
-  "icon": "selector"
-}

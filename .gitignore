@@ -2,9 +2,13 @@
 node_modules/
 cache/
 
-projects/**/config/*
-projects/**/dist/**/*.js
-projects/**/dist/**/resources/
+# --- Projects ------------------------------------------------------------
+# GUTS ships ONLY the Editor. Every other directory under projects/ is a
+# GUTS-compatible project with its OWN git repository, cloned in locally and
+# never tracked here. The editor server reads them all the same at runtime.
+# To add one:  cd projects && git clone <a-guts-project-repo>
+/projects/*
+!/projects/Editor/
 projects/Editor/dist/
 
 build/.temp/**/*
@@ -47,13 +51,6 @@ package-lock.json
 *.sublime-workspace
 *.backup
 .claude/
-projects/TurnBasedWarfare/simulation_results/
-projects/HeroArena/simulation_results/
-
-# Per-project secure storage: databases and uploaded documents. For DogBoarding
-# that means vet records, which carry client addresses and phone numbers.
-# Never commit, never serve statically.
-projects/**/secure/
 
 # Packed GUTS release artifacts (built with npm pack)
 *.tgz

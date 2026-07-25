@@ -1,9 +1,0 @@
-{
- "title": "Venom Vial",
- "icon": "ring_potion",
- "description": "Attacks poison their target",
- "grantBuff": "poisoned_weapon",
- "fileName": "venomVial",
- "unlockAbility": "PoisonCoatAbility",
- "itemType": "jewelry"
-}

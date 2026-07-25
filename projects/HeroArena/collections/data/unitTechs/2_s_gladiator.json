@@ -1,9 +1,0 @@
-{
- "unit": "2_s_gladiator",
- "abilityPool": [
-  "pool_ab_RetaliateAbility",
-  "pool_ab_TauntAbility",
-  "pool_ab_ShockwaveAbility"
- ],
- "fileName": "2_s_gladiator"
-}

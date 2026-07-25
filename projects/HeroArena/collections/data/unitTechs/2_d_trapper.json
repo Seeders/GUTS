@@ -1,9 +1,0 @@
-{
- "unit": "2_d_trapper",
- "abilityPool": [
-  "pool_ab_EntangleAbility",
-  "pool_ab_CripplingShotAbility",
-  "pool_ab_BearTrapAbility"
- ],
- "fileName": "2_d_trapper"
-}

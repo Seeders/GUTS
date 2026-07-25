@@ -1,8 +1,0 @@
-{
-  "filePath": "/projects/scripts/systems/js/SpawnEffectsSystem.js",
-  "fileName": "SpawnEffectsSystem",
-  "services": [
-    "startSpawnEffect",
-    "stopSpawnEffect"
-  ]
-}

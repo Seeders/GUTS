@@ -1,9 +1,0 @@
-{
- "unit": "2_sd_hoplite",
- "abilityPool": [
-  "pool_ab_PhalanxFormationAbility",
-  "pool_ab_SunderArmorAbility",
-  "pool_ab_ShieldWallAbility"
- ],
- "fileName": "2_sd_hoplite"
-}

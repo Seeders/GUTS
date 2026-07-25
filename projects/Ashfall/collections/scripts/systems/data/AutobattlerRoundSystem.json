@@ -1,9 +1,0 @@
-{
-  "filePath": "/projects/Ashfall/collections/scripts/systems/js/AutobattlerRoundSystem.js",
-  "fileName": "AutobattlerRoundSystem",
-  "services": [
-    "confirmHeroSelection",
-    "startHeroSelect",
-    "startPrep"
-  ]
-}

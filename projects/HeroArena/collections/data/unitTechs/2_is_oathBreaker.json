@@ -1,9 +1,0 @@
-{
- "unit": "2_is_oathBreaker",
- "abilityPool": [
-  "pool_ab_CurseAbility",
-  "pool_ab_DrainLifeAbility",
-  "pool_ab_CorruptingAuraAbility"
- ],
- "fileName": "2_is_oathBreaker"
-}

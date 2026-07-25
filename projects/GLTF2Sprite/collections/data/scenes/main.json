@@ -1,6 +1,0 @@
-{
-  "title": "GLTF2Sprite Main",
-  "description": "Main scene for GLTF to sprite conversion tool",
-  "interface": "main",
-  "systems": []
-}

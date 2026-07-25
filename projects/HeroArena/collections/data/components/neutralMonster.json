@@ -1,8 +1,0 @@
-{
-  "title": "neutralMonster",
-  "schema": {
-    "lootTable": "common",
-    "lootChance": 0.3,
-    "guaranteedLoot": false
-  }
-}

@@ -1,9 +1,0 @@
-{
- "unit": "0_golemIce",
- "abilityPool": [
-  "pool_ab_FreezingAuraAbility",
-  "pool_ab_FrostNovaAbility",
-  "pool_ab_BlizzardAbility"
- ],
- "fileName": "0_golemIce"
-}

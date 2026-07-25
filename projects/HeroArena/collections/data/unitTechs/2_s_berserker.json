@@ -1,9 +1,0 @@
-{
- "unit": "2_s_berserker",
- "abilityPool": [
-  "pool_ab_BloodlustAbility",
-  "pool_ab_ChargeAbility",
-  "pool_tech_ber_frenzy"
- ],
- "fileName": "2_s_berserker"
-}

@@ -1,8 +1,0 @@
-{
-  "title": "Registration complete",
-  "description": "Shown after a successful intake submission.",
-  "route": "/registered",
-  "page": "success",
-  "interface": "public",
-  "systems": []
-}

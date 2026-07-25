@@ -1,8 +1,0 @@
-{
-  "fileName": "three-nebula",
-  "isModule": true,
-  "importName": "Nebula",
-  "requireName": "Nebula",
-  "target": "client",
-  "filePath": "/projects/scripts/libraries/js/three-nebula.js"
-}

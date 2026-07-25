@@ -1,8 +1,0 @@
-{
-  "filePath": "/projects/scripts/systems/js/StatisticsTrackingSystem.js",
-  "fileName": "StatisticsTrackingSystem",
-  "services": [
-    "trackStatistic",
-    "getStatistics"
-  ]
-}

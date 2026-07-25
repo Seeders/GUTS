@@ -1,9 +1,0 @@
-{
- "unit": "2_s_warlord",
- "abilityPool": [
-  "pool_ab_BattleCryAbility",
-  "pool_ab_ArenaPresenceAbility",
-  "pool_tech_war_conqueror"
- ],
- "fileName": "2_s_warlord"
-}

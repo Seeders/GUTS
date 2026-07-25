@@ -1,9 +1,0 @@
-{
- "unit": "0_skeleton",
- "abilityPool": [
-  "pool_tech_sk_poison",
-  "pool_tech_sk_explode",
-  "pool_tech_sk_reassemble"
- ],
- "fileName": "0_skeleton"
-}

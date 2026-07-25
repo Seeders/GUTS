@@ -1,9 +1,0 @@
-{
- "unit": "2_is_crusader",
- "abilityPool": [
-  "pool_ab_ShieldWallAbility",
-  "pool_ab_ConsecrationAbility",
-  "pool_tech_cru_aegis"
- ],
- "fileName": "2_is_crusader"
-}

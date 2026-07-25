@@ -1,8 +1,0 @@
-{
-  "title": "threat",
-  "schema": {
-    "isThreat": 0,
-    "turnsActive": 0,
-    "resolved": 0
-  }
-}

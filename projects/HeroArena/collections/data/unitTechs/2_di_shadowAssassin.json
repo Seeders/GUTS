@@ -1,9 +1,0 @@
-{
- "unit": "2_di_shadowAssassin",
- "abilityPool": [
-  "pool_ab_BackstabAbility",
-  "pool_ab_ShadowStrikeAbility",
-  "pool_ab_SmokeBombAbility"
- ],
- "fileName": "2_di_shadowAssassin"
-}

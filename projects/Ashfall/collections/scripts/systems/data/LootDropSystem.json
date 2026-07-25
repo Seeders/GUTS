@@ -1,9 +1,0 @@
-{
-  "filePath": "/projects/Ashfall/collections/scripts/systems/js/LootDropSystem.js",
-  "fileName": "LootDropSystem",
-  "services": [
-    "dropLootForRound",
-    "claimLootItem",
-    "skipLoot"
-  ]
-}

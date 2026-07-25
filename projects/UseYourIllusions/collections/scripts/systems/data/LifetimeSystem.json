@@ -1,9 +1,0 @@
-{
-  "filePath": "/projects/TurnBasedWarfare/collections/scripts/systems/js/LifetimeSystem.js",
-  "fileName": "LifetimeSystem",
-  "services": [
-    "addLifetime",
-    "destroyEntityImmediately",
-    "extendLifetime"
-  ]
-}
