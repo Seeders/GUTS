@@ -611,8 +611,30 @@ function mountEditor(app, opts = {}) {
         gate = editorAuth.makeBasicGate();
     }
 
+    const api = createEditorApi({
+        projsDir: path.dirname(projectRoot), // parent -> "<name>/collections/..." resolves to this project
+        modulesDir: path.join(gutsRoot, 'global', 'collections'),
+        cacheDir: path.join(projectRoot, 'cache'),
+        baseDir: path.dirname(projectRoot),
+        uploadsDir: path.join(projectRoot, 'uploads'),
+        confineDir: projectRoot,                 // pin everything inside this project
+        listProjects: async () => [projectName]  // the editor only ever sees this one
+    });
+
     const router = express.Router();
-    if (gate) router.use(gate);
+
+    // The gate must cover exactly the paths this router answers and nothing
+    // else. The router is mounted at the host's root (the API endpoints are
+    // root-relative, `/save-file` and so on), so a bare `router.use(gate)`
+    // would challenge every request to the host - the whole site behind a
+    // Basic-auth prompt. Instead, gate `/editor/*` plus each endpoint the API
+    // router registered, read off its own stack so the two cannot drift.
+    if (gate) {
+        const apiPaths = api.stack
+            .filter(layer => layer.route)
+            .flatMap(layer => [].concat(layer.route.path));
+        router.use(['/editor', ...apiPaths], gate);
+    }
 
     router.get(['/editor', '/editor/'], (req, res) => {
         try {
@@ -627,15 +649,7 @@ function mountEditor(app, opts = {}) {
     router.get('/editor/version.js', (req, res) => res.sendFile(path.join(gutsRoot, 'version.js')));
     router.get('/editor/logo.png', (req, res) => res.sendFile(path.join(gutsRoot, 'logo.png')));
 
-    router.use('/', createEditorApi({
-        projsDir: path.dirname(projectRoot), // parent → "<name>/collections/..." resolves to this project
-        modulesDir: path.join(gutsRoot, 'global', 'collections'),
-        cacheDir: path.join(projectRoot, 'cache'),
-        baseDir: path.dirname(projectRoot),
-        uploadsDir: path.join(projectRoot, 'uploads'),
-        confineDir: projectRoot,                 // pin everything inside this project
-        listProjects: async () => [projectName]  // the editor only ever sees this one
-    }));
+    router.use('/', api);
 
     app.use(base || '/', router);
     console.log(`[editor-api] Project editor mounted at ${base || ''}/editor (project "${projectName}").`);
