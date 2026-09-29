@@ -1,10 +1,13 @@
 /**
- * TestGameContext - A minimal game context for unit testing systems
+ * TestGameContext - A game context for unit testing systems
  *
- * This class extends the appropriate ECS game class and provides:
- * - Access to all collections from the compiled game
- * - Ability to instantiate and test systems in isolation
- * - Mock services for dependencies
+ * Boots the project the way the engine does: the game config supplies the
+ * available systems, and a scene decides which of them run. Systems are
+ * created by the real SceneManager.configureSystems, so every service a
+ * system depends on comes from the real provider in that scene.
+ *
+ * Scene: `new TestGameContext({ scene: 'hunt' })`, else the project's
+ * `testScene` from its game config (see vitest.config.js).
  */
 
 /**
@@ -30,7 +33,7 @@ const BaseGameClass = GUTS.ServerECSGame || GUTS.BaseECSGame;
  * TestGameContext for unit testing ECS systems
  */
 export class TestGameContext extends BaseGameClass {
-    constructor() {
+    constructor(options = {}) {
         super(new MockApp());
 
         // Initialize state with defaults needed for testing
@@ -44,6 +47,21 @@ export class TestGameContext extends BaseGameClass {
             gold: 1000,
             round: 1
         };
+
+        const sceneName = options.scene ?? process.env.GUTS_TEST_SCENE;
+        if (!sceneName) {
+            throw new Error('[TestGameContext] No scene: pass { scene } or set testScene in the project game config');
+        }
+
+        // Game config → available systems + SceneManager (synchronous with
+        // skipInitialScene), then the scene's systems via the engine's own path.
+        this.loadGameScripts(null, { skipInitialScene: true });
+        const sceneData = this.getCollections().scenes?.[sceneName];
+        if (!sceneData) {
+            throw new Error(`[TestGameContext] Scene '${sceneName}' not found in collections.scenes`);
+        }
+        this.sceneName = sceneName;
+        this.sceneManager.configureSystems(sceneData);
 
         // Register mock services for common dependencies that systems call
         this.registerMockServices();
@@ -94,26 +112,30 @@ export class TestGameContext extends BaseGameClass {
     }
 
     /**
-     * Create and initialize a system for testing
+     * The scene's instance of a system. With a name string this is the engine's
+     * own createSystem (SceneManager uses it); with a class it returns the
+     * instance the scene created, and fails if the scene doesn't include it.
      */
-    createSystem(SystemClass) {
-        const system = new SystemClass(this);
-
-        // Register static services if defined
-        if (SystemClass.services && Array.isArray(SystemClass.services)) {
-            for (const serviceName of SystemClass.services) {
-                if (typeof system[serviceName] === 'function') {
-                    this.register(serviceName, system[serviceName].bind(system));
-                }
-            }
+    createSystem(SystemClassOrName) {
+        if (typeof SystemClassOrName === 'string') {
+            return super.createSystem(SystemClassOrName);
         }
-
-        // Call init if it exists
-        if (typeof system.init === 'function') {
-            system.init();
+        const system = this.systems.find(s => s.constructor === SystemClassOrName);
+        if (!system) {
+            throw new Error(`[TestGameContext] ${SystemClassOrName.name} is not in scene '${this.sceneName}' ` +
+                `— pass { scene } for a scene that includes it`);
         }
-
         return system;
+    }
+
+    /**
+     * A behavior-tree node wired like BehaviorTreeProcessor does it
+     * (this.call.* resolved from the game's services).
+     */
+    createBehaviorNode(NodeClass) {
+        const node = new NodeClass();
+        this.getServiceDependencies(node);
+        return node;
     }
 }
 
