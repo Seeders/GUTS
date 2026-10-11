@@ -35,6 +35,8 @@ case "${1:-}" in
         push "$dir" "/srv/games/$slug"
         ssh "$HOST" "cd /srv/games/$slug && ln -sfn ../../resources dist/client/resources && mkdir -p saves && chown -R guts:guts saves dist \
             && sudo -u guts npm install --omit=dev --no-audit --no-fund --ignore-scripts >/dev/null && curl -s -X POST localhost:9000/_restart/$slug >/dev/null || true"
+        # pre-compressed copies for nginx (gzip_static), only where missing or stale
+        ssh "$HOST" "cd /srv/games/$slug && find resources dist -type f \( -name '*.glb' -o -name '*.json' -o -name '*.js' -o -name '*.gltf' \) -size +1k             -exec sh -c 'for f; do [ \"\$f.gz\" -nt \"\$f\" ] || gzip -6 -k -f \"\$f\"; done' _ {} + && chown -R guts:guts resources dist"
         ;;
     setup)
         scp "$HERE/gateway.mjs" "$HERE/package.json" "$HOST:/srv/gateway/"
