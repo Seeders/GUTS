@@ -1,0 +1,15 @@
+[Unit]
+Description=gutsengine.app/play: starts the games on demand (deploy/gateway.mjs)
+After=network.target
+
+[Service]
+User=guts
+WorkingDirectory=/srv/gateway
+ExecStart=/usr/bin/node gateway.mjs
+Restart=always
+RestartSec=3
+KillMode=mixed
+TimeoutStopSec=30
+
+[Install]
+WantedBy=multi-user.target
