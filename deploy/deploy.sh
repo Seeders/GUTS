@@ -44,7 +44,7 @@ case "${1:-}" in
         scp "$HERE/nginx.conf" "$HOST:/etc/nginx/sites-available/gutsengine"
         ssh "$HOST" "chown -R guts:guts /srv/gateway && cd /srv/gateway && sudo -u guts npm install --omit=dev --no-audit --no-fund >/dev/null \
             && ln -sfn /etc/nginx/sites-available/gutsengine /etc/nginx/sites-enabled/gutsengine && rm -f /etc/nginx/sites-enabled/default \
-            && nginx -t && systemctl reload nginx && systemctl daemon-reload && systemctl enable --now guts-site guts-gateway && systemctl restart guts-gateway"
+            && nginx -t && certbot --nginx -d gutsengine.app -d www.gutsengine.app --non-interactive --reinstall --redirect >/dev/null             && systemctl reload nginx && systemctl daemon-reload && systemctl enable --now guts-site guts-gateway && systemctl restart guts-gateway"
         ;;
     *) echo "usage: $0 site|age|kingdom|realm|heroarena|setup"; exit 1 ;;
 esac
