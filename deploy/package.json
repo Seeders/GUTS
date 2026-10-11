@@ -1,0 +1,7 @@
+{
+  "name": "gutsengine-gateway",
+  "private": true,
+  "type": "module",
+  "description": "Starts the games on demand behind gutsengine.app/play/<game> (deploy/gateway.mjs)",
+  "dependencies": { "http-proxy": "1.18.1" }
+}
