@@ -588,7 +588,7 @@ class EditorShell {
     if (!mod) { this._toast(moduleId + ' not found in this project'); return; }
     const obj = (cols[type] || {})[id];
     const prop = mod.propertyName;
-    if (!obj || !prop || obj[prop] == null) { this._toast('No ' + (prop || 'data') + ' on this asset'); return; }
+    if (!obj || !prop || (obj[prop] == null && !mod.allowEmpty)) { this._toast('No ' + (prop || 'data') + ' on this asset'); return; }
 
     // Select in the model so the module's saveHook updates the right object.
     this.model.setSelectedType(type); this.model.selectObject(id);
@@ -1055,6 +1055,13 @@ class EditorShell {
     if (typeof obj.imagePath === 'string') {
       bar.appendChild(this._miniBtn('⧉ Texture Editor', () => this._openModuleEditor('textureEditor', typeId, id)));
     }
+    // Modules that edit a whole type (a module definition's inspectorTypes)
+    const enabled = new Set((this._collections().configs?.editor?.editorModules) || []);
+    Object.entries(this._collections().editorModules || {}).forEach(([mid, mod]) => {
+      if (!Array.isArray(mod?.inspectorTypes) || !mod.inspectorTypes.includes(typeId)) return;
+      if (enabled.size && !enabled.has(mid)) return;
+      bar.appendChild(this._miniBtn('⧉ ' + (mod.title || mid), () => this._openModuleEditor(mid, typeId, id)));
+    });
     if (['behaviorTrees', 'sequenceBehaviorTrees', 'behaviorActions', 'behaviorDecorators'].includes(typeId)) {
       bar.appendChild(this._miniBtn('⧉ Behavior Graph', () => this._openBehaviorGraph(typeId, id)));
     }
