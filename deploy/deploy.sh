@@ -12,7 +12,7 @@ HERE="$(cd "$(dirname "$0")" && pwd)"
 PROJECTS="$(cd "$HERE/../.." && pwd)"
 HOST=gutsengine
 
-declare -A SRC=([age]=EmbersOfDefiance [kingdom]=KingdomOfDefiance [realm]=RealmOfDefiance [heroarena]=HeroArena [descent]=Descent)
+declare -A SRC=([age]=EmbersOfDefiance [kingdom]=KingdomOfDefiance [realm]=WorldOfDefiance [heroarena]=HeroArena [descent]=Descent)
 
 # Files the server never needs (the build's copy of resources/ is linked back to resources/ there)
 EXCLUDES=(--exclude=.git --exclude=node_modules --exclude='saves' --exclude='saves_*' --exclude=.claude --exclude='*.log'
