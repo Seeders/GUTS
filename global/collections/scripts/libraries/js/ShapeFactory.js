@@ -326,9 +326,10 @@ class ShapeFactory {
                         map.colorSpace = THREE.SRGBColorSpace;
                     }
 
-                    // Remove vertex colors from geometry if present
-                    // Vertex colors can darken the texture
-                    if (child.geometry && child.geometry.attributes.color) {
+                    // Vertex colors can darken a texture, so textured models drop them;
+                    // untextured models (atlas baked into vertex colours) keep them.
+                    const useVertexColors = !map && !!child.geometry?.attributes.color;
+                    if (child.geometry && child.geometry.attributes.color && !useVertexColors) {
                         child.geometry.deleteAttribute('color');
                     }
 
@@ -373,7 +374,7 @@ class ShapeFactory {
                             map: map,
                             aoMap: null,  // Don't use AO map
                             aoMapIntensity: 0,  // Disable AO
-                            vertexColors: false
+                            vertexColors: useVertexColors
                         });
                     }
                     child.material.alphaTest = 0.1;

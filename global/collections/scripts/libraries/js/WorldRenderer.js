@@ -14,6 +14,14 @@
  * Works with TerrainDataManager for terrain data
  * Reusable in both game and editor contexts
  */
+// Fallback ground colours for natural terrain, by terrain type name.
+const DEFAULT_GROUND = {
+    grass: '#7ea84a', forest: '#5a7f36', dirt: '#a98a5c', rock: '#8a857c', brick: '#9c8f80', water: '#5a6a45', lava: '#4a2a1c',
+    snow: '#e8eef2', snowforest: '#c9d6d8', gravel: '#9a9590', froststone: '#8e98a4',
+    moss: '#6c7a3c', bogforest: '#4a5a30', peat: '#6e5a40', bogstone: '#7c8676',
+    ash: '#8a827a', ashforest: '#5e524a', cinder: '#7a4632', basalt: '#4e4850'
+};
+
 class WorldRenderer {
     constructor(config = {}) {
         // Core Three.js components
@@ -450,16 +458,18 @@ class WorldRenderer {
         const extendedSize = terrainDataManager.extendedSize;
         const extensionSize = terrainDataManager.extensionSize;
 
+        // Natural terrain is coloured per vertex (renderNaturalTerrain): no painted canvas.
+        const natural = !!terrainDataManager.field;
         // Create ground canvas
         this.groundCanvas = document.createElement('canvas');
-        this.groundCanvas.width = extendedSize;
-        this.groundCanvas.height = extendedSize;
+        this.groundCanvas.width = natural ? 1 : extendedSize;
+        this.groundCanvas.height = natural ? 1 : extendedSize;
         this.groundCtx = this.groundCanvas.getContext('2d');
 
         // Fill extension area with sprite texture pattern
         const extensionTerrainType = tileMap.extensionTerrainType || 0;
 
-        if (tileMapper && tileMapper.layerSpriteSheets && tileMapper.layerSpriteSheets[extensionTerrainType]) {
+        if (!natural && tileMapper && tileMapper.layerSpriteSheets && tileMapper.layerSpriteSheets[extensionTerrainType]) {
             const fullSprite = tileMapper.layerSpriteSheets[extensionTerrainType].sprites[0];
 
             if (fullSprite) {
@@ -496,10 +506,10 @@ class WorldRenderer {
         this.groundVertices = groundGeometry.attributes.position;
 
         // Use MeshLambertMaterial for terrain - supports shadows and lighting natively
-        const groundMaterial = new THREE.MeshLambertMaterial({
-            map: this.groundTexture,
-            side: THREE.DoubleSide
-        });
+        const groundMaterial = natural
+            ? new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: !!this.config.groundPalette?.flat, side: THREE.DoubleSide })
+            : new THREE.MeshLambertMaterial({ map: this.groundTexture, side: THREE.DoubleSide });
+        if (natural) groundGeometry.setAttribute('color', new THREE.Float32BufferAttribute(new Float32Array(groundGeometry.attributes.position.count * 3).fill(0.5), 3));
 
         // Store reference
         this.groundMaterial = groundMaterial;
@@ -1042,7 +1052,10 @@ class WorldRenderer {
         const clampedZ = Math.max(0, Math.min(terrainZ, extendedSize - 1));
 
         const heightIndex = clampedZ * extendedSize + clampedX;
-        let height = heightMapData[heightIndex] || 0;
+        const tdmH = this.terrainDataManager;
+        let height = tdmH.heightAtPixel ? tdmH.heightAtPixel(clampedX, clampedZ) : (heightMapData[heightIndex] || 0);
+        // Natural terrain: the heightfield is the ground; no ramps or cliff walls.
+        if (tdmH.field) { positions[idx + 2] = height; return; }
 
         // Check for ramps at this position
         const gridSize = this.terrainDataManager.gridSize;
@@ -1291,7 +1304,7 @@ class WorldRenderer {
             if (neighbor.x >= 0 && neighbor.x < extendedSize &&
                 neighbor.z >= 0 && neighbor.z < extendedSize) {
                 const neighborIndex = neighbor.z * extendedSize + neighbor.x;
-                const neighborHeight = heightMapData[neighborIndex] || 0;
+                const neighborHeight = tdmH.heightAtPixel ? tdmH.heightAtPixel(neighbor.x, neighbor.z) : (heightMapData[neighborIndex] || 0);
 
                 if (neighborHeight < height) {
                     height = neighborHeight;
@@ -1324,6 +1337,8 @@ class WorldRenderer {
         }
 
         this.groundVertices.needsUpdate = true;
+        // Rolling ground (relief) needs real normals to be lit as slopes.
+        if (this.terrainDataManager.relief || this.terrainDataManager.field) geometry.computeVertexNormals();
 
         // Rebuild BVH tree after geometry modification
         if (geometry.boundsTree) {
@@ -1505,8 +1520,13 @@ class WorldRenderer {
             return;
         }
 
+        // A neighbouring zone's renderer (config.zoneOffset) adds its cliffs
+        // beside the main zone's; ids and textures carry its idPrefix.
+        const zoneOffset = this.config.zoneOffset || null;
+        const idPrefix = this.config.idPrefix || '';
+
         // Clear existing cliff entities
-        entityRenderer.clearEntitiesByType('cliffs');
+        if (!zoneOffset) entityRenderer.clearEntitiesByType('cliffs');
 
         // Get the cliffSet from the world
         const cliffSetId = this.terrainDataManager.world?.cliffSet;
@@ -1523,13 +1543,29 @@ class WorldRenderer {
 
         // Generate cliff texture from terrain types and assign to entityRenderer
         const generatedCliffTexture = this.generateCliffTexture(cliffSet);
+        // Each cliff's lip matches the terrain on top of it: one texture per
+        // plateau terrain (the cliffSet's secondary terrain is only the default).
+        const cliffTerrainMap = this.terrainDataManager.tileMap.terrainMap;
+        const cliffTerrainNames = this.terrainDataManager.tileMap.terrainTypes || [];
+        if (!zoneOffset || !entityRenderer.cliffTextures) entityRenderer.cliffTextures = {};
+        const cliffVariant = (gx, gz) => {
+            let name = cliffTerrainNames[cliffTerrainMap?.[gz]?.[gx]];
+            if (/water|lava|liquid/i.test(name || '')) name = null;
+            // The main zone uses the default batch for its cliffSet's secondary
+            // terrain; a neighbouring zone always uses its own prefixed variants.
+            if (!zoneOffset && (!name || name === cliffSet.secondaryTerrainType)) return null;
+            name = name || cliffSet.secondaryTerrainType;
+            const key = idPrefix + name;
+            if (!(key in entityRenderer.cliffTextures)) entityRenderer.cliffTextures[key] = this.generateCliffTexture(cliffSet, name);
+            return entityRenderer.cliffTextures[key] ? key : null;
+        };
         console.log('[WorldRenderer] generatedCliffTexture:', !!generatedCliffTexture);
         if (generatedCliffTexture) {
             entityRenderer.cliffTexture = generatedCliffTexture;
         }
 
         const heightStep = this.terrainDataManager.heightStep;
-        const useGameManager = this.game !== null;
+        const useGameManager = this.game !== null && !zoneOffset;
         const heightMap = this.terrainDataManager.tileMap.heightMap;
 
         // Reusable objects to avoid per-cliff allocations
@@ -1556,15 +1592,20 @@ class WorldRenderer {
         const ys = [];
         const zs = [];
         const rotations = [];
+        const variants = [];
 
         // Helper to add spawn task without creating objects
+        let variant = null;   // set per cliff below
         const addSpawn = (entityId, type, x, y, z, rotation) => {
+            if (idPrefix) entityId = entityId.replace('cliffs_', `cliffs_${idPrefix}`);
+            if (zoneOffset) { x += zoneOffset.x; z += zoneOffset.z; }
             entityIds.push(entityId);
             types.push(type);
             xs.push(x);
             ys.push(y);
             zs.push(z);
             rotations.push(rotation);
+            variants.push(variant);
         };
 
         // Process each cliff using GC-friendly iterator (reuses single cliff object)
@@ -1596,6 +1637,7 @@ class WorldRenderer {
             }
 
             const heightDiff = cliff.heightDiff || 1;
+            variant = cliffVariant(cliff.gridX, cliff.gridZ);
             const mapHeight = heightMap?.[cliff.gridZ]?.[cliff.gridX] || 0;
             const neighborHeight = mapHeight - heightDiff;
 
@@ -1661,6 +1703,7 @@ class WorldRenderer {
             position.z = zs[i];
             spawnData.type = types[i];
             spawnData.rotation = rotations[i];
+            spawnData.cliffVariant = variants[i];
 
             const spawned = await entityRenderer.spawnEntity(entityIds[i], spawnData);
             if (spawned) spawnedCount++;
@@ -1672,10 +1715,11 @@ class WorldRenderer {
     /**
      * Generate cliff texture from terrain type textures based on cliffSet configuration.
      * @param {Object} cliffSet - The cliffSet definition with baseTerrainType and secondaryTerrainType
+     * @param {string} [secondaryName] - Terrain for the lip/edge texture (defaults to the cliffSet's secondary)
      * @returns {THREE.Texture|null} Generated THREE.Texture or null if textures not available
      */
-    generateCliffTexture(cliffSet) {
-        if (!cliffSet?.baseTerrainType || !cliffSet?.secondaryTerrainType) {
+    generateCliffTexture(cliffSet, secondaryName = cliffSet?.secondaryTerrainType) {
+        if (!cliffSet?.baseTerrainType || !secondaryName) {
             return null;
         }
 
@@ -1686,7 +1730,7 @@ class WorldRenderer {
 
         // Get terrain type definitions
         const baseTerrainType = collections.terrainTypes[cliffSet.baseTerrainType];
-        const secondaryTerrainType = collections.terrainTypes[cliffSet.secondaryTerrainType];
+        const secondaryTerrainType = collections.terrainTypes[secondaryName];
 
         if (!baseTerrainType?.texture || !secondaryTerrainType?.texture) {
             console.warn('[WorldRenderer] Missing terrain type textures for cliff generation');
@@ -1703,7 +1747,7 @@ class WorldRenderer {
         const tileMap = this.terrainDataManager.tileMap;
         const terrainTypes = tileMap?.terrainTypes || [];
         const baseIndex = terrainTypes.indexOf(cliffSet.baseTerrainType);
-        const secondaryIndex = terrainTypes.indexOf(cliffSet.secondaryTerrainType);
+        const secondaryIndex = terrainTypes.indexOf(secondaryName);
 
         if (baseIndex === -1 || secondaryIndex === -1) {
             console.warn('[WorldRenderer] Terrain types not found in level terrainTypes array');
@@ -1927,6 +1971,58 @@ class WorldRenderer {
     /**
      * Render terrain using tile mapper
      */
+    /**
+     * Natural terrain (a level with a heightField): heights from the field, colours
+     * per vertex (flat low-poly style) instead of painted tiles. palette (world JSON
+     * `groundPalette`): { types: { <terrain type>: '#rrggbb' }, rock, rockSlope:
+     * [from, to] (slope, rise per unit, where ground turns to rock), snow,
+     * snowLine: [from, to] (world height), variation (0..0.2), flat }.
+     */
+    renderNaturalTerrain(palette = this.config.groundPalette || {}) {
+        if (this.terrainDataManager.heightMapSettings?.enabled) this.updateHeightMap();
+        this.colorNaturalGround(palette);
+        this.generateAllLiquidSurfaces();
+    }
+
+    colorNaturalGround(palette = {}) {
+        const geo = this.ground?.geometry;
+        const tdm = this.terrainDataManager;
+        if (!geo || !tdm?.tileMap) return;
+        const pos = geo.attributes.position, nrm = geo.attributes.normal;
+        let col = geo.attributes.color;
+        if (!col) { col = new THREE.Float32BufferAttribute(new Float32Array(pos.count * 3), 3); geo.setAttribute('color', col); }
+        const tm = tdm.tileMap, n = tm.size, grid = tdm.gridSize, ext = tdm.extensionSize || 0, half = tdm.extendedSize / 2;
+        const toLinear = (hex) => { const c = new THREE.Color(hex || '#808080'); return [c.r, c.g, c.b]; };
+        const typeCols = tm.terrainTypes.map(name => toLinear(palette.types?.[name] || DEFAULT_GROUND[name] || '#7a8a5a'));
+        const rock = toLinear(palette.rock || '#7d7a72'), snow = palette.snow ? toLinear(palette.snow) : null;
+        const [r0, r1] = palette.rockSlope || [0.75, 1.15];
+        const [s0, s1] = palette.snowLine || [1e9, 1e9];
+        const varAmt = palette.variation ?? 0.07;
+        const tile = (x, z) => typeCols[tm.terrainMap[Math.max(0, Math.min(n - 1, z))][Math.max(0, Math.min(n - 1, x))]];
+        const smooth = (a, b, v) => { const t = Math.max(0, Math.min(1, (v - a) / (b - a))); return t * t * (3 - 2 * t); };
+        const hash = (x, z) => { const s = Math.sin(x * 12.9898 + z * 78.233) * 43758.5453; return s - Math.floor(s); };
+        const arr = col.array;
+        for (let i = 0; i < pos.count; i++) {
+            // plane local (x, y) -> world (x, -y) before the ground's -90 degree turn; height in z
+            const wx = pos.getX(i), wz = -pos.getY(i), wy = pos.getZ(i);
+            const u = (wx + half - ext) / grid - 0.5, v = (wz + half - ext) / grid - 0.5;
+            const x0 = Math.floor(u), z0 = Math.floor(v), fx = u - x0, fz = v - z0;
+            // blend the four nearest tiles' colours (soft edges instead of pixel tiles)
+            const a = tile(x0, z0), b = tile(x0 + 1, z0), c = tile(x0, z0 + 1), d = tile(x0 + 1, z0 + 1);
+            const sx = fx * fx * (3 - 2 * fx), sz = fz * fz * (3 - 2 * fz);
+            let rgb = [0, 1, 2].map(k => (a[k] * (1 - sx) + b[k] * sx) * (1 - sz) + (c[k] * (1 - sx) + d[k] * sx) * sz);
+            // slope -> rock, height -> snow
+            const ny = Math.abs(nrm ? nrm.getZ(i) : 1);
+            const slope = ny > 0.999 ? 0 : Math.sqrt(1 - ny * ny) / ny;
+            const kr = smooth(r0, r1, slope);
+            if (kr > 0) rgb = rgb.map((v2, k) => v2 * (1 - kr) + rock[k] * kr);
+            if (snow) { const ks = smooth(s0, s1, wy) * (1 - kr * 0.7); if (ks > 0) rgb = rgb.map((v2, k) => v2 * (1 - ks) + snow[k] * ks); }
+            const jitter = 1 + (hash(Math.round(wx / 24), Math.round(wz / 24)) - 0.5) * 2 * varAmt;
+            arr[i * 3] = rgb[0] * jitter; arr[i * 3 + 1] = rgb[1] * jitter; arr[i * 3 + 2] = rgb[2] * jitter;
+        }
+        col.needsUpdate = true;
+    }
+
     async renderTerrain(onProgress = null) {
         if (!this.tileMapper || !this.terrainDataManager.tileMap?.terrainMap) {
             console.warn('WorldRenderer: No tile mapper or terrain map data');
@@ -1988,11 +2084,20 @@ class WorldRenderer {
         const ramps = this.terrainDataManager.tileMap?.ramps || [];
         this.tileMapper?.setRamps(ramps);
 
-        // Blit the cached image onto the ground canvas. Scale if the cached
-        // image is a different resolution than the current ground canvas.
-        this.groundCtx.clearRect(0, 0, this.groundCanvas.width, this.groundCanvas.height);
-        this.groundCtx.drawImage(img, 0, 0, this.groundCanvas.width, this.groundCanvas.height);
-        this.groundTexture.needsUpdate = true;
+        if (this.config.groundFromImage && img.width === this.groundCanvas.width && img.height === this.groundCanvas.height) {
+            // Texture straight from the decoded image and free the big canvas.
+            // Large 2D canvases can be dropped and restored blank under memory
+            // pressure; an image can always be re-decoded.
+            this.groundTexture.image = img;
+            this.groundTexture.needsUpdate = true;
+            this.groundCanvas.width = this.groundCanvas.height = 1;
+        } else {
+            // Blit the cached image onto the ground canvas. Scale if the cached
+            // image is a different resolution than the current ground canvas.
+            this.groundCtx.clearRect(0, 0, this.groundCanvas.width, this.groundCanvas.height);
+            this.groundCtx.drawImage(img, 0, 0, this.groundCanvas.width, this.groundCanvas.height);
+            this.groundTexture.needsUpdate = true;
+        }
 
         // Height map + liquid surfaces still need to be (re)built from data.
         if (this.terrainDataManager.heightMapSettings?.enabled) {
@@ -2190,6 +2295,23 @@ class WorldRenderer {
     getGroundMesh() {
         return this.ground;
     }
+    /**
+     * Upload the ground texture to the GPU, then drop the CPU-side canvases
+     * (ground + tile paint buffer). Big seamless maps make these hundreds of
+     * MB; games that never repaint the ground at runtime can let them go.
+     */
+    releaseGroundCanvas() {
+        if (!this.groundTexture || !this.renderer) return;
+        try { this.renderer.initTexture(this.groundTexture); } catch (e) { console.warn('[WorldRenderer] initTexture failed; keeping ground canvas', e); return; }
+        const tiny = document.createElement('canvas');
+        tiny.width = tiny.height = 1;
+        this.groundCanvas.width = this.groundCanvas.height = 1;
+        this.groundCanvas = tiny;
+        this.groundCtx = null;
+        if (this.tileMapper?.canvas) this.tileMapper.canvas.width = this.tileMapper.canvas.height = 1;
+        this._groundReleased = true;
+    }
+
     getGroundTexture() {
         return this.groundTexture;
     }

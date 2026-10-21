@@ -26,20 +26,22 @@ class AudioSystem extends GUTS.BaseSystem {
         super(game);
         this.game.audioSystem = this;
 
-        // Create AudioManager instance with collections from game
-        console.log('[AudioSystem] Creating AudioManager...');
-        this.audioManager = new GUTS.AudioManager({
-            collections: game.getCollections(),
-            resourceBaseUrl: game.resourceBaseUrl || './resources/'
-        });
-
+        // One AudioManager (and one AudioContext) for the whole session: each
+        // scene builds a fresh AudioSystem, and browsers cap live contexts.
+        if (!AudioSystem.sharedManager) {
+            AudioSystem.sharedManager = new GUTS.AudioManager({
+                collections: game.getCollections(),
+                resourceBaseUrl: game.resourceBaseUrl || './resources/'
+            });
+        }
+        this.audioManager = AudioSystem.sharedManager;
     }
 
     init() {
-        console.log('[AudioSystem] init() called');
-        // Initialize audio manager (volume settings are applied in AudioManager.initialize()
-        // when user interaction triggers audio context creation)
-        if (this.audioManager.init) {
+        // Volume settings apply in AudioManager.initialize(), which the first
+        // user click/keypress triggers (browser autoplay rules).
+        if (!AudioSystem._bound && this.audioManager.init) {
+            AudioSystem._bound = true;
             this.audioManager.init();
         }
     }

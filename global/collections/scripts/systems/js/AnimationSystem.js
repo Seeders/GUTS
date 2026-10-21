@@ -70,14 +70,13 @@ class AnimationSystem extends GUTS.BaseSystem {
         // Map of entityId -> { startTime, duration, heightDelta }
         this._activeHeightAnimations = new Map();
 
-        // Single-play animations using enum values
-        this.SINGLE_PLAY_ANIMATIONS = new Set([
-            this.enums.animationType.attack,
-            this.enums.animationType.cast,
-            this.enums.animationType.death,
-            this.enums.animationType.takeoff,
-            this.enums.animationType.land
-        ]);
+        // Single-play animations using enum values: every clip but the looping ones (moving,
+        // standing, held guards), so new swings and reactions play out instead of idle cutting in
+        const LOOPING = new Set(["idle", "walk", "run", "celebrate", "sneak", "strafeLeft", "strafeRight", "walkBack",
+            "block", "ward", "sit", "swim", "swimIdle", "sneakIdle", "sneakLeft", "sneakRight", "blockShield"]);
+        this.SINGLE_PLAY_ANIMATIONS = new Set(
+            Object.entries(this.enums.animationType).filter(([n]) => !LOOPING.has(n)).map(([, v]) => v)
+        );
     }
 
     /**
@@ -322,6 +321,7 @@ class AnimationSystem extends GUTS.BaseSystem {
             pendingClip: null,
             pendingSpeed: null,
             pendingMinTime: null,
+            pendingStart: 0,
             isTriggered: false,
             isCelebrating: false,
             // Billboard/sprite animation state
@@ -819,6 +819,14 @@ class AnimationSystem extends GUTS.BaseSystem {
             if (isMoving) {
                 clip = this.enums.animationType.walk;
                 speed = this.calculateWalkSpeed(velocity);
+                // a run or a sneak, where the game says so (getMovementGait service) and the unit has the clip
+                const g = this.firstClip(entityId, this.optionalCall('getMovementGait', entityId));
+                if (g != null) { clip = g; speed = 1.0; }
+            } else {
+                // standing: a stance (guard up, ward, seated, treading water, crouched) where the game
+                // says so (getStandingStance service) and the unit has it
+                const g = this.firstClip(entityId, this.optionalCall('getStandingStance', entityId));
+                if (g != null) clip = g;
             }
 
             // AI action overrides based on currentAction (collection + index)
@@ -932,20 +940,24 @@ class AnimationSystem extends GUTS.BaseSystem {
         const clip = animState.pendingClip;
         const speed = animState.pendingSpeed || 1.0;
         const minTime = animState.pendingMinTime || 0;
+        const start = animState.pendingStart || 0;
 
         // Clear pending state
         animState.pendingClip = null;
         animState.pendingSpeed = null;
         animState.pendingMinTime = null;
+        animState.pendingStart = 0;
         animState.isTriggered = false;
 
         // Apply the animation
         this.changeAnimation(entityId, clip, speed, minTime);
+        // (animationTime is elapsed time for minTime holds; only the clip playhead moves)
+        if (start > 0) this.call.setInstanceAnimationTime(entityId, start);
     }
 
     // Public API methods
 
-    triggerSinglePlayAnimation(entityId, clipName, speed = 1.0, minTime = 0) {
+    triggerSinglePlayAnimation(entityId, clipName, speed = 1.0, minTime = 0, startTime = 0) {
         const animState = this.game.getComponent(entityId, "animationState");
         if (!animState) {
             console.warn(`[AnimationSystem] No animation state for entity ${entityId}`);
@@ -993,6 +1005,7 @@ class AnimationSystem extends GUTS.BaseSystem {
         animState.pendingClip = clipName;
         animState.pendingSpeed = speed;
         animState.pendingMinTime = minTime;
+        animState.pendingStart = startTime;      // seconds into the clip to start from (VAT)
         animState.isTriggered = true;
 
         return true;
@@ -1052,7 +1065,9 @@ class AnimationSystem extends GUTS.BaseSystem {
 
         if (animationStateData && animationStateData.clipDuration > 0) {
             // Set to 99% through the animation (last frame before loop)
-            const lastFrameTime = animationStateData.clipDuration * 0.99;
+            // the last frame itself, not past it (that wraps to the first frame: standing again)
+            const fps = animationStateData.fps || 30;
+            const lastFrameTime = Math.max(0, animationStateData.clipDuration - 1.5 / fps);
             this.call.setInstanceAnimationTime( entityId, lastFrameTime);
         }
 
@@ -1163,6 +1178,20 @@ class AnimationSystem extends GUTS.BaseSystem {
         return clipSet?.has(clipName) || false;
     }
 
+    /** A service's answer, or null when no system provides it. */
+    optionalCall(service, ...args) {
+        return this.game.hasService?.(service) ? this.game.call(service, ...args) : null;
+    }
+
+    /** The first of these clip names (or one name) that the entity has, as its enum value. */
+    firstClip(entityId, names) {
+        for (const n of [].concat(names || [])) {
+            const g = this.enums.animationType[n];
+            if (g != null && this.hasClip(entityId, g)) return g;
+        }
+        return null;
+    }
+
     resolveClipName(entityId, desiredClip) {
         const renderable = this.game.getComponent(entityId, "renderable");
         if (!renderable) return 'idle';
@@ -1228,19 +1257,36 @@ class AnimationSystem extends GUTS.BaseSystem {
         }
 
         // Convert numeric enum to string for animation data lookup
-        const animationTypeName = this.animationTypeNames[animationType];
+        let animationTypeName = this.animationTypeNames[animationType];
 
         // Get sprite animations from shared cache
         const spriteAnimations = this._getSpriteAnimations(animData);
 
-        // Check if animation type is available
+        // Check if animation type is available. Most sprite sheets only bake
+        // idle/walk/attack/death — a requested 'cast' (or any missing type)
+        // falls back to the attack swing so casters still animate, then idle.
+        if (!spriteAnimations?.[animationTypeName]) {
+            const fallbacks = [this.enums.animationType.attack, this.enums.animationType.idle];
+            for (const fb of fallbacks) {
+                const fbName = this.animationTypeNames[fb];
+                if (fb !== animationType && spriteAnimations?.[fbName]) {
+                    animationType = fb;
+                    animationTypeName = fbName;
+                    break;
+                }
+            }
+        }
         if (!spriteAnimations?.[animationTypeName]) {
             console.warn(`[AnimationSystem] Animation type '${animationTypeName}' not available for entity ${entityId}. Available:`, spriteAnimations ? Object.keys(spriteAnimations) : 'none');
             return false;
         }
 
-        // If already in this animation type, don't restart
-        if (animData.spriteAnimationType === animationType) {
+        // If already LOOPING this animation type, don't restart (idle/walk are
+        // re-requested every tick). Single-play requests DO restart: a cast
+        // that fell back to the attack clip must take over from a finishing
+        // attack swing with its own duration and completion callback —
+        // otherwise the old swing's callback drops the unit to idle mid-cast.
+        if (animData.spriteAnimationType === animationType && loop && animData.spriteLoopAnimation) {
             return true;
         }
 

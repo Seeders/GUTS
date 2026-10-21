@@ -491,7 +491,7 @@ class GE_UIManager {
         try {
             // Send single combined sprite sheet and metadata to server
             // Ballistic sprites are now included in the main spriteSheet canvas
-            const response = await fetch('/api/save-isometric-sprites', {
+            const response = await fetch('api/save-isometric-sprites', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

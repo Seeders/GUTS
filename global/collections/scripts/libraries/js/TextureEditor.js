@@ -1177,7 +1177,7 @@ class TextureEditor {
             }
 
             // Send the texture to the server to save as a file
-            const response = await fetch('/api/save-texture', {
+            const response = await fetch('api/save-texture', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
