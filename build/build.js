@@ -20,6 +20,7 @@ const projectName = nonFlagArgs[0];
 
 const watch = args.includes('--watch') || args.includes('-w');
 const production = args.includes('--production') || args.includes('-p');
+const strict = args.includes('--strict');
 
 // Parse --target flag (e.g., --target server)
 const targetIndex = args.findIndex(arg => arg === '--target' || arg === '-t');
@@ -35,6 +36,7 @@ Options:
   --watch, -w              Watch for changes and rebuild
   --production, -p         Build in production mode
   --target, -t <target>    Build only one target (client|server|headless|editor)
+  --strict                 Fail if a config names a library, system or module that doesn't exist
 
 Examples:
   node build/build.js TurnBasedWarfare
@@ -81,8 +83,36 @@ console.log(`
 // Copy resources before webpack build
 copyResources(projectName, false);
 
-// Load webpack config
+// Load webpack config (this runs the config parser and generates the entries)
 let webpackConfig = require('../webpack.config.js');
+
+/**
+ * Names in the configs that resolved to no file. The parser warns about each
+ * one as it goes, where they are easy to miss in the log; repeat them together
+ * at the end. They only fail at runtime ("GUTS[name] is not a constructor",
+ * "System class not found"), so --strict stops the build instead.
+ */
+// Only the targets this build produces count (the parser reads every config).
+const builtTargets = new Set(targetFilter ? [targetFilter] : webpackConfig.map(config => config.name));
+const configFor = { client: 'game.json', server: 'server.json', headless: 'headless.json', editor: 'editor.json (its editor modules)' };
+const missing = [...require('./config-parser').missing]
+    .map(([entry, targets]) => [entry, [...targets].filter(t => builtTargets.has(t))])
+    .filter(([, targets]) => targets.length > 0)
+    .sort(([a], [b]) => a.localeCompare(b));
+function reportMissing() {
+    if (missing.length === 0) return;
+    console.warn(`\n⚠️  ${missing.length} name(s) in the configs resolved to nothing:`);
+    missing.forEach(([entry, targets]) => {
+        const [kind, name] = entry.split(':');
+        console.warn(`     ${kind.padEnd(14)} ${name.padEnd(28)} ${targets.map(t => configFor[t] || t).join(', ')}`);
+    });
+    console.warn('   Create them, or remove them from those configs.');
+}
+if (strict && missing.length > 0) {
+    reportMissing();
+    console.error('\n❌ Build stopped (--strict).');
+    process.exit(1);
+}
 
 // Filter to single target if --target flag is provided
 if (targetFilter) {
@@ -147,6 +177,7 @@ function handleBuildResult(err, stats) {
     }
 
     console.log(stats.toString(statsConfig));
+    reportMissing();
     console.log('\n✅ Build completed successfully!\n');
 
     // Print output files
@@ -163,7 +194,7 @@ function handleBuildResult(err, stats) {
     outputs.forEach(file => {
         const size = fs.statSync(file).size;
         const sizeKB = (size / 1024).toFixed(2);
-        console.log(`   ${path.relative(__dirname, file)} (${sizeKB} KB)`);
+        console.log(`   ${path.relative(projectPath, file)} (${sizeKB} KB)`);
     });
     console.log('');
 }
@@ -193,6 +224,12 @@ if (watch) {
             }
         });
     });
+}
+
+// Started by `guts dev` with an IPC channel: exit when that process goes away,
+// however it ended, so the watcher is never left running on its own.
+if (process.send) {
+    process.on('disconnect', () => process.exit(0));
 }
 
 // Handle process termination
