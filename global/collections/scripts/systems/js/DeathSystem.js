@@ -5,8 +5,14 @@ class DeathSystem extends GUTS.BaseSystem {
         'playDeathAnimation',
         'dropLoot',
         'setCorpseAnimation',
-        'getBehaviorShared'
+        'getBehaviorShared',
+        'getTerrainHeight'
     ];
+
+    // Dead flyers fall out of the sky at this rate (world units/sec). Death
+    // removes the velocity component, so the movement sim never grounds them
+    // — the fall is driven here for dying units and corpses alike.
+    static CORPSE_FALL_SPEED = 150;
 
     constructor(game) {
         super(game);
@@ -31,6 +37,10 @@ class DeathSystem extends GUTS.BaseSystem {
             const deathState = this.game.getComponent(entityId, "deathState");
             if (deathState && deathState.state === this.enums.deathState.dying) {
                 this._dyingEntities.push(entityId);
+            }
+            // Any dead flyer (dying or corpse) sinks to the terrain.
+            if (deathState && deathState.state >= this.enums.deathState.dying) {
+                this._fallIfAirborne(entityId);
             }
         }
 
@@ -58,6 +68,28 @@ class DeathSystem extends GUTS.BaseSystem {
                 }
             }
         });
+    }
+
+    // Sink a dead FLYING unit toward the terrain (fixed-step, deterministic).
+    // Ground units are untouched — they die where they stand.
+    _fallIfAirborne(entityId) {
+        const unitTypeComp = this.game.getComponent(entityId, 'unitType');
+        if (!unitTypeComp) return;
+        if (!this._flyingByType) this._flyingByType = new Map();
+        const key = unitTypeComp.collection * 100000 + unitTypeComp.type;
+        let flying = this._flyingByType.get(key);
+        if (flying === undefined) {
+            flying = !!this.game.getUnitTypeDef(unitTypeComp)?.isFlying;
+            this._flyingByType.set(key, flying);
+        }
+        if (!flying) return;
+
+        const pos = this.game.getComponent(entityId, 'transform')?.position;
+        if (!pos) return;
+        const ground = this.call.getTerrainHeight?.(pos.x, pos.z);
+        if (ground == null || pos.y <= ground) return;
+        pos.y = Math.max(ground,
+            pos.y - DeathSystem.CORPSE_FALL_SPEED * (this.game.state.deltaTime || 0.05));
     }
 
     startDeathProcess(entityId){
@@ -174,8 +206,10 @@ class DeathSystem extends GUTS.BaseSystem {
 
             if (!corpsePos || !unitType) return;
 
-            // Check team filter if specified
-            if (teamFilter && deathState.teamAtDeath !== teamFilter) return;
+            // Check team filter if specified. `!= null`, not truthiness: team is a
+            // numeric enum whose first member (neutral) is 0, so a truthiness test
+            // silently disabled the filter for it and matched every corpse on the field.
+            if (teamFilter != null && deathState.teamAtDeath !== teamFilter) return;
 
             // Check distance
             const dx = corpsePos.x - position.x;

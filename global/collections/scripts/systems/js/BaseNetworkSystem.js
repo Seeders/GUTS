@@ -26,6 +26,7 @@ class BaseNetworkSystem extends GUTS.BaseSystem {
         'startHeightAnimation',
         'scheduleAction',
         'playEffectSystem',
+        'playEffect',
         'createPlacement',
         'validateCheat',
         'executeCheat'
@@ -464,12 +465,24 @@ class BaseNetworkSystem extends GUTS.BaseSystem {
             const delaySeconds = finalSwapDelay / 1000;
 
             // For landing animations, play landing particle effect when animation completes
-            if (animationType === 'land' && this.game.hasService('playEffectSystem')) {
-                // Schedule the particle effect to play just before the entity swap
+            if (animationType === 'land' && this.game.hasService('scheduleAction')) {
+                // Schedule the particle effect to play just before the entity swap.
+                // The hasService check is INSIDE the callback on purpose: scheduling only
+                // where the particle system exists would advance the client's scheduler
+                // counter past the server's, and same-tick actions tie-break on that
+                // counter — a purely visual effect must not reorder gameplay actions.
                 const particleDelay = Math.max(0, delaySeconds - 0.1);
                 this.call.scheduleAction( () => {
+                    if (!this.game.hasService('playEffectSystem')) return;
                     this.call.playEffectSystem( 'dragon_landing', position);
                 }, particleDelay, null);
+            }
+
+            // Take-off is the mirror of landing and had no beat at all, so a dragon
+            // leaving the ground did so in silence. The dust belongs at lift-off, not
+            // at the swap, so this one plays immediately rather than on a delay.
+            if (animationType === 'takeoff' && this.game.hasService('playEffect')) {
+                this.call.playEffect( 'dust_launch', position);
             }
 
             if (this.game.hasService('scheduleAction')) {
