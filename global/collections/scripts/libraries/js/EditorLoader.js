@@ -12,9 +12,14 @@ class EditorLoader {
      * @param {Object} options - Load options
      * @param {Array<string>} options.systems - System names to initialize
      * @param {string} [options.levelName] - Level name for terrain tile mapper (optional)
+     * @param {Array<string>} [options.assetTypes] - Only these collections' images and models (default: all)
+     * @param {Array<string>} [options.imageTypes] - Only these collections' images (default: assetTypes)
+     * @param {Array<string>} [options.modelTypes] - Only these collections' models (default: assetTypes)
      */
     async load(options = {}) {
-        const { systems = [], levelName } = options;
+        const { systems = [], levelName, assetTypes = null } = options;
+        this.imageTypes = options.imageTypes ?? assetTypes;
+        this.modelTypes = options.modelTypes ?? assetTypes;
 
         this.collections = this.game.getCollections();
         this.game.palette = this.collections.palettes && this.collections.configs.game.palette
@@ -54,8 +59,9 @@ class EditorLoader {
             }
         );
 
-        // Load all images
+        // Load all images (or just the asked-for collections')
         for (const objectType in this.collections) {
+            if (this.imageTypes && !this.imageTypes.includes(objectType)) continue;
             await this.game.imageManager.loadImages(objectType, this.collections[objectType]);
         }
 
@@ -80,6 +86,7 @@ class EditorLoader {
         );
 
         for (const objectType in this.collections) {
+            if (this.modelTypes && !this.modelTypes.includes(objectType)) continue;
             await this.game.modelManager.loadModels(objectType, this.collections[objectType]);
         }
     }

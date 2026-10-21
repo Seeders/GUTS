@@ -1294,12 +1294,15 @@ class BaseECSGame {
             this.deltaTime = deltaTime;
 
             this._inUpdate = true;
+            // (client) a frame that takes too long is reported with where its time went: this.onHitch
+            const _frame0 = this.isServer ? 0 : performance.now(), _times = this.isServer ? null : [];
             try {
                 for (const system of this.systems) {
                     // Skip disabled systems
                     if (!system.enabled) continue;
 
                     const systemName = system.constructor.name;
+                    const _s0 = _times ? performance.now() : 0;
 
                     // Start tracking this system
                     if (this.performanceMonitor) {
@@ -1335,6 +1338,12 @@ class BaseECSGame {
                         this.performanceMonitor.startSystemRender(systemName);
                         this.performanceMonitor.endSystemRender(systemName);
                     }
+                    if (_times) { const d = performance.now() - _s0; if (d > 8) _times.push([systemName, Math.round(d)]); }
+                }
+                if (_times) {
+                    const end = performance.now(), work = end - _frame0, gap = this._frameEnd ? _frame0 - this._frameEnd : 0;
+                    this._frameEnd = end;
+                    if ((work > 120 || gap > 250) && this.onHitch) { try { this.onHitch({ work: Math.round(work), gap: Math.round(gap), systems: _times.sort((a, b) => b[1] - a[1]).slice(0, 8) }); } catch (e) { /* reporting must never break the loop */ } }
                 }
 
                 // Update performance overlay

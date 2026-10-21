@@ -1,7 +1,28 @@
 class ShapeFactory {
+    /**
+     * The one KTX2 loader every GLTFLoader shares (for models whose textures are KTX2), transcoding with
+     * resources/libs/basis. It must know the GPU's compressed formats before the first texture arrives,
+     * which may be before the game's renderer exists: a throwaway one asks.
+     */
+    static ktx2(resourcesPath) {
+        if (ShapeFactory._ktx2 !== undefined) return ShapeFactory._ktx2;
+        ShapeFactory._ktx2 = null;
+        if (!THREE.KTX2Loader || typeof document === 'undefined') return null;
+        try {
+            const loader = new THREE.KTX2Loader().setTranscoderPath(`${resourcesPath || './resources/'}libs/basis/`);
+            const probe = new THREE.WebGLRenderer({ canvas: document.createElement('canvas') });
+            loader.detectSupport(probe);
+            probe.dispose(); probe.forceContextLoss?.();
+            ShapeFactory._ktx2 = loader;
+        } catch (e) { console.warn('[ShapeFactory] no KTX2 textures:', e?.message); }
+        return ShapeFactory._ktx2;
+    }
+
     constructor(resourcesPath, palette, textures, libraryClasses, gltfModelScale = 32, models = null, animations = null) {
         this.gltfCache = new Map();
         this.gltfLoader = new THREE.GLTFLoader();
+        const ktx2 = ShapeFactory.ktx2(resourcesPath);
+        if (ktx2) this.gltfLoader.setKTX2Loader(ktx2);
         this.palette = palette;
         this.textures = textures;
         this.shaders = null; // Shaders collection for custom materials
@@ -380,6 +401,10 @@ class ShapeFactory {
                             metalness: shape.metalness !== undefined ? shape.metalness : (originalMaterial.metalness || 0.5),
                             roughness: shape.roughness !== undefined ? shape.roughness : (originalMaterial.roughness || 0.5),
                             map: map,
+                            // the model's own surface maps: how rough, how metal, its bumps
+                            roughnessMap: originalMaterial.roughnessMap || null,
+                            metalnessMap: originalMaterial.metalnessMap || null,
+                            normalMap: originalMaterial.normalMap || null,
                             aoMap: null,  // Don't use AO map
                             aoMapIntensity: 0,  // Disable AO
                             vertexColors: useVertexColors

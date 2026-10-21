@@ -8,6 +8,9 @@
  * - Shared by game RenderSystem and terrain editor
  */
 class EntityRenderer {
+    static AREA = 1170;             // world objects batch by squares this wide: out of view, out of the draw (a subclass may change it)
+    static AREA_CAPACITY = 16;      // an area's batch starts this big and doubles when full
+
     constructor(options = {}) {
         this.scene = options.scene;
         this.collections = options.collections;
@@ -27,6 +30,7 @@ class EntityRenderer {
 
         // Static instanced rendering system for cliffs/worldObjects
         this.staticBatches = new Map(); // batchKey -> { instancedMesh, entityMap, count, capacity }
+        this._staticBatchPromises = new Map(); // batchKey -> its creation, while the model loads
 
         // Billboard instanced rendering system for renderTexture objects
         this.billboardBatches = new Map(); // batchKey -> { instancedMesh, entityMap, count, capacity }
@@ -303,24 +307,35 @@ class EntityRenderer {
     async spawnInstancedEntity(entityId, data, entityDef) {
         // Cliffs come in variants (one texture per plateau terrain), each its own batch
         const variant = data.collection === 'cliffs' ? data.cliffVariant : null;
-        const batchKey = variant ? `${data.collection}_${data.type}@${variant}` : `${data.collection}_${data.type}`;
+        // world objects batch by area too (EntityRenderer.AREA): a batch is culled only when all of it is out of view,
+        // so one batch across a whole level (or the town) was drawn every frame wherever you looked
+        const area = data.collection === 'worldObjects' && data.position
+            ? `#${Math.floor(data.position.x / EntityRenderer.AREA)},${Math.floor(data.position.z / EntityRenderer.AREA)}` : '';
+        const batchKey = (variant ? `${data.collection}_${data.type}@${variant}` : `${data.collection}_${data.type}`) + area;
 
-        // Get or create instanced batch
+        // Get or create instanced batch (one creation per key, however many of its pieces spawn while the model loads)
         let batch = this.staticBatches.get(batchKey);
         if (!batch) {
-            batch = await this.createStaticBatch(batchKey, data.collection, data.type, entityDef, variant);
+            let p = this._staticBatchPromises.get(batchKey);
+            if (!p) {
+                p = this.createStaticBatch(batchKey, data.collection, data.type, entityDef, variant, area ? EntityRenderer.AREA_CAPACITY : null);
+                this._staticBatchPromises.set(batchKey, p);
+                p.finally(() => this._staticBatchPromises.delete(batchKey));
+            }
+            batch = await p;
             if (!batch) {
                 console.error(`[EntityRenderer] Failed to create static batch for ${batchKey}`);
                 return false;
             }
         }
 
-        // Get free instance slot from free list (O(1) instead of O(capacity))
+        // Get free instance slot from free list (O(1) instead of O(capacity)); an area's batch grows when full
         let instanceIndex = -1;
         if (batch.freeList.length > 0) {
             instanceIndex = batch.freeList.pop();
-        } else if (batch.nextFreeIndex < batch.capacity) {
-            instanceIndex = batch.nextFreeIndex++;
+        } else {
+            if (batch.nextFreeIndex >= batch.capacity && area) this.growStaticBatch(batch, batch.capacity * 2);
+            if (batch.nextFreeIndex < batch.capacity) instanceIndex = batch.nextFreeIndex++;
         }
 
         if (instanceIndex === -1) {
@@ -351,23 +366,26 @@ class EntityRenderer {
         const modelDef = entityDef.render?.model?.main;
         const baseScale = modelDef?.scale || { x: 1, y: 1, z: 1 };
 
-        // For cliffs, multiply by 32
-        const scaleMultiplier = 32;
+        // For cliffs, multiply by 32; and the entity's own transform scale (a prop placed larger or smaller)
+        const scaleMultiplier = 32, ts = data.transform?.scale;
         const finalScale = new THREE.Vector3(
-            baseScale.x * scaleMultiplier,
-            baseScale.y * scaleMultiplier,
-            baseScale.z * scaleMultiplier
+            baseScale.x * scaleMultiplier * (ts?.x ?? 1),
+            baseScale.y * scaleMultiplier * (ts?.y ?? 1),
+            baseScale.z * scaleMultiplier * (ts?.z ?? 1)
         );
 
+        // the model's own tilt (degrees; e.g. a dropped sword lying flat) under the instance's turn
+        const tilt = modelDef?.rotation || {}, D = Math.PI / 180;
         const matrix = new THREE.Matrix4();
         matrix.compose(
-            new THREE.Vector3(data.position.x, data.position.y, data.position.z),
-            new THREE.Quaternion().setFromEuler(new THREE.Euler(0, data.rotation || 0, 0)),
+            new THREE.Vector3(data.position.x, data.position.y + (modelDef?.position?.y || 0), data.position.z),
+            new THREE.Quaternion().setFromEuler(new THREE.Euler((tilt.x || 0) * D, data.rotation || 0, (tilt.z || 0) * D, 'YXZ')),
             finalScale
         );
         batch.instancedMesh.setMatrixAt(instanceIndex, matrix);
-        batch.instancedMesh.instanceMatrix.needsUpdate = true;
+        batch.instancedMesh.instanceMatrix.needsUpdate = true; batch.instancedMesh.boundingSphere = null;
         batch.instancedMesh.count = batch.count;
+        batch._dirty = true;                       // (compactHidden draws only the shown instances again)
 
 
 
@@ -380,7 +398,7 @@ class EntityRenderer {
     /**
      * Create a static instanced batch for a model type
      */
-    async createStaticBatch(batchKey, collection, type, entityDef, variant = null) {
+    async createStaticBatch(batchKey, collection, type, entityDef, variant = null, startCapacity = null) {
         const modelKey = `${collection}_${type}`;
 
         if (!this.modelManager) {
@@ -442,8 +460,9 @@ class EntityRenderer {
             console.error(`[EntityRenderer] No geometry/material found in ${modelKey}`);
             return null;
         }
+        this.decorateStaticBatch(collection, type, geometry, material);
 
-        const capacity = this.capacitiesByType[batchKey] || this.defaultCapacity;
+        const capacity = startCapacity || this.capacitiesByType[batchKey] || this.defaultCapacity;
         const instancedMesh = new THREE.InstancedMesh(geometry, material, capacity);
 
         // Note: scale is applied per-instance in the matrix, not on the InstancedMesh itself
@@ -451,9 +470,10 @@ class EntityRenderer {
         instancedMesh.receiveShadow = true;
         instancedMesh.count = 0; // Start with 0 visible instances
 
-        // Disable frustum culling - instances are spread across the terrain
-        // and the base geometry's bounding sphere doesn't account for instance positions
-        instancedMesh.frustumCulled = false;
+        // Frustum culled as a whole: its bounding sphere is its instances' (three works it out again after any
+        // change: boundingSphere is nulled wherever the instances move), so a batch all out of view (the town's
+        // buildings from a dungeon below, a dungeon's pieces from the town) costs nothing
+        instancedMesh.frustumCulled = true;
 
         console.log('[EntityRenderer] createStaticBatch adding to scene:', !!this.scene, 'batchKey:', batchKey, 'capacity:', capacity);
         this.scene.add(instancedMesh);
@@ -472,6 +492,26 @@ class EntityRenderer {
         this.stats.batches++;
 
         return batch;
+    }
+
+    /** Hook: change a static batch's geometry or material once, as it's made (e.g. detail textures). */
+    decorateStaticBatch(collection, type, geometry, material) {
+    }
+
+    /** A full batch made bigger: a new InstancedMesh with room for `capacity`, every instance carried over. */
+    growStaticBatch(batch, capacity) {
+        const old = batch.instancedMesh;
+        const m = new THREE.InstancedMesh(old.geometry, old.material, capacity);
+        m.instanceMatrix.array.set(old.instanceMatrix.array);
+        if (old.instanceColor) { m.setColorAt(0, new THREE.Color()); m.instanceColor.array.set(old.instanceColor.array); }
+        for (const k of ['castShadow', 'receiveShadow', 'frustumCulled', 'renderOrder', 'visible', 'count', 'name']) m[k] = old[k];
+        m.userData = old.userData;
+        m.instanceMatrix.needsUpdate = true; m.boundingSphere = null;
+        old.parent?.add(m);
+        old.parent?.remove(old);
+        old.dispose();
+        batch.instancedMesh = m;
+        batch.capacity = capacity;
     }
 
     /**
@@ -1415,10 +1455,33 @@ class EntityRenderer {
         );
 
         this._tempMatrix.compose(this._tempPosition, this._tempQuaternion, this._tempScale);
-        batch.mesh.setMatrixAt(entity.instanceIndex, this._tempMatrix);
+        // (kept, for farCull: beyond it the instance is drawn at no size, and shown again as it comes near)
+        (entity._mat ||= new THREE.Matrix4()).copy(this._tempMatrix);
+        entity._far = this.isFar(this._tempPosition.x, this._tempPosition.z);
+        batch.mesh.setMatrixAt(entity.instanceIndex, entity._far ? (EntityRenderer._ZERO ||= new THREE.Matrix4().makeScale(0, 0, 0)) : this._tempMatrix);
         batch.dirty.matrices = true;
 
         return true;
+    }
+
+    /** farCull { x, z, r }: what's past r of x, z isn't drawn (a level's creatures in the fog). null: everything. */
+    isFar(x, z) {
+        const f = this.farCull;
+        return !!f && (x - f.x) ** 2 + (z - f.z) ** 2 > f.r * f.r;
+    }
+
+    /** Set farCull, and hide or show again the animated instances that crossed it (a creature standing still isn't updated). */
+    setFarCull(f) {
+        this.farCull = f;
+        const zero = (EntityRenderer._ZERO ||= new THREE.Matrix4().makeScale(0, 0, 0));
+        for (const e of this.entities.values()) {
+            if (e.type !== 'vat' || !e._mat || !e.batch?.mesh) continue;
+            const far = this.isFar(e._mat.elements[12], e._mat.elements[14]);
+            if (far === !!e._far) continue;
+            e._far = far;
+            e.batch.mesh.setMatrixAt(e.instanceIndex, far ? zero : e._mat);
+            e.batch.dirty.matrices = true;
+        }
     }
 
     /**
@@ -1509,7 +1572,7 @@ class EntityRenderer {
 
         this._tempMatrix.compose(this._tempPosition, this._tempQuaternion, this._tempScale);
         batch.instancedMesh.setMatrixAt(entity.instanceIndex, this._tempMatrix);
-        batch.instancedMesh.instanceMatrix.needsUpdate = true;
+        batch.instancedMesh.instanceMatrix.needsUpdate = true; batch.instancedMesh.boundingSphere = null;
 
         return true;
     }
@@ -1835,7 +1898,7 @@ class EntityRenderer {
     finalizeUpdates() {
         for (const batch of this.vatBatches.values()) {
             if (batch.dirty.matrices) {
-                batch.mesh.instanceMatrix.needsUpdate = true;
+                batch.mesh.instanceMatrix.needsUpdate = true; batch.mesh.boundingSphere = null;
                 batch.dirty.matrices = false;
             }
 
@@ -1850,6 +1913,83 @@ class EntityRenderer {
     /**
      * Remove an entity
      */
+    /** Turn a static instance about the up axis through its own position by dy (a door swinging); false if it isn't one. */
+    rotateInstanceY(entityId, dy) {
+        const e = this.entities.get(entityId);
+        if (!e || e.type !== 'instanced' || !dy) return false;
+        const m = e.batch.instancedMesh, M = e._saved || new THREE.Matrix4();
+        if (!e._saved) m.getMatrixAt(e.instanceIndex, M);
+        const p = new THREE.Vector3().setFromMatrixPosition(M);
+        const turn = new THREE.Matrix4().makeTranslation(p.x, p.y, p.z).multiply(new THREE.Matrix4().makeRotationY(dy)).multiply(new THREE.Matrix4().makeTranslation(-p.x, -p.y, -p.z));
+        M.premultiply(turn);
+        if (!e._saved) { m.setMatrixAt(e.instanceIndex, M); m.instanceMatrix.needsUpdate = true; m.boundingSphere = null; }
+        return true;
+    }
+
+    /** Move a static instance up or down by dy (a chandelier falling); false if it isn't one. */
+    moveInstanceY(entityId, dy) {
+        const e = this.entities.get(entityId);
+        if (!e || e.type !== 'instanced' || !dy) return false;
+        const m = e.batch.instancedMesh, M = e._saved || new THREE.Matrix4();
+        if (!e._saved) m.getMatrixAt(e.instanceIndex, M);
+        M.premultiply(new THREE.Matrix4().makeTranslation(0, dy, 0));
+        if (!e._saved) { m.setMatrixAt(e.instanceIndex, M); m.instanceMatrix.needsUpdate = true; m.boundingSphere = null; }
+        return true;
+    }
+
+    /**
+     * Hide (scale to nothing) or show again one instance of a static batch, keeping its place: e.g. far
+     * pieces of a level, so the GPU doesn't shade them (compactHidden then stops drawing them at all).
+     */
+    setInstanceHidden(entityId, hidden) {
+        const e = this.entities.get(entityId);
+        if (!e || e.type !== 'instanced') return;
+        const m = e.batch.instancedMesh;
+        e.batch._dirty = true;
+        if (hidden) {
+            if (e._saved) return;
+            e._saved = new THREE.Matrix4();
+            m.getMatrixAt(e.instanceIndex, e._saved);
+            m.setMatrixAt(e.instanceIndex, (EntityRenderer._ZERO ||= new THREE.Matrix4().makeScale(0, 0, 0)));
+        } else {
+            if (!e._saved) return;
+            m.setMatrixAt(e.instanceIndex, e._saved);
+            e._saved = null;
+        }
+        m.instanceMatrix.needsUpdate = true; m.boundingSphere = null;
+    }
+
+    /**
+     * Batches with instances hidden or shown since the last call: their visible instances moved to the front
+     * and only those drawn (instancedMesh.count), so a hidden instance costs the GPU nothing at all (scaled to
+     * nothing, it would still be submitted: thousands of a level's far pieces, every frame). Swaps keep every
+     * record straight: the slot -> entity map, each entity's instanceIndex, the free list.
+     */
+    compactHidden() {
+        const a = new THREE.Matrix4(), b = new THREE.Matrix4();
+        for (const batch of this.staticBatches.values()) {
+            if (!batch._dirty || !batch.instancedMesh) continue;
+            batch._dirty = false;
+            const m = batch.instancedMesh, n = (batch.maxUsedIndex ?? -1) + 1;
+            const shown = (slot) => { const id = batch.entityMap.get(slot); return id !== undefined && !this.entities.get(id)?._saved; };
+            const swap = (i, j) => {
+                m.getMatrixAt(i, a); m.getMatrixAt(j, b); m.setMatrixAt(i, b); m.setMatrixAt(j, a);
+                const ei = batch.entityMap.get(i), ej = batch.entityMap.get(j);
+                if (ej !== undefined) batch.entityMap.set(i, ej); else batch.entityMap.delete(i);
+                if (ei !== undefined) batch.entityMap.set(j, ei); else batch.entityMap.delete(j);
+                if (ei !== undefined) this.entities.get(ei).instanceIndex = j;
+                if (ej !== undefined) this.entities.get(ej).instanceIndex = i;
+                const fi = batch.freeList.indexOf(i), fj = batch.freeList.indexOf(j);
+                if (fi >= 0) batch.freeList[fi] = j;
+                if (fj >= 0) batch.freeList[fj] = i;
+            };
+            let w = 0;
+            for (let r = 0; r < n; r++) if (shown(r)) { if (r !== w) swap(r, w); w++; }
+            m.count = w;
+            m.instanceMatrix.needsUpdate = true; m.boundingSphere = null;
+        }
+    }
+
     removeEntity(entityId) {
         const entity = this.entities.get(entityId);
         if (!entity) return false;
@@ -1863,7 +2003,7 @@ class EntityRenderer {
             // Hide the instance by setting scale to 0
             const zeroMatrix = new THREE.Matrix4().makeScale(0, 0, 0);
             batch.mesh.setMatrixAt(removedIndex, zeroMatrix);
-            batch.mesh.instanceMatrix.needsUpdate = true;
+            batch.mesh.instanceMatrix.needsUpdate = true; batch.mesh.boundingSphere = null;
 
             // Add to free list for O(1) reuse
             batch.freeList.push(removedIndex);
@@ -1890,7 +2030,7 @@ class EntityRenderer {
             // Hide the instance by setting scale to 0
             const zeroMatrix = new THREE.Matrix4().makeScale(0, 0, 0);
             batch.instancedMesh.setMatrixAt(removedIndex, zeroMatrix);
-            batch.instancedMesh.instanceMatrix.needsUpdate = true;
+            batch.instancedMesh.instanceMatrix.needsUpdate = true; batch.instancedMesh.boundingSphere = null;
 
             // Add to free list for O(1) reuse
             batch.freeList.push(removedIndex);
@@ -1916,7 +2056,7 @@ class EntityRenderer {
             // Hide the instance by setting scale to 0
             const zeroMatrix = new THREE.Matrix4().makeScale(0, 0, 0);
             batch.instancedMesh.setMatrixAt(removedIndex, zeroMatrix);
-            batch.instancedMesh.instanceMatrix.needsUpdate = true;
+            batch.instancedMesh.instanceMatrix.needsUpdate = true; batch.instancedMesh.boundingSphere = null;
 
             // Add to free list for O(1) reuse
             batch.freeList.push(removedIndex);
@@ -2064,7 +2204,10 @@ class EntityRenderer {
         mesh.count = 0;
         mesh.castShadow = true;
         mesh.receiveShadow = true;
-        mesh.frustumCulled = false;
+        // culled as a whole by its instances' bounding sphere (nulled as they move, worked out again by three),
+        // a little larger: the animation moves the vertices off the rest pose
+        mesh.frustumCulled = true;
+        mesh.computeBoundingSphere = function () { THREE.InstancedMesh.prototype.computeBoundingSphere.call(this); if (this.boundingSphere.radius >= 0) this.boundingSphere.radius += 120; };
 
         // Set bounding volumes
         const boundingBox = new THREE.Box3();
@@ -2206,6 +2349,8 @@ class EntityRenderer {
         const models = {};
         //THREE_ is the CORRECT prefix for GLTF ONLY.
         const loader = new THREE.GLTFLoader();
+        const ktx2 = GUTS.ShapeFactory?.ktx2?.(this.getResourcesPath());
+        if (ktx2) loader.setKTX2Loader(ktx2);
         const typesToLoad = entityTypes || Object.keys(collection);
 
        

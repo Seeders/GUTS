@@ -45,9 +45,10 @@ class AudioManager {
 
     async _initialize() {
         class SoundPool {
-            constructor(audioContext, destination, poolSize = 8) {
+            constructor(audioContext, destination, poolSize = 8, reverb = null) {
                 this.audioContext = audioContext;
                 this.destination = destination;
+                this.reverb = reverb;            // one convolver the pool's voices all send into (see AudioManager._initialize)
                 this.poolSize = poolSize;
                 this.sources = [];
                 this.initializePool();
@@ -71,7 +72,6 @@ class AudioManager {
                     pannerNode: this.audioContext.createStereoPanner(),
                     delay: this.audioContext.createDelay(5.0),
                     delayGain: this.audioContext.createGain(),
-                    convolver: this.audioContext.createConvolver(),
                     reverbGain: this.audioContext.createGain(),
                     noiseFilter: this.audioContext.createBiquadFilter(),
                     noiseGain: this.audioContext.createGain(),
@@ -120,9 +120,8 @@ class AudioManager {
                 source.delayGain.connect(source.delay);
                 source.delayGain.connect(source.pannerNode);
 
-                source.filter.connect(source.convolver);
-                source.convolver.connect(source.reverbGain);
-                source.reverbGain.connect(source.pannerNode);
+                source.filter.connect(source.reverbGain);              // the reverb send
+                if (this.reverb) source.reverbGain.connect(this.reverb);
 
                 source.pannerNode.connect(source.destination);
 
@@ -204,7 +203,6 @@ class AudioManager {
                     source.pannerNode.disconnect();
                     source.delay.disconnect();
                     source.delayGain.disconnect();
-                    source.convolver.disconnect();
                     source.reverbGain.disconnect();
                     source.noiseFilter.disconnect();
                     source.noiseGain.disconnect();
@@ -224,11 +222,20 @@ class AudioManager {
         this.ambientBus.connect(this.masterBus);
         this.uiBus.connect(this.masterBus);
         this.masterBus.connect(this.audioContext.destination);
+        // One reverb per category, shared by its voices. A ConvolverNode prepares its impulse (FFTs of 1.5 s,
+        // stereo) synchronously when its buffer is set: with a convolver per voice, each of the first plays of a
+        // reverbed sound froze the page while its voice was set up (a dozen or more stalls, one per voice). Here
+        // there are three, given their impulse once, when the page is idle; until then the sends are silent.
+        const reverb = (bus) => { const c = this.audioContext.createConvolver(); c.connect(bus.input); return c; };
+        this.reverbs = { sfx: reverb(this.sfxBus), music: reverb(this.musicBus), ui: reverb(this.uiBus) };
         this.soundPools = {
-            sfx: new SoundPool(this.audioContext, this.sfxBus.input, 16),
-            music: new SoundPool(this.audioContext, this.musicBus.input, 4),
-            ui: new SoundPool(this.audioContext, this.uiBus.input, 6)
+            sfx: new SoundPool(this.audioContext, this.sfxBus.input, 16, this.reverbs.sfx),
+            music: new SoundPool(this.audioContext, this.musicBus.input, 4, this.reverbs.music),
+            ui: new SoundPool(this.audioContext, this.uiBus.input, 6, this.reverbs.ui)
         };
+        const idle = window.requestIdleCallback || ((f) => setTimeout(f, 800)), left = [this.reverbs.sfx, this.reverbs.ui, this.reverbs.music];
+        const fill = () => { const c = left.shift(); if (!c) return; this.generateImpulseResponse(c); idle(fill, { timeout: 4000 }); };     // (one at a time)
+        idle(fill, { timeout: 4000 });
         this.buffers = {};
         this.activeSounds = new Set();
         this.ambientSounds = new Map(); // Track looping ambient sounds by ID
@@ -726,7 +733,6 @@ class AudioManager {
         
         // Reverb
         if (effectsConfig.reverb && effectsConfig.reverb > 0) {
-            this.generateImpulseResponse(sound.convolver);
             sound.reverbGain.gain.setValueAtTime(Math.min(effectsConfig.reverb, 1), now);
             sound.reverbGain.gain.setTargetAtTime(0, now + soundConfig.duration + (soundConfig.envelope?.release || 0.3), 0.2);
         } else {
