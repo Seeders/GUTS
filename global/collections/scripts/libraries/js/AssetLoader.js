@@ -17,7 +17,9 @@ class AssetLoader {
         this.loadInterface();
 
         // Initialize loading progress tracker
-        this.progress = GUTS.LoadingProgress ? new GUTS.LoadingProgress() : null;
+        this.progress = GUTS.LoadingProgress
+            ? new GUTS.LoadingProgress(this.game?.getCollections?.()?.configs?.game?.loadingScreen)
+            : null;
         if (this.progress) {
             this.countAssetsToLoad();
             this.progress.start();
