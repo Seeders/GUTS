@@ -1,4 +1,8 @@
 class DamageSystem extends GUTS.BaseSystem {
+    // Armor → damage reduction: armor / (armor + ARMOR_K). 30 puts tier-1
+    // armor (0-10) at 0-25% and heavy armor (14-22) at 32-42%.
+    static ARMOR_K = 30;
+
     static services = [
         'applyDamage',
         'applySplashDamage',
@@ -15,11 +19,14 @@ class DamageSystem extends GUTS.BaseSystem {
     static serviceDependencies = [
         'showDamageNumber',
         'rollHitChance',
+        'rollBlock',
+        'rollCritical',
         'getAggregatedDamageModifiers',
         'grantCombatExperience',
         'applyDamage',
         'playEffect',
-        'startDeathProcess'
+        'startDeathProcess',
+        'breakCloak'
     ];
 
     constructor(game) {
@@ -75,43 +82,55 @@ class DamageSystem extends GUTS.BaseSystem {
      * @param {Object} options - Damage options
      * @returns {string[]} Array of damage tags
      */
+    // Every damage instance comes from an ability, and every ability is either an
+    // Attack or a Spell — the basic attack is just an Attack with no ability class
+    // behind it. `options.abilityTags` is the ability's own declared tag list
+    // (BaseAbility.tags); the rest of the tags are derived from how the hit was
+    // delivered. Modifiers match against this set: no tags = every hit, ['spell'] =
+    // spells only, ['fire'] = any fire hit whether attack or spell.
     buildDamageTags(element, options) {
         const tags = [];
+        const push = (t) => { if (t && !tags.includes(t)) tags.push(t); };
 
-        // Source type: attack vs spell
-        if (options.isSpell) {
-            tags.push('spell');
-        } else {
-            tags.push('attack');
-        }
+        // Source type: attack vs spell. The ability's own tags win; a raw
+        // applyDamage call (basic attack, trap, reflect) falls back to isSpell.
+        const declared = options.abilityTags || [];
+        const isSpell = declared.includes('spell')
+            || (!declared.includes('attack') && !!options.isSpell);
+        push(isSpell ? 'spell' : 'attack');
+
+        // Anything else the ability declared (fire, area, projectile, ...)
+        for (const tag of declared) push(tag);
 
         // Range type: melee vs ranged/projectile
         if (options.isMelee) {
-            tags.push('melee');
+            push('melee');
         } else if (options.isProjectile || options.isRanged) {
-            tags.push('ranged');
-            if (options.isProjectile) {
-                tags.push('projectile');
-            }
+            push('ranged');
+            if (options.isProjectile) push('projectile');
         }
 
         // Area vs single target
         if (options.isSplash || options.isArea || options.isAoE) {
-            tags.push('area');
-        } else {
-            tags.push('singleTarget');
+            push('area');
+        } else if (!tags.includes('area')) {
+            push('singleTarget');
         }
 
         // Damage over time
-        if (options.isDot) {
-            tags.push('dot');
-        }
+        if (options.isDot) push('dot');
 
         // Element tag
-        const elementName = this.reverseEnums.element?.[element] || 'physical';
-        tags.push(elementName);
+        push(this.reverseEnums.element?.[element] || 'physical');
 
         return tags;
+    }
+
+    // Attacks roll to hit and can be blocked; spells always land. Derived from the
+    // resolved tag set, so an attack ABILITY (Bash, AimedShot, LeapSlam) is subject
+    // to evasion and block exactly like the basic attack it is a variant of.
+    isSpellDamage(damageTags) {
+        return damageTags.includes('spell');
     }
 
     /**
@@ -173,11 +192,23 @@ class DamageSystem extends GUTS.BaseSystem {
             return { damage: 0, prevented: true, reason: 'target_invalid' };
         }
 
+        // Attacking breaks DEX Stealth. Only a direct hit counts: DoT ticks, shield-
+        // wall shares and on-hit procs (thorns, enchant) are not the unit acting.
+        if (sourceId != null && !options.isDot && !options.sharedDamage && !options.derivedOnHit
+            && this.game.hasService('breakCloak')) {
+            this.call.breakCloak(sourceId);
+        }
+
         // STEP 1: Build damage tags for modifier matching
         const damageTags = this.buildDamageTags(element, options);
+        const isSpell = this.isSpellDamage(damageTags);
 
-        // STEP 2: Accuracy check (attacks only, spells always hit)
-        if (!options.isSpell && this.game.hasService('rollHitChance')) {
+        // STEP 2: Accuracy check (attacks only, spells always hit; redistributed
+        // shield-wall shares already hit their original target — not re-evadable,
+        // and neither is a DoT tick: the bleed landed when the blow did, so
+        // re-rolling evasion every second would let an evasive unit dodge a wound
+        // it is already carrying)
+        if (!isSpell && !options.sharedDamage && !options.isDot && this.game.hasService('rollHitChance')) {
             const hitResult = this.call.rollHitChance( sourceId, targetId, false);
             if (!hitResult.hit) {
                 log.debug('Damage', `MISS! ${sourceName}(${sourceId}) -> ${targetName}(${targetId})`, {
@@ -198,6 +229,45 @@ class DamageSystem extends GUTS.BaseSystem {
             }
         }
 
+        // STEP 2.2: Block check (attacks only; the redistributed shield-wall shares
+        // already resolved their own block on the original hit). A successful block
+        // negates the hit entirely — shields turn blockChance into real mitigation.
+        if (!isSpell && !options.sharedDamage && !options.isDot && this.game.hasService('rollBlock')) {
+            const blockResult = this.call.rollBlock(sourceId, targetId);
+            if (blockResult.blocked) {
+                log.debug('Damage', `BLOCKED! ${sourceName}(${sourceId}) -> ${targetName}(${targetId})`, {
+                    blockChance: (blockResult.blockChance * 100).toFixed(1) + '%',
+                    roll: blockResult.roll.toFixed(3)
+                });
+                this.showMissEffect(targetId);
+                return {
+                    damage: 0,
+                    prevented: true,
+                    reason: 'blocked',
+                    blockChance: blockResult.blockChance
+                };
+            }
+        }
+
+        // STEP 2.5: Shield Wall damage sharing (Mechabellum linked Sledgehammers):
+        // damage dealt to a linked squad member is dispersed EQUALLY across all
+        // living squadmates whose shield_wall buff is active. Each member then
+        // mitigates its own share with its own armor/resists. `sharedDamage`
+        // marks the redistributed portions so they don't re-split (recursion
+        // guard) and skip the evasion roll (the original hit already landed).
+        if (!options.sharedDamage) {
+            const linked = this._getDamageShareGroup(targetId);
+            if (linked && linked.length > 1) {
+                const share = baseDamage / linked.length;
+                for (const memberId of linked) {
+                    if (memberId === targetId) continue;
+                    this.applyDamage(sourceId, memberId, share, element,
+                        { ...options, sharedDamage: true });
+                }
+                baseDamage = share;
+            }
+        }
+
         // STEP 3: Get aggregated damage modifiers (increased + more)
         let modifiers = { increased: 0, more: [] };
         if (this.game.hasService('getAggregatedDamageModifiers')) {
@@ -212,20 +282,34 @@ class DamageSystem extends GUTS.BaseSystem {
             damage *= (1 + moreValue);
         }
 
-        // STEP 5.5: Attacker buff outgoing-damage multiplier
-        // (e.g. moraleBroken — army hits for 10% after losing a command building)
-        const sourceBuff = this.game.getComponent(sourceId, "buff");
-        if (sourceBuff && (!sourceBuff.endTime || (this.game.state.now || 0) <= sourceBuff.endTime)) {
-            const sourceBuffDef = this.getBuffTypeDef(sourceBuff.buffType);
-            if (sourceBuffDef?.damageMultiplier != null && sourceBuffDef.damageMultiplier !== 1) {
-                damage *= sourceBuffDef.damageMultiplier;
-            }
-        }
+        // An attacker buff's scalar `damageMultiplier` used to be applied again here,
+        // on top of STEPS 4-5. StatAggregationSystem._collectSingleBuffModifiers
+        // already converts that same scalar into a tagless "more" modifier, so the
+        // buff landed twice — moraleBroken's 0.1 resolved as 0.01, a 99% damage loss
+        // where the def asks for 90%. StatAggregationSystem is the single owner of
+        // outgoing-damage modifiers, exactly as it already is for attack speed.
 
-        // STEP 6: Apply critical hit multiplier
-        if (options.isCritical) {
-            const critMultiplier = options.criticalMultiplier || 2.0;
-            damage *= critMultiplier;
+        // STEP 6: Critical strike. Attacks and spells both crit — the roll lives here
+        // rather than in the callers so every damage source gets it (before this, crit
+        // only ever happened for the three abilities that hardcoded isCritical, and
+        // every unit's criticalChance stat was dead).
+        //
+        // An explicit isCritical in the options still wins: ShadowStrike and Smite
+        // are *guaranteed* crits by design, and pass true.
+        // The skill's BASE crit chance; null for a basic attack, which falls back to
+        // the unit's own criticalChance. Gear/upgrades multiply this base — they do
+        // not add to it — so a 0-base skill can never crit.
+        let isCritical = options.isCritical;
+        let critMultiplier = options.criticalMultiplier;
+        if (isCritical === undefined && this.game.hasService('rollCritical')) {
+            const baseCrit = options.abilityCritChance != null ? options.abilityCritChance : null;
+            const critResult = this.call.rollCritical(
+                sourceId, targetId, baseCrit, damageTags, options.abilityIncreasedCrit || 0);
+            isCritical = critResult.critical;
+            critMultiplier = critMultiplier ?? critResult.multiplier;
+        }
+        if (isCritical) {
+            damage *= (critMultiplier || 2.0);
         }
 
         // Handle poison as special case (DoT)
@@ -255,7 +339,7 @@ class DamageSystem extends GUTS.BaseSystem {
             tags: damageTags,
             healthBefore: targetHealth.current + damageResult.finalDamage,
             healthAfter: targetHealth.current,
-            isCritical: options.isCritical
+            isCritical: isCritical
         });
 
         // Check for death
@@ -264,12 +348,19 @@ class DamageSystem extends GUTS.BaseSystem {
             this.handleEntityDeath(targetId);
         }
 
-        // Track attacker for retaliation in behavior tree
+        // Track attacker for retaliation in behavior tree.
+        //
+        // `lastAttackTime` is what BuffEffectsSystem._tickOnHitEffects watches to decide
+        // "this unit just landed a hit", so a hit that is ITSELF an on-hit effect must
+        // not advance it — otherwise enchant_weapon's bonus hit looks like a fresh swing
+        // next tick and procs again, forever, and two thorns-carrying units reflect at
+        // each other until one dies. `lastAttacker` is still recorded, so kill credit
+        // (and bloodlust stacks) survive a killing blow from a proc.
         if (sourceId && damageResult.finalDamage > 0) {
             const combatState = this.game.getComponent(targetId, "combatState");
             if (combatState) {
                 combatState.lastAttacker = sourceId;
-                combatState.lastAttackTime = this.game.state.now;
+                if (!options.derivedOnHit) combatState.lastAttackTime = this.game.state.now;
             }
         }
 
@@ -292,6 +383,7 @@ class DamageSystem extends GUTS.BaseSystem {
             element: element,
             tags: damageTags,
             modifiers: modifiers,
+            isCritical: !!isCritical,
             fatal: targetHealth.current <= 0,
             healthRemaining: targetHealth.current,
             healthMax: targetHealth.max
@@ -302,17 +394,13 @@ class DamageSystem extends GUTS.BaseSystem {
      * Note: Damage modifiers are now handled by StatAggregationSystem
      */
     getAttackerModifiers(attackerId, options = {}) {
-        const buff = this.game.getComponent(attackerId, "buff");
+        // Multi-buff: attack-speed multipliers from all active buffs multiply.
         let attackSpeedMultiplier = 1.0;
-
-        // Get attack speed from buff
-        if (buff) {
-            const currentTime = this.game.state.now || 0;
-            if (!buff.endTime || currentTime <= buff.endTime) {
-                const buffTypeDef = this.getBuffTypeDef(buff.buffType);
-                if (buffTypeDef) {
-                    attackSpeedMultiplier = buffTypeDef.attackSpeedMultiplier || 1.0;
-                }
+        const buffs = this.game.buffEffectsSystem?.getBuffs(attackerId) || [];
+        for (const buff of buffs) {
+            const buffTypeDef = this.getBuffTypeDef(buff.buffType);
+            if (buffTypeDef?.attackSpeedMultiplier) {
+                attackSpeedMultiplier *= buffTypeDef.attackSpeedMultiplier;
             }
         }
 
@@ -321,9 +409,45 @@ class DamageSystem extends GUTS.BaseSystem {
         };
     }
 
+    // Living squadmates linked to `targetId` by an active shield_wall buff
+    // (including targetId itself), in entity-id order (deterministic). Returns
+    // null when the target isn't shield-walled or isn't in a squad.
+    //
+    // Squad identity comes from heroRosterInfo (playerId + rosterIndex), the same
+    // key PlacementUISystem groups by. This used to read a `squadMember` component:
+    // the schema exists, but NOTHING in the game ever adds it, so the lookup always
+    // bailed and Shield Wall's damage sharing never once fired in a real match.
+    _getDamageShareGroup(targetId) {
+        const shieldWallType = this.enums.buffTypes?.shield_wall;
+        if (shieldWallType == null) return null;
+        const buffSystem = this.game.buffEffectsSystem;
+        if (!buffSystem?.hasBuff(targetId, shieldWallType)) return null;
+
+        const squad = this.game.getComponent(targetId, 'heroRosterInfo');
+        if (!squad || squad.playerId == null || squad.rosterIndex == null) return null;
+
+        const aliveState = this.enums.deathState?.alive;
+        const members = [];
+        for (const eid of this.game.getEntitiesWith('heroRosterInfo', 'health')) {
+            const sm = this.game.getComponent(eid, 'heroRosterInfo');
+            if (!sm || sm.playerId !== squad.playerId || sm.rosterIndex !== squad.rosterIndex) continue;
+            const hp = this.game.getComponent(eid, 'health');
+            if (!hp || hp.current <= 0) continue;
+            const ds = this.game.getComponent(eid, 'deathState');
+            if (ds && aliveState != null && ds.state !== aliveState) continue;
+            if (!buffSystem.hasBuff(eid, shieldWallType)) continue;
+            members.push(eid);
+        }
+        // getEntitiesWith makes no ordering promise, and the order decides who in the
+        // link takes (and possibly dies to) its share first — sort so peers agree.
+        members.sort((a, b) => a - b);
+        return members;
+    }
+
     getDefenderModifiers(defenderId) {
-        const buff = this.game.getComponent(defenderId, "buff");
-        const defaultMods = {
+        // Multi-buff aggregation: multipliers multiply across buffs, flat
+        // reductions and resistances add.
+        const mods = {
             armorMultiplier: 1.0,
             damageTakenMultiplier: 1.0,
             damageReduction: 0,
@@ -333,30 +457,30 @@ class DamageSystem extends GUTS.BaseSystem {
             additionalElementalResistance: 0
         };
 
-        if (!buff) return defaultMods;
+        const buffs = this.game.buffEffectsSystem?.getBuffs(defenderId) || [];
+        for (const buff of buffs) {
+            const buffTypeDef = this.getBuffTypeDef(buff.buffType);
+            if (!buffTypeDef) continue;
 
-        const currentTime = this.game.state.now || 0;
-        if (buff.endTime && currentTime > buff.endTime) return defaultMods;
+            // Apply stack multiplier for stackable buffs (e.g., marked damage taken increase)
+            // `??`, not `||`: a multiplier of 0 is the whole point of some buffs —
+            // `banished` authors damageTakenMultiplier: 0 to make the victim unharmable,
+            // and `||` coerced that straight back to 1.0, so banished units took full damage.
+            let damageTakenMultiplier = buffTypeDef.damageTakenMultiplier ?? 1.0;
+            if (buffTypeDef.stackable && buffTypeDef.damagePerStack && buff.stacks > 1) {
+                damageTakenMultiplier = 1 + (buffTypeDef.damagePerStack * buff.stacks);
+            }
 
-        // Look up buff type definition from collection
-        const buffTypeDef = this.getBuffTypeDef(buff.buffType);
-        if (!buffTypeDef) return defaultMods;
-
-        // Apply stack multiplier for stackable buffs (e.g., marked damage taken increase)
-        let damageTakenMultiplier = buffTypeDef.damageTakenMultiplier || 1.0;
-        if (buffTypeDef.stackable && buffTypeDef.damagePerStack && buff.stacks > 1) {
-            damageTakenMultiplier = 1 + (buffTypeDef.damagePerStack * buff.stacks);
+            mods.armorMultiplier               *= buffTypeDef.armorMultiplier ?? 1.0;
+            mods.damageTakenMultiplier         *= damageTakenMultiplier;
+            mods.damageReduction               += buffTypeDef.damageReduction || 0;
+            mods.additionalLightningResistance += buffTypeDef.additionalLightningResistance || 0;
+            mods.additionalFireResistance      += buffTypeDef.additionalFireResistance || 0;
+            mods.additionalColdResistance      += buffTypeDef.additionalColdResistance || 0;
+            mods.additionalElementalResistance += buffTypeDef.additionalElementalResistance || 0;
         }
 
-        return {
-            armorMultiplier: buffTypeDef.armorMultiplier || 1.0,
-            damageTakenMultiplier: damageTakenMultiplier,
-            damageReduction: buffTypeDef.damageReduction || 0,
-            additionalLightningResistance: buffTypeDef.additionalLightningResistance || 0,
-            additionalFireResistance: buffTypeDef.additionalFireResistance || 0,
-            additionalColdResistance: buffTypeDef.additionalColdResistance || 0,
-            additionalElementalResistance: buffTypeDef.additionalElementalResistance || 0
-        };
+        return mods;
     }
     /**
      * Apply splash/area damage around a point
@@ -434,9 +558,14 @@ class DamageSystem extends GUTS.BaseSystem {
 
         // Apply element-specific damage reduction using numeric comparisons
         if (element === this.enums.element.physical) {
-            const armor = defenses.armor || 0;
-            mitigated = Math.min(armor, finalDamage - this.MIN_DAMAGE);
-            finalDamage = Math.max(this.MIN_DAMAGE, finalDamage - armor);
+            // Armor is a PERCENTAGE reduction: armor / (armor + ARMOR_K).
+            // Flat subtraction made armor 10+ immune to tier-1 hits (6-15 dmg)
+            // yet irrelevant once levels multiplied damage; a ratio holds at
+            // every level and tier (10 → 25%, 16 → 35%, 22 → 42%).
+            const armor = Math.max(0, defenses.armor || 0);
+            const reduced = finalDamage * DamageSystem.ARMOR_K / (DamageSystem.ARMOR_K + armor);
+            mitigated = finalDamage - reduced;
+            finalDamage = Math.max(this.MIN_DAMAGE, Math.round(reduced));
         } else if (element === this.enums.element.fire) {
             const fireResist = this.capResistance(defenses.fireResistance || 0);
             mitigated = Math.floor(finalDamage * fireResist);
@@ -464,12 +593,20 @@ class DamageSystem extends GUTS.BaseSystem {
         // Apply damage taken multiplier (from marks, etc.)
         finalDamage *= defenderMods.damageTakenMultiplier;
 
-        // Apply flat damage reduction (from intimidation, shield wall, etc.)
+        // Apply fractional damage reduction (0..1). Capped at 0.9 — with
+        // multi-buff SUMMING damageReduction across buffs, an uncapped value
+        // (or a def authored as a flat number, e.g. phalanx's old 5) turns
+        // finalDamage negative and every hit becomes a heal.
         if (defenderMods.damageReduction > 0) {
-            const reductionAmount = Math.floor(finalDamage * defenderMods.damageReduction);
+            const reductionAmount = Math.floor(
+                finalDamage * Math.min(0.9, defenderMods.damageReduction));
             finalDamage -= reductionAmount;
             mitigated += reductionAmount;
         }
+
+        // Damage NEVER heals: whatever the modifier stack produced, the floor
+        // is zero.
+        finalDamage = Math.max(0, finalDamage);
         return {
             finalDamage,
             mitigated,
@@ -534,23 +671,13 @@ class DamageSystem extends GUTS.BaseSystem {
             poison = this.game.getComponent(targetId, 'poison');
         }
 
-        // Calculate damage per stack from this application
-        const damagePerStack = Math.max(1, Math.ceil(totalDamage / this.POISON_CONFIG.DEFAULT_TICKS));
-
-        // Add stacks (capped at maxStacks)
+        // Pool model: each application totals exactly its damage (drained over
+        // the refreshed window), so poison DPS equals the poisoner's hit rate.
+        // stacks only counts applications for display.
         const previousStacks = poison.stacks;
         poison.stacks = Math.min(poison.stacks + 1, poison.maxStacks);
-
-        // Refresh duration and update damage (average of existing + new).
-        // Use Math.round so applications equal to the existing value don't
-        // monotonically inflate damagePerStack via ceil rounding — without this,
-        // every hit at max stacks would bump damagePerStack by 1 forever.
-        if (previousStacks > 0) {
-            const blended = (poison.damagePerStack * previousStacks + damagePerStack) / poison.stacks;
-            poison.damagePerStack = Math.max(1, Math.round(blended));
-        } else {
-            poison.damagePerStack = damagePerStack;
-        }
+        poison.pool = (poison.pool || 0) + Math.max(1, totalDamage);
+        poison.damagePerStack = Math.max(1, Math.ceil(poison.pool / Math.max(1, Math.round(duration / tickInterval))));
 
         poison.duration = duration;
         poison.startTime = this.game.state.now;
@@ -563,7 +690,7 @@ class DamageSystem extends GUTS.BaseSystem {
         }
 
         return {
-            damage: poison.damagePerStack * poison.stacks,
+            damage: poison.damagePerStack,
             isPoison: true,
             stacks: poison.stacks,
             tickDamage: poison.damagePerStack,
@@ -601,9 +728,9 @@ class DamageSystem extends GUTS.BaseSystem {
                 continue;
             }
 
-            // Check if poison has expired
+            // Expired, or the pool is spent
             const elapsed = this.game.state.now - poison.startTime;
-            if (elapsed >= poison.duration) {
+            if (elapsed >= poison.duration || (poison.pool || 0) <= 0) {
                 this.game.removeComponent(entityId, 'poison');
                 continue;
             }
@@ -611,8 +738,11 @@ class DamageSystem extends GUTS.BaseSystem {
             // Check if it's time for a tick
             const timeSinceLastTick = this.game.state.now - poison.lastTickTime;
             if (timeSinceLastTick >= poison.tickInterval) {
-                // Apply poison damage (damage = damagePerStack * stacks)
-                const tickDamage = poison.damagePerStack * poison.stacks;
+                // Drain the pool evenly over the ticks left in the window.
+                const ticksLeft = Math.max(1, Math.round((poison.duration - elapsed) / poison.tickInterval));
+                const tickDamage = Math.min(poison.pool, Math.max(1, Math.ceil(poison.pool / ticksLeft)));
+                poison.pool -= tickDamage;
+                poison.lastTickDamage = tickDamage;
                 targetHealth.current -= tickDamage;
                 poison.lastTickTime = this.game.state.now;
 

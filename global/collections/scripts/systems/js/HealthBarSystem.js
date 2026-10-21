@@ -3,7 +3,8 @@ class HealthBarSystem extends GUTS.BaseSystem {
         'getCamera',
         'isVisibleAt',
         'isVisibleInFogAt',
-        'getWorldScene'
+        'getWorldScene',
+        'getActivePlayerTeam'
     ];
 
     constructor(game) {
@@ -195,26 +196,19 @@ class HealthBarSystem extends GUTS.BaseSystem {
         this.updateHealthBarNotches(entityId, health.max);
     }
     
+    // Team tinctures, matching the commander bar: azure for your units, gules
+    // for the enemy. Readable at a glance in a mixed melee, which a shared
+    // green-to-red health ramp is not. Below a quarter HP the bar brightens.
     getHealthColor(team) {
-        // All teams use green - color changes based on health percent instead
-        return 0x00ff00;
+        return this._isEnemyTeam(team) ? 0xdc5a4f : 0x5b9bd8;
     }
-    
+
     getHealthColorByPercent(percent, team) {
-        // All units start with green, then transition based on health
-        if (percent > 75) {
-            return 0x00ff00; // Green
-        } else if (percent > 50) {
-            return 0x88ff00; // Yellow-green
-        } else if (percent > 25) {
-            return 0xffff00; // Yellow
-        } else if (percent > 10) {
-            return 0xff8800; // Orange
-        } else {
-            return 0xff0000; // Red for critical health
-        }
+        const enemy = this._isEnemyTeam(team);
+        if (percent > 25) return enemy ? 0xdc5a4f : 0x5b9bd8;
+        return enemy ? 0xff8a7a : 0x9cd0ff;
     }
-    
+
     updateHealthBarNotches(entityId, maxHealth) {
         const healthBarData = this.healthBars.get(entityId);
         if (!healthBarData) return;
@@ -336,6 +330,13 @@ class HealthBarSystem extends GUTS.BaseSystem {
             healthBarData.lastHealthPercent = -1;
         });
     }
+    // Colour only (isEnemy below also drives fog culling and reads state.myTeam).
+    _isEnemyTeam(teamComp) {
+        const myTeam = this.game?.state?.myTeam ?? this.call.getActivePlayerTeam?.();
+        if (myTeam == null || !teamComp) return false;
+        return teamComp.team !== myTeam;
+    }
+
     isEnemy(teamComp) {
         const myTeam = this.game?.state?.myTeam;
         if (myTeam == null || !teamComp) return false;

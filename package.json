@@ -1,6 +1,6 @@
 {
   "name": "guts",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "description": "GUTS game/app engine, editor, and build system",
   "main": "index.html",
   "bin": {
