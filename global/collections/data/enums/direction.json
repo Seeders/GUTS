@@ -1,0 +1,13 @@
+{
+  "title": "Direction",
+  "enum": [
+    "down",
+    "downleft",
+    "left",
+    "upleft",
+    "up",
+    "upright",
+    "right",
+    "downright"
+  ]
+}

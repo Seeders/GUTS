@@ -21,9 +21,7 @@ Units on a grid map: the spatial grid (getNearbyUnits), A* pathfinding, steering
 
 ## What your game supplies
 
-**Components.** These systems read or write these components, so your game defines their schemas in `collections/data/components`:
-
-`aiState`, `collision`, `combat`, `deathState`, `health`, `illusion`, `leaping`, `movementState`, `pathfinding`, `placement`, `playerOrder`, `projectile`, `renderable`, `team`, `terrain`, `transform`, `unitType`, `velocity`
+**Components.** This kit ships reference schemas for `collision`, `leaping`, `movementState`, `pathfinding`, `placement`, `playerOrder`. A project that lists its kits in game.json gets the schemas of the core and of those kits, except where it has its own file of the same name (yours wins). Its systems use these, which the core or this kit's required kits provide: `aiState`, `deathState`, `health`, `renderable`, `team`, `terrain`, `transform`, `unitType`, `velocity`. They also read `combat`, `illusion`, `projectile` when an entity has them; define those yourself if you use the feature.
 
 **Services.** These systems call these services, which no engine system provides. Provide the ones your game needs from one of your systems (`static services = [...]`); a missing service is a no-op that logs one warning:
 

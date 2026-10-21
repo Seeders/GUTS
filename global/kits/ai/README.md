@@ -16,9 +16,7 @@ Behavior trees: the tree/node/processor classes, a blackboard, the debugger and 
 
 ## What your game supplies
 
-**Components.** These systems read or write these components, so your game defines their schemas in `collections/data/components` (this kit ships `behaviorState` as a reference):
-
-`aiHeuristicState`, `aiOpponent`, `aiState`, `behaviorState`, `deathState`, `leaping`, `team`, `unitType`
+**Components.** This kit ships reference schemas for `aiState`, `behaviorState`. A project that lists its kits in game.json gets the schemas of the core and of those kits, except where it has its own file of the same name (yours wins). Its systems use these, which the core or this kit's required kits provide: `deathState`, `team`, `unitType`. They also read `aiHeuristicState`, `aiOpponent`, `leaping` when an entity has them; define those yourself if you use the feature.
 
 **Services.** These systems call these services, which no engine system provides. Provide the ones your game needs from one of your systems (`static services = [...]`); a missing service is a no-op that logs one warning:
 

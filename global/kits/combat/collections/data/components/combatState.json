@@ -1,0 +1,7 @@
+{
+  "title": "combatState",
+  "schema": {
+    "lastAttacker": null,
+    "lastAttackTime": 0
+  }
+}

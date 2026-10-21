@@ -11,7 +11,7 @@ global/
 │   │   └── systems/      rendering, world, terrain, cameras, keyboard, audio and music,
 │   │                     animation, particles and effects, lighting, post-processing,
 │   │                     scheduling, loading, pause, UI, chat
-│   ├── data/             components every game has (gameState)
+│   ├── data/             component schemas and enums the core systems use
 │   ├── editor/           editor modules and themes
 │   └── ui/               shared interfaces and modals
 └── kits/                 optional: pick the ones that fit your game
@@ -63,6 +63,13 @@ By default every kit is available. A project can name the kits it uses in game.j
 ```
 
 Kits a listed kit requires come along (`combat` brings `ai` and `units`).
+
+A project that lists its kits also gets the engine's component schemas and enums: those of
+the core (`transform`, `velocity`, `renderable`, `unitType`, `team`, `health`, `deathState`,
+`animationState`, ...; enums such as `team`, `deathState`, `element`) and of each kit it
+uses, from their `data/components` and `data/enums` folders. A file of the same name in the
+project replaces the engine's. Projects without a `kits` list define all their own, as
+before.
 
 Imports of engine files use `@global/...`, which searches the core and then each kit:
 

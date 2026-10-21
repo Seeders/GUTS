@@ -1,0 +1,9 @@
+{
+  "title": "behaviorCollection",
+  "enum": [
+    "behaviorActions",
+    "behaviorDecorators",
+    "behaviorTrees",
+    "sequenceBehaviorTrees"
+  ]
+}

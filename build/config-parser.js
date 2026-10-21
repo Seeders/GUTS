@@ -660,6 +660,20 @@ class ConfigParser {
             }
         }
 
+        // A project that lists its kits also gets the engine's component schemas and enums: the
+        // core's plus those of its kits, each only where the project has no file of that name.
+        // (Projects without a `kits` list define all of their own, as before.)
+        if (this.readProjectKits() !== null) {
+            for (const id of ['components', 'enums']) {
+                const engine = this.editorCollections[id];
+                if (!engine?.dataFiles?.length) continue;
+                const entry = dataCollections[id] || { dataFiles: [], htmlFiles: [], cssFiles: [] };
+                const names = new Set(entry.dataFiles.map(f => f.name));
+                entry.dataFiles = [...entry.dataFiles, ...engine.dataFiles.filter(f => !names.has(f.name))];
+                dataCollections[id] = entry;
+            }
+        }
+
         console.log(`    Data collections: ${Object.keys(dataCollections).length}`);
         return dataCollections;
     }

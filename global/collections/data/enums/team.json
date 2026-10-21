@@ -1,0 +1,9 @@
+{
+  "title": "Team",
+  "enum": [
+    "neutral",
+    "hostile",
+    "left",
+    "right"
+  ]
+}

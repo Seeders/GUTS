@@ -1,0 +1,14 @@
+{
+  "title": "buildingState",
+  "schema": {
+    "targetBuildingEntityId": null,
+    "buildTime": 0,
+    "constructionStartTime": 0,
+    "pendingGridPosition": {
+      "x": 0,
+      "z": 0
+    },
+    "pendingUnitTypeId": null,
+    "pendingCollection": null
+  }
+}

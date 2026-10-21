@@ -1,0 +1,16 @@
+{
+  "title": "poison",
+  "description": "Poison damage over time. Each application adds its full damage to a pool and refreshes the window; ticks drain the pool evenly.",
+  "schema": {
+    "stacks": 0,
+    "maxStacks": 10,
+    "damagePerStack": 0,
+    "duration": 0,
+    "startTime": 0,
+    "lastTickTime": 0,
+    "tickInterval": 1,
+    "sourceId": null,
+    "pool": 0,
+    "lastTickDamage": 0
+  }
+}

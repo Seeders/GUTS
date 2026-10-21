@@ -14,9 +14,7 @@ Card games: a deck, dragging cards, and card rendering, with card/cardVisual/dra
 
 ## What your game supplies
 
-**Components.** These systems read or write these components, so your game defines their schemas in `collections/data/components` (this kit ships `card`, `cardVisual`, `draggable` as a reference):
-
-`card`, `cardLocation`, `cardVisual`, `draggable`
+**Components.** This kit ships reference schemas for `card`, `cardLocation`, `cardVisual`, `draggable`. A project that lists its kits in game.json gets the schemas of the core and of those kits, except where it has its own file of the same name (yours wins). Its systems use these, which the core or this kit's required kits provide: none.
 
 **Services.** These systems call these services, which no engine system provides. Provide the ones your game needs from one of your systems (`static services = [...]`); a missing service is a no-op that logs one warning:
 

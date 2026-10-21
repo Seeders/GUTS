@@ -1,0 +1,15 @@
+{
+  "title": "playerOrder",
+  "schema": {
+    "targetPositionX": 0,
+    "targetPositionY": 0,
+    "targetPositionZ": 0,
+    "isMoveOrder": false,
+    "preventEnemiesInRangeCheck": false,
+    "completed": false,
+    "issuedTime": 0,
+    "enabled": false,
+    "isHiding": false,
+    "sneaking": false
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "title": "aiState",
+  "schema": {
+    "currentAction": null,
+    "currentActionCollection": null,
+    "rootBehaviorTree": null,
+    "rootBehaviorTreeCollection": null
+  }
+}

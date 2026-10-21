@@ -19,9 +19,7 @@ Damage with armor, resistances and status effects, accuracy, stat aggregation, p
 
 ## What your game supplies
 
-**Components.** These systems read or write these components, so your game defines their schemas in `collections/data/components`:
-
-`aiState`, `animation`, `combat`, `combatState`, `deathState`, `health`, `heroRosterInfo`, `homingTarget`, `lifetime`, `mindControlled`, `mirrorImage`, `neutralMonster`, `poison`, `projectile`, `projectileVisual`, `renderable`, `statusEffect`, `summoned`, `team`, `temporaryEffect`, `transform`, `trap`, `unitType`, `velocity`
+**Components.** This kit ships reference schemas for `combat`, `combatState`, `heroRosterInfo`, `homingTarget`, `lifetime`, `mindControlled`, `mirrorImage`, `neutralMonster`, `poison`, `projectile`, `statusEffect`, `summoned`, `temporaryEffect`, `trap`. A project that lists its kits in game.json gets the schemas of the core and of those kits, except where it has its own file of the same name (yours wins). Its systems use these, which the core or this kit's required kits provide: `aiState`, `animation`, `deathState`, `health`, `renderable`, `team`, `transform`, `unitType`, `velocity`. They also read `projectileVisual` when an entity has them; define those yourself if you use the feature.
 
 **Services.** These systems call these services, which no engine system provides. Provide the ones your game needs from one of your systems (`static services = [...]`); a missing service is a no-op that logs one warning:
 

@@ -1,0 +1,11 @@
+{
+  "title": "FormationType",
+  "enum": [
+    "none",
+    "single",
+    "column",
+    "line",
+    "square",
+    "rectangle"
+  ]
+}
