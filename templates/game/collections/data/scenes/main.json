@@ -1,0 +1,8 @@
+{
+    "title": "Main",
+    "interface": "main",
+    "systems": [
+        "SpinSystem",
+        "ViewSystem"
+    ]
+}

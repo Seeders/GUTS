@@ -1,0 +1,10 @@
+{
+    "title": "__TITLE__",
+    "libraries": [
+        "App",
+        "SimpleLoader"
+    ],
+    "interface": "main",
+    "appLibrary": "App",
+    "appLoaderLibrary": "SimpleLoader"
+}
