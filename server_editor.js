@@ -234,6 +234,9 @@ app.post('/upload-model', upload.single('gltfFile'), async (req, res) => {
 app.post('/save-file', async (req, res) => {
     let { path: filePath, content, encoding } = req.body;
     filePath = path.join(PROJS_DIR, filePath);
+    if (filePath !== PROJS_DIR && !filePath.startsWith(PROJS_DIR + path.sep)) {
+        return res.status(400).send({ success: false, error: 'Invalid path' });
+    }
     console.log('Resolved save path:', filePath);
     try {
         const dir = path.dirname(filePath);
@@ -260,6 +263,9 @@ app.post('/save-file', async (req, res) => {
 app.post('/delete-file', async (req, res) => {
     let { path: filePath } = req.body;
     filePath = path.join(PROJS_DIR, filePath);
+    if (filePath !== PROJS_DIR && !filePath.startsWith(PROJS_DIR + path.sep)) {
+        return res.status(400).send({ success: false, error: 'Invalid path' });
+    }
     console.log('Deleting file:', filePath);
     try {
         if (!fsSync.existsSync(filePath)) {
@@ -278,6 +284,9 @@ app.post('/delete-file', async (req, res) => {
 app.post('/delete-folder', async (req, res) => {
     let { path: folderPath } = req.body;
     folderPath = path.join(PROJS_DIR, folderPath);
+    if (folderPath !== PROJS_DIR && !folderPath.startsWith(PROJS_DIR + path.sep)) {
+        return res.status(400).send({ success: false, error: 'Invalid path' });
+    }
     console.log('Deleting folder:', folderPath);
     try {
         if (!fsSync.existsSync(folderPath)) {
