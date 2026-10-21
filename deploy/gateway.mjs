@@ -15,7 +15,8 @@ const GAMES = {
     kingdom:   { title: 'Kingdom of Defiance', port: 4102, heap: 900 },
     realm:     { title: 'Realm of Defiance',  port: 4103, heap: 700 },
     heroarena: { title: 'HeroArena',          port: 4104, heap: 600 },
-    descent:   { title: 'Descent',            port: 4105, heap: 900 }
+    descent:   { title: 'Descent',            port: 4105, heap: 900 },
+    wiki:      { title: 'GUTS Wiki',          port: 4106, heap: 256 }
 };
 const state = Object.fromEntries(Object.keys(GAMES).map(k => [k, { proc: null, ready: null, sockets: 0, last: 0 }]));
 const log = (...a) => console.log(new Date().toISOString(), ...a);
