@@ -25,14 +25,19 @@ class BaseECSGame {
         const gameConfig = app?.collections?.configs?.game;
         this.MAX_ENTITIES = gameConfig?.maxEntities || 65536; // Power of 2 recommended for performance
 
+        // Storage starts at MAX_ENTITIES and doubles when IDs run past it, up to MAX_ENTITY_LIMIT
+        // (game.json maxEntityLimit). The typed arrays sit on resizable ArrayBuffers, so they grow
+        // in place: arrays systems hold on to (getFieldArray) stay the live ones.
+        this.MAX_ENTITY_LIMIT = gameConfig?.maxEntityLimit || (1 << 20);
+
         // Entity management with TypedArrays
         // entityAlive[i] = 1 if entity i exists, 0 if free slot
-        this.entityAlive = new Uint8Array(this.MAX_ENTITIES);
+        this.entityAlive = this._entityArray(Uint8Array);
         // Component bitmask per entity (up to 32 component types with single Uint32)
         // For more components, we use multiple Uint32s
         // 256 component types max = 8 Uint32s per entity
         this.MASK_UINT32_COUNT = 8;
-        this.entityComponentMask = new Uint32Array(this.MAX_ENTITIES * this.MASK_UINT32_COUNT);
+        this.entityComponentMask = this._entityArray(Uint32Array, this.MASK_UINT32_COUNT);
 
         // Entity ID counter (no recycling - IDs grow monotonically to prevent reference bugs)
         this.nextEntityId = 1; // Start at 1, reserve 0 as "no entity"
@@ -46,6 +51,10 @@ class BaseECSGame {
         // SoA (Structure of Arrays) storage for numeric components
         // Each numeric field gets its own Float32Array for cache-friendly iteration
         this._numericArrays = new Map(); // "componentType.field.path" -> Float32Array
+        // The same arrays by component, then field path: found without building the key string
+        // on every read (field reads are the engine's hottest path). Arrays are only ever added,
+        // never replaced (they grow in place), so a reference once found stays good.
+        this._fieldArrays = new Map(); // componentType -> Map(fieldPath -> Float32Array)
 
         // Track which components are numeric-only (use TypedArrays)
         // Maps componentId -> { fields: ['field1', 'nested.field2'], isNumeric: true }
@@ -57,6 +66,13 @@ class BaseECSGame {
 
         // Query cache for getEntitiesWith - stores reusable arrays to avoid allocations
         this._queryCache = new Map();
+
+        // What getEntitiesWith last found per query, reused while none of the query's component
+        // types gained or lost an entity since: _typeVersion[typeId] counts changes to that
+        // type's bits, _queryEpoch counts wholesale changes (network sync, clearing everything).
+        this._queryResults = new Map(); // queryKey -> { epoch, typeIds, versions, ids }
+        this._typeVersion = new Uint32Array(256);
+        this._queryEpoch = 0;
 
         // Delta sync tracking - stores last synced state for computing deltas
         this._lastSyncedState = null;
@@ -111,6 +127,52 @@ class BaseECSGame {
     }
 
     /**
+     * A per-entity typed array (perEntity values each) that can grow with the entity storage:
+     * a length-tracking view of a resizable ArrayBuffer where the runtime has them, else fixed.
+     */
+    _entityArray(Ctor, perEntity = 1) {
+        const bytes = Ctor.BYTES_PER_ELEMENT * perEntity;
+        if (typeof ArrayBuffer.prototype.resize === 'function') {
+            return new Ctor(new ArrayBuffer(this.MAX_ENTITIES * bytes, { maxByteLength: this.MAX_ENTITY_LIMIT * bytes }));
+        }
+        return new Ctor(this.MAX_ENTITIES * perEntity);
+    }
+
+    /**
+     * Double the entity storage until `id` fits below the last slot (the gameState singleton's,
+     * which moves to the new last slot). Every peer grows at the same entity count, so IDs stay
+     * in step.
+     */
+    _growEntityStorage(id) {
+        let size = this.MAX_ENTITIES;
+        while (size - 1 <= id) size *= 2;
+        if (size > this.MAX_ENTITY_LIMIT || typeof this.entityAlive.buffer.resize !== 'function') {
+            throw new Error(`Maximum entity limit (${this.MAX_ENTITIES}) reached`);
+        }
+        const M = this.MASK_UINT32_COUNT;
+        this.entityAlive.buffer.resize(size);
+        this.entityComponentMask.buffer.resize(size * M * 4);
+        for (const arr of this._numericArrays.values()) arr.buffer.resize(size * 4);
+
+        // the singleton moves from the old last slot to the new one
+        const from = this.gameStateEntityId, to = size - 1;
+        this.MAX_ENTITIES = size;
+        if (from != null && this.entityAlive[from]) {
+            this.entityAlive[to] = 1;
+            this.entityComponentMask.copyWithin(to * M, from * M, (from + 1) * M);
+            for (const arr of this._numericArrays.values()) arr[to] = arr[from];
+            for (const storage of this._objectComponents.values()) {
+                if (storage[from] !== undefined) { storage[to] = storage[from]; storage[from] = undefined; }
+            }
+            for (const cache of this._proxyCache.values()) cache.delete(from);
+            this.entityAlive[from] = 0;
+            this.entityComponentMask.fill(0, from * M, (from + 1) * M);
+            this.gameStateEntityId = to;
+        }
+        this._queryEpoch++;
+    }
+
+    /**
      * Pre-register common component types and allocate their storage
      */
     _initComponentTypes() {
@@ -149,6 +211,7 @@ class BaseECSGame {
         const maskIndex = entityId * this.MASK_UINT32_COUNT + wordIndex;
         const bit = componentTypeId % 32;
         this.entityComponentMask[maskIndex] |= (1 << bit);
+        this._typeVersion[componentTypeId]++;
     }
 
     /**
@@ -160,6 +223,19 @@ class BaseECSGame {
         const maskIndex = entityId * this.MASK_UINT32_COUNT + wordIndex;
         const bit = componentTypeId % 32;
         this.entityComponentMask[maskIndex] &= ~(1 << bit);
+        this._typeVersion[componentTypeId]++;
+    }
+
+    /** Count a change for every component type set in an entity's mask (before it's cleared). */
+    _touchMaskTypes(maskBase) {
+        for (let w = 0; w < this.MASK_UINT32_COUNT; w++) {
+            let bits = this.entityComponentMask[maskBase + w];
+            while (bits) {
+                const low = bits & -bits;
+                this._typeVersion[w * 32 + (31 - Math.clz32(low))]++;
+                bits ^= low;
+            }
+        }
     }
 
     /**
@@ -179,7 +255,7 @@ class BaseECSGame {
     _getNumericArray(key) {
         let arr = this._numericArrays.get(key);
         if (!arr) {
-            arr = new Float32Array(this.MAX_ENTITIES);
+            arr = this._entityArray(Float32Array);
             this._numericArrays.set(key, arr);
         }
         return arr;
@@ -286,11 +362,22 @@ class BaseECSGame {
      * Note: Caller should use _toStorageValue() if passing user-provided values
      */
     _setNumericField(componentId, entityId, fieldPath, value) {
-        const key = `${componentId}.${fieldPath}`;
-        const arr = this._numericArrays.get(key);
+        const arr = this._fieldArray(componentId, fieldPath);
         if (arr) {
             arr[entityId] = value;
         }
+    }
+
+    /** A numeric field's storage array (undefined until the field has storage). */
+    _fieldArray(componentId, fieldPath) {
+        let byField = this._fieldArrays.get(componentId);
+        if (!byField) this._fieldArrays.set(componentId, byField = new Map());
+        let arr = byField.get(fieldPath);
+        if (arr === undefined) {
+            arr = this._numericArrays.get(`${componentId}.${fieldPath}`);
+            if (arr) byField.set(fieldPath, arr);
+        }
+        return arr;
     }
 
     /**
@@ -298,8 +385,7 @@ class BaseECSGame {
      * Converts -Infinity (null sentinel) back to null for API consumers
      */
     _getNumericField(componentId, entityId, fieldPath) {
-        const key = `${componentId}.${fieldPath}`;
-        const arr = this._numericArrays.get(key);
+        const arr = this._fieldArray(componentId, fieldPath);
         if (!arr) return undefined;
         return this._fromStorageValue(arr[entityId]);
     }
@@ -308,8 +394,7 @@ class BaseECSGame {
      * Get raw value from TypedArray storage without null conversion (for internal use)
      */
     _getRawNumericField(componentId, entityId, fieldPath) {
-        const key = `${componentId}.${fieldPath}`;
-        const arr = this._numericArrays.get(key);
+        const arr = this._fieldArray(componentId, fieldPath);
         return arr ? arr[entityId] : undefined;
     }
 
@@ -591,12 +676,10 @@ class BaseECSGame {
                 const info = schemaInfo[prop];
                 if (!info) return undefined;
 
-                if (info.type === 'number' || info.type === 'enum') {
-                    return game._getNumericField(componentId, entityId, info.fieldPath);
-                } else if (info.type === 'boolean') {
-                    return game._getNumericField(componentId, entityId, info.fieldPath) !== 0;
-                } else if (info.type === 'null') {
-                    return game._getNumericField(componentId, entityId, info.fieldPath);
+                if (info.type === 'number' || info.type === 'enum' || info.type === 'null' || info.type === 'boolean') {
+                    const arr = info.arr || (info.arr = game._fieldArray(componentId, info.fieldPath));
+                    const value = arr ? game._fromStorageValue(arr[entityId]) : undefined;
+                    return info.type === 'boolean' ? value !== 0 : value;
                 } else if (info.type === 'fixedArray' || info.type === 'bitmask' || info.type === 'nested') {
                     // Cache nested proxies to avoid recreation
                     if (!nestedCache[prop]) {
@@ -618,7 +701,8 @@ class BaseECSGame {
                 }
 
                 if (info.type === 'number' || info.type === 'boolean' || info.type === 'null' || info.type === 'enum') {
-                    game._setNumericField(componentId, entityId, info.fieldPath, storedValue);
+                    const arr = info.arr || (info.arr = game._fieldArray(componentId, info.fieldPath));
+                    if (arr) arr[entityId] = storedValue;
                     return true;
                 }
                 return false;
@@ -1103,6 +1187,7 @@ class BaseECSGame {
         this.gameStateEntityId = id;
         if (!this.entityAlive[id]) {
             this.entityAlive[id] = 1;
+            this._touchMaskTypes(id * this.MASK_UINT32_COUNT);
             this.entityComponentMask.fill(0, id * this.MASK_UINT32_COUNT, (id + 1) * this.MASK_UINT32_COUNT);
         }
         const typeId = this._getComponentTypeId('gameState');
@@ -1255,10 +1340,8 @@ class BaseECSGame {
         // Never recycle entity IDs - always use fresh IDs
         // This prevents bugs where cached entity references (lastAttacker, target, etc.)
         // accidentally point to completely different entities after ID reuse
-        // Memory cost is negligible - typed arrays grow as needed
-        if (this.nextEntityId >= this.MAX_ENTITIES) {
-            throw new Error(`Maximum entity limit (${this.MAX_ENTITIES}) reached`);
-        }
+        // Memory cost is negligible - typed arrays grow as needed (the last slot is the gameState singleton's)
+        if (this.nextEntityId >= this.MAX_ENTITIES - 1) this._growEntityStorage(this.nextEntityId);
         return this.nextEntityId++;
     }
 
@@ -1369,11 +1452,13 @@ class BaseECSGame {
 
     createEntity(setId) {
         const id = setId !== undefined && setId !== null ? setId : this.getEntityId();
+        if (id >= this.MAX_ENTITIES - 1) this._growEntityStorage(id);
         // Mark entity as alive
         this.entityAlive[id] = 1;
         // Clear component bitmask
         // Clear all mask words for this entity
         const maskBase = id * this.MASK_UINT32_COUNT;
+        this._touchMaskTypes(maskBase);
         for (let w = 0; w < this.MASK_UINT32_COUNT; w++) {
             this.entityComponentMask[maskBase + w] = 0;
         }
@@ -1416,6 +1501,7 @@ class BaseECSGame {
         this.entityAlive[entityId] = 0;
         // Clear all mask words for this entity
         const maskBase = entityId * this.MASK_UINT32_COUNT;
+        this._touchMaskTypes(maskBase);
         for (let w = 0; w < this.MASK_UINT32_COUNT; w++) {
             this.entityComponentMask[maskBase + w] = 0;
         }
@@ -1986,6 +2072,8 @@ class BaseECSGame {
      * Apply ECS data from server (handles both full sync and delta sync)
      */
     applyECSData(data) {
+        // Entities the sender has past this storage's end: grow first (its writes index slots directly)
+        if (data.nextEntityId >= this.MAX_ENTITIES - 1) this._growEntityStorage(data.nextEntityId);
         // Check if this is a full sync or delta sync
         if (data.fullSync !== false) {
             this._applyFullECSData(data);
@@ -2001,6 +2089,7 @@ class BaseECSGame {
      * Apply full ECS sync - replaces all state
      */
     _applyFullECSData(data) {
+        this._queryEpoch++;
         const maxEntity = data.nextEntityId || this.nextEntityId;
 
         // Clear and apply entity alive flags from sparse format
@@ -2054,7 +2143,7 @@ class BaseECSGame {
 
             let arr = this._numericArrays.get(key);
             if (!arr) {
-                arr = new Float32Array(this.MAX_ENTITIES);
+                arr = this._entityArray(Float32Array);
                 this._numericArrays.set(key, arr);
             }
             // Clear this specific array before applying server data
@@ -2088,6 +2177,7 @@ class BaseECSGame {
      * Apply delta ECS sync - only applies changes
      */
     _applyDeltaECSData(data) {
+        this._queryEpoch++;
         // Apply entity deaths
         if (data.entityDead) {
             for (const entityId of data.entityDead) {
@@ -2143,7 +2233,7 @@ class BaseECSGame {
 
             let arr = this._numericArrays.get(key);
             if (!arr) {
-                arr = new Float32Array(this.MAX_ENTITIES);
+                arr = this._entityArray(Float32Array);
                 this._numericArrays.set(key, arr);
             }
             for (const [entityIdStr, value] of Object.entries(sparse)) {
@@ -2174,6 +2264,7 @@ class BaseECSGame {
      * Finalize ECS sync - common cleanup for both full and delta
      */
     _finalizeECSSync(data) {
+        this._queryEpoch++;
         // Sync entity ID counter
         if (data.nextEntityId !== undefined) {
             this.nextEntityId = data.nextEntityId;
@@ -2254,6 +2345,20 @@ class BaseECSGame {
         }
         result.length = 0;  // Clear without deallocating (keeps underlying buffer)
 
+        // Unchanged since last asked: the same entities, in the same (ascending) order
+        const known = this._queryResults.get(queryKey);
+        if (known && known.epoch === this._queryEpoch && known.typeIds.length > 0) {
+            let fresh = true;
+            for (let i = 0; i < known.typeIds.length; i++) {
+                if (this._typeVersion[known.typeIds[i]] !== known.versions[i]) { fresh = false; break; }
+            }
+            if (fresh) {
+                const ids = known.ids;
+                for (let i = 0; i < ids.length; i++) result.push(ids[i]);
+                return result;
+            }
+        }
+
         // Build query bitmask from component types (8 Uint32s for 256 component types)
         const queryMask = new Uint32Array(this.MASK_UINT32_COUNT);
         for (const componentType of componentTypes) {
@@ -2293,6 +2398,13 @@ class BaseECSGame {
             }
         }
 
+        const typeIds = componentTypes.map(t => this._componentTypeId.get(t));
+        this._queryResults.set(queryKey, {
+            epoch: this._queryEpoch,
+            typeIds,
+            versions: typeIds.map(id => this._typeVersion[id]),
+            ids: result.slice()
+        });
         return result;
     }
     
@@ -2542,6 +2654,7 @@ class BaseECSGame {
      * Clear all entities and reset the ECS state
      */
     clearAllEntities() {
+        this._queryEpoch++;
         // Clear all object storage
         for (const storage of this._objectComponents.values()) {
             storage.fill(undefined);
