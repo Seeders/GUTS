@@ -22,6 +22,7 @@ class EntityRenderer {
 
         // VAT batching system
         this.vatBatches = new Map(); // batchKey -> batch data
+        this.looks = new Map();      // entityId -> look (see ModelManager.lookFor); set by the game
         this.batchCreationPromises = new Map();
 
         // Static instanced rendering system for cliffs/worldObjects
@@ -228,12 +229,14 @@ class EntityRenderer {
      * Spawn entity using VAT batching
      */
     async spawnVATEntity(entityId, data, entityDef) {
-        const batchKey = `${data.collection}_${data.type}`;
+        // Units drawn in looks (ModelManager.lookFor) get one batch per look
+        const look = this.modelManager?.lookFor?.(entityId, entityDef, this.looks) ?? null;
+        const batchKey = look != null ? `${data.collection}_${data.type}_look${GUTS.ModelManager.lookHash(look)}` : `${data.collection}_${data.type}`;
 
         // Get or create batch
         let batch = this.vatBatches.get(batchKey);
         if (!batch) {
-            batch = await this.createVATBatch(batchKey, data.collection, data.type, entityDef);
+            batch = await this.createVATBatch(batchKey, data.collection, data.type, entityDef, look);
             if (!batch) {
                 console.error(`[EntityRenderer] Failed to create VAT batch for ${batchKey}`);
                 return false;
@@ -1998,13 +2001,13 @@ class EntityRenderer {
 
     // ============ VAT BATCH CREATION ============
 
-    async createVATBatch(batchKey, collection, type, entityDef) {
+    async createVATBatch(batchKey, collection, type, entityDef, look = null) {
         // Check if already creating
         if (this.batchCreationPromises.has(batchKey)) {
             return await this.batchCreationPromises.get(batchKey);
         }
 
-        const promise = this._createVATBatchInternal(batchKey, collection, type, entityDef);
+        const promise = this._createVATBatchInternal(batchKey, collection, type, entityDef, look);
         this.batchCreationPromises.set(batchKey, promise);
 
         try {
@@ -2015,7 +2018,7 @@ class EntityRenderer {
         }
     }
 
-    async _createVATBatchInternal(batchKey, collection, type, entityDef) {
+    async _createVATBatchInternal(batchKey, collection, type, entityDef, look = null) {
         if (!this.modelManager) {
             console.error('[EntityRenderer] No modelManager provided for VAT batching');
             return null;
@@ -2024,7 +2027,7 @@ class EntityRenderer {
         // Request VAT bundle from model manager
         let bundleResult;
         try {
-            bundleResult = await this.modelManager.requestVATBundle(collection, type, entityDef);
+            bundleResult = await this.modelManager.requestVATBundle(collection, type, entityDef, look);
         } catch (error) {
             console.error(`[EntityRenderer] VAT bundle request failed for ${batchKey}:`, error);
             return null;
