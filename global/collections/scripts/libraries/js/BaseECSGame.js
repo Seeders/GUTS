@@ -110,6 +110,8 @@ class BaseECSGame {
         // Proxy cache for getComponent - avoids creating new proxies every call
         // Map: componentType -> Map(entityId -> proxy)
         this._proxyCache = new Map();
+        // Accessor property descriptors per component (and nested path), shared by every entity's view
+        this._accessorDescs = new Map();
 
         // Pre-allocated result array for queries (avoids allocation in hot path)
         this._queryResultBuffer = new Uint32Array(this.MAX_ENTITIES);
@@ -640,17 +642,33 @@ class BaseECSGame {
     }
 
     /**
-     * Create a proxy that reads/writes directly from TypedArrays
-     * Every property access goes through the proxy traps for live data
+     * A live view of one entity's numeric component: reads and writes go straight to the
+     * TypedArrays. Each field is an own enumerable accessor (shared descriptors per component, see
+     * _accessorDescriptors), so the view spreads ({...comp}), enumerates (Object.keys) and
+     * serialises (toJSON) like a plain object while V8 can optimise its getters, unlike a Proxy's
+     * traps. The shape is fixed: assigning a field the schema doesn't have throws in strict code.
      */
     _createComponentProxy(componentId, entityId, schema, prefix) {
-        const game = this;
+        const view = {};
+        Object.defineProperty(view, '_e', { value: entityId });     // the entity (not enumerable)
+        Object.defineProperty(view, '_n', { value: {} });           // nested views, made on first use
+        Object.defineProperties(view, this._accessorDescriptors(componentId, schema, prefix));
+        Object.preventExtensions(view);
+        return view;
+    }
 
-        // Build schema info for fast lookups
-        const schemaInfo = {};
+    /** The accessor descriptors for a component's fields at `prefix` (built once, shared by every entity). */
+    _accessorDescriptors(componentId, schema, prefix) {
+        const cacheKey = prefix ? `${componentId}|${prefix}` : componentId;
+        let descs = this._accessorDescs.get(cacheKey);
+        if (descs) return descs;
+        const game = this;
+        descs = {};
+        const keys = [];
         for (const key in schema) {
+            keys.push(key);
             const schemaValue = schema[key];
-            schemaInfo[key] = {
+            const info = {
                 fieldPath: prefix ? `${prefix}.${key}` : key,
                 type: schemaValue === null ? 'null' :
                       typeof schemaValue === 'boolean' ? 'boolean' :
@@ -661,79 +679,42 @@ class BaseECSGame {
                       (schemaValue && typeof schemaValue === 'object') ? 'nested' : 'unknown',
                 schemaValue
             };
-        }
-
-        // Cache for nested proxies (fixedArray, bitmask, nested objects)
-        const nestedCache = {};
-
-        return new Proxy({}, {
-            get(target, prop) {
-                // Support JSON.stringify
-                if (prop === 'toJSON') {
-                    return () => {
-                        const result = {};
-                        for (const key in schemaInfo) {
-                            const info = schemaInfo[key];
-                            if (info.type === 'number' || info.type === 'enum') {
-                                result[key] = game._getNumericField(componentId, entityId, info.fieldPath);
-                            } else if (info.type === 'boolean') {
-                                result[key] = game._getNumericField(componentId, entityId, info.fieldPath) !== 0;
-                            } else if (info.type === 'null') {
-                                result[key] = game._getNumericField(componentId, entityId, info.fieldPath);
-                            } else if (info.type === 'fixedArray' || info.type === 'bitmask' || info.type === 'nested') {
-                                // Trigger the getter to get the nested proxy, then toJSON it
-                                const nested = nestedCache[key] || game._createNestedProxy(componentId, entityId, key, info, prefix);
-                                result[key] = nested.toJSON ? nested.toJSON() : nested;
-                            }
-                        }
-                        return result;
-                    };
-                }
-
-                const info = schemaInfo[prop];
-                if (!info) return undefined;
-
-                if (info.type === 'number' || info.type === 'enum' || info.type === 'null' || info.type === 'boolean') {
-                    const arr = info.arr || (info.arr = game._fieldArray(componentId, info.fieldPath));
-                    const value = arr ? game._fromStorageValue(arr[entityId]) : undefined;
-                    return info.type === 'boolean' ? value !== 0 : value;
-                } else if (info.type === 'fixedArray' || info.type === 'bitmask' || info.type === 'nested') {
-                    // Cache nested proxies to avoid recreation
-                    if (!nestedCache[prop]) {
-                        nestedCache[prop] = game._createNestedProxy(componentId, entityId, prop, info, prefix);
-                    }
-                    return nestedCache[prop];
-                }
-                return undefined;
-            },
-            set(target, prop, value) {
-                const info = schemaInfo[prop];
-                if (!info) return false;
-
-                let storedValue = value;
-                if (info.type === 'boolean') {
-                    storedValue = value ? 1 : 0;
-                } else if (info.type === 'null') {
-                    storedValue = game._toStorageValue(value);
-                }
-
-                if (info.type === 'number' || info.type === 'boolean' || info.type === 'null' || info.type === 'enum') {
-                    const arr = info.arr || (info.arr = game._fieldArray(componentId, info.fieldPath));
-                    if (arr) arr[entityId] = storedValue;
-                    return true;
-                }
-                return false;
-            },
-            ownKeys() {
-                return Object.keys(schemaInfo);
-            },
-            getOwnPropertyDescriptor(target, prop) {
-                if (prop in schemaInfo) {
-                    return { configurable: true, enumerable: true };
-                }
-                return undefined;
+            const { fieldPath, type } = info;
+            let arr = null;         // the field's array, found on first use (same for every entity)
+            const array = () => arr || (arr = game._fieldArray(componentId, fieldPath));
+            if (type === 'number' || type === 'enum' || type === 'null') {
+                descs[key] = {
+                    get() { const a = array(); return a ? game._fromStorageValue(a[this._e]) : undefined; },
+                    set(value) { const a = array(); if (a) a[this._e] = type === 'null' ? game._toStorageValue(value) : value; },
+                    enumerable: true
+                };
+            } else if (type === 'boolean') {
+                descs[key] = {
+                    get() { const a = array(); return (a ? game._fromStorageValue(a[this._e]) : undefined) !== 0; },
+                    set(value) { const a = array(); if (a) a[this._e] = value ? 1 : 0; },
+                    enumerable: true
+                };
+            } else if (type === 'fixedArray' || type === 'bitmask' || type === 'nested') {
+                descs[key] = {
+                    get() { const n = this._n; return n[key] || (n[key] = game._createNestedProxy(componentId, this._e, key, info, prefix)); },
+                    enumerable: true
+                };
+            } else {
+                descs[key] = { get() { return undefined; }, enumerable: true };
             }
-        });
+        }
+        descs.toJSON = {
+            value: function () {
+                const result = {};
+                for (const key of keys) {
+                    const v = this[key];
+                    result[key] = v && typeof v === 'object' && v.toJSON ? v.toJSON() : v;
+                }
+                return result;
+            }
+        };
+        this._accessorDescs.set(cacheKey, descs);
+        return descs;
     }
 
     /**
