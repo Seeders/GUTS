@@ -507,6 +507,7 @@ class ConfigParser {
                 });
             } else {
                 console.warn(`    Library not found: ${libName}`);
+                ConfigParser.recordMissing('library', libName);
             }
         }
 
@@ -552,6 +553,7 @@ class ConfigParser {
                 paths.push(file);
             } else {
                 console.warn(`    Script not found: ${scriptName} in ${collectionName}`);
+                ConfigParser.recordMissing(collectionName === 'systems' ? 'system' : collectionName, scriptName);
             }
         }
 
@@ -777,6 +779,7 @@ class ConfigParser {
 
             if (!moduleConfigPath) {
                 console.warn(`    Editor module config not found: ${moduleName}`);
+                ConfigParser.recordMissing('editor module', moduleName);
                 continue;
             }
 
@@ -866,12 +869,19 @@ class ConfigParser {
         this.loadObjectTypeDefinitions();
         this.loadConfigs();
 
+        // Each entry is collected with its target noted, so names that resolve to
+        // nothing are reported against the target that asked for them.
+        const forTarget = (target, collect) => {
+            ConfigParser.currentTarget = target;
+            try { return collect(); } finally { ConfigParser.currentTarget = null; }
+        };
+
         return {
             projectName: this.projectName,
-            client: this.getClientEntry(),
-            server: this.getServerEntry(),
-            headless: this.getHeadlessEntry(),
-            editor: this.getEditorEntry(),
+            client: forTarget('client', () => this.getClientEntry()),
+            server: forTarget('server', () => this.getServerEntry()),
+            headless: forTarget('headless', () => this.getHeadlessEntry()),
+            editor: forTarget('editor', () => this.getEditorEntry()),
             engine: this.getEnginePaths(),
             objectTypeDefinitions: this.objectTypeDefinitions,
             collections: this.collections,
@@ -879,5 +889,19 @@ class ConfigParser {
         };
     }
 }
+
+/**
+ * Names a config asked for that resolved to nothing, collected across every
+ * target so build.js can report them together at the end of the build (and
+ * fail on them with --strict). Maps "kind:name" to the set of targets
+ * (client, server, headless, editor) whose configs named it.
+ */
+ConfigParser.missing = new Map();
+ConfigParser.currentTarget = null;
+ConfigParser.recordMissing = (kind, name) => {
+    const key = `${kind}:${name}`;
+    if (!ConfigParser.missing.has(key)) ConfigParser.missing.set(key, new Set());
+    ConfigParser.missing.get(key).add(ConfigParser.currentTarget || 'unknown');
+};
 
 module.exports = ConfigParser;
