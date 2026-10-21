@@ -15,27 +15,43 @@ class SceneManager {
      * The game's own loading screen, or null for the built-in overlay. Named by
      * configs.game.loadingScreen.library: a library with static show(options),
      * progress(fraction, label), hide() and visible(), and optionally
+     * available() (false: not usable here), forScene(sceneName, params, game)
+     * (the show() options for a scene change), span(from, to) (see sceneSpan),
      * flavour(label) to reword scene-load labels and phaseName(phase) (see
      * LoadingProgress). The rest of loadingScreen is its text (title, kicker,
-     * subtitle, startLabel, phases, phaseFallback, completeText, completeLabel).
+     * subtitle, startLabel, phases, phaseFallback, completeText, completeLabel),
+     * optional labels for a scene load's milestones (steps: unloaded, configured,
+     * spawned, ready, readyWithLoader) and sceneSpan: [from, to], the part of the
+     * bar systems' own progress fills while a scene loads.
      */
     loadingScreen() {
         if (this.game.isServer || typeof GUTS === 'undefined') return null;
-        const library = this.game.getCollections?.()?.configs?.game?.loadingScreen?.library;
-        return (library && GUTS[library]) || null;
+        const library = this.loadingScreenConfig()?.library;
+        const screen = (library && GUTS[library]) || null;
+        return screen && screen.available?.() !== false ? screen : null;
+    }
+
+    loadingScreenConfig() {
+        return this.game.getCollections?.()?.configs?.game?.loadingScreen || null;
+    }
+
+    /** Move the loading screen's bar to a scene-load milestone, when the config labels them (steps). */
+    loadingStep(fraction, step) {
+        const steps = this.loadingScreenConfig()?.steps;
+        if (steps) this.loadingScreen()?.progress(fraction, steps[step] ?? null);
     }
 
     /**
      * Show a loading overlay during scene transitions
      */
-    showLoadingOverlay() {
+    showLoadingOverlay(sceneName, params) {
         if (this.game.isServer) return;
         const screen = this.loadingScreen();
         if (screen) {
             // kept up (not restarted) if it's already showing, e.g. from the menu into the world
             const was = screen.visible();
-            screen.show();
-            if (!was) screen.progress(0, this.game.getCollections().configs.game.loadingScreen.startLabel || null);
+            screen.show(screen.forScene ? screen.forScene(sceneName, params, this.game) : {});
+            if (!was) screen.progress(0, this.loadingScreenConfig().startLabel || null);
             return;
         }
 
@@ -194,7 +210,7 @@ class SceneManager {
         // Show loading overlay during scene transition (only if switching scenes)
         const isSceneSwitch = this.currentScene !== null;
         if (isSceneSwitch) {
-            this.showLoadingOverlay();
+            this.showLoadingOverlay(sceneName, params);
             // Allow overlay to render before blocking operations
             await new Promise(resolve => setTimeout(resolve, 50));
         }
@@ -204,6 +220,7 @@ class SceneManager {
             const _tUnload = performance.now();
             await this.unloadCurrentScene();
             _mark('unloadCurrentScene', _tUnload);
+            this.loadingStep(0.12, 'unloaded');
         }
 
         this.currentScene = sceneData;
@@ -220,6 +237,7 @@ class SceneManager {
         const _tConfig = performance.now();
         this.configureSystems(sceneData);
         _mark('configureSystems', _tConfig);
+        this.loadingStep(0.22, 'configured');
 
         // Run scene-specific loader if defined (e.g., GameLoader for game scenes)
         if (sceneData.loader && GUTS[sceneData.loader]) {
@@ -243,6 +261,7 @@ class SceneManager {
             await this.spawnSceneEntities(sceneData);
             _mark('spawnSceneEntities', _tSpawn);
         }
+        this.loadingStep(0.3, 'spawned');
 
         // Inject saved entities if there's pending save data
         if (isLoadingSave) {
@@ -260,6 +279,9 @@ class SceneManager {
 
         // Notify all systems that scene has loaded (initial setup)
         const _tNotify = performance.now();
+        // systems' own progress (terrain painting, say) fills this part of the bar (loadingScreen.sceneSpan)
+        const sceneSpan = isSceneSwitch && this.loadingScreenConfig()?.sceneSpan;
+        if (sceneSpan) this.loadingScreen()?.span?.(sceneSpan[0], sceneSpan[1]);
         await this.notifySceneLoaded(sceneData, params);
         _mark('notifySceneLoaded (total)', _tNotify);
 
@@ -269,6 +291,8 @@ class SceneManager {
         const _tPost = performance.now();
         await this.notifyPostSceneLoad(sceneData, params);
         _mark('notifyPostSceneLoad (total)', _tPost);
+        if (sceneSpan) this.loadingScreen()?.span?.(0, 1);
+        this.loadingStep(0.96, sceneData.loader ? 'readyWithLoader' : 'ready');
 
         // Hide loading overlay
         this.hideLoadingOverlay();
