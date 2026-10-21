@@ -230,6 +230,19 @@ class BaseCameraSystem extends GUTS.BaseSystem {
 
     // ==================== INPUT HANDLING ====================
 
+    // Elements (and their insides) the wheel scrolls rather than zooming the camera, besides
+    // any scrollable panel; a game adds its own overlay classes here.
+    static WHEEL_UI_CLASSES = ['arena-overlay'];
+
+    _wheelBelongsToUI(target) {
+        for (let el = target; el && el.nodeType === 1; el = el.parentElement) {
+            if (BaseCameraSystem.WHEEL_UI_CLASSES.some(c => el.classList.contains(c))) return true;
+            const oy = getComputedStyle(el).overflowY;
+            if ((oy === 'auto' || oy === 'scroll') && el.scrollHeight > el.clientHeight) return true;
+        }
+        return false;
+    }
+
     _setupInputHandlers() {
         this._handlers.mouseMove = (e) => {
             this.state.mouseX = e.clientX;
@@ -239,6 +252,9 @@ class BaseCameraSystem extends GUTS.BaseSystem {
         };
 
         this._handlers.wheel = (e) => {
+            // Leave the wheel to the page over modal overlays and scrollable
+            // HUD panels, so they scroll natively instead of zooming the camera.
+            if (this._wheelBelongsToUI(e.target)) return;
             e.preventDefault();
             this.handleWheel(e);
         };
