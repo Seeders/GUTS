@@ -29,8 +29,9 @@ class ECSGame extends GUTS.BaseECSGame {
         }
     }
 
-    init() {
-        super.init();
+    async init(...args) {
+        // Awaited so the loader (and so Engine.start) waits for the initial scene to load.
+        await super.init(...args);
         // Free up GPU memory from the temporary renderer used for sprite generation,
         // but keep loadedTextures which are needed at runtime
         this.imageManager.disposeRenderingResources();

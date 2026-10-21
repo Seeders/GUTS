@@ -9,7 +9,6 @@
   "saveHook": "saveAudio",
   "unloadHook": "unloadAudio",
   "libraries": [
-    "Component",
     "AudioManager",
     "AudioEditor"
   ]

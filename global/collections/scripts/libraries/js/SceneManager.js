@@ -372,15 +372,24 @@ class SceneManager {
         }
         // Call postAllInit on any newly created systems
         // (systems that were just instantiated need this called)
+        const unresolved = [];
         for (const systemName of sceneSystems) {
             const system = this.game.systemsByName.get(systemName);
             if(system) {
                 this.game.getServiceDependencies(system);
+                const missing = this.game.getMissingServiceDependencies?.(system) || [];
+                if (missing.length > 0) unresolved.push(`${systemName} → ${missing.join(', ')}`);
                 if (system.postAllInit && !system._postAllInitCalled) {
                     system.postAllInit();
                     system._postAllInitCalled = true;
                 }
             }
+        }
+
+        // Dependencies no system in this scene provides. Calls to them through
+        // this.call do nothing, which is fine for optional ones and a bug otherwise.
+        if (unresolved.length > 0) {
+            console.warn(`[SceneManager] Scene '${this.currentSceneName || sceneData.title || ''}': service dependencies with no provider in this scene:\n  ${unresolved.join('\n  ')}`);
         }
     }
 
