@@ -2,7 +2,7 @@
 # Uploads the GUTS site or a game to the gutsengine Droplet and installs its packages.
 #
 #   deploy/deploy.sh site                 the GUTS site (this repo + projects/*) -> /srv/site
-#   deploy/deploy.sh age|kingdom|realm|heroarena|descent    a game -> /srv/games/<slug>
+#   deploy/deploy.sh age|kingdom|realm|heroarena|descent|wiki    a game -> /srv/games/<slug>
 #   deploy/deploy.sh setup                nginx, the gateway and the services (after a change to them)
 #
 # Needs the `gutsengine` host in ~/.ssh/config (the deploy key). Build the game first (npm run build;
@@ -12,7 +12,7 @@ HERE="$(cd "$(dirname "$0")" && pwd)"
 PROJECTS="$(cd "$HERE/../.." && pwd)"
 HOST=gutsengine
 
-declare -A SRC=([age]=EmbersOfDefiance [kingdom]=KingdomOfDefiance [realm]=WorldOfDefiance [heroarena]=HeroArena [descent]=Descent)
+declare -A SRC=([age]=EmbersOfDefiance [kingdom]=KingdomOfDefiance [realm]=WorldOfDefiance [heroarena]=HeroArena [descent]=Descent [wiki]=GUTSWiki)
 
 # Files the server never needs (the build's copy of resources/ is linked back to resources/ there)
 EXCLUDES=(--exclude=.git --exclude=node_modules --exclude='saves' --exclude='saves_*' --exclude=.claude --exclude='*.log'
@@ -30,7 +30,7 @@ case "${1:-}" in
         push "$PROJECTS/GUTS" /srv/site
         ssh "$HOST" "cd /srv/site && sudo -u guts npm ci --omit=dev --no-audit --no-fund >/dev/null && systemctl restart guts-site"
         ;;
-    age|kingdom|realm|heroarena|descent)
+    age|kingdom|realm|heroarena|descent|wiki)
         slug="$1"; dir="$PROJECTS/${SRC[$slug]}"
         push "$dir" "/srv/games/$slug"
         ssh "$HOST" "cd /srv/games/$slug && ln -sfn ../../resources dist/client/resources && mkdir -p saves && chown -R guts:guts saves dist \
@@ -46,6 +46,6 @@ case "${1:-}" in
             && ln -sfn /etc/nginx/sites-available/gutsengine /etc/nginx/sites-enabled/gutsengine && rm -f /etc/nginx/sites-enabled/default \
             && nginx -t && certbot --nginx -d gutsengine.app -d www.gutsengine.app --non-interactive --reinstall --redirect >/dev/null             && systemctl reload nginx && systemctl daemon-reload && systemctl enable --now guts-site guts-gateway && systemctl restart guts-gateway"
         ;;
-    *) echo "usage: $0 site|age|kingdom|realm|heroarena|descent|setup"; exit 1 ;;
+    *) echo "usage: $0 site|age|kingdom|realm|heroarena|descent|wiki|setup"; exit 1 ;;
 esac
 echo done
