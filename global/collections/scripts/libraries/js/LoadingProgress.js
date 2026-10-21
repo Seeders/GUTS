@@ -12,7 +12,13 @@
  *   progress.increment('models');       // Each model loaded
  */
 class LoadingProgress {
-    constructor() {
+    /**
+     * @param {Object} [screenConfig] - configs.game.loadingScreen: the game's own loading
+     *   screen and its text (see SceneManager.loadingScreen); without it, the page's
+     *   loadingProgressBar / loadingText elements show progress.
+     */
+    constructor(screenConfig = null) {
+        this.screenConfig = screenConfig || null;
         this.phases = new Map();
         this.totalItems = 0;
         this.loadedItems = 0;
@@ -45,6 +51,8 @@ class LoadingProgress {
         this.progressBar = document.getElementById('loadingProgressBar');
         this.progressText = document.getElementById('loadingProgressText');
         this.loadingText = document.getElementById('loadingText');
+        const cfg = this.screenConfig;
+        this.screen?.show({ title: cfg.title, kicker: cfg.kicker, subtitle: cfg.subtitle });
 
         this.update();
     }
@@ -95,6 +103,11 @@ class LoadingProgress {
      * @returns {string}
      */
     getPhaseDisplayName(phaseName) {
+        const screen = this.screen;
+        if (screen?.phaseName) return screen.phaseName(phaseName);
+        if (this.screenConfig?.phases) {
+            return this.screenConfig.phases[phaseName] || `${this.screenConfig.phaseFallback || 'Loading'} ${phaseName}`;
+        }
         const names = {
             'textures': 'Loading Textures',
             'models': 'Loading Models',
@@ -127,6 +140,8 @@ class LoadingProgress {
             }
         }
 
+        this.screen?.progress(percent / 100, this.currentPhase ? this.getPhaseDisplayName(this.currentPhase) : null);
+
         if (this.onProgress) {
             this.onProgress(percent, this.currentPhase);
         }
@@ -144,7 +159,14 @@ class LoadingProgress {
             this.progressText.textContent = '100%';
         }
         if (this.loadingText) {
-            this.loadingText.textContent = 'Complete!';
+            this.loadingText.textContent = this.screenConfig?.completeText || 'Complete!';
         }
+        this.screen?.progress(1, this.screenConfig?.completeLabel || this.screenConfig?.completeText || null);
+    }
+
+    /** The game's own loading screen library (configs.game.loadingScreen.library), if any. */
+    get screen() {
+        const library = this.screenConfig?.library;
+        return (library && typeof GUTS !== 'undefined' && GUTS[library]) || null;
     }
 }

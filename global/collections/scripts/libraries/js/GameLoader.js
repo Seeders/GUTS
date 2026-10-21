@@ -16,10 +16,11 @@ class GameLoader extends GUTS.BaseLoader {
     async load(){
         this.collections = this.game.getCollections();
 
-        // Boot the game first (loads the initialScene, whose interface injects
-        // <canvas id="gameCanvas"> into the DOM) so setupCanvas below can find it —
-        // matching AssetLoader. Without this the canvas isn't in the DOM yet.
-        if (this.game.init) await this.game.init();
+        // As the app loader: boot the game first (loads the initialScene, whose interface
+        // injects <canvas id="gameCanvas"> into the DOM) so setupCanvas below can find it,
+        // matching AssetLoader. As a scene's loader the game is already running (it has a
+        // sceneManager), and booting it again would reload everything mid-scene.
+        if (this.game.init && !this.game.sceneManager) await this.game.init();
 
         this.game.palette = this.collections.palettes && this.collections.configs.game.palette ? this.collections.palettes[this.collections.configs.game.palette] : null;
         this.isometric = this.collections.configs.game.isIsometric;

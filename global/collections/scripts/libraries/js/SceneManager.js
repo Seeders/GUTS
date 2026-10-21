@@ -12,10 +12,32 @@ class SceneManager {
     }
 
     /**
+     * The game's own loading screen, or null for the built-in overlay. Named by
+     * configs.game.loadingScreen.library: a library with static show(options),
+     * progress(fraction, label), hide() and visible(), and optionally
+     * flavour(label) to reword scene-load labels and phaseName(phase) (see
+     * LoadingProgress). The rest of loadingScreen is its text (title, kicker,
+     * subtitle, startLabel, phases, phaseFallback, completeText, completeLabel).
+     */
+    loadingScreen() {
+        if (this.game.isServer || typeof GUTS === 'undefined') return null;
+        const library = this.game.getCollections?.()?.configs?.game?.loadingScreen?.library;
+        return (library && GUTS[library]) || null;
+    }
+
+    /**
      * Show a loading overlay during scene transitions
      */
     showLoadingOverlay() {
         if (this.game.isServer) return;
+        const screen = this.loadingScreen();
+        if (screen) {
+            // kept up (not restarted) if it's already showing, e.g. from the menu into the world
+            const was = screen.visible();
+            screen.show();
+            if (!was) screen.progress(0, this.game.getCollections().configs.game.loadingScreen.startLabel || null);
+            return;
+        }
 
         // Create overlay if it doesn't exist
         if (!this.loadingOverlay) {
@@ -117,6 +139,8 @@ class SceneManager {
      * @param {string} [label]  - optional label shown above the bar
      */
     setLoadingProgress(fraction, label) {
+        const screen = this.loadingScreen();
+        if (screen) { screen.progress(fraction, screen.flavour ? screen.flavour(label) : label); return; }
         if (!this.loadingOverlay) return;
         const pct = Math.max(0, Math.min(1, fraction || 0));
         const fill = this.loadingOverlay.querySelector('#sceneLoadingProgressFill');
@@ -132,6 +156,8 @@ class SceneManager {
      */
     hideLoadingOverlay() {
         if (this.game.isServer) return;
+        const screen = this.loadingScreen();
+        if (screen) { screen.hide(); return; }
 
         if (this.loadingOverlay && this.loadingOverlay.parentNode) {
             this.loadingOverlay.classList.remove('visible');

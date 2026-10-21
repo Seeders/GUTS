@@ -1307,7 +1307,10 @@ class BaseECSGame {
                     }
 
                     if (system.update) {
+                        // Server: log a system whose update runs long (over SLOW_MS, default 300 ms)
+                        const _t0 = this.isServer ? Date.now() : 0;
                         await system.update();
+                        if (this.isServer && Date.now() - _t0 > (+process.env.SLOW_MS || 300)) console.log('[slow] ' + systemName + ' ' + (Date.now() - _t0) + 'ms');
                     }
 
                     // End update tracking
