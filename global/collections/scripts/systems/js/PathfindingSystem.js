@@ -1,3 +1,5 @@
+import MinHeap from '../../libraries/js/MinHeap.js';
+
 class PathfindingSystem extends GUTS.BaseSystem {
     static services = [
         'isPositionWalkable',
@@ -472,7 +474,7 @@ class PathfindingSystem extends GUTS.BaseSystem {
         const ex = endGrid.x, ez = endGrid.z;
         const hdist = (x, z) => { const dx = Math.abs(x - ex), dz = Math.abs(z - ez); return Math.sqrt(dx * dx + dz * dz); };
 
-        const openSet = new GUTS.MinHeap();
+        const openSet = new MinHeap();
         const startIdx = startGrid.z * W + startGrid.x;
         const endIdx = endGrid.z * W + endGrid.x;
         visit[startIdx] = sid; g[startIdx] = 0; came[startIdx] = -1;
@@ -609,7 +611,7 @@ class PathfindingSystem extends GUTS.BaseSystem {
             return [{ x: endX, z: endZ }];
         }
         
-        const openSet = new GUTS.MinHeap();
+        const openSet = new MinHeap();
         const closedSet = new Set();
         const cameFrom = new Map();
         const gScore = new Map();
