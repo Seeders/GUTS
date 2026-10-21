@@ -1,0 +1,22 @@
+{
+    "title": "__TITLE__",
+    "libraries": [
+        "threejs",
+        "GameServices",
+        "ComponentGenerator",
+        "SeededRandom",
+        "GameState",
+        "SceneManager",
+        "BaseECSGame",
+        "SimpleLoader"
+    ],
+    "systems": [
+        "BaseSystem",
+        "SpinSystem",
+        "ViewSystem"
+    ],
+    "appLibrary": "BaseECSGame",
+    "appLoaderLibrary": "SimpleLoader",
+    "initialScene": "main",
+    "tickRate": 60
+}

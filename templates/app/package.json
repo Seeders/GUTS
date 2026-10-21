@@ -1,0 +1,18 @@
+{
+    "name": "__NAME__",
+    "version": "0.1.0",
+    "private": true,
+    "scripts": {
+        "dev": "guts dev",
+        "build": "guts build --target client",
+        "build:prod": "guts build --target client --production",
+        "start": "node server.js"
+    },
+    "engines": {
+        "node": ">=22"
+    },
+    "dependencies": {
+        "express": "^4.21.2",
+        "guts": "__GUTS_DEPENDENCY__"
+    }
+}
