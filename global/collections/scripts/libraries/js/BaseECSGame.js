@@ -732,10 +732,27 @@ class BaseECSGame {
     }
 
     /**
-     * Create an array-like proxy for $fixedArray fields
-     * Allows array[index] access that maps to individual TypedArray fields
+     * A live array-like view of a $fixedArray field: view[i] for i < length, length, toJSON.
+     * Like component views, indices are own enumerable accessors over the TypedArrays (shared
+     * descriptors per field), so the view enumerates and spreads like before without a Proxy.
+     * Simple arrays (baseName0, baseName1, ...) read and write numbers; multi-field arrays
+     * (baseName_field0, ...) give a live element view per index ({ field: value }), cached, whose
+     * fields read and write the TypedArrays; assigning an object to view[i] writes the fields it has.
      */
     _createFixedArrayProxy(componentId, entityId, baseName, config, prefix = '') {
+        const fieldPrefix = prefix ? `${prefix}.${baseName}` : baseName;
+        const view = {};
+        Object.defineProperty(view, '_e', { value: entityId });
+        Object.defineProperty(view, '_els', { value: [] });            // element views (multi-field), made on first use
+        Object.defineProperties(view, this._fixedArrayDescriptors(componentId, fieldPrefix, config));
+        Object.preventExtensions(view);
+        return view;
+    }
+
+    _fixedArrayDescriptors(componentId, fieldPrefix, config) {
+        const cacheKey = `${componentId}|[]${fieldPrefix}`;
+        let descs = this._accessorDescs.get(cacheKey);
+        if (descs) return descs;
         const game = this;
         // Support both static size and dynamic sizeFrom (enum-based)
         let size = config.size || 0;
@@ -743,134 +760,71 @@ class BaseECSGame {
             const enumMap = this.componentGenerator.getEnumMap(config.sizeFrom);
             size = enumMap?.toValue?.length || 0;
         }
-        const fields = config.fields;
-        const fieldPrefix = prefix ? `${prefix}.${baseName}` : baseName;
+        const fields = Array.isArray(config.fields) ? config.fields : null;
+        // the TypedArray for a stored field path, found on first use
+        const arrays = new Map();
+        const arrayOf = (path) => {
+            let a = arrays.get(path);
+            if (a === undefined) { a = game._fieldArray(componentId, path); if (a) arrays.set(path, a); }
+            return a;
+        };
+        const read = (path, e) => { const a = arrayOf(path); return a ? game._fromStorageValue(a[e]) : undefined; };
+        const write = (path, e, v) => { const a = arrayOf(path); if (a) a[e] = game._toStorageValue(v); };
 
-        if (fields && Array.isArray(fields)) {
-            // Multi-field array: each element is an object with the specified fields
-            // Fields stored as: baseName_field0, baseName_field1, etc.
-            return new Proxy({}, {
-                get(target, prop) {
-                    if (prop === 'length') return size;
-                    // Support JSON.stringify via toJSON
-                    if (prop === 'toJSON') {
-                        return () => {
-                            const arr = [];
-                            for (let i = 0; i < size; i++) {
-                                const element = {};
-                                for (const field of fields) {
-                                    element[field] = game._getNumericField(componentId, entityId, `${fieldPrefix}_${field}${i}`);
-                                }
-                                arr[i] = element;
-                            }
-                            return arr;
-                        };
-                    }
-                    const index = parseInt(prop, 10);
-                    if (!isNaN(index) && index >= 0 && index < size) {
-                        // Return object with all fields for this index
-                        const element = {};
-                        for (const field of fields) {
-                            element[field] = game._getNumericField(componentId, entityId, `${fieldPrefix}_${field}${index}`);
-                        }
-                        // Return proxy for field writes
-                        return new Proxy(element, {
-                            set(t, f, v) {
-                                t[f] = v;
-                                game._setNumericField(componentId, entityId, `${fieldPrefix}_${f}${index}`, game._toStorageValue(v));
-                                return true;
-                            }
-                        });
-                    }
-                    return undefined;
-                },
-                set(target, prop, value) {
-                    const index = parseInt(prop, 10);
-                    if (!isNaN(index) && index >= 0 && index < size && typeof value === 'object') {
-                        for (const field of fields) {
-                            if (value[field] !== undefined) {
-                                game._setNumericField(componentId, entityId, `${fieldPrefix}_${field}${index}`, game._toStorageValue(value[field]));
-                            }
-                        }
-                        return true;
-                    }
-                    return false;
-                },
-                ownKeys(target) {
-                    const keys = [];
-                    for (let i = 0; i < size; i++) {
-                        keys.push(String(i));
-                    }
-                    return keys;
-                },
-                getOwnPropertyDescriptor(target, prop) {
-                    const index = parseInt(prop, 10);
-                    if (!isNaN(index) && index >= 0 && index < size) {
-                        const element = {};
-                        for (const field of fields) {
-                            element[field] = game._getNumericField(componentId, entityId, `${fieldPrefix}_${field}${index}`);
-                        }
-                        return {
-                            value: element,
-                            writable: true,
-                            enumerable: true,
-                            configurable: true
-                        };
-                    }
-                    return undefined;
+        descs = { length: { value: size } };
+        if (fields) {
+            // one element view per index: its fields read/write `${fieldPrefix}_${field}${i}`
+            const elementDescs = [];
+            for (let i = 0; i < size; i++) {
+                const d = {};
+                for (const field of fields) {
+                    const path = `${fieldPrefix}_${field}${i}`;
+                    d[field] = { get() { return read(path, this._e); }, set(v) { write(path, this._e, v); }, enumerable: true };
                 }
-            });
+                elementDescs.push(d);
+            }
+            const element = (view, i) => {
+                let el = view._els[i];
+                if (!el) {
+                    el = {};
+                    Object.defineProperty(el, '_e', { value: view._e });
+                    Object.defineProperties(el, elementDescs[i]);
+                    view._els[i] = el;
+                }
+                return el;
+            };
+            for (let i = 0; i < size; i++) {
+                descs[i] = {
+                    get() { return element(this, i); },
+                    set(value) {
+                        if (typeof value !== 'object' || value === null) throw new TypeError(`${fieldPrefix}[${i}] takes an object of { ${fields.join(', ')} }`);
+                        for (const field of fields) if (value[field] !== undefined) write(`${fieldPrefix}_${field}${i}`, this._e, value[field]);
+                    },
+                    enumerable: true
+                };
+            }
+            descs.toJSON = { value: function () {
+                const out = [];
+                for (let i = 0; i < size; i++) {
+                    const el = {};
+                    for (const field of fields) el[field] = read(`${fieldPrefix}_${field}${i}`, this._e);
+                    out[i] = el;
+                }
+                return out;
+            } };
         } else {
-            // Simple array: baseName0, baseName1, etc.
-            return new Proxy({}, {
-                get(target, prop) {
-                    if (prop === 'length') return size;
-                    // Support JSON.stringify via toJSON
-                    if (prop === 'toJSON') {
-                        return () => {
-                            const arr = [];
-                            for (let i = 0; i < size; i++) {
-                                arr[i] = game._getNumericField(componentId, entityId, `${fieldPrefix}${i}`);
-                            }
-                            return arr;
-                        };
-                    }
-                    const index = parseInt(prop, 10);
-                    if (!isNaN(index) && index >= 0 && index < size) {
-                        return game._getNumericField(componentId, entityId, `${fieldPrefix}${index}`);
-                    }
-                    return undefined;
-                },
-                set(target, prop, value) {
-                    const index = parseInt(prop, 10);
-                    if (!isNaN(index) && index >= 0 && index < size) {
-                        game._setNumericField(componentId, entityId, `${fieldPrefix}${index}`, game._toStorageValue(value));
-                        return true;
-                    }
-                    return false;
-                },
-                ownKeys(target) {
-                    // Return numeric indices as strings for JSON.stringify enumeration
-                    const keys = [];
-                    for (let i = 0; i < size; i++) {
-                        keys.push(String(i));
-                    }
-                    return keys;
-                },
-                getOwnPropertyDescriptor(target, prop) {
-                    const index = parseInt(prop, 10);
-                    if (!isNaN(index) && index >= 0 && index < size) {
-                        return {
-                            value: game._getNumericField(componentId, entityId, `${fieldPrefix}${index}`),
-                            writable: true,
-                            enumerable: true,
-                            configurable: true
-                        };
-                    }
-                    return undefined;
-                }
-            });
+            for (let i = 0; i < size; i++) {
+                const path = `${fieldPrefix}${i}`;
+                descs[i] = { get() { return read(path, this._e); }, set(v) { write(path, this._e, v); }, enumerable: true };
+            }
+            descs.toJSON = { value: function () {
+                const out = [];
+                for (let i = 0; i < size; i++) out[i] = read(`${fieldPrefix}${i}`, this._e);
+                return out;
+            } };
         }
+        this._accessorDescs.set(cacheKey, descs);
+        return descs;
     }
 
     /**
