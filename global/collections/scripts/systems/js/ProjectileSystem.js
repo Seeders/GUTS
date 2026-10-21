@@ -11,7 +11,8 @@ class ProjectileSystem extends GUTS.BaseSystem {
         'applyDamage',
         'applySplashDamage',
         'getNearbyUnits',
-        'destroyEntityImmediately'
+        'destroyEntityImmediately',
+        'getBuffTypeDef'
     ];
 
     constructor(game) {
@@ -37,6 +38,11 @@ class ProjectileSystem extends GUTS.BaseSystem {
 
         // Callback storage for onHit and onTravel (functions can't be serialized in components)
         this.projectileCallbacks = new Map();
+        // Tags of the ability that fired each projectile (BaseAbility.tags), so the
+        // hit resolves as that ability's Attack or Spell. A projectile with no entry
+        // is a basic attack. Kept beside the component because the projectile schema
+        // is typed and can't hold an array.
+        this.projectileTags = new Map();
 
         // Get gravity from movement system
         this.GRAVITY = this.game.movementSystem?.GRAVITY;
@@ -180,34 +186,8 @@ class ProjectileSystem extends GUTS.BaseSystem {
             });
         }
 
-        // Data-driven visuals: projectile defs may name particle presets
-        //   trailEffect  — played along the flight path (throttled by
-        //                  TRAIL_UPDATE_INTERVAL via the onTravel hook)
-        //   impactEffect — played once on hit
-        // Names resolve against particleEffectSystems first, then particleEffects.
-        if (!this.game.isServer && (projectileData.trailEffect || projectileData.impactEffect)) {
-            const playPreset = (name, p) => {
-                if (!name || !p) return;
-                const c = this.game.getCollections();
-                const v = new THREE.Vector3(p.x, p.y, p.z);
-                if (c.particleEffectSystems?.[name] && this.game.hasService('playEffectSystem')) {
-                    this.game.call('playEffectSystem', name, v);
-                } else if (c.particleEffects?.[name] && this.game.hasService('playEffect')) {
-                    this.game.call('playEffect', name, v);
-                }
-            };
-            const existing = this.projectileCallbacks.get(projectileId) || { onHit: null, onTravel: null };
-            const userOnHit = existing.onHit, userOnTravel = existing.onTravel;
-            this.projectileCallbacks.set(projectileId, {
-                onHit: (p) => {
-                    if (userOnHit) userOnHit(p);
-                    playPreset(projectileData.impactEffect, p);
-                },
-                onTravel: (p) => {
-                    if (userOnTravel) userOnTravel(p);
-                    playPreset(projectileData.trailEffect, p);
-                }
-            });
+        if (Array.isArray(projectileData.abilityTags) && projectileData.abilityTags.length) {
+            this.projectileTags.set(projectileId, projectileData.abilityTags);
         }
 
         const sourceTeam = this.game.getComponent(sourceId, "team");
@@ -266,6 +246,7 @@ class ProjectileSystem extends GUTS.BaseSystem {
             });
         }
 
+        if (!this.game.isServer) this.game.gameAudioSystem?.onProjectileFired(projectileData.id, sourcePos);
         return projectileId;
     }
     
@@ -274,6 +255,7 @@ class ProjectileSystem extends GUTS.BaseSystem {
         this.projectileTrails.delete(projectileId);
         // Clean up callbacks
         this.projectileCallbacks.delete(projectileId);
+        this.projectileTags.delete(projectileId);
     }
 
     /**
@@ -705,17 +687,37 @@ class ProjectileSystem extends GUTS.BaseSystem {
     /**
      * Check if target has wind shield and reflect projectile back to attacker
      * Returns true if projectile was reflected, false otherwise
+     *
+     * This is the ONE place wind shield is resolved. It used to deflect every incoming
+     * projectile unconditionally while AttackEnemyBehaviorAction ALSO rolled the buff's
+     * deflectionChance before firing — so a basic attack that survived the 50% pre-fire
+     * roll was then reflected anyway, and the shield read as total projectile immunity
+     * for its whole duration. The pre-fire gate is gone; the roll lives here, where it
+     * also covers ability-fired projectiles that never went through that behavior.
      */
     checkWindShieldReflection(projectileId, targetId, projectilePos, projectile) {
-        // Check if target has wind_shield buff
-        const buff = this.game.getComponent(targetId, "buff");
+        // Check if target has wind_shield buff (expired buffs already filtered)
+        const enums = this.game.getEnums();
+        const buff = this.game.buffEffectsSystem?.getBuffOfType(targetId, enums.buffTypes?.wind_shield);
         if (!buff) return false;
 
-        const enums = this.game.getEnums();
-        if (buff.buffType !== enums.buffTypes?.wind_shield) return false;
+        const buffTypeDef = this.call.getBuffTypeDef(buff.buffType);
+        const chance = buffTypeDef?.deflectionChance ?? 0;
+        if (chance <= 0) return false;
 
-        // Check if buff is still active
-        if (buff.endTime && buff.endTime < this.game.state.now) return false;
+        // Deterministic per-projectile roll — keyed on the projectile's identity and
+        // launch time, so both peers agree and the same shot never re-rolls.
+        const seed = projectileId * 9301 + targetId * 49297
+            + Math.floor((projectile.startTime || 0) * 1000);
+        const roll = ((seed % 233280) + 233280) % 233280 / 233280;
+        if (roll >= chance) return false;
+
+        // Deflected. Without projectileReflection the gust merely scatters the shot;
+        // with it, the projectile is turned around and belongs to the defender.
+        if (!buffTypeDef.projectileReflection) {
+            this.destroyProjectile(projectileId);
+            return true;
+        }
 
         // Wind shield active! Reflect the projectile back to attacker
         const sourceId = projectile.source;
@@ -866,6 +868,10 @@ class ProjectileSystem extends GUTS.BaseSystem {
         // Splash weapons (opt-in via projectile def `splashOnHit`) detonate on the
         // target instead of single-target damage — the direct-hit counterpart of
         // the ballistic ground explosion, so anti-swarm units splash reliably.
+        // A projectile launched by an ability resolves as THAT ability (spell or
+        // attack); one with no tags is a basic attack.
+        const abilityTags = this.projectileTags.get(projectileId);
+
         if (projectile.splashOnHit && projectile.splashRadius > 0) {
             const targetTransform = this.game.getComponent(targetId, 'transform');
             const burstPos = targetTransform?.position || _targetPos;
@@ -875,7 +881,8 @@ class ProjectileSystem extends GUTS.BaseSystem {
                 projectile.splashRadius, {
                     isProjectile: true,
                     projectileId: projectileId,
-                    allowFriendlyFire: false
+                    allowFriendlyFire: false,
+                    abilityTags
                 });
             this.destroyProjectile(projectileId);
             return;
@@ -884,7 +891,8 @@ class ProjectileSystem extends GUTS.BaseSystem {
         // Apply damage on both client and server for sync
         this.call.applyDamage( projectile.source, targetId, damage, element, {
             isProjectile: true,
-            projectileId: projectileId
+            projectileId: projectileId,
+            abilityTags
         });
 
         this.destroyProjectile(projectileId);
@@ -923,7 +931,8 @@ class ProjectileSystem extends GUTS.BaseSystem {
             {
                 isBallistic: true,
                 projectileId: entityId,
-                allowFriendlyFire: false
+                allowFriendlyFire: false,
+                abilityTags: this.projectileTags.get(entityId)
             }
         );
 
@@ -1115,6 +1124,7 @@ class ProjectileSystem extends GUTS.BaseSystem {
 
         // Clear all projectile callbacks
         this.projectileCallbacks.clear();
+        this.projectileTags.clear();
 
         // Clear active projectiles if tracked
         if (this.activeProjectiles) {

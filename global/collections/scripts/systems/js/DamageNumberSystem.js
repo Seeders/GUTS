@@ -217,6 +217,10 @@ class DamageNumberSystem extends GUTS.BaseSystem {
     }
     
     showDamageNumber(x, y, z, damage, type = null) {
+        // Every hit/miss/heal passes through here on the client: the sound cue too.
+        this.game.gameAudioSystem?.onDamageNumber(x, y, z, damage, type);
+        // Player setting (Settings → Damage numbers).
+        if (GUTS.UIKit?._settings?.damageNumbers === false) return;
         // Default to physical element
         if (type === null) {
             type = this.enums.element.physical;

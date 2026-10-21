@@ -21,9 +21,9 @@ class InputSystem extends GUTS.BaseSystem {
         this.keyStates = {};
         this.mouseState = { x: 0, y: 0, pressed: false };
         this.shortcuts = new Map();
-
+        
     }
-
+    
     init() {
         this.setupButtonEvents();
         this.setupKeyboardEvents();
@@ -66,7 +66,7 @@ class InputSystem extends GUTS.BaseSystem {
             });
         }
     }
-
+        
     setupCanvasEvents() {
         // Clean up any existing canvas listeners first
         this.cleanupCanvasEvents();
@@ -128,6 +128,15 @@ class InputSystem extends GUTS.BaseSystem {
         });
     }
 
+    // init() and every onSceneLoad() call setupButtonEvents(), and the DOM
+    // survives when the next scene uses the same interface, so wire each
+    // element once (a doubled listener opened two stacked Settings dialogs).
+    _bindClickOnce(el, handler) {
+        if (!el || el._inputSystemClickBound) return;
+        el._inputSystemClickBound = true;
+        el.addEventListener('click', handler);
+    }
+
     setupButtonEvents() {
         const mainMenuPlayGameBtn = document.getElementById('mainMenu_PlayGameBtn');
         const mainMenuTutorialBtn = document.getElementById('mainMenu_TutorialBtn');
@@ -138,75 +147,75 @@ class InputSystem extends GUTS.BaseSystem {
 
         const gamePauseBtn = document.getElementById('game_PauseBtn');
         const gameExitBtn = document.getElementById('game_ExitBtn');
-
-
+        
+        
         const victoryMainMenuBtn = document.getElementById('victory_MainMenuBtn');
         const defeatMainMenuBtn = document.getElementById('defeat_MainMenuBtn');
 
-
+        
         const pausedResumeBtn = document.getElementById('paused_ResumeBtn');
         const pausedRestartBtn = document.getElementById('paused_RestartBtn');
         const pausedMainMenuBtn = document.getElementById('paused_MainMenuBtn');
 
-        mainMenuPlayGameBtn?.addEventListener('click', () => {
+        this._bindClickOnce(mainMenuPlayGameBtn, () => {
             this.call.showGameModeSelect();
         });
-        mainMenuTutorialBtn?.addEventListener('click', () => {
+        this._bindClickOnce(mainMenuTutorialBtn, () => {
             alert('Tutorial coming soon! Check the battle log for basic instructions when you start playing.');
         });
-        mainMenuSettingsBtn?.addEventListener('click', () => {
+        this._bindClickOnce(mainMenuSettingsBtn, () => {
             this.showSettingsModal();
         });
-        mainMenuCreditsBtn?.addEventListener('click', () => {
+        this._bindClickOnce(mainMenuCreditsBtn, () => {
             alert('Auto Battle Arena\nDeveloped with Claude AI\n\nA tactical auto-battler game featuring strategic unit placement and AI opponents.');
         });
 
-        gameModeBackBtn?.addEventListener('click', () => {
+        this._bindClickOnce(gameModeBackBtn, () => {
             this.call.showMainMenu();
         });
 
-        gamePauseBtn?.addEventListener('click', () => {
+        this._bindClickOnce(gamePauseBtn, () => {
             this.call.pauseGame();
         });
-        gameExitBtn?.addEventListener('click', () => {
+        this._bindClickOnce(gameExitBtn, () => {
             this.call.exitToMenu();
         });
 
-        victoryMainMenuBtn?.addEventListener('click', () => {
+        this._bindClickOnce(victoryMainMenuBtn, () => {
             // Use leaveGame to properly clean up multiplayer connection
             this.call.leaveGame();
         });
 
-        defeatMainMenuBtn?.addEventListener('click', () => {
+        this._bindClickOnce(defeatMainMenuBtn, () => {
             // Use leaveGame to properly clean up multiplayer connection
             this.call.leaveGame();
         });
 
-        pausedResumeBtn?.addEventListener('click', () => {
+        this._bindClickOnce(pausedResumeBtn, () => {
             this.call.resumeGame();
         });
-        pausedRestartBtn?.addEventListener('click', () => {
+        this._bindClickOnce(pausedRestartBtn, () => {
             this.call.restartGame();
         });
-        pausedMainMenuBtn?.addEventListener('click', () => {
+        this._bindClickOnce(pausedMainMenuBtn, () => {
             this.call.showMainMenu();
         });
 
 
 
     }
-
+    
     setupKeyboardEvents() {
         document.addEventListener('keydown', (event) => {
             this.keyStates[event.code] = true;
             this.handleKeyDown(event);
         });
-
+        
         document.addEventListener('keyup', (event) => {
             this.keyStates[event.code] = false;
             this.handleKeyUp(event);
         });
-
+        
         // Prevent default browser shortcuts that might interfere
         document.addEventListener('keydown', (event) => {
             if (this.shouldPreventDefault(event)) {
@@ -214,45 +223,45 @@ class InputSystem extends GUTS.BaseSystem {
             }
         });
     }
-
+        
     setupMouseTracking() {
         document.addEventListener('mousedown', (event) => {
             this.mouseState.pressed = true;
         });
-
+        
         document.addEventListener('mouseup', (event) => {
             this.mouseState.pressed = false;
         });
-
+        
         document.addEventListener('mousemove', (event) => {
             this.mouseState.x = event.clientX;
             this.mouseState.y = event.clientY;
         });
     }
-
+    
     setupDefaultShortcuts() {
         // Define keyboard shortcuts
         this.shortcuts.set('Escape', () => this.handleEscapeKey());
     }
-
+    
     handleKeyDown(event) {
         const shortcutKey = this.getShortcutKey(event);
         const shortcutHandler = this.shortcuts.get(shortcutKey);
-
+        
         if (shortcutHandler) {
             event.preventDefault();
             shortcutHandler();
         }
-
+        
         // Handle continuous key press actions
         this.handleContinuousKeys(event);
     }
-
+    
     handleKeyUp(event) {
         // Handle key release actions if needed
         this.handleKeyRelease(event);
     }
-
+    
     getShortcutKey(event) {
         let key = event.code;
         if (event.ctrlKey) key += '+Control';
@@ -260,11 +269,11 @@ class InputSystem extends GUTS.BaseSystem {
         if (event.altKey) key += '+Alt';
         return key;
     }
-
+    
     handleEscapeKey() {
         this.cancelSelectedUnit();
     }
-
+    
     handleContinuousKeys(event) {
         // Handle keys that should trigger repeatedly while held
         if (this.keyStates['ArrowUp']) {
@@ -274,7 +283,7 @@ class InputSystem extends GUTS.BaseSystem {
             this.scrollBattleLog(1);
         }
     }
-
+    
     handleKeyRelease(event) {
         // Handle specific key release events
         switch (event.code) {
@@ -283,18 +292,18 @@ class InputSystem extends GUTS.BaseSystem {
                 break;
         }
     }
-
+    
     shouldPreventDefault(event) {
         return false;
     }
-
-
+    
+        
     updateMousePosition(event) {
         this.mouseState.x = event.clientX;
         this.mouseState.y = event.clientY;
     }
-
-
+   
+    
     cancelSelectedUnit() {
         const state = this.game.state;
         if (state.selectedUnitType) {
@@ -308,25 +317,25 @@ class InputSystem extends GUTS.BaseSystem {
     cycleThroughUnits() {
         const unitCards = document.querySelectorAll('.unit-card:not(.disabled)');
         const currentSelected = document.querySelector('.unit-card.selected');
-
+        
         if (unitCards.length === 0) return;
-
+        
         let nextIndex = 0;
         if (currentSelected) {
             const currentIndex = Array.from(unitCards).indexOf(currentSelected);
             nextIndex = (currentIndex + 1) % unitCards.length;
         }
-
+        
         unitCards[nextIndex].click();
     }
-
+    
     scrollBattleLog(direction) {
         const battleLog = document.getElementById('battleLog');
         if (battleLog) {
             battleLog.scrollTop += direction * 20;
         }
     }
-
+    
     handleMainMenuAction() {
         if (confirm('Return to main menu? Current progress will be lost.')) {
             // Trigger main menu navigation
@@ -335,158 +344,29 @@ class InputSystem extends GUTS.BaseSystem {
             }
         }
     }
-
+    
     showSettingsModal() {
-        // Use the unified settings overlay instead of a custom modal
-        const overlay = document.getElementById('settingsOverlay');
-        if (overlay) {
-            overlay.classList.add('active');
-        }
+        GUTS.UIKit.openSettings();
     }
 
     showModal(title, content, onClose = null) {
-        const modal = document.createElement('div');
-        modal.className = 'game-modal';
-        modal.innerHTML = `
-            <div class="modal-backdrop"></div>
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2>${title}</h2>
-                    <button class="modal-close" type="button">&times;</button>
-                </div>
-                <div class="modal-body">${content}</div>
-            </div>
-        `;
-
-        const closeBtn = modal.querySelector('.modal-close');
-        const backdrop = modal.querySelector('.modal-backdrop');
-
-        const closeModal = () => {
-            if (document.body.contains(modal)) {
-                document.body.removeChild(modal);
-                if (onClose) onClose();
-            }
-        };
-
-        closeBtn.addEventListener('click', closeModal);
-        backdrop.addEventListener('click', closeModal);
-
-        // Close on ESC key
-        const escHandler = (event) => {
-            if (event.key === 'Escape') {
-                closeModal();
-                document.removeEventListener('keydown', escHandler);
-            }
-        };
-        document.addEventListener('keydown', escHandler);
-
-        document.body.appendChild(modal);
-        this.addModalCSS();
+        const m = GUTS.UIKit.modal({ title, body: content, actions: [{ label: 'Close' }] });
+        if (onClose) m.result.then(onClose);
+        return m;
     }
 
-    addModalCSS() {
-        if (document.querySelector('#modal-styles')) return;
-
-        const style = document.createElement('style');
-        style.id = 'modal-styles';
-        style.textContent = `
-            .game-modal {
-                position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-                z-index: 2000; display: flex; justify-content: center; align-items: center;
-            }
-
-            .modal-backdrop {
-                position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-                background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(3px);
-            }
-
-            .modal-content {
-                position: relative; background: linear-gradient(145deg, #1a1a2e, #16213e);
-                border: 2px solid #00ffff; border-radius: 10px; max-width: 600px;
-                width: 90%; max-height: 80%; overflow-y: auto;
-                animation: modalAppear 0.3s ease-out;
-                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
-            }
-
-            @keyframes modalAppear {
-                from { transform: scale(0.9); opacity: 0; }
-                to { transform: scale(1); opacity: 1; }
-            }
-
-            .modal-header {
-                padding: 1rem; border-bottom: 1px solid #333;
-                display: flex; justify-content: space-between; align-items: center;
-                background: rgba(0, 255, 255, 0.1);
-            }
-
-            .modal-header h2 { color: #00ffff; margin: 0; }
-
-            .modal-close {
-                background: none; border: none; color: #ccc; font-size: 1.5rem;
-                cursor: pointer; padding: 0; width: 30px; height: 30px;
-                display: flex; align-items: center; justify-content: center;
-                border-radius: 50%; transition: all 0.2s;
-            }
-
-            .modal-close:hover {
-                color: #ff4444; background: rgba(255, 68, 68, 0.1);
-            }
-            .modal-body {
-                padding: 1.5rem; color: #ccc; line-height: 1.6;
-            }
-
-            .modal-body h3 {
-                color: #00ffff; margin-top: 1.5rem; margin-bottom: 0.8rem;
-                border-bottom: 1px solid #333; padding-bottom: 0.5rem;
-            }
-
-            .modal-body h4 {
-                color: #ffff88; margin-top: 1rem; margin-bottom: 0.5rem;
-            }
-
-            .modal-body p { margin-bottom: 0.6rem; }
-            .modal-body strong { color: #ffff00; }
-
-            .help-section {
-                margin-bottom: 1rem; padding-left: 1rem;
-            }
-
-            .settings-section {
-                margin-bottom: 1.5rem; padding: 1rem;
-                background: rgba(255, 255, 255, 0.05);
-                border-radius: 5px;
-            }
-
-            .settings-section label {
-                display: block; margin-bottom: 0.8rem;
-                color: #ccc; cursor: pointer;
-            }
-
-            .settings-section input[type="checkbox"] {
-                margin-right: 0.5rem; accent-color: #00ffff;
-            }
-
-            .settings-section input[type="range"] {
-                width: 100%; margin-top: 0.3rem;
-                accent-color: #00ffff;
-            }
-        `;
-        document.head.appendChild(style);
-    }
-
-    // Utility methods
     isKeyPressed(keyCode) {
         return this.keyStates[keyCode] || false;
     }
-
+    
     getMousePosition() {
         return { ...this.mouseState };
     }
-
+    
     addCustomShortcut(keyCombo, handler) {
         this.shortcuts.set(keyCombo, handler);
     }
-
+    
     removeShortcut(keyCombo) {
         this.shortcuts.delete(keyCombo);
     }

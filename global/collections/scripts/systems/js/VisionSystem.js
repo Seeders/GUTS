@@ -1,4 +1,10 @@
 class VisionSystem extends GUTS.BaseSystem {
+    // Stealth added by the active abilities (viewer awareness defaults to 50, so both
+    // hide from normal units; only high-awareness Reveal / True Sight — via the
+    // `revealed` buff — counter them).
+    static CLOAKED_STEALTH = 55;     // DEX Stealth: breaks when the unit attacks
+    static INVISIBLE_STEALTH = 90;   // INT Invisibility: persists through attacks
+
     static serviceDependencies = [
         'getGridSize',
         'getHeightLevelAtGridPosition',
@@ -320,6 +326,16 @@ class VisionSystem extends GUTS.BaseSystem {
             if (targetPlayerOrder?.isHiding) {
                 stealth += 30;
             }
+        }
+
+        // Active stealth abilities. `revealed` (from a Reveal / True Sight caster)
+        // negates all stealth so the whole enemy team can see the target.
+        const bes = this.game.buffEffectsSystem;
+        if (bes) {
+            const bt = this.game.getEnums().buffTypes || {};
+            if (bt.revealed != null && bes.hasBuff(targetId, bt.revealed)) return 0;
+            if (bt.invisible != null && bes.hasBuff(targetId, bt.invisible)) stealth += VisionSystem.INVISIBLE_STEALTH;
+            if (bt.cloaked != null && bes.hasBuff(targetId, bt.cloaked)) stealth += VisionSystem.CLOAKED_STEALTH;
         }
 
         return stealth;
