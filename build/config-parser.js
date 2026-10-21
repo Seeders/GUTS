@@ -9,6 +9,7 @@
 const fs = require('fs');
 const path = require('path');
 const { GUTS_ROOT, resolveProjectRoot, resolvePackageDir } = require('./paths');
+const { selectKits } = require('./kits');
 
 class ConfigParser {
     constructor(projectName) {
@@ -16,6 +17,10 @@ class ConfigParser {
         this.projectRoot = resolveProjectRoot(projectName);
         this.globalRoot = path.join(GUTS_ROOT, 'global', 'collections');
         this.collectionsRoot = path.join(this.projectRoot, 'collections');
+        // the core's collections, then those of each kit the project uses (game.json `kits`, default
+        // all; global/kits/<kit>/collections), merged by collection id
+        this.kits = selectKits(this.readProjectKits(), GUTS_ROOT);
+        this.engineRoots = [this.globalRoot, ...this.kits.map(k => k.collectionsRoot)];
 
         // Cache for library metadata loaded from data JSON files
         this.libraryMetadata = {};
@@ -31,6 +36,14 @@ class ConfigParser {
 
         // Loaded configs from Settings/configs
         this.configs = {};
+    }
+
+    /** The `kits` list in the project's game.json, or null (every kit) when it has none. */
+    readProjectKits() {
+        const gamePath = path.join(this.collectionsRoot, 'settings', 'configs', 'game.json');
+        if (!fs.existsSync(gamePath)) return null;
+        const kits = JSON.parse(fs.readFileSync(gamePath, 'utf8')).kits;
+        return Array.isArray(kits) ? kits : null;
     }
 
     /**
@@ -81,7 +94,7 @@ class ConfigParser {
         // Load editor library metadata from discovered 'libraries' collection
         const editorLibraries = this.editorCollections['libraries'];
         if (editorLibraries && editorLibraries.dataPath) {
-            const dataFiles = this.scanDataFolder(editorLibraries.dataPath);
+            const dataFiles = editorLibraries.dataFiles;   // every engine root's, merged
             for (const fileInfo of dataFiles) {
                 const data = JSON.parse(fs.readFileSync(fileInfo.path, 'utf8'));
                 const name = data.fileName || fileInfo.name;
@@ -283,15 +296,24 @@ class ConfigParser {
             return;
         }
 
-        const categoryFolders = fs.readdirSync(this.globalRoot, { withFileTypes: true })
+        for (const root of this.engineRoots) this.discoverEngineRoot(root);
+
+        console.log(`    Found ${Object.keys(this.editorCollections).length} editor collections; kits: ${this.kits.map(k => k.name).join(', ') || 'none'}`);
+    }
+
+    /**
+     * Scan one engine collections root (the core or a kit) into editorCollections. A collection
+     * already found in an earlier root gains this root's files; a file name already present
+     * stays with the earlier root (the core wins over kits, kits in name order).
+     */
+    discoverEngineRoot(engineRoot) {
+        const categoryFolders = fs.readdirSync(engineRoot, { withFileTypes: true })
             .filter(d => d.isDirectory())
             .map(d => d.name);
 
-        console.log(`    Found ${categoryFolders.length} editor category folders`);
-
         // Process each category folder
         for (const category of categoryFolders) {
-            const categoryPath = path.join(this.globalRoot, category);
+            const categoryPath = path.join(engineRoot, category);
 
             // Get all subfolders in this category
             const subfolders = fs.readdirSync(categoryPath, { withFileTypes: true })
@@ -331,7 +353,17 @@ class ConfigParser {
                 const cssFiles = cssPath ? this.scanFolderByExtension(cssPath, '.css') : [];
 
                 // Include collection if it has JS files OR data files
-                if (jsFiles.length > 0 || dataFiles.length > 0) {
+                const existing = this.editorCollections[collectionId];
+                if (existing && (jsFiles.length > 0 || dataFiles.length > 0)) {
+                    const add = (list, more) => {
+                        const names = new Set(list.map(f => f.name));
+                        for (const f of more) if (!names.has(f.name)) list.push(f);
+                    };
+                    add(existing.files, jsFiles);
+                    add(existing.dataFiles, dataFiles);
+                    add(existing.htmlFiles, htmlFiles);
+                    add(existing.cssFiles, cssFiles);
+                } else if (jsFiles.length > 0 || dataFiles.length > 0) {
                     this.editorCollections[collectionId] = {
                         id: collectionId,
                         parent: category,
@@ -347,8 +379,6 @@ class ConfigParser {
                 }
             }
         }
-
-        console.log(`    Found ${Object.keys(this.editorCollections).length} editor collections`);
     }
 
     /**

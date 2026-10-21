@@ -1,0 +1,7 @@
+{
+  "title": "Units",
+  "description": "Units on a grid map: the spatial grid (getNearbyUnits), A* pathfinding, steering movement with separation and path following, unit creation from prefabs, collision radii, and team vision.",
+  "requires": [
+    "ai"
+  ]
+}

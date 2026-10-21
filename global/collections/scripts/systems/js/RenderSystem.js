@@ -316,8 +316,9 @@ class RenderSystem extends GUTS.BaseSystem {
             const pos = transform.position;
             const angle = transform.rotation?.y || 0;
 
-            // Check fog of war visibility (cliffs and worldObjects always visible, player always visible to self)
-            const isVisible = this.call.isVisibleAt( pos.x, pos.z);
+            // Check fog of war visibility (cliffs and worldObjects always visible, player always visible to self).
+            // Without a vision provider (units kit's VisionSystem) everything is visible.
+            const isVisible = !this.game.hasService('isVisibleAt') || this.call.isVisibleAt( pos.x, pos.z);
             const unitTypeCollection = unitTypeComp?.collection;
             const isAlwaysVisible = unitTypeCollection === this.enums.objectTypeDefinitions?.worldObjects ||
                                     unitTypeCollection === this.enums.objectTypeDefinitions?.cliffs ||

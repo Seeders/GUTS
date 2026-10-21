@@ -1,0 +1,8 @@
+{
+  "title": "Combat",
+  "description": "Damage with armor, resistances and status effects, accuracy, stat aggregation, projectiles, death and corpses, health bars, floating damage numbers, and timed lifetimes for summons and effects.",
+  "requires": [
+    "ai",
+    "units"
+  ]
+}

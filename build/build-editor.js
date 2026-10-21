@@ -70,7 +70,7 @@ const baseConfig = {
         extensions: ['.js', '.json'],
         alias: {
             '@engine': path.resolve(__dirname, '..', 'engine'),
-            '@global': path.resolve(__dirname, '..', 'global', 'collections'),
+            '@global': require('./kits').engineCollectionRoots(path.resolve(__dirname, '..')),
             '@project': path.resolve(__dirname, '..', 'projects', projectName),
             'three': path.resolve(__dirname, '..', 'node_modules', 'three')
         }

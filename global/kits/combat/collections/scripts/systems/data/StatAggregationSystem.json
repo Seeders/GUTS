@@ -1,0 +1,7 @@
+{
+  "filePath": "/global/kits/combat/collections/scripts/systems/js/StatAggregationSystem.js",
+  "fileName": "StatAggregationSystem",
+  "services": [
+    "aggregateUnitStats"
+  ]
+}

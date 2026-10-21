@@ -1,0 +1,8 @@
+{
+  "filePath": "/global/kits/combat/collections/scripts/systems/js/AccuracySystem.js",
+  "fileName": "AccuracySystem",
+  "services": [
+    "rollAccuracy",
+    "getAccuracyChance"
+  ]
+}

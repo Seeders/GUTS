@@ -1,0 +1,5 @@
+{
+  "title": "Cards",
+  "description": "Card games: a deck, dragging cards, and card rendering, with card/cardVisual/draggable components and rank/suit enums.",
+  "requires": []
+}

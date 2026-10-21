@@ -48,7 +48,7 @@ module.exports = {
         extensions: ['.js', '.json'],
         alias: {
             '@engine': path.resolve(__dirname, 'engine'),
-            '@global': path.resolve(__dirname, 'global', 'collections'),
+            '@global': require('./build/kits').engineCollectionRoots(__dirname),
             '@project': path.resolve(__dirname, 'projects', projectName)
         }
     },

@@ -1,0 +1,5 @@
+{
+  "title": "AI",
+  "description": "Behavior trees: the tree/node/processor classes, a blackboard, the debugger and editor, and BaseBehaviorSystem, which runs each unit's tree every tick.",
+  "requires": []
+}

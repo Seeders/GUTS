@@ -1,0 +1,10 @@
+{
+  "filePath": "/global/kits/rts/collections/scripts/systems/js/FogOfWarSystem.js",
+  "fileName": "FogOfWarSystem",
+  "services": [
+    "getExplorationTexture",
+    "getFogTexture",
+    "invalidateLOSCache",
+    "isVisibleAt"
+  ]
+}

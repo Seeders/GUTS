@@ -24,6 +24,7 @@ const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
 const { GUTS_ROOT } = require('./paths');
+const { engineCollectionRoots } = require('./kits');
 
 function parseArgs(argv) {
     const opts = { projects: [], engine: GUTS_ROOT, out: null, context: 2, maxHunkLines: 400 };
@@ -133,8 +134,11 @@ function main() {
     const opts = parseArgs(process.argv.slice(2));
 
     const engineFiles = new Map(); // basename -> engine path
-    for (const file of walkJs(path.join(opts.engine, 'global', 'collections'))) {
-        engineFiles.set(path.basename(file), file);
+    // the core and every kit (global/kits/<kit>/collections)
+    for (const root of engineCollectionRoots(opts.engine)) {
+        for (const file of walkJs(root)) {
+            if (!engineFiles.has(path.basename(file))) engineFiles.set(path.basename(file), file);
+        }
     }
     if (engineFiles.size === 0) {
         console.error(`No engine files found under ${opts.engine}/global/collections`);

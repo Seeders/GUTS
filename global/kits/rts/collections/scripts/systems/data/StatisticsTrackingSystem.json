@@ -1,0 +1,8 @@
+{
+  "filePath": "/global/kits/rts/collections/scripts/systems/js/StatisticsTrackingSystem.js",
+  "fileName": "StatisticsTrackingSystem",
+  "services": [
+    "trackStatistic",
+    "getStatistics"
+  ]
+}

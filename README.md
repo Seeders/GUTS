@@ -45,7 +45,7 @@ depends on the current GUTS release. `npm run dev` builds it, rebuilds on change
 |---------|-------------|
 | `guts new <folder> [--template game\|app]` | Create a project from a template |
 | `guts dev` | Build the project in this folder, watch, and serve it |
-| `guts build [--target client|server|headless|editor]\|server\|headless] [--production]` | Build the project in this folder |
+| `guts build [--target client\|server\|headless\|editor] [--production]` | Build the project in this folder |
 | `guts fork-diff <projects...>` | Report which engine files a project overrides and how they differ |
 
 ### Working on GUTS itself
@@ -65,7 +65,7 @@ Projects live in their own repositories. The editor reads any project cloned int
 ## Example Projects
 
 - **[TurnBasedWarfare](https://github.com/Seeders/TurnBasedWarfare)** - RTS/auto-battler: placement
-  and battle phases, behavior-tree AI, abilities, guts build [--target client|server|headless|editor]-authoritative multiplayer, headless
+  and battle phases, behavior-tree AI, abilities, server-authoritative multiplayer, headless
   simulations.
 
 ---
@@ -87,23 +87,23 @@ The editor is web-based, follows an MVC architecture, and supports:
 ### Project Structure
 ```
 GUTS/
-├── engine/              # Core engine runtime
-├── global/              # Shared engine libraries
-│   ├── libraries/      # Core engine classes (ECS, managers, systems)
-│   ├── modals/         # Reusable UI modals
-│   └── modules/        # Editor modules (terrain, sprite, model editors)
-├── projects/           # Individual game projects
-│   └── {ProjectName}/
-│       ├── scripts/    # Game-specific code & data
-│       │   ├── Prefabs/      # Game object definitions (JSON)
-│       │   ├── Scripts/      # Game systems & logic (JS)
-│       │   ├── Settings/     # Configuration files
-│       │   ├── Sprites/      # Sprite definitions
-│       │   └── Terrain/      # Level data
-│       ├── resources/  # Assets (images, models, audio)
-│       └── dist/       # Build output (client & guts build [--target client|server|headless|editor])
-├── build/              # Custom build system
-└── editor/             # Visual editor application
+├── bin/guts.js          # the guts command (new, dev, build, fork-diff)
+├── build/               # build system (webpack entry generation, collection discovery)
+├── engine/              # runtime entry points (client, server, headless engines)
+├── global/              # engine collections - see global/README.md
+│   ├── collections/     # core: ECS, rendering, world, audio, input, networking, editor modules
+│   └── kits/            # optional: ai, units, combat, rts, cards
+├── templates/           # starter projects for guts new
+└── projects/Editor/     # the editor; other projects are cloned into projects/ from their own repos
+
+my-game/                 # a project (guts new my-game)
+├── collections/
+│   ├── settings/configs/game.json   # systems, libraries, scenes, kits, options
+│   ├── scripts/systems/js/          # your systems (a file named like an engine one replaces it)
+│   ├── data/components/             # component schemas
+│   └── ...                          # prefabs, behaviors, abilities, levels: any collection you add
+├── resources/           # models, textures, audio
+└── dist/                # build output (client, server, headless)
 ```
 
 ### Editor Interface
@@ -215,7 +215,7 @@ This is the central configuration file that defines your game's architecture:
 | `systems` | ECS systems executed each frame (in order) |
 | `classes` | Collection definitions with their base classes |
 | `appLibrary` | Main game application class |
-| `initialScene` | Starting scene/mode (client, guts build [--target client|server|headless|editor], editor) |
+| `initialScene` | Starting scene/mode (client, server, editor) |
 | `gridSize` | World grid size in units |
 | `is3D` | Enable 3D rendering with Three.js |
 | `isIsometric` | Use isometric projection |
@@ -226,7 +226,7 @@ This is the central configuration file that defines your game's architecture:
 
 Controls the editor and library bundling:
 - **Entry points**: Editor and library bundles
-- **Dev guts build [--target client|server|headless|editor]**: Hot reloading for editor development
+- **Dev server**: Hot reloading for editor development
 - **Output**: Bundled editor files
 
 #### Custom Build System (build/build.js)
@@ -234,7 +234,7 @@ Controls the editor and library bundling:
 Game-specific build process:
 - Concatenates game libraries in dependency order
 - Processes collections and generates runtime data
-- Creates client and guts build [--target client|server|headless|editor] bundles
+- Creates client and server bundles
 - Copies resources to distribution folder
 - Supports production minification and source maps
 
@@ -295,7 +295,7 @@ Game-specific build process:
    ↓
 9. Initialize game class (appLibrary)
    ↓
-10. Load initial scene (client/guts build [--target client|server|headless|editor]/editor mode)
+10. Load initial scene (client/server/editor mode)
    ↓
 11. Start game loop
     ├─ System updates (fixed timestep)

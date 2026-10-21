@@ -1,0 +1,9 @@
+{
+  "filePath": "/global/kits/combat/collections/scripts/systems/js/LifetimeSystem.js",
+  "fileName": "LifetimeSystem",
+  "services": [
+    "addLifetime",
+    "destroyEntityImmediately",
+    "extendLifetime"
+  ]
+}

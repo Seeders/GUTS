@@ -1,0 +1,7 @@
+{
+  "title": "RTS",
+  "description": "Real-time strategy layer: squad orders and their UI, building placement previews, fog of war, the minimap, match statistics, cheat codes, and the headless skirmish runner for AI-vs-AI simulations.",
+  "requires": [
+    "units"
+  ]
+}

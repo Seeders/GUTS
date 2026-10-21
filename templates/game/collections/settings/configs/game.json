@@ -10,6 +10,7 @@
         "BaseECSGame",
         "SimpleLoader"
     ],
+    "kits": [],
     "systems": [
         "BaseSystem",
         "SpinSystem",

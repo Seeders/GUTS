@@ -143,7 +143,7 @@ class TerrainSystem extends GUTS.BaseSystem {
         if (!levelData) return;
 
         // Use createEntityFromPrefab for consistent entity creation
-        const entityId = this.call.createEntityFromPrefab( {
+        const entityId = this._createFromPrefab( {
             prefab: 'terrain',
             type: levelName,
             collection: 'levels',
@@ -152,6 +152,19 @@ class TerrainSystem extends GUTS.BaseSystem {
         });
 
         this.terrainEntityId = entityId;
+    }
+
+    // Level entities (the terrain itself, world objects) are made by a createEntityFromPrefab
+    // service, which the units kit's UnitCreationSystem provides; without one there are none.
+    _createFromPrefab(args) {
+        if (!this.game.hasService('createEntityFromPrefab')) {
+            if (!this._warnedNoPrefabs) {
+                this._warnedNoPrefabs = true;
+                console.warn('[TerrainSystem] No createEntityFromPrefab service, so level entities are not created. Add UnitCreationSystem (units kit) to your systems, or provide the service yourself.');
+            }
+            return null;
+        }
+        return this.call.createEntityFromPrefab(args);
     }
 
     /**
@@ -257,7 +270,7 @@ class TerrainSystem extends GUTS.BaseSystem {
                 }
 
                 // Create entity using prefab-driven system
-                const entityId = this.call.createEntityFromPrefab( {
+                const entityId = this._createFromPrefab( {
                     prefab: prefabName,
                     type: type,
                     collection: collection,

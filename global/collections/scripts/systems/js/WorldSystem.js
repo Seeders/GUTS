@@ -308,11 +308,14 @@ class WorldSystem extends GUTS.BaseSystem {
         // Update CoordinateTranslator with actual terrain dimensions from loaded terrain data
         // This is critical because GridSystem.init() reads tileMapSize from static collection data,
         // but the actual loaded terrain may have a different size
-        _tickSync('updateCoordinateConfig', () => this.call.updateCoordinateConfig({
-            tileMapSize: terrainDataManager.tileMap.size,
-            extensionSize: terrainDataManager.extensionSize || 0,
-            extendedSize: terrainDataManager.extendedSize || 0
-        }));
+        // (GridSystem, units kit, provides it; without it there is nothing to update)
+        if (this.game.hasService('updateCoordinateConfig')) {
+            _tickSync('updateCoordinateConfig', () => this.call.updateCoordinateConfig({
+                tileMapSize: terrainDataManager.tileMap.size,
+                extensionSize: terrainDataManager.extensionSize || 0,
+                extendedSize: terrainDataManager.extendedSize || 0
+            }));
+        }
 
         // Render terrain textures. Fast path: load a baked PNG cached by
         // TerrainMapEditor (resources/levels/<level>.png) and blit it directly

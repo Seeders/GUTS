@@ -9,6 +9,7 @@ const MonacoWebpackPlugin = require('monaco-editor-webpack-plugin');
 const ConfigParser = require('./build/config-parser');
 const EntryGenerator = require('./build/entry-generator');
 const { GUTS_ROOT, resolveProjectRoot, resolvePackageDir } = require('./build/paths');
+const { engineCollectionRoots } = require('./build/kits');
 
 // Get project name from environment (required - set by build.js)
 const projectName = process.env.PROJECT_NAME;
@@ -54,7 +55,8 @@ const baseConfig = {
         extensions: ['.js', '.json'],
         alias: {
             '@engine': path.resolve(GUTS_ROOT, 'engine'),
-            '@global': path.resolve(GUTS_ROOT, 'global', 'collections'),
+            // the core's collections, then each kit's (build/kits.js)
+            '@global': engineCollectionRoots(GUTS_ROOT),
             '@project': projectRoot,
             // Ensure 'three' resolves to the npm package, wherever it is hoisted.
             'three': resolvePackageDir('three') || path.resolve(GUTS_ROOT, 'node_modules', 'three')
