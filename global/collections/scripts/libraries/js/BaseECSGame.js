@@ -38,9 +38,23 @@ class BaseECSGame {
         // 256 component types max = 8 Uint32s per entity
         this.MASK_UINT32_COUNT = 8;
         this.entityComponentMask = this._entityArray(Uint32Array, this.MASK_UINT32_COUNT);
+        this.entityGeneration = this._entityArray(Uint32Array);
 
-        // Entity ID counter (no recycling - IDs grow monotonically to prevent reference bugs)
+        // Entity ID counter. IDs grow monotonically unless game.json entityIdReuse is set (see getEntityId)
         this.nextEntityId = 1; // Start at 1, reserve 0 as "no entity"
+
+        // ID reuse (opt-in: game.json "entityIdReuse": true or { "quarantineTicks": n }). A destroyed
+        // entity's ID goes into _freeIds and is handed out again once it has been free for
+        // quarantineTicks (default 200: ten seconds at 20 TPS), oldest first, so peers that destroy
+        // the same entities in the same order reuse the same IDs. entityGeneration[id] counts the
+        // slot's destructions: code that keeps a reference across time can keep the generation too
+        // and check isEntityCurrent(id, generation).
+        const reuse = gameConfig?.entityIdReuse;
+        this._idReuse = !!reuse;
+        this._idQuarantine = (reuse && typeof reuse === 'object' && reuse.quarantineTicks != null) ? reuse.quarantineTicks : 200;
+        this._freeIds = [];        // [id, tick it was freed] pairs, oldest first
+        this._freeHead = 0;        // _freeIds before this index are already reused
+        this._idClockBase = 0;     // tickCount resets (resetCurrentTime) add to this: _idNow() never goes back
         this.entityCount = 0;
 
         // Component type registry - maps component name to numeric ID (0-63)
@@ -152,6 +166,7 @@ class BaseECSGame {
         const M = this.MASK_UINT32_COUNT;
         this.entityAlive.buffer.resize(size);
         this.entityComponentMask.buffer.resize(size * M * 4);
+        this.entityGeneration.buffer.resize(size * 4);
         for (const arr of this._numericArrays.values()) arr.buffer.resize(size * 4);
 
         // the singleton moves from the old last slot to the new one
@@ -1337,12 +1352,47 @@ class BaseECSGame {
     }
 
     getEntityId() {
-        // Never recycle entity IDs - always use fresh IDs
-        // This prevents bugs where cached entity references (lastAttacker, target, etc.)
-        // accidentally point to completely different entities after ID reuse
-        // Memory cost is negligible - typed arrays grow as needed (the last slot is the gameState singleton's)
+        // Fresh IDs by default, so a cached reference (lastAttacker, target, ...) can never
+        // point at a different entity later. With entityIdReuse, an ID freed for longer than the
+        // quarantine is handed out first (see the constructor). Storage grows as needed; the
+        // last slot is the gameState singleton's.
+        if (this._idReuse) {
+            const id = this._takeFreeId();
+            if (id) return id;
+        }
         if (this.nextEntityId >= this.MAX_ENTITIES - 1) this._growEntityStorage(this.nextEntityId);
         return this.nextEntityId++;
+    }
+
+    /** The oldest freed ID out of quarantine (still dead), or 0 when there is none. */
+    _takeFreeId() {
+        const free = this._freeIds;
+        while (this._freeHead < free.length) {
+            const [id, freedAt] = free[this._freeHead];
+            if (this._idNow() - freedAt < this._idQuarantine) return 0;
+            this._freeHead++;
+            if (this._freeHead > 1024 && this._freeHead * 2 > free.length) {     // drop the used front now and then
+                free.splice(0, this._freeHead);
+                this._freeHead = 0;
+            }
+            if (!this.entityAlive[id]) return id;      // (an explicit createEntity(id) may have taken it)
+        }
+        return 0;
+    }
+
+    /** Ticks since the game began, across tickCount resets (any loop that ticks advances it). */
+    _idNow() {
+        return this._idClockBase + this.tickCount;
+    }
+
+    /** How many times this ID's slot has been destroyed: keep it beside an ID held across time. */
+    getEntityGeneration(entityId) {
+        return this.entityGeneration[entityId];
+    }
+
+    /** Is `entityId` still the entity it was when its generation was `generation`? */
+    isEntityCurrent(entityId, generation) {
+        return !!this.entityAlive[entityId] && this.entityGeneration[entityId] === generation;
     }
 
     getCollections() {
@@ -1497,8 +1547,10 @@ class BaseECSGame {
         // Note: TypedArray numeric data doesn't need clearing -
         // the bitmask ensures it won't be read
 
-        // Mark entity as dead (no ID recycling - IDs are never reused)
+        // Mark entity as dead (its ID is reused only with entityIdReuse, after quarantine)
         this.entityAlive[entityId] = 0;
+        this.entityGeneration[entityId]++;
+        if (this._idReuse) this._freeIds.push([entityId, this._idNow()]);
         // Clear all mask words for this entity
         const maskBase = entityId * this.MASK_UINT32_COUNT;
         this._touchMaskTypes(maskBase);
@@ -1701,6 +1753,7 @@ class BaseECSGame {
     _getFullECSData(maxEntity) {
         const result = {
             nextEntityId: this.nextEntityId,
+            ...(this._idReuse ? { idPool: { free: this._freeIds.slice(this._freeHead), clock: this._idNow() } } : {}),
             entityAlive: {},
             entityComponentMask: {},
             numericArrays: {},
@@ -2090,6 +2143,11 @@ class BaseECSGame {
      */
     _applyFullECSData(data) {
         this._queryEpoch++;
+        if (data.idPool) {
+            this._freeIds = data.idPool.free.map(e => [e[0], e[1]]);
+            this._freeHead = 0;
+            this._idClockBase = data.idPool.clock - this.tickCount;
+        }
         const maxEntity = data.nextEntityId || this.nextEntityId;
 
         // Clear and apply entity alive flags from sparse format
@@ -2667,6 +2725,8 @@ class BaseECSGame {
         // Reset entity management
         this.nextEntityId = 1;
         this.entityCount = 0;
+        this._freeIds = [];
+        this._freeHead = 0;
 
         // Invalidate query cache
         this._queryCache.clear();
@@ -2704,6 +2764,7 @@ class BaseECSGame {
         this.state.now = 0;
         this.lastTime = 0;
         this.currentTime = 0;
+        this._idClockBase += this.tickCount;
         this.tickCount = 0;
     }
 
