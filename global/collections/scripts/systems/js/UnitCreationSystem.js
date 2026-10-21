@@ -56,7 +56,38 @@ class UnitCreationSystem extends GUTS.BaseSystem {
             squadsCreated: 0
         };
     }
-    
+
+    // Collision radius derived from the unit's PLACEMENT footprint, not its
+    // visual `size`. Placement cell = terrain gridSize / 2 (GridSystem rule);
+    // a squad's placementGridWidth spans all squadWidth members, so the
+    // per-member footprint is placementGridWidth / squadWidth cells. 0.45
+    // (slightly under half a cell) so formation lines can brush past each
+    // other instead of wedging.
+    // Opt in with configs.game.footprintCollision; otherwise the radius is the unit's `size`.
+    collisionRadiusFor(typeData) {
+        const gameConfig = this.game.getCollections()?.configs?.game;
+        if (!gameConfig?.footprintCollision) return typeData.size || this.defaults?.size || 16;
+        const gridSize = gameConfig.gridSize || 48;
+        const cell = gridSize / 2;
+        const squadW = Math.max(1, typeData.squadWidth || 1);
+        const cellsWide = Math.max(1, (typeData.placementGridWidth || 1) / squadW);
+        return Math.round(cell * cellsWide * 0.45);
+    }
+
+    // Default reach for units whose def has no `range` (melee): one placement
+    // cell. Attack checks use range + both collision radii (getEffectiveRange),
+    // so with tile-sized radii (~11) this gives melee ~46 reach — the second
+    // rank can fight over the first rank's shoulders. Without it melee reach
+    // collapsed to body contact and everyone behind the front ring idled.
+    // Also only with configs.game.footprintCollision; otherwise melee range is 0.
+    meleeRangeFor(typeData) {
+        if (typeData.range) return typeData.range;
+        const gameConfig = this.game.getCollections()?.configs?.game;
+        if (!gameConfig?.footprintCollision) return 0;
+        const gridSize = gameConfig.gridSize || 48;
+        return gridSize / 2;
+    }
+
     init() {
         // Initialize team configs with numeric keys
         const TEAM_NEUTRAL = this.enums.team.neutral;
@@ -375,7 +406,7 @@ class UnitCreationSystem extends GUTS.BaseSystem {
             case 'combat':
                 return {
                     damage: typeData.damage || 0,
-                    range: typeData.range || 0,
+                    range: this.meleeRangeFor(typeData),
                     attackSpeed: typeData.attackSpeed || 0,
                     projectile: typeData.projectile,
                     lastAttack: 0,
@@ -386,6 +417,9 @@ class UnitCreationSystem extends GUTS.BaseSystem {
                     lightningResistance: typeData.lightningResistance || 0,
                     poisonResistance: 0,
                     visionRange: typeData.visionRange || 0,
+                    // Turn speed (rad/s): rotation is rate-limited and
+                    // attacks only fire once facing the target — big units turn slow
+                    turnSpeed: typeData.turnSpeed ?? 10,
                     // Stealth/awareness system: awareness detects stealth (default 50, range 0-100)
                     awareness: typeData.awareness ?? 50,
                     stealth: typeData.stealth ?? 0
@@ -393,7 +427,7 @@ class UnitCreationSystem extends GUTS.BaseSystem {
 
             case 'collision':
                 return {
-                    radius: typeData.size || this.defaults?.size || 16,
+                    radius: this.collisionRadiusFor(typeData),
                     height: typeData.height || 32
                 };
 
@@ -401,8 +435,8 @@ class UnitCreationSystem extends GUTS.BaseSystem {
                 return {
                     currentAction: null,
                     currentActionCollection: null,
-                    rootBehaviorTree: this.enums.behaviorTrees?.UnitBattleBehaviorTree,
-                    rootBehaviorTreeCollection: this.enums.behaviorCollection?.behaviorTrees
+                    rootBehaviorTree: this.enums.behaviorTrees?.UnitBattleBehaviorTree ?? -1,
+                    rootBehaviorTreeCollection: this.enums.behaviorCollection?.behaviorTrees ?? -1
                 };
 
             case 'pathfinding':
@@ -697,7 +731,7 @@ class UnitCreationSystem extends GUTS.BaseSystem {
             health: { max: maxHP, current: maxHP },
             combat: {
                 damage: unitType.damage,
-                range: unitType.range,
+                range: this.meleeRangeFor(unitType),
                 attackSpeed: unitType.attackSpeed,
                 projectile: unitType.projectile,
                 lastAttack: 0,
@@ -710,13 +744,22 @@ class UnitCreationSystem extends GUTS.BaseSystem {
                 coldResistance: unitType.coldResistance,
                 lightningResistance: unitType.lightningResistance,
                 poisonResistance: 0,
+                // Hit/crit stats authored on the unit (schema defaults otherwise:
+                // accuracy 100, evasion 0, crit 0 → 5% base, crit ×1.5).
+                accuracy: unitType.accuracy ?? 100,
+                evasion: unitType.evasion ?? 0,
+                criticalChance: unitType.criticalChance ?? 0,
+                criticalMultiplier: unitType.criticalMultiplier ?? 1.5,
                 visionRange: unitType.visionRange,
+                // Turn speed (rad/s): rotation is rate-limited and
+                // attacks only fire once facing the target — big units turn slow
+                turnSpeed: unitType.turnSpeed ?? 10,
                 // Stealth/awareness system: awareness detects stealth (default 50, range 0-100)
                 awareness: unitType.awareness ?? 50,
                 stealth: unitType.stealth ?? 0
             },
             collision: {
-                radius: unitType.size || this.defaults.size,
+                radius: this.collisionRadiusFor(unitType),
                 height: unitType.height
             },
 
@@ -724,8 +767,8 @@ class UnitCreationSystem extends GUTS.BaseSystem {
             aiState: {
                 currentAction: null,
                 currentActionCollection: null,
-                rootBehaviorTree: this.enums.behaviorTrees.UnitBattleBehaviorTree,
-                rootBehaviorTreeCollection: this.enums.behaviorCollection.behaviorTrees
+                rootBehaviorTree: this.enums.behaviorTrees?.UnitBattleBehaviorTree ?? -1,
+                rootBehaviorTreeCollection: this.enums.behaviorCollection?.behaviorTrees ?? -1
             },
             aiMovement: {},
             pathfinding: {

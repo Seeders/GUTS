@@ -59,6 +59,24 @@ class BaseSystem {
 
     }
 
+    /**
+     * True where game state is decided: the server in online matches, the
+     * local game otherwise. Clients of an online match only mirror it.
+     */
+    isAuthority() {
+        return !!(this.game.isServer || this.game.state?.isLocalGame);
+    }
+
+    /**
+     * The active game mode's rules object (a BaseGameMode subclass from the
+     * gameModes collection). Core systems ask it for mode-specific policy
+     * instead of checking which mode is running.
+     */
+    gameMode() {
+        if (this.game.hasService?.('getGameMode')) return this.game.call('getGameMode');
+        return GUTS.BaseGameMode ? GUTS.BaseGameMode.fallback(this.game) : null;
+    }
+
     render() {
 
     }

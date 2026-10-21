@@ -37,6 +37,7 @@ class EntityRenderer {
 
         // Generated cliff texture (set by WorldRenderer before spawning cliffs)
         this.cliffTexture = null;
+        this.cliffTextures = {};   // cliff variant (top terrain name) -> generated texture
 
         // Default frame rates per animation type (frames per second)
         // These are fallbacks if animation data doesn't specify fps
@@ -297,12 +298,14 @@ class EntityRenderer {
      * Spawn entity using instanced mesh (for cliffs and worldObjects)
      */
     async spawnInstancedEntity(entityId, data, entityDef) {
-        const batchKey = `${data.collection}_${data.type}`;
+        // Cliffs come in variants (one texture per plateau terrain), each its own batch
+        const variant = data.collection === 'cliffs' ? data.cliffVariant : null;
+        const batchKey = variant ? `${data.collection}_${data.type}@${variant}` : `${data.collection}_${data.type}`;
 
         // Get or create instanced batch
         let batch = this.staticBatches.get(batchKey);
         if (!batch) {
-            batch = await this.createStaticBatch(batchKey, data.collection, data.type, entityDef);
+            batch = await this.createStaticBatch(batchKey, data.collection, data.type, entityDef, variant);
             if (!batch) {
                 console.error(`[EntityRenderer] Failed to create static batch for ${batchKey}`);
                 return false;
@@ -374,7 +377,7 @@ class EntityRenderer {
     /**
      * Create a static instanced batch for a model type
      */
-    async createStaticBatch(batchKey, collection, type, entityDef) {
+    async createStaticBatch(batchKey, collection, type, entityDef, variant = null) {
         const modelKey = `${collection}_${type}`;
 
         if (!this.modelManager) {
@@ -403,7 +406,7 @@ class EntityRenderer {
                     geometry.computeVertexNormals();
 
                     // Use generated cliff texture if available, otherwise fall back to GLB's baked texture
-                    const cliffTexture = this.cliffTexture || originalMaterial.map;
+                    const cliffTexture = (variant && this.cliffTextures[variant]) || this.cliffTexture || originalMaterial.map;
                     if (cliffTexture) {
                         cliffTexture.colorSpace = THREE.SRGBColorSpace;
                         // Use nearest neighbor filtering for pixel art style

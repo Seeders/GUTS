@@ -172,6 +172,9 @@ class TerrainSystem extends GUTS.BaseSystem {
      * Supports format: { spawnType: "worldObject", type: "tree_sprite", components: { transform } }
      */
     async loadLevelEntities() {
+        // A dedicated server that doesn't simulate props can skip thousands of
+        // tree/rock entities (configs.server.skipLevelEntities).
+        if (this.game.isServer && this.collections.configs?.server?.skipLevelEntities) return;
         // Clear any previous spawned entity data
         this.spawnedLevelEntities.clear();
 

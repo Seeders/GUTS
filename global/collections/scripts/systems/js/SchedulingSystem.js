@@ -39,7 +39,8 @@ class SchedulingSystem extends GUTS.BaseSystem {
      * @returns {string} actionId - Unique identifier for this action
      */
     scheduleAction(callback, delaySeconds, entityId = null) {
-        const actionId = `action_${this.actionIdCounter++}_${delaySeconds.toFixed(6)}`;
+        const seq = this.actionIdCounter++;
+        const actionId = `action_${seq}_${delaySeconds.toFixed(6)}`;
 
         // Don't compute executeTime now - store delay and compute on first check
         // This handles game time resets (e.g., simulation restart)
@@ -48,7 +49,12 @@ class SchedulingSystem extends GUTS.BaseSystem {
             delaySeconds: delaySeconds,
             startTime: null, // Will be set on first processScheduledActions check
             executeTime: null, // Will be computed from startTime + delaySeconds
-            entityId: entityId
+            entityId: entityId,
+            // Insertion order, kept as a number. Same-tick actions tie-break on this;
+            // the id string can't be used for that because it sorts lexicographically
+            // ("action_10_…" before "action_9_…"), which reorders actions the moment
+            // the counter passes 9.
+            seq: seq
         });
 
         // Track entity associations for cleanup
@@ -89,8 +95,8 @@ class SchedulingSystem extends GUTS.BaseSystem {
             if (Math.abs(a.action.executeTime - b.action.executeTime) > 0.000001) {
                 return a.action.executeTime - b.action.executeTime;
             }
-            // Secondary sort: by action ID for deterministic tie-breaking
-            return a.id.localeCompare(b.id);
+            // Secondary sort: by insertion order for deterministic tie-breaking
+            return a.action.seq - b.action.seq;
         });
 
         // Execute actions in deterministic order

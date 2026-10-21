@@ -128,47 +128,85 @@ class TerrainDataManager {
             return;
         }
 
-        // Initialize height map data array
-        this.heightMapData = new Float32Array(this.extendedSize * this.extendedSize);
-
-        // Check if we have a separate heightMap in the tileMap
-
-        // Initialize all points with extension height (for areas outside the main terrain)
-        const extensionHeight = this.tileMap.extensionHeight * this.heightStep;
-        for (let z = 0; z < this.extendedSize; z++) {
-            for (let x = 0; x < this.extendedSize; x++) {
-                this.heightMapData[z * this.extendedSize + x] = extensionHeight;
-            }
-        }
-
-        // Use separate heightMap data from tileMap
+        // Heights are constant across each tile, so store one value per tile
+        // instead of one float per world unit (a 128x128-tile map would need
+        // ~190 MB as a dense array). heightMapData stays an index-addressable
+        // view over extended-map pixels for code that reads it that way.
         const heightData = this.tileMap.heightMap;
-
-        for (let z = 0; z < heightData.length; z++) {
-            for (let x = 0; x < heightData[z].length; x++) {
-                const heightLevel = heightData[z][x];
-                const height = heightLevel * this.heightStep;
-
-                // Map terrain coordinates to extended coordinates
-                const extX = x * this.gridSize + this.extensionSize;
-                const extZ = z * this.gridSize + this.extensionSize;
-
-                // Apply height to the entire tile
-                for (let dz = 0; dz < this.gridSize; dz++) {
-                    for (let dx = 0; dx < this.gridSize; dx++) {
-                        const finalX = extX + dx;
-                        const finalZ = extZ + dz;
-
-                        if (finalX >= 0 && finalX < this.extendedSize &&
-                            finalZ >= 0 && finalZ < this.extendedSize) {
-                            const heightIndex = finalZ * this.extendedSize + finalX;
-                            this.heightMapData[heightIndex] = height;
-                        }
-                    }
-                }
+        const rows = heightData.length;
+        const cols = heightData[0]?.length || 0;
+        this.tileCols = cols;
+        this.tileRows = rows;
+        this.tileHeights = new Float32Array(cols * rows);
+        for (let z = 0; z < rows; z++) {
+            for (let x = 0; x < cols; x++) {
+                this.tileHeights[z * cols + x] = heightData[z][x] * this.heightStep;
             }
         }
+        this.extensionHeightValue = (this.tileMap.extensionHeight || 0) * this.heightStep;
+        const relief = this.tileMap.relief;
+        this.relief = relief && relief.length === (cols + 1) * (rows + 1) && relief.some(v => v) ? Float32Array.from(relief) : null;
+        this.reliefN = cols + 1;
+        // Natural terrain: one continuous heightfield (tileMap.heightField) replaces
+        // tile levels, ramps and relief for the ground's height.
+        const hf = this.tileMap.heightField;
+        this.field = hf?.data && hf.data.length === (cols * hf.res + 1) ** 2 ? Float32Array.from(hf.data) : null;
+        this.fieldRes = hf?.res || 1;
+        this.fieldN = cols * this.fieldRes + 1;
 
+        const tdm = this;
+        const size = this.extendedSize * this.extendedSize;
+        this.heightMapData = new Proxy({}, {
+            get(_, prop) {
+                if (prop === 'length') return size;
+                if (typeof prop === 'string' && prop.length && prop.charCodeAt(0) >= 48 && prop.charCodeAt(0) <= 57) {
+                    const i = +prop;
+                    return tdm.heightAtPixel(i % tdm.extendedSize, Math.floor(i / tdm.extendedSize));
+                }
+                return undefined;
+            },
+            set(_, prop, value) {
+                const i = +prop;
+                if (Number.isInteger(i)) tdm.setHeightAtPixel(i % tdm.extendedSize, Math.floor(i / tdm.extendedSize), value);
+                return true;
+            }
+        });
+    }
+
+    /** Height at an extended-map pixel (one pixel per world unit): the tile's level plus the relief. */
+    heightAtPixel(px, pz) {
+        const ext = this.extensionSize;
+        const tx = Math.floor((px - ext) / this.gridSize);
+        const tz = Math.floor((pz - ext) / this.gridSize);
+        if (px < ext || pz < ext || tx >= this.tileCols || tz >= this.tileRows) return this.extensionHeightValue;
+        if (this.field) return TerrainDataManager.reliefAt(this.field, this.fieldN, ((px - ext) / this.gridSize) * this.fieldRes, ((pz - ext) / this.gridSize) * this.fieldRes);
+        const h = this.tileHeights[tz * this.tileCols + tx];
+        return this.relief ? h + TerrainDataManager.reliefAt(this.relief, this.reliefN, (px - ext) / this.gridSize, (pz - ext) / this.gridSize) : h;
+    }
+
+    /**
+     * Relief (smooth rolling ground over the height levels, world units at tile
+     * corners, tileMap.relief) at tile-space (u, v): Catmull-Rom bicubic over
+     * an n x n corner grid. Level tools that write relief must sample it the same way.
+     */
+    static reliefAt(r, n, u, v) {
+        if (!r) return 0;
+        const cl = (a) => (a < 0 ? 0 : a > n - 1 ? n - 1 : a);
+        u = u < 0 ? 0 : u > n - 1 ? n - 1 : u; v = v < 0 ? 0 : v > n - 1 ? n - 1 : v;
+        const i = Math.floor(u), j = Math.floor(v), fx = u - i, fz = v - j;
+        const cr = (p0, p1, p2, p3, s) => p1 + 0.5 * s * (p2 - p0 + s * (2 * p0 - 5 * p1 + 4 * p2 - p3 + s * (3 * (p1 - p2) + p3 - p0)));
+        const row = (jj) => { const o = cl(jj) * n; return cr(r[o + cl(i - 1)], r[o + cl(i)], r[o + cl(i + 1)], r[o + cl(i + 2)], fx); };
+        return cr(row(j - 1), row(j), row(j + 1), row(j + 2), fz);
+    }
+
+
+    /** Editor writes: setting any pixel sets its whole tile. */
+    setHeightAtPixel(px, pz, height) {
+        const ext = this.extensionSize;
+        const tx = Math.floor((px - ext) / this.gridSize);
+        const tz = Math.floor((pz - ext) / this.gridSize);
+        if (px < ext || pz < ext || tx >= this.tileCols || tz >= this.tileRows) return;
+        this.tileHeights[tz * this.tileCols + tx] = height;
     }
 
     /**
@@ -190,24 +228,13 @@ class TerrainDataManager {
      * @returns {number} Terrain height
      */
     getTerrainHeightAtPosition(worldX, worldZ) {
-        if (!this.heightMapData || !this.heightMapSettings?.enabled) {
+        if (!this.tileHeights || !this.heightMapSettings?.enabled) {
             return 0; // Fallback to flat ground
         }
-
-        // Convert world coordinates to height map coordinates
-        const heightMapX = Math.floor(worldX + this.extendedSize / 2);
-        const heightMapZ = Math.floor(worldZ + this.extendedSize / 2);
-
-        // Ensure coordinates are within bounds
-        if (heightMapX < 0 || heightMapX >= this.extendedSize ||
-            heightMapZ < 0 || heightMapZ >= this.extendedSize) {
-            // Outside terrain bounds, use extension height
-            return this.tileMap.extensionHeight * this.heightStep;
-        }
-
-        // Get height from height map
-        const heightIndex = heightMapZ * this.extendedSize + heightMapX;
-        return this.heightMapData[heightIndex] || 0;
+        const half = this.extendedSize / 2;
+        const px = Math.floor(worldX + half), pz = Math.floor(worldZ + half);
+        if (px < 0 || px >= this.extendedSize || pz < 0 || pz >= this.extendedSize) return this.extensionHeightValue;
+        return this.heightAtPixel(px, pz);
     }
 
     /**
@@ -217,7 +244,7 @@ class TerrainDataManager {
      * @returns {number} Smoothly interpolated terrain height
      */
     getTerrainHeightAtPositionSmooth(worldX, worldZ) {
-        if (!this.heightMapData || !this.heightMapSettings?.enabled) {
+        if (!this.tileHeights || !this.heightMapSettings?.enabled) {
             return 0;
         }
 
@@ -238,10 +265,9 @@ class TerrainDataManager {
         // Helper function to get height at specific grid point
         const getHeightAt = (x, z) => {
             if (x < 0 || x >= this.extendedSize || z < 0 || z >= this.extendedSize) {
-                return this.tileMap.extensionHeight * this.heightStep;
+                return this.extensionHeightValue;
             }
-            const heightIndex = z * this.extendedSize + x;
-            return this.heightMapData[heightIndex] || 0;
+            return this.heightAtPixel(x, z);
         };
 
         // Get heights at the four corners

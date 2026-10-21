@@ -19,7 +19,7 @@ class ParticleSystem extends GUTS.BaseSystem {
     super(game);
     this.game.particleSystem = this;
 
-    this.CAPACITY = 2000;
+    this.CAPACITY = 6000;
     this.initialized = false;
     this.activeCount = 0;
     this.freeList = [];
@@ -34,12 +34,12 @@ class ParticleSystem extends GUTS.BaseSystem {
     this.aLifetime   = new Float32Array(this.CAPACITY);
     this.aStartTime  = new Float32Array(this.CAPACITY);
     this.aInitScale  = new Float32Array(this.CAPACITY);
-    this.aFlags      = new Float32Array(this.CAPACITY * 2);
+    this.aFlags      = new Float32Array(this.CAPACITY * 3);   // fadeOut, scaleOverTime, additive
 
     this._tmpMat = new THREE.Matrix4();
     this._cursor = 0;
 
-    this.UPDATE_STRIDE = 2;
+    this.UPDATE_STRIDE = 1;
   }
 
   init() {
@@ -61,10 +61,11 @@ class ParticleSystem extends GUTS.BaseSystem {
       attribute float aLifetime;
       attribute float aStartTime;
       attribute float aInitScale;
-      attribute vec2 aFlags; // x: fadeOut, y: scaleOverTime
+      attribute vec3 aFlags; // x: fadeOut, y: scaleOverTime, z: additive
       varying vec3 vColor;
       varying float vAlpha;
       varying vec2 vUv;
+      varying float vAdd;
       uniform float uTime;
 
       vec3 camRight() { return vec3(modelViewMatrix[0][0], modelViewMatrix[1][0], modelViewMatrix[2][0]); }
@@ -77,6 +78,7 @@ class ParticleSystem extends GUTS.BaseSystem {
 
         vColor = mix(aColorEnd, aColorStart, lifeT);
         vAlpha = aFlags.x > 0.5 ? lifeT : 1.0;
+        vAdd = aFlags.z;
 
         float s = aInitScale;
         if (aFlags.y > 0.5) {
@@ -100,17 +102,19 @@ class ParticleSystem extends GUTS.BaseSystem {
       varying vec3 vColor;
       varying float vAlpha;
       varying vec2 vUv;
+      varying float vAdd;
 
       void main() {
         vec2 c = vUv - vec2(0.5);
         float r = length(c) * 2.0;
-        float mask = smoothstep(1.0, 0.6, r);
-        float a = vAlpha * mask;
-
-        if (a <= 0.001) discard;
-
-        // CHANGED: simple straight output (no tone mapping), alpha not premultiplied here
-        gl_FragColor = vec4(vColor, a); // CHANGED
+        if (r >= 1.0) discard;
+        float glow = pow(1.0 - r, 1.6);
+        float core = smoothstep(0.45, 0.0, r);
+        float a = vAlpha * mix(smoothstep(1.0, 0.1, r) * 0.6, glow + core * 0.6, vAdd);
+        if (a <= 0.002) discard;
+        // additive particles get a white-hot centre
+        vec3 col = mix(vColor, mix(vColor, vec3(1.0), core * 0.55), vAdd);
+        gl_FragColor = vec4(col * a, a * (1.0 - vAdd));
       }
     `;
 
@@ -118,8 +122,12 @@ class ParticleSystem extends GUTS.BaseSystem {
       vertexShader,
       fragmentShader,
       transparent: true,
-      depthWrite: true,                        // Write to depth for proper 3D occlusion with sprites
-      blending: THREE.NormalBlending,          // CHANGED: sane default; per-effect override allowed
+      depthWrite: false,
+      // Premultiplied "over": normal particles blend by alpha, additive ones write alpha 0 and just add.
+      blending: THREE.CustomBlending,
+      blendEquation: THREE.AddEquation,
+      blendSrc: THREE.OneFactor,
+      blendDst: THREE.OneMinusSrcAlphaFactor,
       uniforms: { uTime: { value: 0 } },
       toneMapped: false                        // CHANGED: ensure shader output isn't remapped
     });
@@ -137,7 +145,7 @@ class ParticleSystem extends GUTS.BaseSystem {
     this.attrLifetime   = addAttr(this.aLifetime,   1, 'aLifetime');
     this.attrStartTime  = addAttr(this.aStartTime,  1, 'aStartTime');
     this.attrInitScale  = addAttr(this.aInitScale,  1, 'aInitScale');
-    this.attrFlags      = addAttr(this.aFlags,      2, 'aFlags');
+    this.attrFlags      = addAttr(this.aFlags,      3, 'aFlags');
 
     for (let i = 0; i < this.CAPACITY; i++) {
       this._writeTranslation(i, 1e9, 1e9, 1e9);
@@ -200,18 +208,7 @@ class ParticleSystem extends GUTS.BaseSystem {
     const fadeOut = (visual.fadeOut === undefined) ? true : !!visual.fadeOut;
     const scaleOverTime = (visual.scaleOverTime === undefined) ? true : !!visual.scaleOverTime;
 
-    // Per-effect blending (global switch for the single material)
-    if (visual.blending) {
-      const b = String(visual.blending).toLowerCase();
-      const target =
-        b === 'additive' ? THREE.AdditiveBlending :
-        b === 'multiply' ? THREE.MultiplyBlending :
-                           THREE.NormalBlending;
-      if (this.material.blending !== target) {
-        this.material.blending = target;
-        this.material.needsUpdate = true;
-      }
-    }
+    const additive = String(visual.blending || 'additive').toLowerCase() === 'additive';
 
     const rv = (min, max) => min + Math.random() * (max - min);
     const now = this._now();
@@ -248,8 +245,9 @@ class ParticleSystem extends GUTS.BaseSystem {
       this.aLifetime[i]  = lifetime;
       this.aStartTime[i] = now;
       this.aInitScale[i] = initScale;
-      this.aFlags[i * 2    ] = fadeOut ? 1.0 : 0.0;
-      this.aFlags[i * 2 + 1] = scaleOverTime ? 1.0 : 0.0;
+      this.aFlags[i * 3    ] = fadeOut ? 1.0 : 0.0;
+      this.aFlags[i * 3 + 1] = scaleOverTime ? 1.0 : 0.0;
+      this.aFlags[i * 3 + 2] = additive ? 1.0 : 0.0;
 
       spawned++;
       this.activeCount++;
@@ -426,18 +424,7 @@ class ParticleSystem extends GUTS.BaseSystem {
     const fadeOut = (visual.fadeOut === undefined) ? true : !!visual.fadeOut;
     const scaleOverTime = (visual.scaleOverTime === undefined) ? true : !!visual.scaleOverTime;
 
-    // Per-effect blending
-    if (visual.blending) {
-      const b = String(visual.blending).toLowerCase();
-      const target =
-        b === 'additive' ? THREE.AdditiveBlending :
-        b === 'multiply' ? THREE.MultiplyBlending :
-                           THREE.NormalBlending;
-      if (this.material.blending !== target) {
-        this.material.blending = target;
-        this.material.needsUpdate = true;
-      }
-    }
+    const additive = String(visual.blending || 'additive').toLowerCase() === 'additive';
 
     const rv = (min, max) => min + Math.random() * (max - min);
     const now = this._now();
@@ -511,8 +498,9 @@ class ParticleSystem extends GUTS.BaseSystem {
       this.aLifetime[i]  = lifetime;
       this.aStartTime[i] = now;
       this.aInitScale[i] = initScale;
-      this.aFlags[i * 2    ] = fadeOut ? 1.0 : 0.0;
-      this.aFlags[i * 2 + 1] = scaleOverTime ? 1.0 : 0.0;
+      this.aFlags[i * 3    ] = fadeOut ? 1.0 : 0.0;
+      this.aFlags[i * 3 + 1] = scaleOverTime ? 1.0 : 0.0;
+      this.aFlags[i * 3 + 2] = additive ? 1.0 : 0.0;
 
       spawned++;
       this.activeCount++;
@@ -710,8 +698,8 @@ class ParticleSystem extends GUTS.BaseSystem {
 
       // Build layer overrides (flattened format)
       const layerOverrides = { ...overrides };
-      if (layer.countMultiplier) layerOverrides.countMultiplier = layer.countMultiplier;
-      if (layer.scaleMultiplier) layerOverrides.scaleMultiplier = layer.scaleMultiplier;
+      if (layer.countMultiplier) layerOverrides.countMultiplier = layer.countMultiplier * (overrides.countMultiplier || 1);
+      if (layer.scaleMultiplier) layerOverrides.scaleMultiplier = layer.scaleMultiplier * (overrides.scaleMultiplier || 1);
 
       // Velocity overrides from flattened layer properties
       if (layer.velocityXMin !== undefined) layerOverrides.velocityXMin = layer.velocityXMin;

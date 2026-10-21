@@ -230,9 +230,15 @@ class TerrainDetailSystem extends GUTS.BaseSystem {
                         detailPlacements.set(textureId, []);
                     }
 
+                    // Natural terrain: stand on the ground itself (the lowest point under the
+                    // sprite, as the coarse ground mesh can sag below the smooth surface).
+                    const dx = tileWorldX + offsetX, dz = tileWorldZ + offsetZ;
+                    const groundY = terrainDataManager.field
+                        ? Math.min(...[[0, 0], [10, 0], [-10, 0], [0, 10], [0, -10]].map(([a, b]) => terrainDataManager.getTerrainHeightAtPosition(dx + a, dz + b))) - 2
+                        : worldY;
                     detailPlacements.get(textureId).push({
-                        x: tileWorldX + offsetX,
-                        y: worldY + yOffset,
+                        x: dx,
+                        y: groundY + yOffset,
                         z: tileWorldZ + offsetZ,
                         scale: spriteScale,
                         yOffset: yOffset

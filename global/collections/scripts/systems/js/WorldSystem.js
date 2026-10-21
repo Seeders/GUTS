@@ -302,6 +302,7 @@ class WorldSystem extends GUTS.BaseSystem {
         _tickSync('setupFog', () => this.worldRenderer.setupFog(fogSettings));
 
         // Setup ground with terrain data
+        this.worldRenderer.config.groundPalette = world?.groundPalette || null;
         _tickSync('setupGround', () => this.worldRenderer.setupGround(terrainDataManager, this.game.terrainTileMapper, terrainDataManager.heightMapSettings));
 
         // Update CoordinateTranslator with actual terrain dimensions from loaded terrain data
@@ -323,16 +324,33 @@ class WorldSystem extends GUTS.BaseSystem {
             : null;
         const _tRender = performance.now();
         const resourcesPath = this.game.app?.getResourcesPath?.() || './resources/';
-        const cacheUrl = `${resourcesPath}levels/${levelName}.png`;
+        const cacheUrl = `${resourcesPath}${world?.terrainCache || `levels/${levelName}.png`}`;
         let usedCache = false;
-        if (sceneManager) sceneManager.setLoadingProgress(0, 'Loading baked terrain...');
-        try {
+        const natural = !!terrainDataManager.field;
+        if (natural) {
+            // Natural terrain: heights from the field, ground coloured per vertex; nothing to paint.
+            this.worldRenderer.renderNaturalTerrain(world?.groundPalette || {});
+            const tm = this.game.terrainTileMapper;
+            if (this.game.terrainCanvasBuffer) this.game.terrainCanvasBuffer.width = this.game.terrainCanvasBuffer.height = 1;
+            if (tm?.heightMapCanvas) tm.heightMapCanvas.width = tm.heightMapCanvas.height = 1;
+        }
+        if (sceneManager && !natural) sceneManager.setLoadingProgress(0, 'Loading baked terrain...');
+        if (!natural) try {
+            this.worldRenderer.config.groundFromImage = !this.game.isEditor;
             usedCache = await this.worldRenderer.renderTerrainFromCache(cacheUrl);
         } catch (err) {
             console.warn('[WorldSystem] terrain cache load error', err);
         }
-        if (usedCache) {
+        if (natural) {
+            console.log('[WorldSystem] Natural terrain (heightfield, vertex colours)');
+        } else if (usedCache) {
             console.log('[WorldSystem] Used baked terrain PNG:', cacheUrl);
+            // The painter's full-size buffers are only needed to paint from scratch.
+            if (!this.game.isEditor) {
+                const tm = this.game.terrainTileMapper;
+                if (this.game.terrainCanvasBuffer) this.game.terrainCanvasBuffer.width = this.game.terrainCanvasBuffer.height = 1;
+                if (tm?.heightMapCanvas) tm.heightMapCanvas.width = tm.heightMapCanvas.height = 1;
+            }
             if (sceneManager) sceneManager.setLoadingProgress(1, 'Loaded baked terrain');
         } else {
             console.log('[WorldSystem] No baked terrain — painting from scratch');
@@ -345,7 +363,15 @@ class WorldSystem extends GUTS.BaseSystem {
         if (!this.worldRenderer) return;
 
         // Create extension planes
-        _tickSync('createExtensionPlanes', () => this.worldRenderer.createExtensionPlanes());
+        // Worlds of several side-by-side zones (world.extensionPlanes: false) draw
+        // their own surround; single-zone planes would cover the neighbours.
+        if (world?.extensionPlanes !== false) _tickSync('createExtensionPlanes', () => this.worldRenderer.createExtensionPlanes());
+
+        // Large worlds: drop CPU copies of the painted ground once it's on the GPU.
+        if (world?.releaseTerrainCanvases && !this.game.isEditor) {
+            _tickSync('releaseGroundCanvas', () => this.worldRenderer.releaseGroundCanvas());
+            if (this.game.terrainCanvasBuffer) this.game.terrainCanvasBuffer.width = this.game.terrainCanvasBuffer.height = 1;
+        }
 
         // Note: updateInstanceCapacities moved to postSceneLoad (RenderSystem needs to init first)
         // Note: Cliff spawning moved to postSceneLoad to ensure EntityRenderer is available
@@ -384,7 +410,7 @@ class WorldSystem extends GUTS.BaseSystem {
         // Spawn cliff entities using WorldRenderer
         // Note: useExtension = false because analyzeCliffs() returns coordinates in tile space (not extended space)
         const entityRenderer = this.call.getEntityRenderer();
-        if (entityRenderer) {
+        if (entityRenderer && !this.worldRenderer?.terrainDataManager?.field) {
             await this.worldRenderer.spawnCliffs(entityRenderer, false);
         }
 

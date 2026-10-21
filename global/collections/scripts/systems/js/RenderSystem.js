@@ -39,6 +39,10 @@ class RenderSystem extends GUTS.BaseSystem {
 
         // Reusable set for cleanup to avoid per-frame allocation
         this._currentEntitiesSet = new Set();
+        // Spawned entities with no velocity (trees, rocks, buildings) never
+        // move, so after their first spawn they're skipped every frame.
+        // Big maps have thousands of them.
+        this._staticEntities = new Set();
 
         // Position cache to skip unchanged entity transforms
         this._entityPositionCache = new Map();  // entityId -> {x, y, z, angle}
@@ -224,6 +228,7 @@ class RenderSystem extends GUTS.BaseSystem {
      * Called when an entity is destroyed - clean up visual representation
      */
     entityDestroyed(entityId) {
+        this._staticEntities.delete(entityId);
         if (this.spawnedEntities.has(entityId)) {
             this.removeInstance(entityId);
         }
@@ -238,7 +243,9 @@ class RenderSystem extends GUTS.BaseSystem {
         }
 
         const batchKey = `${objectType}_${spawnType}`;
-        const batch = this.entityRenderer.vatBatches.get(batchKey);
+        // Units whose batches are keyed per variant (a suffix on the key) share the
+        // model's bone bake, so its bundle's meta answers for them.
+        const batch = this.entityRenderer.vatBatches.get(batchKey) || this.entityRenderer.modelManager?.getVATBundle(objectType, spawnType);
 
         if (!batch || !batch.meta) {
             return null;
@@ -286,6 +293,10 @@ class RenderSystem extends GUTS.BaseSystem {
         this._currentEntitiesSet.clear();
 
         for (const entityId of entities) {
+            if (this._staticEntities.has(entityId)) {
+                this._currentEntitiesSet.add(entityId);
+                continue;
+            }
             const transform = this.game.getComponent(entityId, "transform");
             const renderable = this.game.getComponent(entityId, "renderable");
             const velocity = this.game.getComponent(entityId, "velocity");
@@ -359,6 +370,19 @@ class RenderSystem extends GUTS.BaseSystem {
                 const isHiding = playerOrder?.isHiding || false;
                 opacity = isHiding ? 0.5 : 1.0;
             }
+            if (typeof opacity !== 'number') opacity = 1.0;
+
+            // Cloaked / invisible units render at half opacity (billboards included).
+            // Undetected enemy stealthers are already skipped above, so this affects my
+            // own hidden units and revealed enemies — both read as "in stealth".
+            const _bes = this.game.buffEffectsSystem;
+            if (_bes) {
+                const _bt = this.game.getEnums().buffTypes || {};
+                if ((_bt.invisible != null && _bes.hasBuff(entityId, _bt.invisible)) ||
+                    (_bt.cloaked != null && _bes.hasBuff(entityId, _bt.cloaked))) {
+                    opacity = Math.min(opacity, 0.5);
+                }
+            }
 
             // Hide the camera's follow target only when fully zoomed in (first-person mode)
             // No gradual fade - character is either fully visible or fully hidden
@@ -415,6 +439,7 @@ class RenderSystem extends GUTS.BaseSystem {
                 };
                 const tint = renderable.tint;
                 await this.spawnEntity(entityId, spawnData, opacity, tint);
+                if (!velocity && !isPlayer) this._staticEntities.add(entityId);
                 // Cache initial position - reuse existing cache object if available
                 let posCache = this._entityPositionCache.get(entityId);
                 if (!posCache) {
@@ -499,10 +524,13 @@ class RenderSystem extends GUTS.BaseSystem {
             // Note: spawnedEntities is already updated by caller to prevent race conditions
             this._stats.entitiesSpawned++;
 
-            // Set opacity for hiding units (only affects billboard entities)
-            if (opacity !== 1.0) {
-                this.entityRenderer.setEntityOpacity(entityId, opacity);
-            }
+            // Always set opacity on spawn — never guard on `!== 1.0`. The engine
+            // pools instance slots (freeList): a despawned stealther returns its
+            // slot at 0.5 opacity, and a fresh unit that pops that slot inherits
+            // the stale 0.5. The update path also skips setEntityOpacity while
+            // opacity stays at its spawn value, so a respawn onto a reused slot
+            // would stay half-transparent forever. Reset it explicitly here.
+            this.entityRenderer.setEntityOpacity(entityId, opacity);
 
             // Set tint if specified (only affects billboard entities)
             if (tint !== null) {
@@ -581,6 +609,7 @@ class RenderSystem extends GUTS.BaseSystem {
     }
 
     removeEntity(entityId) {
+        this._staticEntities.delete(entityId);
         const removed = this.entityRenderer.removeEntity(entityId);
         if (removed) {
             this.spawnedEntities.delete(entityId);
@@ -610,6 +639,7 @@ class RenderSystem extends GUTS.BaseSystem {
         const batch = entity.batch;
         batch.attributes.animTime.setX(entity.instanceIndex, time);
         batch.attributes.animTime.array[entity.instanceIndex] = time;
+        batch.attributes.animTime.needsUpdate = true;          // (finalizeUpdates uploads clip and speed only; a held clip's time isn't advanced)
         batch.dirty.animation = true;
 
         return true;

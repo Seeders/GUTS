@@ -32,7 +32,12 @@ class ClientNetworkManager {
         if (!this.serverUrl) {
             const multiplayerConfig = this.game.getCollections().configs.multiplayer;
             const isProduction = typeof window !== 'undefined' && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
-            this.serverUrl = (isProduction && multiplayerConfig.productionServerUrl) || multiplayerConfig.serverUrl;
+            // Locally the page and Socket.IO come from the same server.js, whose
+            // port differs between dev (3000) and --prod (8080), so use the origin.
+            const localOrigin = typeof window !== 'undefined' ? window.location.origin : null;
+            // the page's own server: the same origin, wherever the game is mounted (a local port, or
+            // a sub-path such as gutsengine.app/play/<game>/ behind a proxy; see socketPath)
+            this.serverUrl = localOrigin || (isProduction ? (multiplayerConfig.productionServerUrl || multiplayerConfig.serverUrl) : multiplayerConfig.serverUrl);
         }
 
         console.log('[ClientNetworkManager] connect() called, serverUrl:', serverUrl || this.serverUrl);
@@ -48,7 +53,10 @@ class ClientNetworkManager {
             }
 
             console.log('[ClientNetworkManager] Creating socket connection to:', this.serverUrl);
+            // Socket.IO under the page's directory (/socket.io/ at the root; /play/<game>/socket.io/ when mounted there)
+            const socketPath = (typeof window !== 'undefined' ? window.location.pathname.replace(/[^/]*$/, '') : '/') + 'socket.io';
             this.socket = GUTS.io(this.serverUrl, {
+                path: socketPath,
                 transports: ['websocket', 'polling'],
                 autoConnect: true, // Disable auto-connection
                 reconnection: false // Disable auto-reconnection during development
@@ -234,7 +242,6 @@ class ClientNetworkManager {
      * @returns {number|null} - Callback ID that can be used to cancel, or null for fire-and-forget
      */
     call(sendEvent, data = {}, responseEvent = null, callback = null, timeout = null) {
-        console.log('[ClientNetworkManager] call:', sendEvent, 'isConnected:', this.isConnected, 'responseEvent:', responseEvent);
         if (!this.isConnected) {
             const error = new Error('Not connected to server');
             console.error('[ClientNetworkManager] Cannot call - not connected to server');
@@ -246,7 +253,6 @@ class ClientNetworkManager {
 
         // If no response event expected, just send (fire and forget)
         if (!responseEvent || !callback) {
-            console.log('[ClientNetworkManager] Emitting (fire and forget):', sendEvent);
             this.socket.emit(sendEvent, data);
             if (callback) {
                 setTimeout(() => callback(true), 0);

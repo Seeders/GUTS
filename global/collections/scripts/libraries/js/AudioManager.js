@@ -36,7 +36,14 @@ class AudioManager {
         document.addEventListener('keydown', initHandler, { once: true });
     }
 
-    async initialize() {
+    // Re-entrant: sounds requested while the context is still being created
+    // share one initialisation instead of each building an AudioContext.
+    initialize() {
+        if (!this._initPromise) this._initPromise = this._initialize();
+        return this._initPromise;
+    }
+
+    async _initialize() {
         class SoundPool {
             constructor(audioContext, destination, poolSize = 8) {
                 this.audioContext = audioContext;
@@ -342,7 +349,6 @@ class AudioManager {
         });
 
         if (instanceCount >= (options.maxInstances || 3)) {
-            console.warn(`Max instances reached for sound ${soundId}`);
             return null;
         }
 
@@ -359,6 +365,10 @@ class AudioManager {
         const masterVolume = soundConfig.volume !== undefined ? soundConfig.volume : 1;
         const layers = soundConfig.layers || [];
         const now = this.audioContext.currentTime;
+        // options.pitch scales every oscillator layer (cheap variation for
+        // repeated sounds); layer.delay offsets a layer's start (chimes, fanfares).
+        const pitch = options.pitch || 1;
+        const maxDelay = Math.max(0, ...layers.map(l => l.delay || 0));
 
         // Store layer sources for cleanup
         sound.layerSources = [];
@@ -372,6 +382,7 @@ class AudioManager {
         layers.forEach((layer, index) => {
             const layerGain = this.audioContext.createGain();
             layerGain.gain.setValueAtTime(layer.volume !== undefined ? layer.volume : 1, now);
+            const t0 = now + (layer.delay || 0);
 
             // Create source based on layer.source type
             const isNoise = ['white', 'pink', 'brown'].includes(layer.source);
@@ -382,16 +393,17 @@ class AudioManager {
             } else {
                 source = this.audioContext.createOscillator();
                 source.type = layer.source || 'sine';
-                const baseFreq = layer.frequency || 440;
-                source.frequency.setValueAtTime(baseFreq, now);
+                const baseFreq = (layer.frequency || 440) * pitch;
+                source.frequency.setValueAtTime(baseFreq, t0);
+                if (layer.detune) source.detune.setValueAtTime(layer.detune, t0);
 
                 // Apply pitch envelope if defined
                 if (layer.pitchEnvelope) {
                     const startFreq = baseFreq * (layer.pitchEnvelope.start || 1);
                     const endFreq = baseFreq * (layer.pitchEnvelope.end || 1);
                     const envTime = layer.pitchEnvelope.time || duration;
-                    source.frequency.setValueAtTime(startFreq, now);
-                    source.frequency.exponentialRampToValueAtTime(Math.max(endFreq, 0.01), now + envTime);
+                    source.frequency.setValueAtTime(startFreq, t0);
+                    source.frequency.exponentialRampToValueAtTime(Math.max(endFreq, 0.01), t0 + envTime);
                 }
             }
 
@@ -399,7 +411,18 @@ class AudioManager {
             if (layer.filter) {
                 const filter = this.audioContext.createBiquadFilter();
                 filter.type = layer.filter.type || 'lowpass';
-                filter.frequency.setValueAtTime(layer.filter.frequency || 1000, now);
+                // options.pitch shifts the filter too, so noise layers vary per
+                // play instead of repeating identically. layer.filterEnvelope
+                // sweeps the cutoff ({ start, end, time } multipliers) for
+                // whooshes and impacts.
+                const cutoff = Math.min(20000, (layer.filter.frequency || 1000) * pitch);
+                filter.frequency.setValueAtTime(cutoff, now);
+                if (layer.filterEnvelope) {
+                    const fe = layer.filterEnvelope;
+                    filter.frequency.setValueAtTime(Math.min(20000, cutoff * (fe.start || 1)), t0);
+                    filter.frequency.exponentialRampToValueAtTime(
+                        Math.max(20, Math.min(20000, cutoff * (fe.end || 1))), t0 + (fe.time || duration));
+                }
                 filter.Q.setValueAtTime(layer.filter.Q || 1, now);
                 source.connect(filter);
                 filter.connect(layerGain);
@@ -410,13 +433,14 @@ class AudioManager {
             // Apply per-layer envelope if defined, otherwise connect directly
             if (layer.envelope) {
                 const layerEnvGain = this.audioContext.createGain();
-                this.createEnvelopeFromConfig(layer.envelope, layerEnvGain, duration);
+                this.createEnvelopeFromConfig(layer.envelope, layerEnvGain, layer.duration || duration, t0);
                 layerGain.connect(layerEnvGain);
                 layerEnvGain.connect(layerMixer);
             } else {
                 layerGain.connect(layerMixer);
             }
 
+            source._startAt = t0;
             sound.layerSources.push(source);
 
             // Use first layer as main source for onended callback
@@ -443,11 +467,11 @@ class AudioManager {
         this.configureSoundInstance(sound, options);
 
         // Start all layer sources
-        sound.layerSources.forEach(source => source.start(now));
+        sound.layerSources.forEach(source => source.start(source._startAt ?? now));
 
         // Calculate total duration including release
         const maxRelease = Math.max(...layers.map(l => l.envelope?.release || 0.3), 0.3);
-        let totalDuration = duration + maxRelease;
+        let totalDuration = duration + maxRelease + maxDelay;
 
         if (soundConfig.effects?.delay?.time) {
             const delayTail = soundConfig.effects.delay.time * 3;
@@ -539,11 +563,27 @@ class AudioManager {
         sound.noiseGain.connect(sound.envelopeGain);
     }
 
+    // Noise buffers are generated once per type and shared (was 2 s of fresh
+    // noise per play). Each source starts at a random offset so repeated hits
+    // don't share the same grain.
     createNoiseSource(noiseType = 'white') {
+        this._noiseBuffers = this._noiseBuffers || {};
+        const noiseBuffer = this._noiseBuffers[noiseType]
+            || (this._noiseBuffers[noiseType] = this._makeNoiseBuffer(noiseType));
+        const source = this.audioContext.createBufferSource();
+        source.buffer = noiseBuffer;
+        source.loop = true;
+        const offset = Math.random() * noiseBuffer.duration;
+        const start = source.start.bind(source);
+        source.start = (when = 0) => start(when, offset);
+        return source;
+    }
+
+    _makeNoiseBuffer(noiseType) {
         const bufferSize = this.audioContext.sampleRate * 2;
         const noiseBuffer = this.audioContext.createBuffer(1, bufferSize, this.audioContext.sampleRate);
         const output = noiseBuffer.getChannelData(0);
-        
+
         // Generate different types of noise
         switch (noiseType) {
             case 'pink':
@@ -557,12 +597,7 @@ class AudioManager {
                 this.generateWhiteNoise(output);
                 break;
         }
-        
-        const source = this.audioContext.createBufferSource();
-        source.buffer = noiseBuffer;
-        source.loop = true;
-        
-        return source;
+        return noiseBuffer;
     }
 
     generateWhiteNoise(output) {
@@ -605,7 +640,8 @@ class AudioManager {
         }
         
         // Normalize to prevent clipping
-        const max = Math.max(...Array.from(output).map(Math.abs));
+        let max = 0;
+        for (let i = 0; i < output.length; i++) max = Math.max(max, Math.abs(output[i]));
         if (max > 0) {
             for (let i = 0; i < output.length; i++) {
                 output[i] /= max;
@@ -613,24 +649,32 @@ class AudioManager {
         }
     }
 
-    createEnvelopeFromConfig(envelope, gainNode, duration = 1) {
+    createEnvelopeFromConfig(envelope, gainNode, duration = 1, startTime = null) {
         if (!envelope) {
             console.warn('No envelope provided, using default');
             envelope = { attack: 0.01, decay: 0.1, sustain: 0.7, release: 0.3 };
         }
         
-        const now = this.audioContext.currentTime;
+        const now = startTime ?? this.audioContext.currentTime;
+
+        // ?? not || : a sustain of 0 (a pure pluck) is a real value.
+        const attack = Math.max(0.002, envelope.attack ?? 0.01);
+        const decay = Math.max(0, envelope.decay ?? 0.1);
+        const sustain = Math.max(0, Math.min(1, envelope.sustain ?? 0.7));
+        const release = Math.max(0.02, envelope.release ?? 0.3);
         
-        const attack = Math.max(0.01, envelope.attack || 0.01);
-        const decay = Math.max(0, envelope.decay || 0.1);
-        const sustain = Math.max(0, Math.min(1, envelope.sustain || 0.7));
-        const release = Math.max(0.02, envelope.release || 0.3);
-        
-        gainNode.gain.cancelScheduledValues(now);
+        gainNode.gain.cancelScheduledValues(this.audioContext.currentTime);
+        gainNode.gain.setValueAtTime(0, this.audioContext.currentTime);
         gainNode.gain.setValueAtTime(0, now);
         gainNode.gain.linearRampToValueAtTime(1, now + attack);
-        gainNode.gain.linearRampToValueAtTime(sustain, now + attack + decay);
-        gainNode.gain.setValueAtTime(sustain, now + duration);
+        if (envelope.curve === 'exp') {
+            // Natural (exponential) decay and release, as struck or plucked
+            // things ring out; linear ramps read as synthetic.
+            gainNode.gain.setTargetAtTime(sustain, now + attack, Math.max(0.001, decay / 3));
+        } else {
+            gainNode.gain.linearRampToValueAtTime(sustain, now + attack + decay);
+            gainNode.gain.setValueAtTime(sustain, now + duration);
+        }
         gainNode.gain.setTargetAtTime(0.0001, now + duration, release / 3);
         gainNode.gain.setValueAtTime(0, now + duration + release); // Absolute zero
     }
@@ -714,12 +758,20 @@ class AudioManager {
             sound.pannerNode.positionZ.setValueAtTime(pos.z || 0, now);
         }
         
-        if (options.pitch && sound.source && sound.source.playbackRate) {
+        if (options.pan !== undefined) {
+            sound.pannerNode.pan.setValueAtTime(Math.max(-1, Math.min(1, options.pan)), now);
+        }
+
+        if (options.pitch && sound.source && sound.source.playbackRate && !sound.layerSources?.length) {
             sound.source.playbackRate.setValueAtTime(options.pitch, now);
         }
     }
 
     generateImpulseResponse(convolver) {
+        if (this._impulse) {
+            if (convolver.buffer !== this._impulse) convolver.buffer = this._impulse;
+            return;
+        }
         const length = this.audioContext.sampleRate * 1.5; // Shorter impulse
         const impulse = this.audioContext.createBuffer(2, length, this.audioContext.sampleRate);
         
@@ -731,6 +783,7 @@ class AudioManager {
             }
         }
         
+        this._impulse = impulse;
         convolver.buffer = impulse;
     }
 
@@ -778,6 +831,7 @@ class AudioManager {
     }
 
     stopAllSounds() {
+        if (!this.audioContext) return; // audio not started yet (no user gesture)
         this.activeSounds.forEach(sound => {
             this.stopSound(sound);
         });
@@ -791,6 +845,7 @@ class AudioManager {
      * @param {Object} position - { x, y, z } world position
      */
     setListenerPosition(position) {
+        if (!this.audioContext) return; // audio not started yet (no user gesture)
         this.listenerPosition = position || { x: 0, y: 0, z: 0 };
         // Update all ambient sounds' volumes based on new listener position
         this.updateAmbientVolumes();
@@ -1025,6 +1080,7 @@ class AudioManager {
      * @param {string} ambientId - The ID of the ambient sound to stop
      */
     stopAmbientSound(ambientId) {
+        if (!this.audioContext) return; // audio not started yet (no user gesture)
         const ambient = this.ambientSounds.get(ambientId);
         if (!ambient) return;
 
@@ -1070,6 +1126,7 @@ class AudioManager {
      * Stop all ambient sounds
      */
     stopAllAmbientSounds() {
+        if (!this.audioContext) return; // audio not started yet (no user gesture)
         for (const [id] of this.ambientSounds) {
             this.stopAmbientSound(id);
         }
@@ -1098,6 +1155,7 @@ class AudioManager {
      * Update all ambient sound volumes based on current listener position
      */
     updateAmbientVolumes() {
+        if (!this.audioContext) return; // audio not started yet (no user gesture)
         const now = this.audioContext.currentTime;
 
         for (const [id, ambient] of this.ambientSounds) {
@@ -1265,6 +1323,7 @@ class AudioManager {
      * @param {number} fadeOutTime - Fade out duration in seconds, default 1
      */
     stopMusic(fadeOutTime = 1) {
+        if (!this.audioContext) return; // audio not started yet (no user gesture)
         if (!this.currentMusic) return;
 
         const { source, gainNode } = this.currentMusic;

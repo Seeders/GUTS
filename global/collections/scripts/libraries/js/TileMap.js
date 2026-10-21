@@ -327,6 +327,16 @@ class TileMap {
 	}
 
 	/**
+	 * Terrain for the cliff border band on a tile: its own terrain (so dirt or
+	 * rock plateaus don't get a grass rim), falling back to the cliffSet border.
+	 */
+	getCliffEdgeTerrainIndex(tile) {
+		const own = tile?.terrainIndex;
+		if (own >= 0 && this.baseAtoms[own]?.full) return own;
+		return this.getCliffBorderTerrainIndex();
+	}
+
+	/**
 	 * Get the cliff border terrain index (uses cliffBorderTerrain from cliffSet, falls back to grass)
 	 * @returns {number} Cliff border terrain index
 	 */
@@ -1250,7 +1260,8 @@ class TileMap {
 		const h = tile.heightAnalysis;
 		const atomSize = this.tileSize / 2;
 		const ramps = this.getNeighborRampStates(col, row);
-		const atoms = this.baseAtoms[this.getCliffBorderTerrainIndex()];
+		// Border in the tile's own terrain, so the band matches the cliff lip drawn above it
+		const atoms = this.baseAtoms[this.getCliffEdgeTerrainIndex(tile)];
 		if (!atoms?.full) return;
 
 		// Effective states (suppress if neighbor has ramp)
@@ -1324,7 +1335,7 @@ class TileMap {
 		if ((h.topHigher && ramps.top) || (h.botHigher && ramps.bot) ||
 			(h.leftHigher && ramps.left) || (h.rightHigher && ramps.right)) return;
 
-		const atoms = this.baseAtoms[this.getCliffBorderTerrainIndex()];
+		const atoms = this.baseAtoms[this.getCliffEdgeTerrainIndex(tile)];
 		if (!atoms?.full) return;
 
 		// Effective higher states (suppress if neighbor has ramp)
