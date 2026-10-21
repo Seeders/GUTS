@@ -54,3 +54,9 @@ package-lock.json
 
 # Packed GUTS release artifacts (built with npm pack)
 *.tgz
+
+# Editor upload temp files (multer)
+uploads/
+
+# Local debug dumps
+*_debug.txt

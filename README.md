@@ -24,70 +24,49 @@ A comprehensive data-driven game development framework providing a flexible ECS 
 ## Installation & Setup
 
 ### Prerequisites
-- Node.js (v14 or higher)
+- Node.js 20 or newer (entity storage uses resizable ArrayBuffers)
 - npm
 
-### Quick Start
+### Quick Start: a new game
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/Seeders/GUTS.git
-   cd GUTS
-   ```
+```bash
+npx github:Seeders/GUTS new my-game     # or: node path/to/GUTS/bin/guts.js new my-game
+cd my-game
+npm install
+npm run dev
+```
 
-2. **Install dependencies:**
-   ```bash
-   npm install
-   ```
+`guts new` copies a starter project (`--template game`, the default, or `--template app`) that
+depends on the current GUTS release. `npm run dev` builds it, rebuilds on change and serves it.
 
-3. **Start the editor:**
-   ```bash
-   npm run start:editor
-   ```
-   Open http://localhost:5000/index.html to access the visual editor.
-
-4. **Build and run a game project:**
-   ```bash
-   # Build the example game (TurnBasedWarfare)
-   npm run build
-
-   # Start game server
-   npm run game:server
-   ```
-   Open http://localhost:3000/index.html to play the game.
-
-### Available Commands
+### The `guts` command
 
 | Command | Description |
 |---------|-------------|
-| `npm run build` | Build game project (default: TurnBasedWarfare) |
-| `npm run build:prod` | Production build with optimizations |
-| `npm run build:watch` | Auto-rebuild on file changes |
-| `npm run start:editor` | Start editor server (port 5000) |
-| `npm run game:server` | Start game server (port 3000) |
-| `npm run game:dev` | Full dev environment (build + server + watch) |
-| `npm run dev` | Editor development with hot reload |
+| `guts new <folder> [--template game\|app]` | Create a project from a template |
+| `guts dev` | Build the project in this folder, watch, and serve it |
+| `guts build [--target client|server|headless|editor]\|server\|headless] [--production]` | Build the project in this folder |
+| `guts fork-diff <projects...>` | Report which engine files a project overrides and how they differ |
+
+### Working on GUTS itself
+
+```bash
+git clone https://github.com/Seeders/GUTS.git
+cd GUTS
+npm install
+npm run start:editor        # the editor, http://localhost:5000/index.html
+```
+
+Projects live in their own repositories. The editor reads any project cloned into `projects/`
+(`cd projects && git clone <a-guts-project-repo>`); only `projects/Editor` is part of this repo.
 
 ---
 
 ## Example Projects
 
-### Turn-Based Warfare
-
-A tactical strategy game demonstrating GUTS capabilities:
-- Turn-based combat system with initiative
-- Multiple unit types with unique abilities
-- AI behavior trees for enemy units
-- Necromancy system with corpse mechanics
-- Multiplayer support with server authority
-
-**[View Project Documentation](projects/TurnBasedWarfare/README.md)**
-
-**Quick Start:**
-```bash
-npm run game:dev
-# Visit http://localhost:3000/index.html
-```
+- **[TurnBasedWarfare](https://github.com/Seeders/TurnBasedWarfare)** - RTS/auto-battler: placement
+  and battle phases, behavior-tree AI, abilities, guts build [--target client|server|headless|editor]-authoritative multiplayer, headless
+  simulations.
 
 ---
 
@@ -122,7 +101,7 @@ GUTS/
 │       │   ├── Sprites/      # Sprite definitions
 │       │   └── Terrain/      # Level data
 │       ├── resources/  # Assets (images, models, audio)
-│       └── dist/       # Build output (client & server)
+│       └── dist/       # Build output (client & guts build [--target client|server|headless|editor])
 ├── build/              # Custom build system
 └── editor/             # Visual editor application
 ```
@@ -236,7 +215,7 @@ This is the central configuration file that defines your game's architecture:
 | `systems` | ECS systems executed each frame (in order) |
 | `classes` | Collection definitions with their base classes |
 | `appLibrary` | Main game application class |
-| `initialScene` | Starting scene/mode (client, server, editor) |
+| `initialScene` | Starting scene/mode (client, guts build [--target client|server|headless|editor], editor) |
 | `gridSize` | World grid size in units |
 | `is3D` | Enable 3D rendering with Three.js |
 | `isIsometric` | Use isometric projection |
@@ -247,7 +226,7 @@ This is the central configuration file that defines your game's architecture:
 
 Controls the editor and library bundling:
 - **Entry points**: Editor and library bundles
-- **Dev server**: Hot reloading for editor development
+- **Dev guts build [--target client|server|headless|editor]**: Hot reloading for editor development
 - **Output**: Bundled editor files
 
 #### Custom Build System (build/build.js)
@@ -255,7 +234,7 @@ Controls the editor and library bundling:
 Game-specific build process:
 - Concatenates game libraries in dependency order
 - Processes collections and generates runtime data
-- Creates client and server bundles
+- Creates client and guts build [--target client|server|headless|editor] bundles
 - Copies resources to distribution folder
 - Supports production minification and source maps
 
@@ -316,7 +295,7 @@ Game-specific build process:
    ↓
 9. Initialize game class (appLibrary)
    ↓
-10. Load initial scene (client/server/editor mode)
+10. Load initial scene (client/guts build [--target client|server|headless|editor]/editor mode)
    ↓
 11. Start game loop
     ├─ System updates (fixed timestep)

@@ -57,7 +57,10 @@
     "webpack": "webpack --config webpack.config.js"
   },
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
   "dependencies": {
     "@babel/core": "^7.26.0",
     "@babel/plugin-proposal-class-properties": "^7.18.6",
