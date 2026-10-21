@@ -160,6 +160,7 @@ class PathfindingSystem extends GUTS.BaseSystem {
 
     loadRamps(tileMap) {
         this.ramps.clear();
+        this._cellKnown = null;
 
         const ramps = tileMap.ramps || [];
         for (const ramp of ramps) {
@@ -273,6 +274,7 @@ class PathfindingSystem extends GUTS.BaseSystem {
      * - 255: Impassable (marked for worldObjects or other obstacles)
      */
     bakeNavMesh() {
+        this._cellKnown = null;
         const terrainSize = this.call.getTerrainSize();
         
         this.navGridWidth = Math.ceil(terrainSize / this.navGridSize);
@@ -432,7 +434,174 @@ class PathfindingSystem extends GUTS.BaseSystem {
         return null;
     }
 
+    /**
+     * A* over the nav grid. Cells are numbered (z * width + x) and the search keeps its scores in
+     * typed arrays stamped with the search's number instead of string-keyed Maps, and each cell's
+     * height level and ramp flag are looked up once per bake (heights and ramps are fixed for a
+     * level). Nodes are pushed in the same order with the same scores as before, so the paths are
+     * the same. A search that starts or ends off the grid uses _findPathKeyed.
+     */
     findPath(startX, startZ, endX, endZ, cacheKey = null) {
+        const startGrid = this.worldToNavGrid(startX, startZ);
+        const endGrid = this.worldToNavGrid(endX, endZ);
+
+        if (startGrid.x === endGrid.x && startGrid.z === endGrid.z) {
+            return [{ x: endX, z: endZ }];
+        }
+
+        const W = this.navGridWidth, H = this.navGridHeight;
+        if (startGrid.x < 0 || startGrid.x >= W || startGrid.z < 0 || startGrid.z >= H ||
+            endGrid.x < 0 || endGrid.x >= W || endGrid.z < 0 || endGrid.z >= H) {
+            return this._findPathKeyed(startX, startZ, endX, endZ, cacheKey);
+        }
+
+        const n = W * H;
+        if (!this._searchVisit || this._searchVisit.length !== n) {
+            this._searchVisit = new Uint32Array(n);   // === search id: g and came hold this search's values
+            this._searchClosed = new Uint32Array(n);  // === search id: closed in this search
+            this._searchG = new Float64Array(n);
+            this._searchCame = new Int32Array(n);
+            this._searchId = 0;
+        }
+        if (this._searchId >= 0xFFFFFFFE) { this._searchVisit.fill(0); this._searchClosed.fill(0); this._searchId = 0; }
+        const sid = ++this._searchId;
+        const visit = this._searchVisit, closed = this._searchClosed, g = this._searchG, came = this._searchCame;
+        const navMesh = this.navMesh;
+        const tileMap = this.call.getTileMap();
+        const useHeights = !!(tileMap.heightMap && tileMap.heightMap.length > 0);
+        const ex = endGrid.x, ez = endGrid.z;
+        const hdist = (x, z) => { const dx = Math.abs(x - ex), dz = Math.abs(z - ez); return Math.sqrt(dx * dx + dz * dz); };
+
+        const openSet = new GUTS.MinHeap();
+        const startIdx = startGrid.z * W + startGrid.x;
+        const endIdx = endGrid.z * W + endGrid.x;
+        visit[startIdx] = sid; g[startIdx] = 0; came[startIdx] = -1;
+        openSet.push({ key: startIdx, x: startGrid.x, z: startGrid.z, f: hdist(startGrid.x, startGrid.z) });
+
+        const directions = PathfindingSystem.DIRECTIONS;
+        let iterations = 0;
+        const maxIterations = W * H;
+
+        // Track the closest point we've found to the destination
+        let closestNode = { key: startIdx, x: startGrid.x, z: startGrid.z };
+        let closestDistance = hdist(startGrid.x, startGrid.z);
+
+        while (!openSet.isEmpty() && iterations < maxIterations) {
+            iterations++;
+
+            const current = openSet.pop();
+            const cur = current.key, cx = current.x, cz = current.z;
+
+            if (cur === endIdx) {
+                const path = this._reconstructIndexedPath(cur, endX, endZ);
+                if (cacheKey) this.addToCache(cacheKey, path);
+                return path;
+            }
+
+            closed[cur] = sid;
+
+            const distToEnd = hdist(cx, cz);
+            if (distToEnd < closestDistance) {
+                closestDistance = distToEnd;
+                closestNode = current;
+            }
+
+            const currentTerrain = navMesh[cur];
+            this._navCell(cur, cx, cz);
+
+            for (let d = 0; d < 8; d++) {
+                const dir = directions[d];
+                const nx = cx + dir.dx, nz = cz + dir.dz;
+                if (nx < 0 || nx >= W || nz < 0 || nz >= H) continue;
+                const nIdx = nz * W + nx;
+
+                if (closed[nIdx] === sid) continue;
+
+                const neighborTerrain = navMesh[nIdx];
+                if (neighborTerrain === 255) continue;
+                this._navCell(nIdx, nx, nz);
+                if (!this._canStep(useHeights, currentTerrain, neighborTerrain, cur, nIdx)) continue;
+
+                const isDiagonal = dir.dx !== 0 && dir.dz !== 0;
+
+                // For diagonal moves, check both adjacent cells to prevent corner cutting
+                if (isDiagonal) {
+                    const xIdx = cz * W + nx, zIdx = nz * W + cx;
+                    const terrainX = navMesh[xIdx], terrainZ = navMesh[zIdx];
+                    if (terrainX === 255 || terrainZ === 255) continue;
+                    this._navCell(xIdx, nx, cz);
+                    this._navCell(zIdx, cx, nz);
+                    if (!this._canStep(useHeights, currentTerrain, terrainX, cur, xIdx) ||
+                        !this._canStep(useHeights, currentTerrain, terrainZ, cur, zIdx)) {
+                        continue;
+                    }
+                }
+
+                const moveCost = isDiagonal ? 1.414 : 1;
+                const tentativeGScore = g[cur] + moveCost;
+
+                if (visit[nIdx] !== sid || tentativeGScore < g[nIdx]) {
+                    visit[nIdx] = sid;
+                    came[nIdx] = cur;
+                    g[nIdx] = tentativeGScore;
+                    openSet.push({ key: nIdx, x: nx, z: nz, f: tentativeGScore + hdist(nx, nz) });
+                }
+            }
+        }
+
+        // No path found to exact destination - return path to closest reachable point
+        if (closestNode.key !== startIdx) {
+            const closestWorld = this.navGridToWorld(closestNode.x, closestNode.z);
+            const path = this._reconstructIndexedPath(closestNode.key, closestWorld.x, closestWorld.z);
+            if (cacheKey) this.addToCache(cacheKey, path);
+            return path;
+        }
+
+        return null;
+    }
+
+    static DIRECTIONS = [
+        {dx: 1, dz: 0}, {dx: -1, dz: 0}, {dx: 0, dz: 1}, {dx: 0, dz: -1},
+        {dx: 1, dz: 1}, {dx: -1, dz: 1}, {dx: 1, dz: -1}, {dx: -1, dz: -1}
+    ];
+
+    /** A nav cell's height level and ramp flag (canWalkBetweenTerrainsWithRamps's inputs), looked up once per bake. */
+    _navCell(idx, x, z) {
+        const n = this.navGridWidth * this.navGridHeight;
+        if (!this._cellKnown || this._cellKnown.length !== n) {
+            this._cellKnown = new Uint8Array(n);
+            this._cellHeight = new Float64Array(n);
+            this._cellRamp = new Uint8Array(n);
+        }
+        if (this._cellKnown[idx]) return;
+        const t = this.navGridToTerrainGrid(x, z);
+        this._cellHeight[idx] = this.game.terrainSystem?.getHeightLevelAtGridPosition(t.x, t.z) || 0;
+        this._cellRamp[idx] = this.ramps.has(`${t.x},${t.z}`) ? 1 : 0;
+        this._cellKnown[idx] = 1;
+    }
+
+    /** canWalkBetweenTerrainsWithRamps over cached cells (both already looked up with _navCell). */
+    _canStep(useHeights, fromTerrain, toTerrain, fromIdx, toIdx) {
+        if (useHeights) {
+            if (this._cellHeight[fromIdx] === this._cellHeight[toIdx]) return true;
+            return this._cellRamp[fromIdx] === 1 || this._cellRamp[toIdx] === 1;
+        }
+        if (this.canWalkBetweenTerrains(fromTerrain, toTerrain)) return true;
+        return this._cellRamp[fromIdx] === 1 || this._cellRamp[toIdx] === 1;
+    }
+
+    /** reconstructPath for findPath's numbered cells. */
+    _reconstructIndexedPath(endIdx, endX, endZ) {
+        const W = this.navGridWidth, came = this._searchCame;
+        const path = [];
+        for (let idx = endIdx; idx !== -1; idx = came[idx]) path.push(this.navGridToWorld(idx % W, Math.floor(idx / W)));
+        path.reverse();
+        if (path.length > 0) path[path.length - 1] = { x: endX, z: endZ };
+        return this.smoothPath(path);
+    }
+
+    /** The original string-keyed A*, for searches that start or end off the grid. */
+    _findPathKeyed(startX, startZ, endX, endZ, cacheKey = null) {
         const startGrid = this.worldToNavGrid(startX, startZ);
         const endGrid = this.worldToNavGrid(endX, endZ);
         
