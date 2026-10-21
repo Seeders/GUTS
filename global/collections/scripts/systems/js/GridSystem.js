@@ -413,9 +413,17 @@ class GridSystem extends GUTS.BaseSystem {
         const nearbyEntityIds = [];
         const radiusSq = radius * radius;
 
-        // OPTIMIZATION: Reuse the seen set to avoid allocation per call
-        const seen = this._reusableSeenSet;
-        seen.clear();
+        // Entities already judged this query (one may span several cells): stamped with the query's
+        // number in an array by entity id, cheaper than a Set
+        const stamp = this._nearbyQuery = (this._nearbyQuery || 0) + 1;
+        let seen = this._nearbySeen;
+        if (!seen || seen.length < this.game.MAX_ENTITIES) seen = this._nearbySeen = new Uint32Array(this.game.MAX_ENTITIES);
+        if (stamp === 0xFFFFFFFF) { seen.fill(0); this._nearbyQuery = 0; }
+
+        // The fields read per entity, looked up once per query (getField would per read)
+        const xs = this.game._fieldArray('transform', 'position.x');
+        const zs = this.game._fieldArray('transform', 'position.z');
+        const collections = collection ? this.game._fieldArray('unitType', 'collection') : null;
 
         // Pre-calculate bounds to avoid repeated checks
         const minGx = Math.max(0, gridPos.x - cellRadius);
@@ -434,11 +442,15 @@ class GridSystem extends GUTS.BaseSystem {
                 if (!cellState?.entities?.length) continue;
 
                 for (const entityId of cellState.entities) {
-                    if (entityId === excludeEntityId || seen.has(entityId)) continue;
+                    if (entityId === excludeEntityId || seen[entityId] === stamp) continue;
+                    // judged once per query: a unit spans several cells, and the answer is the same in each
+                    seen[entityId] = stamp;
 
-                    // OPTIMIZATION: Use direct field access instead of proxy
-                    const entityX = this.game.getField(entityId, 'transform', 'position.x');
-                    const entityZ = this.game.getField(entityId, 'transform', 'position.z');
+                    // as getField reads them: undefined without storage, null for the null sentinel
+                    if (!xs) continue;
+                    const rawX = xs[entityId], rawZ = zs ? zs[entityId] : undefined;
+                    const entityX = rawX === -Infinity ? null : rawX;
+                    const entityZ = rawZ === -Infinity ? null : rawZ;
 
                     if (entityX === undefined) continue;
 
@@ -447,13 +459,11 @@ class GridSystem extends GUTS.BaseSystem {
                     const distSq = dx * dx + dz * dz;
 
                     if (collection) {
-                        // OPTIMIZATION: Direct field access for unitType collection check
-                        const entityCollection = this.game.getField(entityId, 'unitType', 'collection');
+                        const entityCollection = collections ? collections[entityId] : undefined;
                         if (this.game.isNull(entityCollection) || entityCollection !== collection) continue;
                     }
 
                     if (distSq <= radiusSq) {
-                        seen.add(entityId);
                         nearbyEntityIds.push(entityId);
                     }
                 }
