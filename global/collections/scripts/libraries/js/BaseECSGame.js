@@ -6,7 +6,6 @@ class BaseECSGame {
         this.app = app;
         this._state = {};
 
-        this.entitiesToAdd = [];
         this.classes = [];
         this.systems = [];
 
@@ -398,9 +397,12 @@ class BaseECSGame {
      * @param {string[]} fieldPaths - Array of field paths to read
      * @returns {Object} Map of fieldPath -> value
      * @example
-     * const { 'position.x': x, 'position.z': z } = game.getFields(id, 'transform', ['position.x', 'position.z']);
+     * const { 'position.x': x, 'position.z': z } = game.getFieldValues(id, 'transform', ['position.x', 'position.z']);
+     *
+     * (This was getFields, but the later getFields(componentType, ...fieldPaths) below
+     * shadowed it, so it was never reachable under that name.)
      */
-    getFields(entityId, componentType, fieldPaths) {
+    getFieldValues(entityId, componentType, fieldPaths) {
         const result = {};
         for (const fieldPath of fieldPaths) {
             result[fieldPath] = this._getNumericField(componentType, entityId, fieldPath);
@@ -922,9 +924,20 @@ class BaseECSGame {
 
     getService(key) {
         if(!this._services.has(key)){
-            console.log('service not found!', key);
+            console.warn(`[BaseECSGame] Service '${key}' not found. No system in this scene provides it (static services).`);
         }
         return this._services.get(key);
+    }
+
+    /**
+     * The serviceDependencies of an instance that no registered service provides.
+     * Calling one of these through instance.call does nothing and returns undefined.
+     * @param {Object} instance - A system (or other configured class)
+     * @returns {string[]}
+     */
+    getMissingServiceDependencies(instance) {
+        const deps = instance?.constructor?.serviceDependencies || [];
+        return deps.filter(name => !this._services.has(name));
     }
 
     /**
@@ -946,19 +959,28 @@ class BaseECSGame {
             }
 
             // Use lazy caching with getters so services are resolved when first accessed
-            // This ensures all systems have registered their services before we try to access them
+            // This ensures all systems have registered their services before we try to access them.
+            // A service that isn't registered yet is not cached: the getter hands back the
+            // no-op and looks again next time, so a provider registered later is still found.
             for (const serviceName of deps) {
                 const game = this;
                 let cachedService = null;
                 let cached = false;
+                let warned = false;
 
                 Object.defineProperty(instance.call, serviceName, {
                     get() {
-                        if (!cached) {
+                        if (cached) return cachedService;
+                        if (game.hasService(serviceName)) {
                             cachedService = game.getService(serviceName);
                             cached = true;
+                            return cachedService;
                         }
-                        return cachedService;
+                        if (!warned) {
+                            warned = true;
+                            console.warn(`[BaseECSGame] ${ClassConstructor.name} called service '${serviceName}', which no system in this scene provides. The call does nothing.`);
+                        }
+                        return game._services.get(serviceName);
                     },
                     configurable: true,
                     enumerable: true
@@ -1143,8 +1165,8 @@ class BaseECSGame {
     createSystem(systemName) {
         // Check if this system type is available (skip check if no whitelist defined)
         if (this.availableSystemTypes.length > 0 && !this.availableSystemTypes.includes(systemName)) {
-            console.warn(`[BaseECSGame] System '${systemName}' not in available systems list`);
-            console.warn(`[BaseECSGame] Available systems:`, this.availableSystemTypes);
+            const configName = this.isServer ? 'server.json' : 'game.json';
+            console.error(`[BaseECSGame] System '${systemName}' is in the scene but not in ${configName} "systems", so it was not created. Add it there and rebuild.`);
             return null;
         }
 
@@ -1197,8 +1219,35 @@ class BaseECSGame {
      * @returns {Promise<void>}
      */
     async switchScene(sceneName, params = null) {
-        if (this.sceneManager) {
-            await this.sceneManager.switchScene(sceneName, params);
+        if (!this.sceneManager) return;
+
+        // Called from a system's update() or render(): finish this tick first. Switching
+        // now would unload the systems the update loop is still iterating. The switch runs
+        // at the end of update(), and the returned promise resolves once it has loaded.
+        // If several switches are asked for in one tick, the last one wins.
+        if (this._inUpdate) {
+            if (!this._pendingSceneSwitch) {
+                let resolve, reject;
+                const done = new Promise((res, rej) => { resolve = res; reject = rej; });
+                this._pendingSceneSwitch = { done, resolve, reject };
+            }
+            Object.assign(this._pendingSceneSwitch, { sceneName, params });
+            return this._pendingSceneSwitch.done;
+        }
+
+        await this.sceneManager.switchScene(sceneName, params);
+    }
+
+    /** Run a scene switch that was asked for during the last update(). */
+    async _runPendingSceneSwitch() {
+        const pending = this._pendingSceneSwitch;
+        if (!pending) return;
+        this._pendingSceneSwitch = null;
+        try {
+            await this.sceneManager.switchScene(pending.sceneName, pending.params);
+            pending.resolve();
+        } catch (error) {
+            pending.reject(error);
         }
     }
 
@@ -1244,62 +1293,66 @@ class BaseECSGame {
             this.state.deltaTime = deltaTime;
             this.deltaTime = deltaTime;
 
-            for (const system of this.systems) {
-                // Skip disabled systems
-                if (!system.enabled) continue;
+            this._inUpdate = true;
+            try {
+                for (const system of this.systems) {
+                    // Skip disabled systems
+                    if (!system.enabled) continue;
 
-                const systemName = system.constructor.name;
+                    const systemName = system.constructor.name;
 
-                // Start tracking this system
-                if (this.performanceMonitor) {
-                    this.performanceMonitor.startSystem(systemName);
-                }
-
-                if (system.update) {
-                    await system.update();
-                }
-
-                // End update tracking
-                if (this.performanceMonitor) {
-                    this.performanceMonitor.endSystemUpdate(systemName);
-                }
-
-                if(system.render && !this.isServer){
-                    // Start render tracking
+                    // Start tracking this system
                     if (this.performanceMonitor) {
-                        this.performanceMonitor.startSystemRender(systemName);
+                        this.performanceMonitor.startSystem(systemName);
                     }
 
-                    await system.render();
+                    if (system.update) {
+                        await system.update();
+                    }
 
-                    // End render tracking
+                    // End update tracking
                     if (this.performanceMonitor) {
+                        this.performanceMonitor.endSystemUpdate(systemName);
+                    }
+
+                    if(system.render && !this.isServer){
+                        // Start render tracking
+                        if (this.performanceMonitor) {
+                            this.performanceMonitor.startSystemRender(systemName);
+                        }
+
+                        await system.render();
+
+                        // End render tracking
+                        if (this.performanceMonitor) {
+                            this.performanceMonitor.endSystemRender(systemName);
+                        }
+                    } else if (this.performanceMonitor) {
+                        // If no render, still need to end the system tracking
+                        this.performanceMonitor.startSystemRender(systemName);
                         this.performanceMonitor.endSystemRender(systemName);
                     }
-                } else if (this.performanceMonitor) {
-                    // If no render, still need to end the system tracking
-                    this.performanceMonitor.startSystemRender(systemName);
-                    this.performanceMonitor.endSystemRender(systemName);
                 }
-            }
 
-            // Update performance overlay
-            if (this.performanceMonitor) {
-                this.performanceMonitor.updateOverlay();
-            }
+                // Update performance overlay
+                if (this.performanceMonitor) {
+                    this.performanceMonitor.updateOverlay();
+                }
 
-            this.postUpdate();
+                this.postUpdate();
+            } finally {
+                this._inUpdate = false;
+            }
         }
+
+        // A system asked for a scene change during this tick; it is safe to switch now.
+        await this._runPendingSceneSwitch();
     }
 
     postUpdate() {
-       // this.desyncDebugger?.displaySync(false); 
-       
+       // this.desyncDebugger?.displaySync(false);
+
         this.lastTime = this.currentTime;
-    
-        this.entitiesToAdd.forEach((entity) => this.addEntity(entity));        
-        this.entitiesToAdd = [];
-        
     }
 
     createEntity(setId) {
