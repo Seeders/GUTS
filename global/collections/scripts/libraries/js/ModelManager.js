@@ -44,11 +44,30 @@ class ModelManager {
     }
 
     async loadModels(prefix, config, onProgress = null) {
-
-        // Load all models first (master + animations)
+        this._configs = this._configs || {};
+        this._configs[prefix] = config;
+        // Load all models first (master + animations); `lazyLoad` ones wait until first drawn
         for (const [type, cfg] of Object.entries(config)) {
-            if (!cfg.render?.model) continue;
+            if (!cfg.render?.model || cfg.lazyLoad) continue;
+            await this._loadOne(prefix, type, cfg, onProgress);
+        }
 
+        this.assetsLoaded = true;
+    }
+
+    /** A lazyLoad unit's model and clips, loaded the first time it's needed. */
+    async ensureLoaded(prefix, type) {
+        const key = `${prefix}_${type}`;
+        if (this.masterModels.has(key)) return;
+        const cfg = this._configs?.[prefix]?.[type];
+        if (!cfg?.render?.model) return;
+        this._loading = this._loading || new Map();
+        if (!this._loading.has(key)) this._loading.set(key, this._loadOne(prefix, type, cfg));
+        await this._loading.get(key);
+    }
+
+    async _loadOne(prefix, type, cfg, onProgress = null) {
+        {
             const modelKey = `${prefix}_${type}`;
 
             // Load master model
@@ -88,8 +107,6 @@ class ModelManager {
                 }
             }
         }
-
-        this.assetsLoaded = true;
     }
 
     async createModel(modelData) {
@@ -105,8 +122,63 @@ class ModelManager {
         return rootGroup;
     }
 
-    // Main VAT bundle creation - called by RenderSystem
-    async requestVATBundle(objectType, spawnType, unitDef) {
+    // ==================== LOOKS (variants of one model) ====================
+    //
+    // A unit can be drawn in several looks that share its bone bake: a modular
+    // character wearing different parts, say. A look is a string the game picks
+    // (lookFor); each look gets its own batch and bundle, built over the model's
+    // one bake by buildLookBundle. Both are hooks for a game's ModelManager
+    // subclass; by default no unit has looks.
+
+    /** The look to draw this entity in, or null for the plain model. */
+    lookFor(entityId, unitDef, looks) {
+        return null;
+    }
+
+    /** A look's bundle ({ geometry, material, vatTexture, vatData, meta }) over the model's bake. */
+    buildLookBundle(key, baseKey, base, look) {
+        throw new Error(`[ModelManager] ${baseKey}: looks need a ModelManager subclass that implements buildLookBundle`);
+    }
+
+    static lookHash(look) {
+        let h = 0;
+        for (let i = 0; i < look.length; i++) h = (Math.imul(h, 31) + look.charCodeAt(i)) | 0;
+        return (h >>> 0).toString(36);
+    }
+
+    async _requestLookBundle(objectType, spawnType, unitDef, look) {
+        const baseKey = `${objectType}_${spawnType}`;
+        const key = `${baseKey}_look${ModelManager.lookHash(look)}`;
+        if (this.vatBundles.has(key)) return { ready: true, bundle: this.vatBundles.get(key) };
+        if (!this.vatBundlePromises.has(key)) {
+            this.vatBundlePromises.set(key, (async () => {
+                // the bone bake, once per model
+                let base = this.vatBundles.get(baseKey);
+                if (!base) {
+                    let p = this.vatBundlePromises.get(baseKey);
+                    if (!p) { p = this._buildVATBundle(baseKey, objectType, spawnType, unitDef); this.vatBundlePromises.set(baseKey, p); }
+                    try { base = await p; if (base) this.vatBundles.set(baseKey, base); } finally { this.vatBundlePromises.delete(baseKey); }
+                }
+                if (!base?.vatData) throw new Error(`Bake failed: ${baseKey}`);
+                const bundle = this.buildLookBundle(key, baseKey, base, look);
+                this.vatBundles.set(key, bundle);
+                return bundle;
+            })());
+        }
+        try {
+            return { ready: true, bundle: await this.vatBundlePromises.get(key) };
+        } catch (error) {
+            console.error(`[ModelManager] Look failed: ${key}`, error);
+            return { ready: false, error: 'Look failed' };
+        } finally {
+            this.vatBundlePromises.delete(key);
+        }
+    }
+
+    // Main VAT bundle creation - called by RenderSystem. `look` (see lookFor) selects
+    // a variant of the model sharing its bone bake.
+    async requestVATBundle(objectType, spawnType, unitDef, look = null) {
+        if (look != null) return this._requestLookBundle(objectType, spawnType, unitDef, look);
         const key = `${objectType}_${spawnType}`;
 
         // Return existing bundle
@@ -140,7 +212,8 @@ class ModelManager {
 
     async _buildVATBundle(key, objectType, spawnType, unitDef) {
 
-        // Get master model
+        // Get master model (a lazyLoad unit loads now)
+        if (!this.masterModels.has(key)) await this.ensureLoaded(objectType, spawnType);
         const masterModel = this.masterModels.get(key);
         if (!masterModel) {
             throw new Error(`Master model not found: ${key}`);
@@ -199,6 +272,7 @@ class ModelManager {
             geometry,
             material,
             vatTexture: vatData.texture,
+            vatData,
             meta: {
                 fps: vatData.fps,
                 cols: vatData.cols,
@@ -207,9 +281,32 @@ class ModelManager {
                 clipIndexByName: vatData.clipIndexByName,
                 skeleton: skeleton,
                 attachmentTexture: vatData.attachmentTexture,
-                attachmentBones: vatData.attachmentBones
+                attachmentBones: vatData.attachmentBones,
+                attachmentValidBones: vatData.attachmentValidBones,
+                attachmentBoneWorld: vatData.attachmentBoneWorld
             }
         };
+    }
+
+    /**
+     * Hook: options for a static (unskinned) model's VAT material, given its cloned
+     * geometry, which it may add attributes to. Returned options reach
+     * _createVATMaterial and extendVATShader.
+     */
+    prepareStaticVAT(mesh, geometry) {
+        return {};
+    }
+
+    /**
+     * Hook: change a VAT material's shader (after the VAT code is in). Options
+     * that change the source must set opts.programKey so differing shaders get
+     * their own programs.
+     */
+    extendVATShader(shader, opts) {
+    }
+
+    /** Hook: add clips the model doesn't have (e.g. made from others) before the bake. */
+    augmentClips(key, unitDef, clips) {
     }
 
     // Add method for static meshes without skeletons:
@@ -231,6 +328,9 @@ class ModelManager {
         identityTexture.needsUpdate = true;
         identityTexture.flipY = false;
 
+        const geometry = mesh.geometry.clone();
+        const opts = this.prepareStaticVAT(mesh, geometry) || {};
+
         // Then use this instead of null:
         const material = this._createVATMaterial(mesh, {
             texture: identityTexture,  // Instead of null
@@ -239,13 +339,11 @@ class ModelManager {
             fps: 30,
             cols: 4,
             rows: 1
-        }, key);
+        }, key, opts);
 
         material.userData.batchKey = key;
-        material.customProgramCacheKey = () => key;
         material.needsUpdate = true;
 
-        const geometry = mesh.geometry.clone();
         const positionCount = geometry.getAttribute('position').count;
         
         // Create identity bone data (all vertices use bone 0 with weight 1)
@@ -296,8 +394,9 @@ class ModelManager {
     async _collectAnimationClips(key, objectType, spawnType, unitDef) {
         const clips = [];
 
-        // Define standard animation names in order
-        const animNames = ['idle', 'walk', 'attack', 'cast', 'death', 'celebrate'];
+        // Standard animation names in order, then any others the unit names
+        const base = ['idle', 'walk', 'run', 'sneak', 'strafeLeft', 'strafeRight', 'walkBack', 'attack', 'cast', 'hit', 'jump', 'death', 'celebrate'];
+        const animNames = [...base, ...Object.keys(unitDef?.render?.animations || {}).filter(k => !base.includes(k))];
 
         for (const animName of animNames) {
             // Skip if not defined in unit config
@@ -333,6 +432,8 @@ class ModelManager {
                 console.warn(`[ModelManager] Failed to load animation '${animName}' for ${key}:`, error);
             }
         }
+
+        this.augmentClips(key, unitDef, clips);
 
         // Ensure we have at least idle
         if (clips.length === 0 || !clips.some(c => c.name === 'idle')) {
@@ -448,13 +549,16 @@ class ModelManager {
             clips,
             boneCount,
             attachmentTexture: attachmentData.texture,
-            attachmentBones: attachmentData.bones
+            attachmentBones: attachmentData.bones,
+            attachmentValidBones: attachmentData.validBones.map(b => b.name),
+            attachmentBoneWorld: attachmentData.boneWorld
         };
-
-  
     }
 
-    _createVATMaterial(baseMesh, vatData, batchKey = 'unknown') {
+    // Clip table size in the shared VAT shader (a uniform array).
+    static VAT_MAX_CLIPS = 96;
+
+    _createVATMaterial(baseMesh, vatData, batchKey = 'unknown', opts = {}) {
         // Get base material properties
         const sourceMaterial = Array.isArray(baseMesh.material)
             ? baseMesh.material[0]
@@ -466,6 +570,7 @@ class ModelManager {
             color: sourceMaterial?.color?.clone() || new THREE.Color(0xffffff),
             metalness: sourceMaterial?.metalness ?? 0.5,
             roughness: sourceMaterial?.roughness ?? 0.5,
+            vertexColors: !!sourceMaterial?.vertexColors && !!baseMesh.geometry?.attributes.color,
             transparent: false
         });
 
@@ -478,36 +583,32 @@ class ModelManager {
             vatData.texture.magFilter = THREE.NearestFilter;
             vatData.texture.minFilter = THREE.NearestFilter;
         }
-        // Force unique shader compilation per batch
+        // One shader program for every VAT material (per programKey): the clip table goes in
+        // a uniform array, not into the source, so a new unit type doesn't compile a new
+        // program (each compile froze the screen for over a second on D3D).
         material.userData.batchKey = batchKey;
-        material.customProgramCacheKey = () => batchKey;
+        material.customProgramCacheKey = () => 'vat' + (opts.programKey ? `_${opts.programKey}` : '');
+        const MAX = ModelManager.VAT_MAX_CLIPS;
+        if (vatData.clips.length > MAX) console.warn(`[ModelManager] ${batchKey}: ${vatData.clips.length} clips, only ${MAX} fit`);
+        const clipTable = new Float32Array(MAX * 2);
+        for (let i = 0; i < MAX; i++) {
+            const c = vatData.clips[i] || vatData.clips[0];
+            clipTable[i * 2] = c.startRow; clipTable[i * 2 + 1] = Math.max(1, c.frames);
+        }
 
         material.onBeforeCompile = (shader) => {
             shader.uniforms.uVATTexture = { value: vatData.texture };
             shader.uniforms.uVATCols    = { value: vatData.cols };
             shader.uniforms.uVATRows    = { value: vatData.rows };
             shader.uniforms.uVATFPS     = { value: vatData.fps };
-
-            // FIXED: Generate unique defines per batch to prevent cross-batch contamination
-            const batchPrefix = batchKey.toUpperCase().replace(/[^A-Z0-9]/g, '_');
-            const clipDefines = vatData.clips.map((clip, index) => `
-                #define ${batchPrefix}_CLIP_${index}_START ${clip.startRow}.0
-                #define ${batchPrefix}_CLIP_${index}_FRAMES ${clip.frames}.0
-            `).join('\n');
-
+            shader.uniforms.uVATClips   = { value: clipTable };
 
             const clipHelpers = `
                 float getClipStartRow(float clipIndex) {
-                    ${vatData.clips.map((clip, i) => 
-                        `if (abs(clipIndex - ${i}.0) < 0.5) return ${batchPrefix}_CLIP_${i}_START;`
-                    ).join('\n                    ')}
-                    return ${batchPrefix}_CLIP_0_START;
+                    return uVATClips[int(clamp(clipIndex + 0.5, 0.0, ${MAX - 1}.0))].x;
                 }
                 float getClipFrames(float clipIndex) {
-                    ${vatData.clips.map((clip, i) => 
-                        `if (abs(clipIndex - ${i}.0) < 0.5) return ${batchPrefix}_CLIP_${i}_FRAMES;`
-                    ).join('\n                    ')}
-                    return ${batchPrefix}_CLIP_0_FRAMES;
+                    return uVATClips[int(clamp(clipIndex + 0.5, 0.0, ${MAX - 1}.0))].y;
                 }
                 mat4 sampleVATMatrix(float row, float boneIndex) {
                     float boneColStart = boneIndex * 4.0;
@@ -537,8 +638,8 @@ class ModelManager {
                 uniform float uVATCols;
                 uniform float uVATRows;
                 uniform float uVATFPS;
+                uniform vec2 uVATClips[${MAX}];
 
-                ${clipDefines}
                 ${clipHelpers}
 
                 // Shared temporaries
@@ -605,6 +706,7 @@ class ModelManager {
             vec3 transformed = _skinnedPos.xyz;
             `
             );
+            this.extendVATShader(shader, opts);
         };
         material.needsUpdate = true;
         return material;
@@ -704,6 +806,9 @@ class ModelManager {
         const rows = totalFrames;
 
         const textureData = new Float32Array(rows * cols * 4);
+        // The bones' own transforms per frame too (what an item held in that bone follows),
+        // in the same space the skinned vertices end up in: rows x validBones x 16.
+        const boneWorld = new Float32Array(rows * validBones.length * 16);
         const tempMatrix = new THREE.Matrix4();
         const worldMatrix = new THREE.Matrix4();
 
@@ -723,6 +828,7 @@ class ModelManager {
                     const bone = bones[boneIndex];
                     
                     worldMatrix.copy(bone.matrixWorld);
+                    boneWorld.set(worldMatrix.elements, ((currentRow + frame) * validBones.length + i) * 16);
                     tempMatrix.copy(worldMatrix).multiply(bindMatrices[boneIndex]);
 
                     const elements = tempMatrix.elements;
@@ -759,7 +865,8 @@ class ModelManager {
         return {
             texture,
             bones: attachmentBones,
-            validBones
+            validBones,
+            boneWorld
         };
     }
 }

@@ -16,6 +16,14 @@ class ShapeFactory {
     }
 
     /**
+     * Hook: whether a textured mesh keeps its vertex colours (textured meshes
+     * normally drop them, as they can darken the texture).
+     */
+    keepsVertexColors(mesh) {
+        return false;
+    }
+
+    /**
      * Set the models collection for resolving model references
      * @param {Object} models - The models collection from getCollections()
      */
@@ -329,7 +337,7 @@ class ShapeFactory {
                     // Vertex colors can darken a texture, so textured models drop them;
                     // untextured models (atlas baked into vertex colours) keep them.
                     const useVertexColors = !map && !!child.geometry?.attributes.color;
-                    if (child.geometry && child.geometry.attributes.color && !useVertexColors) {
+                    if (child.geometry && child.geometry.attributes.color && !useVertexColors && !this.keepsVertexColors(child)) {
                         child.geometry.deleteAttribute('color');
                     }
 
