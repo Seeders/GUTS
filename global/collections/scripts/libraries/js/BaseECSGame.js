@@ -43,7 +43,8 @@ class BaseECSGame {
         // Entity ID counter. IDs grow monotonically unless game.json entityIdReuse is set (see getEntityId)
         this.nextEntityId = 1; // Start at 1, reserve 0 as "no entity"
 
-        // ID reuse (opt-in: game.json "entityIdReuse": true or { "quarantineTicks": n }). A destroyed
+        // ID reuse (opt-in: game.json "entityIdReuse": true or { "quarantineTicks": n, "serverOnly": true }
+        // (serverOnly: only the server reuses, e.g. a client whose IDs are its own). A destroyed
         // entity's ID goes into _freeIds and is handed out again once it has been free for
         // quarantineTicks (default 200: ten seconds at 20 TPS), oldest first, so peers that destroy
         // the same entities in the same order reuse the same IDs. entityGeneration[id] counts the
@@ -51,6 +52,7 @@ class BaseECSGame {
         // and check isEntityCurrent(id, generation).
         const reuse = gameConfig?.entityIdReuse;
         this._idReuse = !!reuse;
+        this._idReuseServerOnly = !!(reuse && typeof reuse === 'object' && reuse.serverOnly);
         this._idQuarantine = (reuse && typeof reuse === 'object' && reuse.quarantineTicks != null) ? reuse.quarantineTicks : 200;
         this._freeIds = [];        // [id, tick it was freed] pairs, oldest first
         this._freeHead = 0;        // _freeIds before this index are already reused
@@ -1356,7 +1358,7 @@ class BaseECSGame {
         // point at a different entity later. With entityIdReuse, an ID freed for longer than the
         // quarantine is handed out first (see the constructor). Storage grows as needed; the
         // last slot is the gameState singleton's.
-        if (this._idReuse) {
+        if (this._reusingIds()) {
             const id = this._takeFreeId();
             if (id) return id;
         }
@@ -1378,6 +1380,11 @@ class BaseECSGame {
             if (!this.entityAlive[id]) return id;      // (an explicit createEntity(id) may have taken it)
         }
         return 0;
+    }
+
+    /** Is ID reuse on here (serverOnly: on servers only; isServer is known once init has run)? */
+    _reusingIds() {
+        return this._idReuse && (!this._idReuseServerOnly || this.isServer);
     }
 
     /** Ticks since the game began, across tickCount resets (any loop that ticks advances it). */
@@ -1550,7 +1557,7 @@ class BaseECSGame {
         // Mark entity as dead (its ID is reused only with entityIdReuse, after quarantine)
         this.entityAlive[entityId] = 0;
         this.entityGeneration[entityId]++;
-        if (this._idReuse) this._freeIds.push([entityId, this._idNow()]);
+        if (this._reusingIds()) this._freeIds.push([entityId, this._idNow()]);
         // Clear all mask words for this entity
         const maskBase = entityId * this.MASK_UINT32_COUNT;
         this._touchMaskTypes(maskBase);
@@ -1753,7 +1760,7 @@ class BaseECSGame {
     _getFullECSData(maxEntity) {
         const result = {
             nextEntityId: this.nextEntityId,
-            ...(this._idReuse ? { idPool: { free: this._freeIds.slice(this._freeHead), clock: this._idNow() } } : {}),
+            ...(this._reusingIds() ? { idPool: { free: this._freeIds.slice(this._freeHead), clock: this._idNow() } } : {}),
             entityAlive: {},
             entityComponentMask: {},
             numericArrays: {},
