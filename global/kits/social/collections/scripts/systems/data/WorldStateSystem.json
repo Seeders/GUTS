@@ -1,0 +1,16 @@
+{
+  "filePath": "/global/kits/social/collections/scripts/systems/js/WorldStateSystem.js",
+  "fileName": "WorldStateSystem",
+  "services": [
+    "worldFlag",
+    "setWorldFlag",
+    "incWorldFlag",
+    "worldState",
+    "worldStateChanged",
+    "touchWorldState",
+    "runWorldActions",
+    "registerWorldAction",
+    "testWorldCondition",
+    "saveWorldStateNow"
+  ]
+}

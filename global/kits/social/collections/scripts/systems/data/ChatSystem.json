@@ -1,0 +1,8 @@
+{
+  "filePath": "/global/kits/social/collections/scripts/systems/js/ChatSystem.js",
+  "fileName": "ChatSystem",
+  "services": [
+    "sendChat",
+    "registerChatChannel"
+  ]
+}

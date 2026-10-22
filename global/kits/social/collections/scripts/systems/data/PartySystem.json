@@ -1,0 +1,16 @@
+{
+  "filePath": "/global/kits/social/collections/scripts/systems/js/PartySystem.js",
+  "fileName": "PartySystem",
+  "services": [
+    "partyInvite",
+    "partyRespond",
+    "partyLeave",
+    "partyKick",
+    "partyMemberGone",
+    "partyIdOf",
+    "partyOf",
+    "partyMembers",
+    "sameParty",
+    "partyList"
+  ]
+}

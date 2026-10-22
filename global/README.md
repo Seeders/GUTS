@@ -23,7 +23,8 @@ global/
     │                     network system, RTS input
     ├── cards/            deck, dragging, card rendering
     ├── loot/             rolled items, drop tables, sockets, sets, ground drops
-    └── physics/          Rapier bodies, joints, characters, ragdolls, debris
+    ├── physics/          Rapier bodies, joints, characters, ragdolls, debris
+    └── social/           parties, chat, trading, the world's saved flags
 ```
 
 Each kit has a README listing its systems, the services they provide, and what your game
@@ -39,6 +40,7 @@ game can answer).
 | [cards](kits/cards/README.md) | Card games: deck, dragging, rendering |
 | [loot](kits/loot/README.md) | Diablo-style items: rarities and magic find, affix tiers, uniques and sets, identification, drop tables, sockets and runewords, durability; drops on the ground; grid inventories |
 | [physics](kits/physics/README.md) | Rigid bodies, colliders, joints and character controllers on Rapier; collision events, raycasts, terrain collision, explosions; ragdolls and debris |
+| [social](kits/social/README.md) | Parties, chat channels and commands, face-to-face trading (all or nothing), the shared world's flags, actions and saving |
 
 ## What the core asks of a game
 

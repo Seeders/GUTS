@@ -1,0 +1,16 @@
+{
+  "filePath": "/global/kits/social/collections/scripts/systems/js/TradeSystem.js",
+  "fileName": "TradeSystem",
+  "services": [
+    "tradeAsk",
+    "tradeAnswer",
+    "tradeOffer",
+    "tradePull",
+    "tradeGold",
+    "tradeAccept",
+    "tradeCancel",
+    "tradeMemberGone",
+    "tradeOf",
+    "tradeView"
+  ]
+}
