@@ -16,6 +16,7 @@
     "SpriteUtils",
     "GE_SceneRenderer",
     "GE_UIManager",
+    "BoneAttachment",
     "GE_EquipmentManager",
     "GraphicsEditor"
   ],

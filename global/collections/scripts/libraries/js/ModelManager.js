@@ -55,11 +55,14 @@ class ModelManager {
         this.assetsLoaded = true;
     }
 
-    /** A lazyLoad unit's model and clips, loaded the first time it's needed. */
-    async ensureLoaded(prefix, type) {
+    /**
+     * A lazyLoad unit's model and clips, loaded the first time it's needed. `config` is its collection,
+     * for one loadModels hasn't seen (an editor loading one unit, not the whole collection).
+     */
+    async ensureLoaded(prefix, type, config = null) {
         const key = `${prefix}_${type}`;
         if (this.masterModels.has(key)) return;
-        const cfg = this._configs?.[prefix]?.[type];
+        const cfg = (config || this._configs?.[prefix])?.[type];
         if (!cfg?.render?.model) return;
         this._loading = this._loading || new Map();
         if (!this._loading.has(key)) this._loading.set(key, this._loadOne(prefix, type, cfg));

@@ -71,6 +71,25 @@ with a file of that name in `collections/settings/editorModules/`:
 The module's code is an ordinary library (for example `BehaviorTreeEditor` in the ai kit)
 that listens for its hooks. Themes live in `global/collections/editor/themes/`.
 
+## Attaching equipment to bones
+
+A unit can hold or wear items on its skeleton: `render.equipment` lists them as
+`{ slot, item, attachmentData: { bone, offset, rotation, scale } }`, where `item` is an entry in the
+`items` collection (its `render.model` is what's drawn) and `attachmentData` is the item's transform
+in its bone's own frame (rotation in degrees). Without a `bone`, the slot picks a usual one
+(`mainHand` the right hand, `offHand` the left, `head`, `chest`, `back`, `waist`, `legs`, `feet`).
+
+The **Attachment Editor** (`attachmentModule`, opened on a unit) is the place to fit them by eye: the
+unit stands in its rest pose or any animation frame, with its equipment on; pick an entry and drag it
+in the view (W move, E turn, R size, Q camera; shift for fine steps) or nudge the numbers, change its
+bone, add or remove entries, and save. The Graphics Editor's equipment board edits the same data.
+
+At runtime, `GUTS.BoneAttachment` puts an item on a model the same way the editors show it:
+
+```js
+const bone = GUTS.BoneAttachment.attach(unitModel, itemModel, entry.attachmentData, entry.slot);
+```
+
 ## Editor builds
 
 `guts build --target editor` (or `npm run build:editor -- <ProjectName>` from the GUTS repo)

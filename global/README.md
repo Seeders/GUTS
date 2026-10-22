@@ -8,7 +8,7 @@ global/
 │   ├── scripts/
 │   │   ├── libraries/    ECS (BaseECSGame), scenes, loaders, rendering, models, audio,
 │   │   │                 networking, terrain, UI (UIKit, notifications), the desync
-│   │   │                 debugger, editor tools, three.js add-ons
+│   │   │                 debugger, bone attachments, editor tools, three.js add-ons
 │   │   └── systems/      rendering, world, terrain, cameras, keyboard, audio and music,
 │   │                     animation, particles and effects, lighting, post-processing,
 │   │                     scheduling, loading, pause, UI, chat

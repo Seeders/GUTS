@@ -150,72 +150,17 @@ class GE_EquipmentManager {
         }
     }
 
-    /**
-     * Find attachment bone for equipment with fallback logic
-     */
+    /** The equipment's bone: its named one, else its slot's usual ones, else a name match (BoneAttachment). */
     findAttachmentBone(equipment) {
-        const specifiedBone = equipment.attachmentData?.bone;
-        if (specifiedBone && this.characterBones.has(specifiedBone)) {
-            return this.characterBones.get(specifiedBone);
-        }
-
-        const fallbackBones = {
-            'mainHand': ['RightHand', 'Hand_R', 'hand_R', 'R_Hand', 'hand.R', 'RightHand_End', 'RHand', 'right_hand', 'HandR'],
-            'offHand':  ['LeftHand', 'Hand_L', 'hand_L', 'L_Hand', 'hand.L', 'LeftHand_End', 'LHand', 'left_hand', 'HandL'],
-            'head':     ['Head', 'head', 'Head_M', 'head_end', 'Head_End', 'HeadTop_End', 'neck_01', 'Neck', 'neck'],
-            'chest':    ['Spine2', 'spine2', 'Chest', 'chest', 'spine_02', 'Spine_02', 'UpperChest', 'upper_chest', 'Spine1'],
-            'back':     ['Spine2', 'spine2', 'Chest', 'chest', 'spine_02', 'Spine_02', 'UpperChest', 'upper_chest', 'Spine1'],
-            'legs':     ['Hips', 'hips', 'Pelvis', 'pelvis', 'spine_01', 'Spine_01', 'UpperLeg_R', 'RightUpLeg'],
-            'feet':     ['RightFoot', 'Foot_R', 'foot_R', 'LeftFoot', 'Foot_L', 'foot_L'],
-            'waist':    ['Spine', 'spine', 'Hips', 'hips', 'pelvis', 'Pelvis', 'spine_01', 'Spine_01', 'Root', 'root']
-        };
-
-        const possibleBones = fallbackBones[equipment.slot] || [];
-        for (const boneName of possibleBones) {
-            if (this.characterBones.has(boneName)) {
-                return this.characterBones.get(boneName);
-            }
-        }
-
-        for (const [boneName, bone] of this.characterBones) {
-            const lowerBoneName = boneName.toLowerCase();
-            const lowerSlot = equipment.slot.toLowerCase();
-            if (lowerBoneName.includes(lowerSlot) ||
-                lowerSlot.includes(lowerBoneName.replace(/[_\-\.]/g, ''))) {
-                return bone;
-            }
-        }
-
-        console.warn(`No suitable bone found for equipment slot: ${equipment.slot}`);
-        return null;
+        const bone = GUTS.BoneAttachment.findBone(this.characterBones, equipment.attachmentData, equipment.slot);
+        if (!bone) console.warn(`No suitable bone found for equipment slot: ${equipment.slot}`);
+        return bone;
     }
 
-    /**
-     * Apply attachment data (bone-local offset / rotation-in-degrees / scale)
-     */
+    /** Attachment data (bone-local offset / rotation in degrees / scale) onto the model (BoneAttachment). */
     applyAttachmentData(equipmentModel, attachmentData) {
         if (!attachmentData) return;
-        if (attachmentData.offset) {
-            equipmentModel.position.set(
-                attachmentData.offset.x || 0,
-                attachmentData.offset.y || 0,
-                attachmentData.offset.z || 0
-            );
-        }
-        if (attachmentData.rotation) {
-            equipmentModel.rotation.set(
-                (attachmentData.rotation.x || 0) * Math.PI / 180,
-                (attachmentData.rotation.y || 0) * Math.PI / 180,
-                (attachmentData.rotation.z || 0) * Math.PI / 180
-            );
-        }
-        if (attachmentData.scale) {
-            equipmentModel.scale.set(
-                attachmentData.scale.x || 1,
-                attachmentData.scale.y || 1,
-                attachmentData.scale.z || 1
-            );
-        }
+        GUTS.BoneAttachment.apply(equipmentModel, attachmentData);
     }
 
     /**

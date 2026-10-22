@@ -1,0 +1,71 @@
+<div id="attachment-editor-container" class="ae">
+  <div class="ae__view">
+    <canvas id="ae-canvas" class="ae__frame"></canvas>
+    <div id="ae-overlay" class="ae__overlay" tabindex="0"></div>
+    <div id="ae-tools" class="ae__tools">
+      <button data-tool="camera" class="ae__btn is-on" title="Drag to turn the view (Q)">Camera</button>
+      <button data-tool="move" class="ae__btn" title="Drag to move the item (W)">Move</button>
+      <button data-tool="turn" class="ae__btn" title="Drag to turn the item (E)">Turn</button>
+      <button data-tool="size" class="ae__btn" title="Drag to size the item (R)">Size</button>
+      <span class="ae__hint">right-drag: view · wheel: zoom · middle-drag: height · shift: fine</span>
+    </div>
+    <div id="ae-status" class="ae__status">Loading…</div>
+  </div>
+  <aside class="ae__panel">
+    <section class="ae__sec">
+      <h3 class="ae__h">Unit</h3>
+      <div id="ae-unit" class="ae__item">—</div>
+      <div class="ae__row"><label>Pose</label><select id="ae-anim" class="ae__in"></select></div>
+      <div class="ae__row"><label>Frame</label><input id="ae-time" type="range" min="0" max="1" step="0.001" value="0"><label class="ae__lock"><input id="ae-play" type="checkbox"> play</label></div>
+    </section>
+
+    <section class="ae__sec">
+      <h3 class="ae__h">View</h3>
+      <div class="ae__row"><label>Turn</label><input id="ae-yaw" type="range" min="-180" max="180" step="1" value="20"></div>
+      <div class="ae__row"><label>Tilt</label><input id="ae-pitch" type="range" min="-40" max="70" step="1" value="10"></div>
+      <div class="ae__row"><label>Zoom</label><input id="ae-dist" type="range" min="0.3" max="4" step="0.01" value="1.6"></div>
+      <div class="ae__row"><label>Height</label><input id="ae-at" type="range" min="0" max="1.1" step="0.01" value="0.6"></div>
+      <div class="ae__row ae__seg">
+        <button data-yaw="0" class="ae__btn">Front</button>
+        <button data-yaw="90" class="ae__btn">Side</button>
+        <button data-yaw="180" class="ae__btn">Back</button>
+      </div>
+    </section>
+
+    <section class="ae__sec">
+      <h3 class="ae__h">Equipment</h3>
+      <div id="ae-list" class="ae__list"></div>
+      <div class="ae__row">
+        <select id="ae-add-slot" class="ae__in"></select>
+        <select id="ae-add-item" class="ae__in"></select>
+        <button id="ae-add" class="ae__btn" title="Hold this item">Add</button>
+      </div>
+    </section>
+
+    <section class="ae__sec" id="ae-edit">
+      <h3 class="ae__h">Attachment <span id="ae-which" class="ae__tag"></span></h3>
+      <div class="ae__row"><label>Bone</label><select id="ae-bone" class="ae__in"></select></div>
+      <div class="ae__row">
+        <label>Step</label>
+        <select id="ae-step" class="ae__in">
+          <option value="0.1">fine</option>
+          <option value="1" selected>normal</option>
+          <option value="5">coarse</option>
+        </select>
+      </div>
+      <div id="ae-fields"></div>
+      <div class="ae__row ae__seg">
+        <button id="ae-reset" class="ae__btn">Reset</button>
+        <button id="ae-remove" class="ae__btn">Remove</button>
+      </div>
+    </section>
+
+    <section class="ae__sec">
+      <div class="ae__row ae__seg">
+        <button id="ae-revert" class="ae__btn">Revert</button>
+        <button id="ae-save" class="ae__btn ae__btn--primary">Save</button>
+      </div>
+      <div id="ae-dirty" class="ae__note"></div>
+    </section>
+  </aside>
+</div>

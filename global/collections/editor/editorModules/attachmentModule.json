@@ -1,0 +1,21 @@
+{
+  "title": "Attachment Editor",
+  "container": "attachment-editor-container",
+  "libraries": [
+    "threejs",
+    "GLTFLoader",
+    "three_SkeletonUtils",
+    "ShapeFactory",
+    "ModelManager",
+    "BoneAttachment",
+    "AttachmentEditor"
+  ],
+  "propertyName": "render",
+  "inspectorTypes": [
+    "units"
+  ],
+  "interface": "attachmentEditor",
+  "loadHook": "loadAttachmentEditor",
+  "saveHook": "saveAttachmentEditor",
+  "unloadHook": "unloadAttachmentEditor"
+}

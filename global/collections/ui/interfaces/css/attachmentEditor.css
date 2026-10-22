@@ -1,0 +1,42 @@
+/* Attachment Editor (AttachmentEditor.js): a unit and the items it holds, fitted to bones. */
+.ae { display: flex; height: 100%; min-height: 0; background: #15171b; color: #d8dbe0; font: 12px/1.4 system-ui, sans-serif; }
+.ae__view { position: relative; flex: 1; min-width: 0; overflow: hidden; }
+.ae__frame { width: 100%; height: 100%; border: 0; display: block; background: #000; }
+.ae__status { position: absolute; left: 12px; top: 12px; padding: 4px 8px; border-radius: 4px; background: rgba(0, 0, 0, .65); pointer-events: none; }
+.ae__status:empty { display: none; }
+.ae__panel { width: 300px; flex: none; overflow-y: auto; border-left: 1px solid #2a2e35; padding: 8px 10px; }
+.ae__sec { padding: 8px 0; border-bottom: 1px solid #2a2e35; }
+.ae__h { margin: 0 0 6px; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: #9aa3ad; }
+.ae__tag { margin-left: 4px; padding: 1px 6px; border-radius: 8px; background: #2c4a6b; color: #cfe3ff; text-transform: none; letter-spacing: 0; font-weight: 500; }
+.ae__item { font-weight: 600; font-size: 13px; }
+.ae__note { color: #8a919a; font-size: 11px; margin-top: 2px; }
+.ae__row { display: flex; align-items: center; gap: 6px; margin: 4px 0; }
+.ae__row > label { width: 56px; flex: none; color: #9aa3ad; }
+.ae__row input[type=range] { flex: 1; min-width: 0; }
+.ae__in { flex: 1; min-width: 0; background: #0f1114; color: inherit; border: 1px solid #333842; border-radius: 3px; padding: 3px 5px; }
+.ae__btn { background: #262a31; color: inherit; border: 1px solid #383d46; border-radius: 3px; padding: 3px 8px; cursor: pointer; }
+.ae__btn:hover { background: #2f343c; }
+.ae__btn.is-on { background: #2c4a6b; border-color: #3d6590; }
+.ae__btn--primary { background: #2d5f3a; border-color: #3c7a4b; }
+.ae__seg { flex-wrap: wrap; }
+.ae__seg .ae__btn { flex: 1; }
+.ae__field { display: grid; grid-template-columns: 56px 26px 1fr 26px; gap: 4px; align-items: center; margin: 3px 0; }
+.ae__field > label { color: #9aa3ad; }
+.ae__field input[type=number] { width: 100%; background: #0f1114; color: inherit; border: 1px solid #333842; border-radius: 3px; padding: 2px 4px; }
+.ae__field .ae__btn { padding: 1px 0; }
+.ae__group { margin-top: 6px; color: #8a919a; font-size: 11px; }
+.ae__lock { float: right; color: #9aa3ad; cursor: pointer; }
+.ae__lock input { vertical-align: middle; margin: 0 3px 0 0; }
+.ae__overlay { position: absolute; inset: 0; cursor: grab; outline: none; touch-action: none; }
+.ae__overlay.is-dragging { cursor: grabbing; }
+.ae__overlay[data-tool=move] { cursor: move; }
+.ae__overlay[data-tool=turn], .ae__overlay[data-tool=size] { cursor: crosshair; }
+.ae__tools { position: absolute; left: 50%; top: 8px; transform: translateX(-50%); display: flex; gap: 4px; align-items: center; padding: 4px 6px; border-radius: 5px; background: rgba(15, 17, 20, .82); }
+.ae__hint { margin-left: 6px; color: #6f7680; font-size: 11px; white-space: nowrap; }
+.ae__status { top: 48px; }
+.ae__list { display: flex; flex-direction: column; gap: 3px; margin-bottom: 6px; }
+.ae__entry { display: flex; justify-content: space-between; gap: 6px; padding: 4px 6px; border: 1px solid #2a2e35; border-radius: 3px; cursor: pointer; }
+.ae__entry:hover { background: #1e2228; }
+.ae__entry.is-on { border-color: #3d6590; background: #1c2a3a; }
+.ae__entry small { color: #8a919a; }
+.ae__empty { color: #6f7680; font-size: 11px; }
