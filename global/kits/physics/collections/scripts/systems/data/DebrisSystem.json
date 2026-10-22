@@ -1,0 +1,10 @@
+{
+  "filePath": "/global/kits/physics/collections/scripts/systems/js/DebrisSystem.js",
+  "fileName": "DebrisSystem",
+  "services": [
+    "spawnDebris",
+    "simulateObject",
+    "registerDebrisType",
+    "clearDebris"
+  ]
+}

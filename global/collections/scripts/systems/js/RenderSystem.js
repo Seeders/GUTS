@@ -463,7 +463,8 @@ class RenderSystem extends GUTS.BaseSystem {
                     const dy = pos.y - cached.y;
                     const dz = pos.z - cached.z;
                     const distSq = dx*dx + dy*dy + dz*dz;
-                    const angleDiff = Math.abs(angle - cached.angle);
+                    const rot = transform.rotation;
+                    const angleDiff = Math.abs(angle - cached.angle) + Math.abs((rot?.x || 0) - (cached.pitch || 0)) + Math.abs((rot?.z || 0) - (cached.roll || 0));
                     const scaleChanged = (cached.scaleX ?? 1) !== scaleX;
                     const opacityChanged = (cached.opacity ?? 1) !== opacity;
 
@@ -485,6 +486,8 @@ class RenderSystem extends GUTS.BaseSystem {
                     cached.y = pos.y;
                     cached.z = pos.z;
                     cached.angle = angle;
+                    cached.pitch = rot?.x || 0;
+                    cached.roll = rot?.z || 0;
                     cached.scaleX = scaleX;
                     cached.renderOffsetY = renderOffsetY;
                     cached.spriteCameraAngle = spriteCameraAngle;

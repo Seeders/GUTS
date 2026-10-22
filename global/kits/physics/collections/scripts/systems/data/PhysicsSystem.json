@@ -1,0 +1,24 @@
+{
+  "filePath": "/global/kits/physics/collections/scripts/systems/js/PhysicsSystem.js",
+  "fileName": "PhysicsSystem",
+  "services": [
+    "getPhysicsWorld",
+    "getPhysicsBody",
+    "rebuildPhysicsBody",
+    "applyImpulse",
+    "applyForce",
+    "applyTorqueImpulse",
+    "setLinearVelocity",
+    "getLinearVelocity",
+    "teleportBody",
+    "radialImpulse",
+    "raycast",
+    "shapeCast",
+    "overlapSphere",
+    "isGrounded",
+    "addStaticCollider",
+    "removeStaticColliders",
+    "setGravity",
+    "togglePhysicsDebug"
+  ]
+}

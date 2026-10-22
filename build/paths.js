@@ -40,16 +40,26 @@ function resolveProjectRoot(projectName) {
 /**
  * Resolve an installed npm package's directory, wherever the package manager
  * placed it (hoisted to the consumer's node_modules, or nested under
- * node_modules/guts/). Resolves from GUTS_ROOT so framework dependencies are
- * found regardless of the project's own node_modules.
+ * node_modules/guts/). Looks from the project being built first (packages a
+ * game adds itself, such as @dimforge/rapier3d-compat, even when GUTS is a
+ * separate checkout), then from GUTS_ROOT (the framework's own dependencies).
  *
  * @param {string} pkg - Package name, e.g. 'three'.
  * @returns {string|null} Absolute path to the package directory, or null if not installed.
  */
 function resolvePackageDir(pkg) {
+    const from = process.env.GUTS_PROJECT_ROOT ? [path.resolve(process.env.GUTS_PROJECT_ROOT), GUTS_ROOT] : [GUTS_ROOT];
+    for (const base of from) {
+        const dir = resolvePackageDirFrom(pkg, base);
+        if (dir) return dir;
+    }
+    return null;
+}
+
+function resolvePackageDirFrom(pkg, base) {
     // Fast path: most packages let you resolve their package.json directly.
     try {
-        return path.dirname(require.resolve(`${pkg}/package.json`, { paths: [GUTS_ROOT] }));
+        return path.dirname(require.resolve(`${pkg}/package.json`, { paths: [base] }));
     } catch (e) { /* fall through */ }
 
     // Fallback: packages with a restrictive "exports" map (e.g. `three`) refuse
@@ -57,7 +67,7 @@ function resolvePackageDir(pkg) {
     // package's main entry instead and walk up to the directory whose
     // package.json actually belongs to this package.
     try {
-        let dir = path.dirname(require.resolve(pkg, { paths: [GUTS_ROOT] }));
+        let dir = path.dirname(require.resolve(pkg, { paths: [base] }));
         const root = path.parse(dir).root;
         while (dir && dir !== root) {
             const pj = path.join(dir, 'package.json');

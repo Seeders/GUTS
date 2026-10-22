@@ -100,6 +100,8 @@ class EntityRenderer {
         this._tempMatrix = new THREE.Matrix4();
         this._tempPosition = new THREE.Vector3();
         this._tempQuaternion = new THREE.Quaternion();
+        this._tiltQuaternion = new THREE.Quaternion();
+        this._tiltEuler = new THREE.Euler();
         this._tempScale = new THREE.Vector3();
         this._tempDirection = new THREE.Vector3();
         this._defaultForward = new THREE.Vector3(0, 1, 0);
@@ -375,11 +377,17 @@ class EntityRenderer {
         );
 
         // the model's own tilt (degrees; e.g. a dropped sword lying flat) under the instance's turn
-        const tilt = modelDef?.rotation || {}, D = Math.PI / 180;
+        const tilt = modelDef?.rotation || {}, D = Math.PI / 180, er = data.transform?.rotation;
+        const quat = new THREE.Quaternion().setFromEuler(new THREE.Euler((tilt.x || 0) * D, data.rotation || 0, (tilt.z || 0) * D, 'YXZ'));
+        if (er && (er.x || er.z)) {
+            // pitched or rolled (e.g. by physics): the entity's whole turn, then the model's tilt
+            quat.setFromEuler(new THREE.Euler(er.x || 0, data.rotation || 0, er.z || 0, 'YXZ'))
+                .multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler((tilt.x || 0) * D, 0, (tilt.z || 0) * D, 'YXZ')));
+        }
         const matrix = new THREE.Matrix4();
         matrix.compose(
             new THREE.Vector3(data.position.x, data.position.y + (modelDef?.position?.y || 0), data.position.z),
-            new THREE.Quaternion().setFromEuler(new THREE.Euler((tilt.x || 0) * D, data.rotation || 0, (tilt.z || 0) * D, 'YXZ')),
+            quat,
             finalScale
         );
         batch.instancedMesh.setMatrixAt(instanceIndex, matrix);
@@ -1320,7 +1328,9 @@ class EntityRenderer {
   
 
         if (typeof data.rotation === 'number') {
-            mesh.rotation.y = data.rotation;
+            const er = data.transform?.rotation;
+            if (er && (er.x || er.z)) mesh.rotation.set(er.x || 0, data.rotation, er.z || 0, 'YXZ');
+            else mesh.rotation.y = data.rotation;
         } else if (data.facing?.angle !== undefined) {
             mesh.rotation.y = data.facing.angle;
         }
@@ -1440,6 +1450,8 @@ class EntityRenderer {
             // This is set by MovementSystem based on velocity or preserved facing
             const rotationY = data.transform?.rotation?.y ?? data.rotation ?? 0;
             this._tempQuaternion.setFromAxisAngle(this._yAxis, -rotationY + Math.PI / 2);
+            const er = data.transform?.rotation;
+            if (er && (er.x || er.z)) this._tempQuaternion.multiply(this._tiltQuaternion.setFromEuler(this._tiltEuler.set(er.x || 0, 0, er.z || 0, 'YXZ')));
         }
 
         // Apply transform.scale as a multiplier (allows hiding entities by setting scale to 0)
@@ -1588,7 +1600,10 @@ class EntityRenderer {
 
         // Use transform.rotation.y for facing direction
         const rotationY = data.transform?.rotation?.y ?? data.rotation ?? 0;
-        entity.mesh.rotation.y = rotationY;
+        const er = data.transform?.rotation;
+        if (er && (er.x || er.z)) { entity.mesh.rotation.set(er.x || 0, rotationY, er.z || 0, 'YXZ'); entity._tilted = true; }
+        else if (entity._tilted) { entity.mesh.rotation.set(0, rotationY, 0); entity._tilted = false; }
+        else entity.mesh.rotation.y = rotationY;
 
         // Apply transform.scale (allows hiding entities by setting scale to 0)
         const transformScale = data.transform?.scale;

@@ -1,0 +1,10 @@
+{
+  "title": "ColliderShape",
+  "enum": [
+    "box",
+    "sphere",
+    "capsule",
+    "cylinder",
+    "cone"
+  ]
+}

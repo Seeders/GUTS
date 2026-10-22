@@ -1,0 +1,5 @@
+{
+  "title": "Physics",
+  "description": "Rigid-body physics on Rapier: bodies, colliders, joints and character controllers as components, collision and trigger events, raycasts and shape queries, terrain collision, explosions, and client-only ragdolls, debris and thrown objects.",
+  "requires": []
+}

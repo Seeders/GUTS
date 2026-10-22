@@ -1,0 +1,9 @@
+{
+  "title": "BodyType",
+  "enum": [
+    "dynamic",
+    "fixed",
+    "kinematicPosition",
+    "kinematicVelocity"
+  ]
+}

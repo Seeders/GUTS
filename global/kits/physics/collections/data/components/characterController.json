@@ -1,0 +1,13 @@
+{
+  "title": "characterController",
+  "schema": {
+    "skin": 0.5,
+    "maxSlope": 45,
+    "minSlideAngle": 30,
+    "stepHeight": 8,
+    "stepMinWidth": 4,
+    "snapToGround": 8,
+    "slideOnSteep": true,
+    "grounded": false
+  }
+}

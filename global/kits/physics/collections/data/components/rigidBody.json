@@ -1,0 +1,14 @@
+{
+  "title": "rigidBody",
+  "schema": {
+    "type": { "$enum": "bodyType" },
+    "mass": 0,
+    "linearDamping": 0,
+    "angularDamping": 0.05,
+    "gravityScale": 1,
+    "ccd": false,
+    "canSleep": true,
+    "lockRotation": { "x": false, "y": false, "z": false },
+    "angularVelocity": { "x": 0, "y": 0, "z": 0 }
+  }
+}

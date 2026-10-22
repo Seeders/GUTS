@@ -1,0 +1,17 @@
+{
+  "title": "collider",
+  "schema": {
+    "shape": { "$enum": "colliderShape" },
+    "halfExtents": { "x": 16, "y": 16, "z": 16 },
+    "radius": 16,
+    "halfHeight": 16,
+    "offset": { "x": 0, "y": 0, "z": 0 },
+    "friction": 0.5,
+    "restitution": 0,
+    "density": 1,
+    "sensor": false,
+    "events": false,
+    "groups": 1,
+    "mask": 65535
+  }
+}

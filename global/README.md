@@ -21,7 +21,8 @@ global/
     ├── combat/           damage, projectiles, death, health bars             (needs ai, units)
     ├── rts/              orders, placement, fog of war, minimap, lockstep    (needs units)
     │                     network system, RTS input
-    └── cards/            deck, dragging, card rendering
+    ├── cards/            deck, dragging, card rendering
+    └── physics/          Rapier bodies, joints, characters, ragdolls, debris
 ```
 
 Each kit has a README listing its systems, the services they provide, and what your game
@@ -35,6 +36,7 @@ game can answer).
 | [combat](kits/combat/README.md) | Damage, armor and resistances, projectiles, death, health bars, damage numbers |
 | [rts](kits/rts/README.md) | Squad orders, building placement, fog of war, minimap, match stats, lockstep networking of placements and orders, RTS input, AI-vs-AI simulations |
 | [cards](kits/cards/README.md) | Card games: deck, dragging, rendering |
+| [physics](kits/physics/README.md) | Rigid bodies, colliders, joints and character controllers on Rapier; collision events, raycasts, terrain collision, explosions; ragdolls and debris |
 
 ## What the core asks of a game
 

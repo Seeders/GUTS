@@ -1,0 +1,8 @@
+{
+  "filePath": "/global/kits/physics/collections/scripts/systems/js/RagdollSystem.js",
+  "fileName": "RagdollSystem",
+  "services": [
+    "spawnRagdoll",
+    "clearRagdolls"
+  ]
+}
