@@ -5,13 +5,15 @@
 #   deploy/deploy.sh age|kingdom|realm|heroarena|descent|wiki    a game -> /srv/games/<slug>
 #   deploy/deploy.sh setup                nginx, the gateway and the services (after a change to them)
 #
-# Needs the `gutsengine` host in ~/.ssh/config (the deploy key). Build the game first (npm run build;
-# Age of Defiance also npm run world). Saves on the server are never touched.
+# Needs the `gutsengine` host in ~/.ssh/config (the deploy key). A game deploys its last commit, built
+# fresh (uncommitted changes never go live); commit before deploying. GENERATED paths (npm run world
+# output) ship from the local folder. Saves on the server are never touched.
 set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
 PROJECTS="$(cd "$HERE/../.." && pwd)"
 HOST=gutsengine
 
+GENERATED=(resources/world)   # gitignored, made by npm run world; shipped as built locally
 declare -A SRC=([age]=EmbersOfDefiance [kingdom]=KingdomOfDefiance [realm]=WorldOfDefiance [heroarena]=HeroArena [descent]=Descent [wiki]=GUTSWiki)
 
 # Files the server never needs (the build's copy of resources/ is linked back to resources/ there)
@@ -31,8 +33,21 @@ case "${1:-}" in
         ssh "$HOST" "cd /srv/site && sudo -u guts npm ci --omit=dev --no-audit --no-fund >/dev/null && systemctl restart guts-site"
         ;;
     age|kingdom|realm|heroarena|descent|wiki)
+        # Games ship their last commit only: export HEAD, build it, upload to a staging folder, then
+        # mirror that over the live folder (deleting files no longer in the commit; saves untouched).
         slug="$1"; dir="$PROJECTS/${SRC[$slug]}"
-        push "$dir" "/srv/games/$slug"
+        work="$(mktemp -d)"; stage="$work/$(basename "$dir")"; mkdir "$stage"
+        cleanup() { [ -e "$stage/node_modules" ] && cmd //c rmdir "$(cygpath -w "$stage/node_modules")"; rm -rf "$work"; }
+        trap cleanup EXIT
+        echo "exporting $(git -C "$dir" rev-parse --short HEAD) of ${SRC[$slug]}"
+        git -C "$dir" archive HEAD | tar -xf - -C "$stage"
+        cmd //c mklink //J "$(cygpath -w "$stage/node_modules")" "$(cygpath -w "$dir/node_modules")" >/dev/null
+        (cd "$stage" && npm run build >/dev/null && { ! grep -q '"build:editor"' package.json || npm run build:editor >/dev/null; })
+        # generated data that is gitignored (npm run world output) ships from the local folder
+        for gen in "${GENERATED[@]}"; do [ -e "$dir/$gen" ] && mkdir -p "$stage/$(dirname "$gen")" && cp -r "$dir/$gen" "$stage/$gen"; done
+        push "$stage" "/srv/games/$slug.new"
+        ssh "$HOST" "rsync -a --delete --exclude=/node_modules --exclude=/saves --exclude='/saves_*' --exclude='*.log' --exclude='*.gz' \
+            --exclude=/dist/client/resources /srv/games/$slug.new/ /srv/games/$slug/ && rm -rf /srv/games/$slug.new"
         ssh "$HOST" "cd /srv/games/$slug && ln -sfn ../../resources dist/client/resources && mkdir -p saves && chown -R guts:guts saves dist \
             && sudo -u guts npm install --omit=dev --no-audit --no-fund --ignore-scripts >/dev/null && curl -s -X POST localhost:9000/_restart/$slug >/dev/null || true"
         # pre-compressed copies for nginx (gzip_static), only where missing or stale
