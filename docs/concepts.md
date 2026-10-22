@@ -211,6 +211,7 @@ game.json `initialScene` is the first scene. `game.sceneManager.loadScene('name'
 | `entityIdReuse` | reuse destroyed ids, see [Entities](#entities) |
 | `loadingScreen` | title, steps and labels for the loading screen (`GameLoader`) |
 | `persistentStateFields` | `game.state` fields kept across scene changes |
+| `settingsKey` | localStorage key for the player's settings (UIKit; default `guts_settings_v1`) |
 
 `server.json` and `headless.json` have the same shape for the server and headless builds
 (typically `ServerECSGame` / `HeadlessECSGame` with their loaders). `state.json` holds the

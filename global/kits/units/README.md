@@ -17,7 +17,7 @@ Units on a grid map: the spatial grid (getNearbyUnits), A* pathfinding, steering
 
 ## Libraries
 
-`MinHeap`
+`GameUtils`, `MinHeap`
 
 ## What your game supplies
 
@@ -25,7 +25,9 @@ Units on a grid map: the spatial grid (getNearbyUnits), A* pathfinding, steering
 
 **Services.** These systems call these services, which no engine system provides. Provide the ones your game needs from one of your systems (`static services = [...]`); a missing service is a no-op that logs one warning:
 
-`addAbilitiesToUnit`, `equipItem`, `getSquadCells`, `getSquadData`, `getSquadInfoFromType`, `invalidateSupplyCache`, `isValidGridPosition`, `removeSquadExperience`, `validateSquadConfig`
+`addAbilitiesToUnit`, `equipItem`, `getSquadCells`, `getSquadData`, `getSquadInfoFromType`, `isValidGridPosition`, `removeSquadExperience`, `validateSquadConfig`
+
+**Optional kits.** It also calls `invalidateSupplyCache` from `rts` when present.
 
 ## Using it
 

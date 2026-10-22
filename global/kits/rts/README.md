@@ -15,6 +15,7 @@ Real-time strategy layer: squad orders and their UI, building placement previews
 | `MiniMapSystem` | none |
 | `PlacementPreviewSystem` | `showPreviewAtWorldPositions`, `showPreviewMultiplePositionSets`, `showPreviewAtGridPositions`, `showPreviewWithUnitMarkers`, `hidePreview`, `clearPreview`, `updatePreviewConfig` |
 | `StatisticsTrackingSystem` | none |
+| `SupplySystem` | `getCurrentSupply`, `getCurrentPopulation`, `canAffordSupply`, `invalidateSupplyCache` |
 | `UnitOrderSystem` | `applySquadTargetPosition`, `applySquadsTargetPositions`, `applyUnitTargetPosition` |
 | `UnitOrderUISystem` | none |
 
@@ -24,7 +25,7 @@ Real-time strategy layer: squad orders and their UI, building placement previews
 
 ## What your game supplies
 
-**Components.** This kit ships reference schemas for `aiHeuristicState`, `aiOpponent`, `buildingState`. A project that lists its kits in game.json gets the schemas of the core and of those kits, except where it has its own file of the same name (yours wins). Its systems use these, which the core or this kit's required kits provide: `aiState`, `health`, `pathfinding`, `placement`, `playerOrder`, `team`, `transform`, `unitType`, `velocity`. They also read `construction`, `projectile` when an entity has them; define those yourself if you use the feature.
+**Components.** This kit ships reference schemas for `aiHeuristicState`, `aiOpponent`, `buildingState`. A project that lists its kits in game.json gets the schemas of the core and of those kits, except where it has its own file of the same name (yours wins). Its systems use these, which the core or this kit's required kits provide: `aiState`, `deathState`, `health`, `pathfinding`, `placement`, `playerOrder`, `team`, `transform`, `unitType`, `velocity`. They also read `construction`, `projectile` when an entity has them; define those yourself if you use the feature.
 
 **Services.** These systems call these services, which no engine system provides. Provide the ones your game needs from one of your systems (`static services = [...]`); a missing service is a no-op that logs one warning:
 
