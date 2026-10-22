@@ -1,0 +1,7 @@
+{
+  "title": "lootPicker",
+  "schema": {
+    "radius": 70,
+    "items": false
+  }
+}

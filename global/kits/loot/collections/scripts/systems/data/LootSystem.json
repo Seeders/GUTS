@@ -1,0 +1,23 @@
+{
+  "filePath": "/global/kits/loot/collections/scripts/systems/js/LootSystem.js",
+  "fileName": "LootSystem",
+  "services": [
+    "rollItem",
+    "rollTable",
+    "registerItem",
+    "getItemDef",
+    "uniqueCopy",
+    "identifyItem",
+    "isUnidentified",
+    "registerDropType",
+    "socketItem",
+    "setBonuses",
+    "wearItem",
+    "repairCost",
+    "isBroken",
+    "exportItems",
+    "importItems",
+    "forgetItems",
+    "rolledItemIds"
+  ]
+}

@@ -1,0 +1,5 @@
+{
+  "title": "Loot",
+  "description": "Rolled items after Diablo II: rarities with magic find, bases by item level, affix tiers, uniques and sets, identification, drop tables, sockets and runewords, set bonuses, durability; drops on the ground as entities; a grid inventory helper.",
+  "requires": []
+}

@@ -22,6 +22,7 @@ global/
     ├── rts/              orders, placement, fog of war, minimap, lockstep    (needs units)
     │                     network system, RTS input
     ├── cards/            deck, dragging, card rendering
+    ├── loot/             rolled items, drop tables, sockets, sets, ground drops
     └── physics/          Rapier bodies, joints, characters, ragdolls, debris
 ```
 
@@ -36,6 +37,7 @@ game can answer).
 | [combat](kits/combat/README.md) | Damage, armor and resistances, projectiles, death, health bars, damage numbers |
 | [rts](kits/rts/README.md) | Squad orders, building placement, fog of war, minimap, match stats, lockstep networking of placements and orders, RTS input, AI-vs-AI simulations |
 | [cards](kits/cards/README.md) | Card games: deck, dragging, rendering |
+| [loot](kits/loot/README.md) | Diablo-style items: rarities and magic find, affix tiers, uniques and sets, identification, drop tables, sockets and runewords, durability; drops on the ground; grid inventories |
 | [physics](kits/physics/README.md) | Rigid bodies, colliders, joints and character controllers on Rapier; collision events, raycasts, terrain collision, explosions; ragdolls and debris |
 
 ## What the core asks of a game

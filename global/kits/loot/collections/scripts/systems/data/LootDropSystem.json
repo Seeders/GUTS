@@ -1,0 +1,9 @@
+{
+  "filePath": "/global/kits/loot/collections/scripts/systems/js/LootDropSystem.js",
+  "fileName": "LootDropSystem",
+  "services": [
+    "spawnLoot",
+    "pickupLoot",
+    "getLootDrops"
+  ]
+}
