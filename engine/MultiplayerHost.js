@@ -171,7 +171,7 @@ export async function startMultiplayerServer(options = {}) {
     const room = options.room || 'world';
     const tickRate = options.tickRate || 20;
 
-    const storage = createFileStorage(path.join(root, options.saves || process.env.REALM_SAVES || process.env.SAVES_DIR || 'saves'));
+    const storage = createFileStorage(path.resolve(root, options.saves || process.env.REALM_SAVES || process.env.SAVES_DIR || 'saves'));
     global.netStorage = storage;
     global.mmoStorage = legacyStorage(storage);
 
