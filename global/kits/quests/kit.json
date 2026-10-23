@@ -1,0 +1,7 @@
+{
+  "title": "Quests",
+  "description": "Quests and the people who give them: quest offers, objectives (kill, collect, talk), turning in, experience and levelling (QuestSystem); clickable world objects, item nodes, doors, locks and escorts with ambushes (ObjectiveSystem); NPCs with daily routines, dialog topics, vendors, trainers, inns and pockets to pick (NpcSystem).",
+  "requires": [
+    "world"
+  ]
+}

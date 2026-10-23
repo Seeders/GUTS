@@ -1,0 +1,8 @@
+{
+  "filePath": "/global/kits/quests/collections/scripts/systems/js/QuestSystem.js",
+  "fileName": "QuestSystem",
+  "services": [
+    "mmoAwardXp",
+    "mmoQuestsForNpc"
+  ]
+}
