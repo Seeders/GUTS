@@ -1,0 +1,21 @@
+{
+  "filePath": "/global/kits/multiplayer/collections/scripts/systems/js/NetWorldSystem.js",
+  "fileName": "NetWorldSystem",
+  "services": [
+    "netActor",
+    "netActors",
+    "netSpawnActor",
+    "netDespawnActor",
+    "netNearbyActors",
+    "netGroundY",
+    "netEmit",
+    "netSend",
+    "netToast",
+    "netMarkDirty",
+    "netSessionOf",
+    "netSessionByName",
+    "netSessions",
+    "netTeleport",
+    "netNow"
+  ]
+}

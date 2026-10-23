@@ -23,6 +23,7 @@ global/
     │                     network system, RTS input
     ├── cards/            deck, dragging, card rendering
     ├── loot/             rolled items, drop tables, sockets, sets, ground drops
+    ├── multiplayer/      persistent world server and client: sessions, snapshots, movement
     ├── physics/          Rapier bodies, joints, characters, ragdolls, debris
     └── social/           parties, chat, trading, the world's saved flags
 ```
@@ -38,6 +39,7 @@ game can answer).
 | [combat](kits/combat/README.md) | Damage, armor and resistances, projectiles, death, health bars, damage numbers |
 | [rts](kits/rts/README.md) | Squad orders, building placement, fog of war, minimap, match stats, lockstep networking of placements and orders, RTS input, AI-vs-AI simulations |
 | [cards](kits/cards/README.md) | Card games: deck, dragging, rendering |
+| [multiplayer](kits/multiplayer/README.md) | A persistent multiplayer world: sessions and saving, actors, server-checked movement, interest-managed snapshots and events, the client mirror with interpolation; `engine/MultiplayerHost.js` runs the server |
 | [loot](kits/loot/README.md) | Diablo-style items: rarities and magic find, affix tiers, uniques and sets, identification, drop tables, sockets and runewords, durability; drops on the ground; grid inventories |
 | [physics](kits/physics/README.md) | Rigid bodies, colliders, joints and character controllers on Rapier; collision events, raycasts, terrain collision, explosions; ragdolls and debris |
 | [social](kits/social/README.md) | Parties, chat channels and commands, face-to-face trading (all or nothing), the shared world's flags, actions and saving |

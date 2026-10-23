@@ -1,0 +1,5 @@
+{
+  "title": "Multiplayer",
+  "description": "A persistent multiplayer world: sessions, character saving, actors, server-checked movement, interest-managed snapshots and events (NetWorldSystem); the client mirror of it with clock sync, interpolation and corrected local movement (NetClientSystem); and MultiplayerHost, the Node server that runs it.",
+  "requires": []
+}

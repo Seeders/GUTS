@@ -55,6 +55,9 @@ class WorldStateSystem extends GUTS.BaseSystem {
         catch (e) { console.error('[world] save failed', e.message); return false; }
     }
 
+    /** The server is stopping (MultiplayerHost): saved now. */
+    onServerShutdown() { this.saveWorldStateNow(); }
+
     // ==================== STATE ====================
 
     worldState() { return this.state; }

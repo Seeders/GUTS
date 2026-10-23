@@ -1,0 +1,11 @@
+{
+  "filePath": "/global/kits/multiplayer/collections/scripts/systems/js/NetClientSystem.js",
+  "fileName": "NetClientSystem",
+  "services": [
+    "netMyId",
+    "netActorView",
+    "netSend",
+    "netServerNow",
+    "netLocalPos"
+  ]
+}

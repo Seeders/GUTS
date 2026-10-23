@@ -2,8 +2,16 @@ import BaseEngine from './BaseEngine.js';
 import ServerNetworkManager from '../global/collections/scripts/libraries/js/ServerNetworkManager.js';
 
 export default class ServerEngine extends BaseEngine {
-    constructor() {
+    /**
+     * options (all optional):
+     *   NetworkManager  the network manager class (default ServerNetworkManager; MultiplayerHost
+     *                   passes one that routes everything into one persistent room)
+     *   fixedStep       true: a timer-driven fixed-step loop that never owes more than a few ticks
+     *                   (the default loop spins on setImmediate)
+     */
+    constructor(options = {}) {
         super();
+        this.options = options;
         this.isServer = true;
         this.players = new Map();
         this.gameRooms = new Map();
@@ -21,7 +29,8 @@ export default class ServerEngine extends BaseEngine {
         }
 
         // Initialize network manager
-        this.serverNetworkManager = new ServerNetworkManager(this);
+        const NetworkManager = this.options.NetworkManager || ServerNetworkManager;
+        this.serverNetworkManager = new NetworkManager(this);
         await this.serverNetworkManager.init();
 
         // Allow game config to override tick rate (default is 20 TPS)
@@ -98,6 +107,7 @@ export default class ServerEngine extends BaseEngine {
 
     gameLoop() {
         if (!this.running) return;
+        if (this.options.fixedStep) return this.fixedStepLoop();
 
         const now = this.getCurrentTime();
         const deltaTime = (now - this.lastTick) / 1000;
@@ -112,6 +122,20 @@ export default class ServerEngine extends BaseEngine {
 
         // Use setImmediate for next tick (Node.js specific)
         setImmediate(() => this.gameLoop());
+    }
+
+    /** A timer between ticks (not a busy spin); a stall owes at most five ticks. */
+    fixedStepLoop() {
+        const now = this.getCurrentTime();
+        if (!this.lastTick) this.lastTick = now;
+        this.accumulator = Math.min(this.accumulator + (now - this.lastTick) / 1000, this.tickRate * 5);
+        this.lastTick = now;
+        while (this.accumulator >= this.tickRate) {
+            this.tick();
+            this.accumulator -= this.tickRate;
+        }
+        const wait = Math.max(1, (this.tickRate - this.accumulator) * 1000 - 1);
+        setTimeout(() => this.gameLoop(), wait);
     }
 
     tick() {
