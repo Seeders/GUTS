@@ -20,7 +20,8 @@ import { startMultiplayerServer } from 'guts/engine/MultiplayerHost.js';
 startMultiplayerServer({
     root: __dirname, name: 'mygame', title: 'My Game', port: 3000, prefix: 'NET_',
     beforeWorld: (collections, ctx) => { /* put generated world data in place */ },
-    routes: (app, ctx) => { /* the game's own HTTP endpoints */ }
+    routes: (app, ctx) => { /* the game's own HTTP endpoints, before the static files */ },
+    afterStatic: (app, ctx) => { /* after the static files, before the editor (a 404) */ }
 });
 ```
 
@@ -56,10 +57,10 @@ Every name but `ENTER_WORLD` carries the system's `static PREFIX` (default `NET_
 Extend both systems. On the server, `prepareCharacter` decides who may enter (and makes or
 migrates the character), `spawnPlayer` places them, `actorFields` adds your fields to every
 actor, `staticInfo` and `dynRow` say what each viewer is told, `afterSnapshot` sends your private
-state, and `moveRefusal` / `moveSpeed` / `canStep` / `groundY` shape movement. On the client,
+state, and `moveRefusal` / `moveSpeed` / `moveAllowance` (a dash) / `canStep` / `groundY` shape movement. On the client,
 `createLocal` makes the entity that draws an actor, `applyRow` reads your dyn rows,
 `needsRebuild` says when an actor must be drawn anew, `onEvent` plays your events, and
-`walk(dt, fwd, strafe, speed)` + `sendMoves(dt)` move your own actor. Message, service and event
+`walk(dt, fwd, strafe, speed)` (or `walkDir(dt, dx, dz, speed)` along a world direction) + `sendMoves(dt)` move your own actor. Message, service and event
 names can keep a game's own spelling: set `static PREFIX`, `static EVENTS`, and add aliases.
 
 ## What your game supplies

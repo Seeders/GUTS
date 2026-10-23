@@ -235,8 +235,12 @@ class NetClientSystem extends GUTS.BaseSystem {
     walk(dt, fwd, strafe, speed) {
         if (!fwd && !strafe) return false;
         const f = this.pos.facing;
-        let mx = Math.cos(f) * fwd - Math.sin(f) * strafe;
-        let mz = Math.sin(f) * fwd + Math.cos(f) * strafe;
+        return this.walkDir(dt, Math.cos(f) * fwd - Math.sin(f) * strafe, Math.sin(f) * fwd + Math.cos(f) * strafe, speed);
+    }
+
+    /** walk() along a direction in the world (dx, dz: any length), whatever the facing: a dash. */
+    walkDir(dt, dx, dz, speed) {
+        let mx = dx, mz = dz;
         const len = Math.hypot(mx, mz) || 1;
         mx = mx / len * speed * dt;
         mz = mz / len * speed * dt;

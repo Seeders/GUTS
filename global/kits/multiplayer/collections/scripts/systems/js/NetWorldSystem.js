@@ -27,7 +27,8 @@
  *   createSession(socketId, name, char, data) / spawnPlayer(session) -> actor
  *   welcomeInfo(session, actor, resync) / sendInitial(session) / beforeSave(session, actor)
  *   actorFields(spec) / forgetActor(id) / groundY(x, z) / canStep(actor, x0, z0, x1, z1)
- *   moveIgnored(actor) / moveRefusal(actor) / moveSpeed(actor) / afterMove(actor) / onTeleport(actor)
+ *   moveIgnored(actor) / moveRefusal(actor) / moveSpeed(actor) / moveAllowance(actor, elapsed, allowed)
+ *   afterMove(actor) / onTeleport(actor)
  *   visibleTo(actor, viewer) / staticInfo(actor, viewer) / dynRow(actor, viewer) / afterSnapshot(session, me)
  */
 class NetWorldSystem extends GUTS.BaseSystem {
@@ -266,6 +267,8 @@ class NetWorldSystem extends GUTS.BaseSystem {
     /** Why the actor may not move now (a correction follows), or null. */
     moveRefusal(actor) { return actor.dead ? 'dead' : null; }
     moveSpeed(actor) { return actor.speed; }
+    /** How far one step may go (allowed: speed x elapsed x moveSlack + moveSlop); a dash widens it. */
+    moveAllowance(actor, elapsed, allowed) { return allowed; }
     /** A step was accepted (the actor's x, z, y are set). */
     afterMove(actor) { }
     /** A teleport moved the actor (before its transform is set). */
@@ -319,7 +322,7 @@ class NetWorldSystem extends GUTS.BaseSystem {
         const why = this.moveRefusal(a);
         if (why) return reject(why);
         const elapsed = Math.max(0.05, Math.min(1.0, now - (a.lastMoveAt || now - 0.1)));
-        const allowed = this.moveSpeed(a) * elapsed * cfg.moveSlack + cfg.moveSlop;
+        const allowed = this.moveAllowance(a, elapsed, this.moveSpeed(a) * elapsed * cfg.moveSlack + cfg.moveSlop);
         if (moved > allowed) return reject(`too far ${Math.round(moved)} > ${Math.round(allowed)}`);
         if (!this.canStep(a, a.x, a.z, x, z)) return reject('blocked');
         a.x = x; a.z = z;

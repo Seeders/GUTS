@@ -159,6 +159,7 @@ const DENY = /^\/(saves|saves_\w*|tools|node_modules|\.git|\.claude|server\.js|p
  *   io           socket.io server options (merged over CORS * and a 90 s ping timeout)
  *   editor       false: don't mount the project editor
  *   routes(app, ctx)          the game's own HTTP endpoints (before the static files)
+ *   afterStatic(app, ctx)     after the static files, before the editor (a 404 for what they didn't have)
  *   beforeWorld(collections, ctx)   after the bundle and engine are up, before the room starts
  *   onReady(ctx)              the world is up and listening
  */
@@ -195,6 +196,7 @@ export async function startMultiplayerServer(options = {}) {
     app.use('/engine', express.static(path.join(GUTS_ROOT, 'engine')));
     app.use('/global', express.static(path.join(GUTS_ROOT, 'global')));
     for (const [url, dir] of options.static || []) app.use(url, express.static(path.isAbsolute(dir) ? dir : path.join(root, dir)));
+    await options.afterStatic?.(app, ctx);
     if (options.editor !== false) {
         try {
             const { mountEditor } = createRequire(path.join(root, 'package.json'))('guts/editor-api');
