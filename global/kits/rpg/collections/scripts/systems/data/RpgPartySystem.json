@@ -1,0 +1,10 @@
+{
+  "filePath": "/global/kits/rpg/collections/scripts/systems/js/RpgPartySystem.js",
+  "fileName": "RpgPartySystem",
+  "services": [
+    "socialName",
+    "socialPlayers",
+    "socialNearby",
+    "socialFindPlayer"
+  ]
+}

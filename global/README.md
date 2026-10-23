@@ -25,8 +25,8 @@ global/
     ├── loot/             rolled items, drop tables, sockets, sets, ground drops
     ├── multiplayer/      persistent world server and client: sessions, snapshots, movement
     ├── physics/          Rapier bodies, joints, characters, ragdolls, debris
-    ├── quests/           quests, objectives, escorts, NPCs with routines and shops   (needs world)
-    ├── rpg/              action-RPG combat, auras, spells, creature camps and AI     (needs world)
+    ├── quests/           quests, story quests, objectives, NPCs, the world's memory  (needs world, social)
+    ├── rpg/              action-RPG combat, creatures, skills, talents, parties      (needs world, social)
     ├── social/           parties, chat, trading, the world's saved flags
     └── world/            a continent of chunks: ground, water, collision, zones, paths, streaming
 ```
@@ -45,8 +45,8 @@ game can answer).
 | [multiplayer](kits/multiplayer/README.md) | A persistent multiplayer world: sessions and saving, actors, server-checked movement, interest-managed snapshots and events, the client mirror with interpolation; `engine/MultiplayerHost.js` runs the server |
 | [loot](kits/loot/README.md) | Diablo-style items: rarities and magic find, affix tiers, uniques and sets, identification, drop tables, sockets and runewords, durability; drops on the ground; grid inventories |
 | [physics](kits/physics/README.md) | Rigid bodies, colliders, joints and character controllers on Rapier; collision events, raycasts, terrain collision, explosions; ragdolls and debris |
-| [quests](kits/quests/README.md) | Quests (offer, objectives, turn-in, experience), world objects and escorts, NPCs with daily routines, dialog topics, vendors, trainers and inns |
-| [rpg](kits/rpg/README.md) | Action-RPG combat (targets, hands, spells, auras, stamina and magicka, shots, threat, death) and creatures (camps that spawn near players, encounters, brains, loot, respawns) |
+| [quests](kits/quests/README.md) | Quests (offer, objectives, turn-in, experience), world objects and escorts, NPCs with daily routines, dialog topics, vendors, trainers and inns, story quests in stages with their journal and compass, the world's memory (flags, conditions, actions) |
+| [rpg](kits/rpg/README.md) | Action-RPG combat (targets, hands, spells, auras, stamina and magicka, shots, threat, death) and creatures (camps that spawn near players, encounters, brains, loot, respawns), skills that rise with use, ascensions and talents, parties and chat |
 | [social](kits/social/README.md) | Parties, chat channels and commands, face-to-face trading (all or nothing), the shared world's flags, actions and saving |
 | [world](kits/world/README.md) | A continent of square chunks, the same on server and client: walk height, water and swimming, what blocks walkers and arrows, bridges, interiors, zones, pathfinding; client streaming of chunks with their ground, water and props |
 

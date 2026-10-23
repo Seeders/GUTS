@@ -1,7 +1,8 @@
 {
   "title": "RPG",
-  "description": "Action-RPG combat and creatures for a persistent world: targets, swings and hands, spells with data-driven effects, auras, stamina and magicka, shots, threat, tapping, death (RpgCombatSystem); creature camps spawning near players at a locked level, wild and road encounters, creature brains, loot and respawns (RpgMobSystem).",
+  "description": "Action-RPG combat and creatures for a persistent world: targets, swings and hands, spells with data-driven effects, auras, stamina and magicka, shots, threat, tapping, death (RpgCombatSystem); creature camps spawning near players at a locked level, wild and road encounters, creature brains, loot and respawns (RpgMobSystem); skills that rise with use (RpgSkillSystem), ascensions and talent trees (RpgTalentSystem), parties and chat (RpgPartySystem).",
   "requires": [
-    "world"
+    "world",
+    "social"
   ]
 }

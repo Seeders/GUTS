@@ -1,0 +1,12 @@
+{
+  "filePath": "/global/kits/quests/collections/scripts/systems/js/StorySystem.js",
+  "fileName": "StorySystem",
+  "services": [
+    "storyState",
+    "storyStart",
+    "storySetStage",
+    "storyEnd",
+    "storyDone",
+    "storyEvent"
+  ]
+}

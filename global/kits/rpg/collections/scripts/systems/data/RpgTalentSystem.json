@@ -1,0 +1,7 @@
+{
+  "filePath": "/global/kits/rpg/collections/scripts/systems/js/RpgTalentSystem.js",
+  "fileName": "RpgTalentSystem",
+  "services": [
+    "mmoApplyTalents"
+  ]
+}

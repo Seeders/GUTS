@@ -84,3 +84,9 @@ class NetClientSystem extends Base {
     // override what you need
 }
 ```
+
+## Checking a change
+
+`tools/probes` (in the guts package) runs a game's server on fresh saves and records what it
+does: the world's answers, a seeded fight, a character visiting every NPC. Take one before a
+change and compare after; see [its README](../../../tools/probes/README.md).

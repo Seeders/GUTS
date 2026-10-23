@@ -216,6 +216,7 @@ export async function startMultiplayerServer(options = {}) {
         await new Promise(res => server.listen(port, res));
         console.log(`[${name}] ${title} running on http://localhost:${port}`);
         await options.onReady?.(ctx);
+        await global.__gutsProbe?.(ctx);            // tools/probes: a check run against the live world
     } catch (error) {
         console.error('Failed to start server:', error);
         process.exit(1);

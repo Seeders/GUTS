@@ -1,0 +1,15 @@
+{
+  "filePath": "/global/kits/quests/collections/scripts/systems/js/QuestWorldStateSystem.js",
+  "fileName": "QuestWorldStateSystem",
+  "services": [
+    "kdFlag",
+    "kdSetFlag",
+    "kdWorld",
+    "kdCtx",
+    "kdTest",
+    "kdRun",
+    "kdWorldChanged",
+    "kdNpcSay",
+    "kdTouch"
+  ]
+}

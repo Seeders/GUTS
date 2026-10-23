@@ -1,0 +1,7 @@
+{
+  "filePath": "/global/kits/rpg/collections/scripts/systems/js/RpgSkillSystem.js",
+  "fileName": "RpgSkillSystem",
+  "services": [
+    "mmoSkillUse"
+  ]
+}
