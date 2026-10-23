@@ -1,0 +1,23 @@
+{
+  "filePath": "/global/kits/world/collections/scripts/systems/js/ContinentSystem.js",
+  "fileName": "ContinentSystem",
+  "services": [
+    "mmoShotBlocked",
+    "mmoZone",
+    "mmoZones",
+    "mmoZoneAt",
+    "mmoBlocked",
+    "mmoBuildingAt",
+    "mmoWalkHeight",
+    "mmoCanStep",
+    "mmoFindPath",
+    "mmoStartZone",
+    "mmoContinent",
+    "mmoLoadWorld",
+    "mmoSubzoneAt",
+    "mmoWorldStaticsChanged",
+    "mmoInteriorAt",
+    "mmoInteriors",
+    "mmoContentZones"
+  ]
+}

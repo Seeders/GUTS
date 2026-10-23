@@ -1,0 +1,5 @@
+{
+  "title": "World",
+  "description": "A big world of square chunks of tiles, the same on the server and every client: loading the continent, ground and walk height, water and swimming, what blocks a walker or an arrow (buildings, trees, interiors' rock), bridges, zones and subzones, and paths over it all (ContinentSystem); streaming the chunks in and out around the player and drawing their ground, water and props (ChunkStreamSystem).",
+  "requires": []
+}
