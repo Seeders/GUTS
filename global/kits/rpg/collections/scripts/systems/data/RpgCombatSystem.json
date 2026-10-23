@@ -1,0 +1,15 @@
+{
+  "filePath": "/global/kits/rpg/collections/scripts/systems/js/RpgCombatSystem.js",
+  "fileName": "RpgCombatSystem",
+  "services": [
+    "mmoCastSpell",
+    "mmoDealDamage",
+    "mmoHeal",
+    "mmoApplyAura",
+    "mmoAddThreat",
+    "mmoIsEnemy",
+    "mmoDistance",
+    "mmoKill",
+    "mmoResurrect"
+  ]
+}

@@ -26,6 +26,7 @@ global/
     ├── multiplayer/      persistent world server and client: sessions, snapshots, movement
     ├── physics/          Rapier bodies, joints, characters, ragdolls, debris
     ├── quests/           quests, objectives, escorts, NPCs with routines and shops   (needs world)
+    ├── rpg/              action-RPG combat, auras, spells, creature camps and AI     (needs world)
     ├── social/           parties, chat, trading, the world's saved flags
     └── world/            a continent of chunks: ground, water, collision, zones, paths, streaming
 ```
@@ -45,6 +46,7 @@ game can answer).
 | [loot](kits/loot/README.md) | Diablo-style items: rarities and magic find, affix tiers, uniques and sets, identification, drop tables, sockets and runewords, durability; drops on the ground; grid inventories |
 | [physics](kits/physics/README.md) | Rigid bodies, colliders, joints and character controllers on Rapier; collision events, raycasts, terrain collision, explosions; ragdolls and debris |
 | [quests](kits/quests/README.md) | Quests (offer, objectives, turn-in, experience), world objects and escorts, NPCs with daily routines, dialog topics, vendors, trainers and inns |
+| [rpg](kits/rpg/README.md) | Action-RPG combat (targets, hands, spells, auras, stamina and magicka, shots, threat, death) and creatures (camps that spawn near players, encounters, brains, loot, respawns) |
 | [social](kits/social/README.md) | Parties, chat channels and commands, face-to-face trading (all or nothing), the shared world's flags, actions and saving |
 | [world](kits/world/README.md) | A continent of square chunks, the same on server and client: walk height, water and swimming, what blocks walkers and arrows, bridges, interiors, zones, pathfinding; client streaming of chunks with their ground, water and props |
 

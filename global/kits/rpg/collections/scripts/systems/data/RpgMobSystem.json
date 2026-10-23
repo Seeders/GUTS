@@ -1,0 +1,9 @@
+{
+  "filePath": "/global/kits/rpg/collections/scripts/systems/js/RpgMobSystem.js",
+  "fileName": "RpgMobSystem",
+  "services": [
+    "mmoCreditedPlayers",
+    "mmoAwareOf",
+    "mmoNoise"
+  ]
+}
