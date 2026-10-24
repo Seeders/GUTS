@@ -45,7 +45,11 @@ case "${1:-}" in
         (cd "$stage" && npm run build >/dev/null && { ! grep -q '"build:editor"' package.json || npm run build:editor >/dev/null; })
         # generated data that is gitignored (npm run world output) ships from the local folder
         for gen in "${GENERATED[@]}"; do [ -e "$dir/$gen" ] && mkdir -p "$stage/$(dirname "$gen")" && cp -r "$dir/$gen" "$stage/$gen"; done
+        # DEPLOY_OVERLAY=<folder>: files laid over the export at their paths (ones too big for the git host, built locally)
+        [ -n "$DEPLOY_OVERLAY" ] && [ -d "$DEPLOY_OVERLAY" ] && cp -r "$DEPLOY_OVERLAY"/. "$stage"/ && echo "overlaid $DEPLOY_OVERLAY"
         push "$stage" "/srv/games/$slug.new"
+        # tools the server runs (a land rolled at start: tools/world and what it imports), though tools/ is left out
+        for t in world zone; do [ -d "$stage/tools/$t" ] && push "$stage/tools/$t" "/srv/games/$slug.new/tools/$t"; done
         ssh "$HOST" "rsync -a --delete --exclude=/node_modules --exclude=/saves --exclude='/saves_*' --exclude='*.log' --exclude='*.gz' \
             --exclude=/dist/client/resources /srv/games/$slug.new/ /srv/games/$slug/ && rm -rf /srv/games/$slug.new"
         ssh "$HOST" "cd /srv/games/$slug && ln -sfn ../../resources dist/client/resources && mkdir -p saves && chown -R guts:guts saves dist \
