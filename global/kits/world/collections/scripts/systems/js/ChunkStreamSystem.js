@@ -78,7 +78,8 @@ class ChunkStreamSystem extends GUTS.BaseSystem {
     async loadOverview() {
         const base = (this.game.app?.getResourcesPath?.() || './resources/') + 'world/';
         const load = (src) => new Promise((res) => { const im = new Image(); im.onload = () => res(im); im.onerror = () => res(null); im.src = src; });
-        const [map, zones] = await Promise.all([load(`${base}map.png`), load(`${base}zones.png`)]);
+        const v = this.collections.continent?.version ? `?v=${encodeURIComponent(this.collections.continent.version)}` : '';      // (its world's: a game's own land)
+        const [map, zones] = await Promise.all([load(`${base}map.png${v}`), load(`${base}zones.png${v}`)]);
         if (!zones) return;
         const c = document.createElement('canvas');
         c.width = zones.width; c.height = zones.height;

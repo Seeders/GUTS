@@ -87,32 +87,82 @@ export function legacyStorage(storage) {
 /**
  * Routes every connected client into the one persistent room (ServerNetworkManager is built
  * around small match rooms and logs every event; a world streams input at 20 Hz per player).
+ * With the host's `games` (Diablo II's way): no persistent room, but games players make and join from a lobby,
+ * each its own room (and world), gone when its last player leaves.
  */
 export class WorldNetworkManager extends ServerNetworkManager {
     get hostOptions() { return this.engine.options || {}; }
+    get host() { return this.engine.host; }
 
     setupEventHandlers() {
         const { room = 'world', prefix = 'MMO_', enterEvent = 'ENTER_WORLD' } = this.hostOptions;
+        const games = this.host?.games;
         this.io.removeAllListeners('connection');
         this.io.on('connection', (socket) => {
             this.playerSockets.set(socket.id, { socket, inLobby: false });
             socket.on(enterEvent, (data) => {
                 const info = this.playerSockets.get(socket.id);
                 if (!info) return;
-                if (info.roomId !== room) { socket.join(room); info.roomId = room; }
+                if (games) {
+                    if (!info.roomId) return socket.emit(`${prefix}ENTER_FAILED`, { error: 'Make or join a game first.' });
+                } else if (info.roomId !== room) { socket.join(room); info.roomId = room; }
                 this.routeEventToEngine(socket, `${prefix}ENTER`, data);
             });
+            if (games) {
+                socket.on('GAMES_LIST', () => socket.emit('GAMES_LIST', { games: games.list() }));
+                socket.on('CREATE_GAME', async (data) => {
+                    const info = this.playerSockets.get(socket.id);
+                    if (!info || info.roomId || info.creating) return;
+                    info.creating = true;
+                    try {
+                        const g = await games.create(data || {});
+                        if (!this.playerSockets.has(socket.id)) return games.leftEmpty(g.id);       // (gone while it was being made)
+                        this.joinGame(socket, g);
+                    } catch (e) {
+                        console.error('[games] could not make a game:', e);
+                        socket.emit('GAME_ERROR', { error: e.userMessage || 'Could not make the game.' });
+                    } finally { info.creating = false; }
+                });
+                socket.on('JOIN_GAME', (data) => {
+                    const info = this.playerSockets.get(socket.id);
+                    if (!info || info.roomId) return;
+                    const g = games.get(data?.id);
+                    if (!g) return socket.emit('GAME_ERROR', { error: 'That game has ended.' });
+                    if (g.password && g.password !== (data?.password || '')) return socket.emit('GAME_ERROR', { error: 'Wrong password.', password: true });
+                    if (g.players.size >= g.maxPlayers) return socket.emit('GAME_ERROR', { error: 'That game is full.' });
+                    this.joinGame(socket, g);
+                });
+                socket.on('LEAVE_GAME', () => this.leaveGame(socket));
+            }
             socket.onAny((eventName, data) => {
                 if (eventName.startsWith('__') || eventName === enterEvent) return;
+                if (games && /^(GAMES_LIST|CREATE_GAME|JOIN_GAME|LEAVE_GAME)$/.test(eventName)) return;
                 if (!this.playerSockets.get(socket.id)?.roomId) return;          // not in the world yet
                 this.routeEventToEngine(socket, eventName, data);
             });
             socket.on('disconnect', () => {
-                if (this.playerSockets.get(socket.id)?.roomId) this.routeEventToEngine(socket, 'PLAYER_DISCONNECT', { playerId: socket.id });
+                if (games) this.leaveGame(socket);
+                else if (this.playerSockets.get(socket.id)?.roomId) this.routeEventToEngine(socket, 'PLAYER_DISCONNECT', { playerId: socket.id });
                 this.playerSockets.delete(socket.id);
             });
             socket.emit('CONNECTED', { playerId: socket.id, serverTime: Date.now() });
         });
+    }
+
+    joinGame(socket, g) {
+        const info = this.playerSockets.get(socket.id);
+        socket.join(g.id); info.roomId = g.id; g.players.add(socket.id);
+        socket.emit('GAME_JOINED', { id: g.id, name: g.name, diff: g.diff, world: g.version });
+    }
+
+    /** Out of its game (left, or gone): the game saves the hero; the last one out ends it. */
+    leaveGame(socket) {
+        const info = this.playerSockets.get(socket.id), id = info?.roomId;
+        if (!id) return;
+        this.routeEventToEngine(socket, 'PLAYER_DISCONNECT', { playerId: socket.id });
+        socket.leave(id); info.roomId = null;
+        const g = this.host.games.get(id);
+        if (g) { g.players.delete(socket.id); if (!g.players.size) this.host.games.leftEmpty(id); }
     }
 
     routeEventToEngine(socket, eventName, data) {
@@ -128,6 +178,52 @@ export class WorldNetworkManager extends ServerNetworkManager {
     sendToPlayer(playerId, eventName, data) {
         this.playerSockets.get(playerId)?.socket?.emit(eventName, data);
     }
+}
+
+// ==================== GAMES ====================
+
+/**
+ * Games as Diablo II's (the host's `games` option): each made by a player from the lobby (a name, a password if
+ * they like, a difficulty) as a room of its own, its world its own (spec.world(meta): the room's collections, e.g.
+ * the shared ones with a newly rolled land in them), ended when the last player leaves (spec.ended(id)).
+ *   games: { maxPlayers = 8, world: async (meta) => collections, ended(id, meta) }
+ */
+function makeGames(spec, engine, ctx, name) {
+    const all = new Map();
+    const id = () => 'g' + Date.now().toString(36) + Math.floor(Math.random() * 1296).toString(36);
+    return {
+        list: () => [...all.values()].filter(g => g.ready).map(g => ({ id: g.id, name: g.name, players: g.players.size, max: g.maxPlayers, diff: g.diff, locked: !!g.password })),
+        get: (gid) => all.get(gid)?.ready ? all.get(gid) : null,
+        async create({ name: title, password = '', diff = 0 }) {
+            const g = { id: id(), name: String(title || 'A game').slice(0, 32), password: String(password || '').slice(0, 32), diff: Math.max(0, Math.min(2, diff | 0)),
+                players: new Set(), maxPlayers: spec.maxPlayers || 8, ready: false };
+            g.version = g.id;
+            all.set(g.id, g);
+            try {
+                const collections = await spec.world(g);
+                const room = engine.createGameRoom(g.id, g.maxPlayers);
+                room.meta = g;
+                room.game.getCollections = () => collections;              // (its own world: before its systems first ask)
+                room.isActive = true;
+                await room.game.init(true);
+            } catch (e) { all.delete(g.id); engine.gameRooms.delete(g.id); throw e; }
+            g.ready = true;
+            console.log(`[${name}] game ${g.id} "${g.name}" made (difficulty ${g.diff})`);
+            return g;
+        },
+        leftEmpty(gid) {
+            const g = all.get(gid);
+            all.delete(gid);
+            const room = engine.gameRooms.get(gid);
+            if (room) {
+                try { room.game?.triggerEvent?.('onServerShutdown', {}); } catch (e) { console.error(e); }
+                room.isActive = false;
+                engine.gameRooms.delete(gid);
+            }
+            try { spec.ended?.(gid, g); } catch (e) { console.error(e); }
+            console.log(`[${name}] game ${gid} ended (the last one left)`);
+        }
+    };
 }
 
 // ==================== THE GAME BUNDLE ====================
@@ -187,10 +283,13 @@ export async function startMultiplayerServer(options = {}) {
     const engine = new ServerEngine({ NetworkManager: WorldNetworkManager, fixedStep: true, room, prefix: options.prefix || 'MMO_', enterEvent: options.enterEvent || 'ENTER_WORLD' });
     global.serverEngine = engine;
     const ctx = { app, server, io: global.io, engine, storage, root, port, room, get world() { return engine.gameRooms.get(room) || null; }, get game() { return engine.gameRooms.get(room)?.game || null; } };
+    engine.host = { games: options.games ? makeGames(options.games, engine, ctx, name) : null };
+    ctx.games = engine.host.games;
 
     app.use((req, res, next) => DENY.test(req.path) || options.deny?.test(req.path) ? res.status(404).end() : next());
     await options.routes?.(app, ctx);
-    app.get('/api/server-status', (req, res) => res.json({ status: 'running', online: ctx.game?.netWorldSystem?.sessions?.size || 0, connected: global.io?.engine?.clientsCount || 0 }));
+    app.get('/api/server-status', (req, res) => res.json({ status: 'running', connected: global.io?.engine?.clientsCount || 0,
+        online: [...engine.gameRooms.values()].reduce((n, r) => n + (r.game?.netWorldSystem?.sessions?.size || 0), 0), games: ctx.games?.list().length }));
     app.use(express.static(root));
     app.use(express.static(path.join(root, 'dist/client')));
     app.use('/engine', express.static(path.join(GUTS_ROOT, 'engine')));
@@ -209,10 +308,12 @@ export async function startMultiplayerServer(options = {}) {
         engine.tickRate = 1 / tickRate;
         if (global.window.COMPILED_GAME && !global.window.COMPILED_GAME.initialized) global.window.COMPILED_GAME.init(engine);
         await options.beforeWorld?.(global.COMPILED_GAME?.collections, ctx);
-        const world = engine.createGameRoom(room, options.maxPlayers || 1000);
-        world.isActive = true;
-        await world.game.init(true);
-        console.log(`[${name}] world room online`);
+        if (!ctx.games) {
+            const world = engine.createGameRoom(room, options.maxPlayers || 1000);
+            world.isActive = true;
+            await world.game.init(true);
+            console.log(`[${name}] world room online`);
+        } else console.log(`[${name}] games: made and joined from the lobby`);
         await new Promise(res => server.listen(port, res));
         console.log(`[${name}] ${title} running on http://localhost:${port}`);
         await options.onReady?.(ctx);
@@ -224,8 +325,7 @@ export async function startMultiplayerServer(options = {}) {
 
     const shutdown = () => {
         console.log(`[${name}] shutting down — saving`);
-        const game = ctx.game;
-        try { game?.triggerEvent?.('onServerShutdown', {}); } catch (e) { console.error(e); }
+        for (const r of engine.gameRooms.values()) try { r.game?.triggerEvent?.('onServerShutdown', {}); } catch (e) { console.error(e); }
         try { engine.stop?.(); } catch (e) { /* noop */ }
         try { global._io?.close(); } catch (e) { /* noop */ }
         server.close(() => process.exit(0));
