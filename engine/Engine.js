@@ -1,4 +1,6 @@
 class Engine extends BaseEngine {
+    static MAX_DEBT = 0.25;     // seconds of owed ticks past which the loop drops them (gameLoop)
+
     constructor(target) {
         super();
         this.applicationTarget = document.getElementById(target);
@@ -95,6 +97,9 @@ class Engine extends BaseEngine {
         const speed = this.gameInstance?.state?.battleSpeed || 1;
         const tickInterval = this.tickRate / speed;
         const maxTicksPerFrame = 3 * speed;
+        // A stall (a long first frame, a GPU upload) is not paid back: at 3 ticks a frame, each one
+        // rendering, seconds owed would mean minutes of triple work. Small slips still catch up.
+        if (this.accumulator > Engine.MAX_DEBT) this.accumulator = tickInterval;
         let ticksProcessed = 0;
 
         while (this.accumulator >= tickInterval && ticksProcessed < maxTicksPerFrame) {
