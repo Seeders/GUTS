@@ -35,6 +35,7 @@ class ChunkStreamSystem extends GUTS.BaseSystem {
     static MESH = 16;              // ground cell (world units): tools/zone/terrain.mjs seats props on this mesh
     static BLEND = 5;              // zone colour blend radius (tiles)
     static PROPS_PER_FRAME = 120;
+    static BUILD_MS = 4;           // a frame's share of building a ground that comes in pieces (buildSome)
 
     constructor(game) {
         super(game);
@@ -211,7 +212,12 @@ class ChunkStreamSystem extends GUTS.BaseSystem {
         if (qi) { this.queue.splice(qi, 1); this.queue.unshift(id); }
         const ch = this.chunks.get(id);
         try {
-            if (ch.state === 'queued') { this.buildGround(ch); ch.state = 'ground'; }
+            if (ch.state === 'queued') {
+                const steps = this.buildGround(ch);
+                if (steps?.next) { ch.steps = steps; ch.state = 'building'; this.buildSome(ch); }
+                else ch.state = 'ground';
+            }
+            else if (ch.state === 'building') this.buildSome(ch);
             else if (ch.state === 'ground') { this.buildLiquids(ch); ch.state = 'props'; ch.propAt = 0; }
             else if (ch.state === 'props') {
                 if (this.spawnProps(ch)) { ch.state = 'done'; this.queue.shift(); }
@@ -220,6 +226,17 @@ class ChunkStreamSystem extends GUTS.BaseSystem {
             console.error(`[chunks] ${id}`, e);
             ch.state = 'done';
             this.queue.shift();
+        }
+    }
+
+    /**
+     * A ground built a piece at a time (a buildGround that is a generator, yielding as it goes): as much of it as
+     * fits in BUILD_MS this frame, so a new chunk costs a few frames a little each, not one frame a lot.
+     */
+    buildSome(ch) {
+        const t0 = performance.now();
+        while (performance.now() - t0 < ChunkStreamSystem.BUILD_MS) {
+            if (ch.steps.next().done) { ch.steps = null; ch.state = 'ground'; return; }
         }
     }
 
