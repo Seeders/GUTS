@@ -226,7 +226,7 @@ async function initGameServer(projectName) {
     });
 
     // Initialize the game server
-    const gameServer = new ServerEngine();
+    const gameServer = new ServerEngine({ fixedStep: true });      // (a timer between ticks: the default loop spins a core even with nobody on)
     await gameServer.init(projectName);
 
     if (global.window.COMPILED_GAME && !global.window.COMPILED_GAME.initialized) {
