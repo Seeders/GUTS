@@ -234,10 +234,14 @@ class EntityRenderer {
     /**
      * Spawn entity using VAT batching
      */
-    async spawnVATEntity(entityId, data, entityDef) {
-        // Units drawn in looks (ModelManager.lookFor) get one batch per look
+    /** A VAT entity's batch: its key and look (units drawn in looks, ModelManager.lookFor, get one batch per look). */
+    vatBatchKey(entityId, data, entityDef) {
         const look = this.modelManager?.lookFor?.(entityId, entityDef, this.looks) ?? null;
-        const batchKey = look != null ? `${data.collection}_${data.type}_look${GUTS.ModelManager.lookHash(look)}` : `${data.collection}_${data.type}`;
+        return { look, batchKey: look != null ? `${data.collection}_${data.type}_look${GUTS.ModelManager.lookHash(look)}` : `${data.collection}_${data.type}` };
+    }
+
+    async spawnVATEntity(entityId, data, entityDef) {
+        const { look, batchKey } = this.vatBatchKey(entityId, data, entityDef);
 
         // Get or create batch
         let batch = this.vatBatches.get(batchKey);
@@ -303,28 +307,69 @@ class EntityRenderer {
         return true;
     }
 
-    /**
-     * Spawn entity using instanced mesh (for cliffs and worldObjects)
-     */
-    async spawnInstancedEntity(entityId, data, entityDef) {
-        // Cliffs come in variants (one texture per plateau terrain), each its own batch
+    /** A cliff's or world object's batch key (and its variant and area: see spawnInstancedEntity). */
+    staticBatchKey(data) {
         const variant = data.collection === 'cliffs' ? data.cliffVariant : null;
         // world objects batch by area too (EntityRenderer.AREA): a batch is culled only when all of it is out of view,
         // so one batch across a whole level (or the town) was drawn every frame wherever you looked
         const area = data.collection === 'worldObjects' && data.position
             ? `#${Math.floor(data.position.x / EntityRenderer.AREA)},${Math.floor(data.position.z / EntityRenderer.AREA)}` : '';
-        const batchKey = (variant ? `${data.collection}_${data.type}@${variant}` : `${data.collection}_${data.type}`) + area;
+        return { variant, area, batchKey: (variant ? `${data.collection}_${data.type}@${variant}` : `${data.collection}_${data.type}`) + area };
+    }
+
+    /** The static batch being made for a key (one creation per key, however many of its pieces ask while the model loads). */
+    staticBatchPromise(batchKey, data, entityDef, variant, area) {
+        let p = this._staticBatchPromises.get(batchKey);
+        if (!p) {
+            p = this.createStaticBatch(batchKey, data.collection, data.type, entityDef, variant, area ? EntityRenderer.AREA_CAPACITY : null);
+            this._staticBatchPromises.set(batchKey, p);
+            p.finally(() => this._staticBatchPromises.delete(batchKey));
+        }
+        return p;
+    }
+
+    /**
+     * Can this entity be spawned without waiting on its model? If its batch isn't made yet, starts making it
+     * and says no: the caller (RenderSystem) tries again on a later frame, so a model still downloading never
+     * holds up the game loop. A batch that couldn't be made says yes, to fail the old way in spawnEntity.
+     */
+    prepareSpawn(entityId, data) {
+        if (typeof data.objectType !== 'number' || typeof data.spawnType !== 'number') return true;
+        const entityDef = this.getEntityDefByIndex(data.objectType, data.spawnType);
+        const collection = this.getCollectionNameByIndex(data.objectType), type = this.getTypeNameByIndex(data.objectType, data.spawnType);
+        if (!entityDef || !collection || !type || entityDef.renderTexture || entityDef.spriteAnimationSet) return true;
+        const d = { ...data, collection, type }, failed = (this._unmade ||= new Set());
+        const pending = (key, p) => {
+            p.then(b => { if (!b) failed.add(key); }, () => failed.add(key));
+            return false;
+        };
+        if (this.shouldUseVAT(entityDef, collection) && this.modelManager) {
+            const { look, batchKey } = this.vatBatchKey(entityId, d, entityDef);
+            if (this.vatBatches.has(batchKey) || failed.has(batchKey)) return true;
+            return this.batchCreationPromises.has(batchKey) ? false : pending(batchKey, this.createVATBatch(batchKey, collection, type, entityDef, look));
+        }
+        if (collection === 'cliffs' || collection === 'worldObjects') {
+            const { variant, area, batchKey } = this.staticBatchKey(d);
+            if (this.staticBatches.has(batchKey) || failed.has(batchKey)) return true;
+            return this._staticBatchPromises.has(batchKey) ? false : pending(batchKey, this.staticBatchPromise(batchKey, d, entityDef, variant, area));
+        }
+        // a lone model (spawnStaticEntity): loaded on demand (ModelManager.ensureLoaded)
+        const mm = this.modelManager, key = `${collection}_${type}`;
+        if (!entityDef.render?.model || !mm?.ensureLoaded || !mm.masterModels || mm.masterModels.has(key) || failed.has(key)) return true;
+        return mm._loading?.has(key) ? false : pending(key, mm.ensureLoaded(collection, type).then(() => mm.masterModels.has(key)));
+    }
+
+    /**
+     * Spawn entity using instanced mesh (for cliffs and worldObjects)
+     */
+    async spawnInstancedEntity(entityId, data, entityDef) {
+        // Cliffs come in variants (one texture per plateau terrain), each its own batch
+        const { variant, area, batchKey } = this.staticBatchKey(data);
 
         // Get or create instanced batch (one creation per key, however many of its pieces spawn while the model loads)
         let batch = this.staticBatches.get(batchKey);
         if (!batch) {
-            let p = this._staticBatchPromises.get(batchKey);
-            if (!p) {
-                p = this.createStaticBatch(batchKey, data.collection, data.type, entityDef, variant, area ? EntityRenderer.AREA_CAPACITY : null);
-                this._staticBatchPromises.set(batchKey, p);
-                p.finally(() => this._staticBatchPromises.delete(batchKey));
-            }
-            batch = await p;
+            batch = await this.staticBatchPromise(batchKey, data, entityDef, variant, area);
             if (!batch) {
                 console.error(`[EntityRenderer] Failed to create static batch for ${batchKey}`);
                 return false;

@@ -421,6 +421,9 @@ class RenderSystem extends GUTS.BaseSystem {
                     console.log(`[RenderSystem] Spawning player ${entityId} to renderer: objectType=${objectType}, spawnType=${spawnType}`);
                 }
 
+                // Its model not ready yet (still downloading): started, and tried again next frame, so the loop never waits on it
+                if (this.entityRenderer.prepareSpawn && !this.entityRenderer.prepareSpawn(entityId, { objectType, spawnType, position: pos })) continue;
+
                 // Mark as spawned immediately to prevent race condition with async spawn
                 this.spawnedEntities.add(entityId);
 

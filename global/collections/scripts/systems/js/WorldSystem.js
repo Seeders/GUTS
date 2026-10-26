@@ -508,20 +508,54 @@ class WorldSystem extends GUTS.BaseSystem {
     /** The scene, once a frame, after every system's update (BaseECSGame). */
     drawFrame() {
         if (!this.worldRenderer) return;
+        const hidden = this.fogCull();
+        try {
+            // Use post-processing if available, otherwise direct render
+            if (this.game.hasService('getPostProcessingComposer')) {
+                const composer = this.call.getPostProcessingComposer();
+                if (composer) {
+                    // When using post-processing, worldRenderer.render() is bypassed,
+                    // so we need to update liquid shaders manually
+                    this.worldRenderer.updateLiquidShaders(this.game.state?.deltaTime || 0);
+                    this.call.renderPostProcessing();
+                    return;
+                }
+            }
+            // worldRenderer.render() handles updateLiquidShaders() internally
+            this.worldRenderer.render();
+        } finally {
+            for (const o of hidden) o.visible = true;
+        }
+    }
 
-        // Use post-processing if available, otherwise direct render
-        if (this.game.hasService('getPostProcessingComposer')) {
-            const composer = this.call.getPostProcessingComposer();
-            if (composer) {
-                // When using post-processing, worldRenderer.render() is bypassed,
-                // so we need to update liquid shaders manually
-                this.worldRenderer.updateLiquidShaders(this.game.state?.deltaTime || 0);
-                this.call.renderPostProcessing();
+    /**
+     * What the fog has wholly swallowed isn't drawn (nor its shadow): every mesh three would frustum-cull whose
+     * bounding sphere lies past the distance where the fog is opaque (FogExp2: 99.6% fog; Fog: far), hidden for
+     * this frame only. Returns what it hid, to be shown again after the draw.
+     */
+    fogCull() {
+        const fog = this.worldRenderer.scene?.fog, out = this._fogHidden || (this._fogHidden = []);
+        out.length = 0;
+        const far = fog?.isFogExp2 ? (fog.density > 0 ? 2.35 / fog.density : 0) : fog?.isFog ? fog.far : 0;
+        const camera = this.game.hasService('getCamera') ? this.call.getCamera() : this.worldRenderer.camera;
+        if (!far || !camera) return out;
+        const at = (this._fogAt || (this._fogAt = new THREE.Vector3())).setFromMatrixPosition(camera.matrixWorld);
+        const sphere = this._fogSphere || (this._fogSphere = new THREE.Sphere());
+        const visit = (o) => {
+            if (!o.visible) return;
+            const c = o.children;
+            if (o.isMesh && o.frustumCulled && o.geometry && !c.length) {       // (a parent's children may reach further)
+                let bs;
+                if (o.isInstancedMesh) { if (o.boundingSphere === null) o.computeBoundingSphere(); bs = o.boundingSphere; }
+                else { if (!o.geometry.boundingSphere) o.geometry.computeBoundingSphere(); bs = o.geometry.boundingSphere; }
+                sphere.copy(bs).applyMatrix4(o.matrixWorld);
+                if (sphere.radius >= 0 && sphere.center.distanceTo(at) - sphere.radius > far) { o.visible = false; out.push(o); }
                 return;
             }
-        }
-        // worldRenderer.render() handles updateLiquidShaders() internally
-        this.worldRenderer.render();
+            for (let i = 0; i < c.length; i++) visit(c[i]);
+        };
+        visit(this.worldRenderer.scene);
+        return out;
     }
 
     /**
