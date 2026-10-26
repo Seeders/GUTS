@@ -35,8 +35,10 @@ class PostProcessingSystem extends GUTS.BaseSystem {
         return this.removePass(name);
     }
 
+    // (not render(): the game loop calls every system's render() each tick, and this is drawn only when
+    // WorldSystem.drawFrame asks)
     renderPostProcessing() {
-        return this.render();
+        return this.renderComposer();
     }
 
     postAllInit() {
@@ -143,7 +145,7 @@ class PostProcessingSystem extends GUTS.BaseSystem {
         
     }
 
-    render() {
+    renderComposer() {
         if (this.composer) {
  
             // Render main scene with all post-processing (including fog)

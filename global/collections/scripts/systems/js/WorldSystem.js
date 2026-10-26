@@ -503,11 +503,10 @@ class WorldSystem extends GUTS.BaseSystem {
         // Update WorldRenderer (handles controls, uniforms, etc.)
         const deltaTime = this.worldRenderer.clock.getDelta();
         this.worldRenderer.update(deltaTime);
-
-        this.render();
     }
 
-    render() {
+    /** The scene, once a frame, after every system's update (BaseECSGame). */
+    drawFrame() {
         if (!this.worldRenderer) return;
 
         // Use post-processing if available, otherwise direct render

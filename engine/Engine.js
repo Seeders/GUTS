@@ -102,7 +102,10 @@ class Engine extends BaseEngine {
         if (this.accumulator > Engine.MAX_DEBT) this.accumulator = tickInterval;
         let ticksProcessed = 0;
 
+        // only the frame's last tick is drawn (BaseECSGame: drawThisTick)
+        const ticks = Math.min(maxTicksPerFrame, Math.floor(this.accumulator / tickInterval));
         while (this.accumulator >= tickInterval && ticksProcessed < maxTicksPerFrame) {
+            if (this.gameInstance) this.gameInstance.drawThisTick = ticksProcessed >= ticks - 1;
             await this.tick();
             this.accumulator -= tickInterval;
             ticksProcessed++;

@@ -1415,6 +1415,16 @@ class BaseECSGame {
                     }
                     if (_times) { const d = performance.now() - _s0; if (d > 8) _times.push([systemName, Math.round(d)]); }
                 }
+                // (client) the picture, once, after every system has moved: drawFrame (WorldSystem's scene). Not on a
+                // tick the engine is catching up with (drawThisTick false): only the frame's last tick is seen.
+                if (!this.isServer && this.drawThisTick !== false) {
+                    for (const system of this.systems) {
+                        if (!system.enabled || !system.drawFrame) continue;
+                        const _s0 = _times ? performance.now() : 0;
+                        await system.drawFrame();
+                        if (_times) { const d = performance.now() - _s0; if (d > 8) _times.push([system.constructor.name, Math.round(d)]); }
+                    }
+                }
                 if (_times) {
                     const end = performance.now(), work = end - _frame0, gap = this._frameEnd ? _frame0 - this._frameEnd : 0;
                     this._frameEnd = end;
