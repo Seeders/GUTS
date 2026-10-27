@@ -40,7 +40,7 @@ server, a headless simulation and an editor.
 | **Kits** | Twelve optional packs, from behavior-tree AI and grid pathfinding to a streamed continent, quests, action-RPG combat, Diablo-style loot and Rapier physics. A game lists the ones it uses. |
 | **Multiplayer** | Server-authoritative persistent worlds (`MultiplayerHost`, interest-managed snapshots, client interpolation) or deterministic lockstep for RTS matches, with a desync debugger. |
 | **Four builds** | Browser client, Node server, headless simulation (AI-vs-AI batches) and editor, all from one codebase. |
-| **Editor** | Edits every collection, with modules for terrain, models, sprites, particles, audio, behavior trees, bone attachments and simulations. Themeable. |
+| **Editor** | Edits every collection, with modules for terrain, models, sprites, particles, audio, behavior trees and simulations; projects add their own modules. Themeable. |
 | **CLI** | `guts new`, `guts dev` with live reload, production builds, and `guts fork-diff` to see how a game's engine overrides drift from upstream. |
 
 ## Quick start
@@ -87,7 +87,7 @@ More in **[Engine core and kits](global/README.md)**.
 | [Getting started](docs/getting-started.md) | Tutorial on the starter project |
 | [Concepts](docs/concepts.md) | Entities, components, systems, services, scenes, collections, configs, builds, multiplayer, performance |
 | [Engine core and kits](global/README.md) | What the engine ships, what each kit needs, overriding engine files, adding a kit |
-| [Editor](docs/editor.md) | Running the editor, its layout, writing modules, attaching equipment to bones |
+| [Editor](docs/editor.md) | Running the editor, editing collections, editor modules and writing your own |
 | [Probes](tools/probes/README.md) | Deterministic before/after checks that a change didn't alter a multiplayer game's behavior |
 
 ## The `guts` command
