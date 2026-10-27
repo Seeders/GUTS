@@ -1,74 +1,157 @@
-
 <p align="center">
-   <img src="https://raw.githubusercontent.com/Seeders/GUTS/main/logo.png">
+  <img src="https://raw.githubusercontent.com/Seeders/GUTS/main/logo.png" alt="GUTS" width="420">
 </p>
 
-# GUTS - Gamedev Ultimate Toolkit System
+<h3 align="center">Gamedev Ultimate Toolkit System</h3>
 
-A data-driven JavaScript game engine: an entity component system with typed-array storage,
-Three.js rendering, server-authoritative and lockstep multiplayer, headless simulation, a
-visual editor, and a build CLI. Game content (units, items, levels, scenes, components) is
-JSON; behavior is small systems that read and write it.
+<p align="center">
+  A data-driven JavaScript game engine, editor and build CLI, from single-player prototypes to persistent multiplayer worlds.
+</p>
 
-- **ECS** with schema-defined components stored in typed arrays, and systems that talk
-  through named services instead of imports.
-- **Core + kits.** The core covers rendering, world and terrain, cameras, audio, particles,
-  animation and scenes. Optional kits add behavior-tree AI, grid units with pathfinding,
-  combat, an RTS layer, and card games.
-- **One codebase, four builds:** browser client, Node server, headless simulation, and editor.
-- **Editor** for every collection, with modules for terrain, models, sprites, particles,
-  audio, behavior trees and simulations.
+<p align="center">
+  <a href="LICENSE"><img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-blue.svg"></a>
+  <img alt="Version" src="https://img.shields.io/github/package-json/v/Seeders/GUTS?color=orange">
+  <img alt="Node 20+" src="https://img.shields.io/badge/node-%3E%3D20-339933?logo=node.js&logoColor=white">
+  <img alt="Three.js" src="https://img.shields.io/badge/three.js-r181-black?logo=three.js">
+  <a href="https://gutsengine.app"><img alt="Live demos" src="https://img.shields.io/badge/demos-gutsengine.app-8a2be2"></a>
+</p>
+
+<p align="center">
+  <a href="#quick-start">Quick start</a> ·
+  <a href="docs/getting-started.md">Tutorial</a> ·
+  <a href="docs/concepts.md">Concepts</a> ·
+  <a href="global/README.md">Kits</a> ·
+  <a href="docs/editor.md">Editor</a> ·
+  <a href="#made-with-guts">Games</a>
+</p>
+
+---
+
+GUTS is an entity component system with typed-array storage, Three.js rendering, and
+multiplayer built in. Game content (units, items, levels, scenes, components) is JSON; behavior
+is small systems that read and write it. The same project builds into a browser client, a Node
+server, a headless simulation and an editor.
+
+## Features
+
+|   |   |
+|---|---|
+| **ECS** | Schema-defined components stored in typed arrays. Systems talk through named services instead of imports, so any system can be replaced by a project file of the same name. |
+| **Core** | Rendering, post-processing, lighting, terrain and world, cameras (free, orthographic, third person), animation, particles and effects, audio and music, scenes, loading, UI, chat. |
+| **Kits** | Twelve optional packs, from behavior-tree AI and grid pathfinding to a streamed continent, quests, action-RPG combat, Diablo-style loot and Rapier physics. A game lists the ones it uses. |
+| **Multiplayer** | Server-authoritative persistent worlds (`MultiplayerHost`, interest-managed snapshots, client interpolation) or deterministic lockstep for RTS matches, with a desync debugger. |
+| **Four builds** | Browser client, Node server, headless simulation (AI-vs-AI batches) and editor, all from one codebase. |
+| **Editor** | Edits every collection, with modules for terrain, models, sprites, particles, audio, behavior trees, bone attachments and simulations. Themeable. |
+| **CLI** | `guts new`, `guts dev` with live reload, production builds, and `guts fork-diff` to see how a game's engine overrides drift from upstream. |
 
 ## Quick start
 
 Needs Node.js 20 or newer.
 
 ```bash
-npx github:Seeders/GUTS new my-game     # or: node path/to/GUTS/bin/guts.js new my-game
+npx github:Seeders/GUTS new my-game     # --template game (default) or app
 cd my-game
 npm install
 npm run dev                              # http://localhost:3000/
 ```
 
-Then follow **[Getting started](docs/getting-started.md)**: add a component, a system, and a
+Then follow **[Getting started](docs/getting-started.md)**: add a component, a system and a
 service to the starter project in about ten minutes.
+
+## Kits
+
+The core is enough for a small game. Kits add the rest; list them in `game.json`
+(`{ "kits": ["combat"] }`) and their dependencies come along. Each kit's README lists its
+systems, the services they provide, and what a game must supply.
+
+| Kit | What it's for | Needs |
+|---|---|---|
+| [ai](global/kits/ai/README.md) | Behavior trees and the system that runs them | |
+| [units](global/kits/units/README.md) | Grid map, spatial queries, A* pathfinding, steering, units from prefabs, vision | ai |
+| [combat](global/kits/combat/README.md) | Damage, armor and resistances, projectiles, death, health bars, damage numbers | ai, units |
+| [rts](global/kits/rts/README.md) | Squad orders, building placement, fog of war, minimap, lockstep networking, AI-vs-AI simulations | units |
+| [cards](global/kits/cards/README.md) | Deck, dragging, card rendering | |
+| [multiplayer](global/kits/multiplayer/README.md) | Persistent world: sessions and saving, server-checked movement, snapshots and events, client mirror | |
+| [world](global/kits/world/README.md) | A continent of chunks shared by server and client: walk height, water, collision, zones, paths, streaming | |
+| [social](global/kits/social/README.md) | Parties, chat channels, trading, the world's saved flags | |
+| [quests](global/kits/quests/README.md) | Quests and objectives, NPCs with routines, dialog, vendors, story quests with journal and compass | world, social |
+| [rpg](global/kits/rpg/README.md) | Action-RPG combat, creature camps, skills that rise with use, talents, parties | world, social |
+| [loot](global/kits/loot/README.md) | Rarities, affixes, uniques and sets, sockets and runewords, drop tables, ground drops, grid inventories | |
+| [physics](global/kits/physics/README.md) | Rapier bodies, joints, character controllers, raycasts, explosions, ragdolls and debris | |
+
+More in **[Engine core and kits](global/README.md)**.
 
 ## Documentation
 
 | | |
 |---|---|
 | [Getting started](docs/getting-started.md) | Tutorial on the starter project |
-| [Concepts](docs/concepts.md) | Entities, components, systems, services, scenes, collections, configs, builds, multiplayer |
-| [Engine core and kits](global/README.md) | What the engine ships, and each kit's systems and requirements |
-| [Editor](docs/editor.md) | Running the editor, its layout, writing modules |
+| [Concepts](docs/concepts.md) | Entities, components, systems, services, scenes, collections, configs, builds, multiplayer, performance |
+| [Engine core and kits](global/README.md) | What the engine ships, what each kit needs, overriding engine files, adding a kit |
+| [Editor](docs/editor.md) | Running the editor, its layout, writing modules, attaching equipment to bones |
+| [Probes](tools/probes/README.md) | Deterministic before/after checks that a change didn't alter a multiplayer game's behavior |
 
 ## The `guts` command
 
 | Command | Description |
 |---------|-------------|
 | `guts new <folder> [--template game\|app]` | Create a project from a template |
-| `guts dev [--port n] [--no-serve]` | Build the project in this folder, rebuild on change, serve with live reload |
-| `guts build [--target client\|server\|headless\|editor] [--production]` | Build the project in this folder |
-| `guts fork-diff <projects...>` | List engine files a project replaces and how they differ |
+| `guts dev [--port n] [--no-serve]` | Build, rebuild on change, serve with live reload |
+| `guts build [--target client\|server\|headless\|editor] [--production] [--watch] [--strict]` | Build the project in this folder |
+| `guts fork-diff <projects...> [--out report.md]` | List engine files a project replaces and how they differ |
+
+A persistent multiplayer game's `server.js` is a single call:
+
+```js
+import { startMultiplayerServer } from 'guts/engine/MultiplayerHost.js';
+
+startMultiplayerServer({ root: __dirname, name: 'my-world', title: 'My World', port: 3002 });
+```
+
+## Made with GUTS
+
+Play them at **[gutsengine.app](https://gutsengine.app)**.
+
+- **[TurnBasedWarfare](https://github.com/Seeders/TurnBasedWarfare)**: RTS auto-battler with
+  placement and battle phases, behavior-tree AI, abilities, server-authoritative multiplayer and
+  headless AI-vs-AI simulations.
+- **[The Descent](https://gutsengine.app/play/descent/)**: first-person action RPG in a grim
+  Iron Age, with outdoor acts, enterable dungeons, rolled loot and ragdolls.
+- **[Kingdom of Defiance](https://gutsengine.app/play/kingdom/)**: open-world RPG with story
+  quests, NPC routines and real-time combat.
+- **[Age of Defiance](https://gutsengine.app/play/age/)**: faction war with RTS-style bases in a
+  persistent world.
+- **[World of Defiance](https://gutsengine.app/play/realm/)**: online RPG with zones, camps and
+  quests.
+
+The Defiance games share the multiplayer, world, quests, rpg and social kits; each keeps only
+what it does differently.
+
+## Screenshots
+
+![Editor](https://github.com/user-attachments/assets/efcaa562-b040-4789-a5a4-14e14ddbe2a0)
+*The editor with the terrain module*
+
+![TurnBasedWarfare](https://github.com/user-attachments/assets/77f5a78d-bbfe-4d62-b26e-9479ca03dd84)
+*TurnBasedWarfare*
+
+![Editor themes](https://github.com/user-attachments/assets/3f63d70f-cdd1-43f6-97fc-65805144735d)
+*Editor themes*
 
 ## Repository layout
 
 ```
 GUTS/
 ├── bin/guts.js          the guts command
-├── build/               build system: collection discovery, entry generation, webpack
-├── engine/              runtime entry points (client, server, headless engines)
+├── build/               build system: collection discovery, entry generation, webpack, fork-diff
+├── engine/              runtime entry points: client, server, headless, MultiplayerHost, editor shell
 ├── global/              engine collections: core (collections/) and kits (kits/)
-├── templates/           starter projects for guts new
+├── templates/           starter projects for guts new (game, app)
+├── tools/probes/        deterministic behavior probes for multiplayer games
+├── deploy/              gutsengine.app: nginx, game gateway, deploy script
 ├── docs/                documentation
 └── projects/Editor/     the editor; other projects are cloned into projects/ from their own repos
 ```
-
-## Example projects
-
-- **[TurnBasedWarfare](https://github.com/Seeders/TurnBasedWarfare)**: RTS/auto-battler with
-  placement and battle phases, behavior-tree AI, abilities, server-authoritative
-  multiplayer, and headless AI-vs-AI simulations.
 
 ## Working on GUTS itself
 
@@ -82,20 +165,6 @@ npm test                 # engine and editor tests
 
 To try engine changes in a project, point the project at your clone
 (`npm install ../GUTS` in the project) and run `guts dev` there.
-
-## Screenshots
-
-![Editor Overview](https://github.com/user-attachments/assets/efcaa562-b040-4789-a5a4-14e14ddbe2a0)
-
-*The editor with the terrain module*
-
-![Gameplay](https://github.com/user-attachments/assets/77f5a78d-bbfe-4d62-b26e-9479ca03dd84)
-
-*TurnBasedWarfare*
-
-![Theme Customization](https://github.com/user-attachments/assets/3f63d70f-cdd1-43f6-97fc-65805144735d)
-
-*Editor themes*
 
 ## Contributing
 
