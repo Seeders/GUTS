@@ -140,8 +140,8 @@ what it does differently.
     <td><img src="https://github.com/user-attachments/assets/77f5a78d-bbfe-4d62-b26e-9479ca03dd84" alt="TurnBasedWarfare"><br><sub><b>TurnBasedWarfare</b></sub></td>
   </tr>
   <tr>
-    <td><img src="https://github.com/user-attachments/assets/efcaa562-b040-4789-a5a4-14e14ddbe2a0" alt="The editor"><br><sub><b>Editor</b>: terrain module</sub></td>
-    <td><img src="https://github.com/user-attachments/assets/3f63d70f-cdd1-43f6-97fc-65805144735d" alt="Editor themes"><br><sub><b>Editor</b>: themes</sub></td>
+    <td><img src="docs/screenshots/editor-scene.jpg" alt="The editor"><br><sub><b>Editor</b>: level in the 3D viewport, a unit in the inspector and preview</sub></td>
+    <td><img src="docs/screenshots/editor-terrain.jpg" alt="The editor's terrain tools"><br><sub><b>Editor</b>: terrain painting</sub></td>
   </tr>
 </table>
 
