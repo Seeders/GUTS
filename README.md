@@ -13,7 +13,6 @@
   <img alt="Version" src="https://img.shields.io/github/package-json/v/Seeders/GUTS?color=orange">
   <img alt="Node 20+" src="https://img.shields.io/badge/node-%3E%3D20-339933?logo=node.js&logoColor=white">
   <img alt="Three.js" src="https://img.shields.io/badge/three.js-r181-black?logo=three.js">
-  <a href="https://gutsengine.app"><img alt="Live demos" src="https://img.shields.io/badge/demos-gutsengine.app-8a2be2"></a>
 </p>
 
 <p align="center">
@@ -110,18 +109,16 @@ startMultiplayerServer({ root: __dirname, name: 'my-world', title: 'My World', p
 
 ## Made with GUTS
 
-Play them at **[gutsengine.app](https://gutsengine.app)**.
-
 - **[TurnBasedWarfare](https://github.com/Seeders/TurnBasedWarfare)**: RTS auto-battler with
   placement and battle phases, behavior-tree AI, abilities, server-authoritative multiplayer and
   headless AI-vs-AI simulations.
-- **[The Descent](https://gutsengine.app/play/descent/)**: first-person action RPG in a grim
+- **The Descent**: first-person action RPG in a grim
   Iron Age, with outdoor acts, enterable dungeons, rolled loot and ragdolls.
-- **[Kingdom of Defiance](https://gutsengine.app/play/kingdom/)**: open-world RPG with story
+- **Kingdom of Defiance**: open-world RPG with story
   quests, NPC routines and real-time combat.
-- **[Age of Defiance](https://gutsengine.app/play/age/)**: faction war with RTS-style bases in a
+- **Age of Defiance**: faction war with RTS-style bases in a
   persistent world.
-- **[World of Defiance](https://gutsengine.app/play/realm/)**: online RPG with zones, camps and
+- **World of Defiance**: online RPG with zones, camps and
   quests.
 
 The Defiance games share the multiplayer, world, quests, rpg and social kits; each keeps only
@@ -129,14 +126,24 @@ what it does differently.
 
 ## Screenshots
 
-![Editor](https://github.com/user-attachments/assets/efcaa562-b040-4789-a5a4-14e14ddbe2a0)
-*The editor with the terrain module*
-
-![TurnBasedWarfare](https://github.com/user-attachments/assets/77f5a78d-bbfe-4d62-b26e-9479ca03dd84)
-*TurnBasedWarfare*
-
-![Editor themes](https://github.com/user-attachments/assets/3f63d70f-cdd1-43f6-97fc-65805144735d)
-*Editor themes*
+<table>
+  <tr>
+    <td width="50%"><img src="docs/screenshots/descent.jpg" alt="The Descent"><br><sub><b>The Descent</b>: first-person, Ashmoor's gate</sub></td>
+    <td width="50%"><img src="docs/screenshots/kingdom.jpg" alt="Kingdom of Defiance"><br><sub><b>Kingdom of Defiance</b>: a village with NPCs, quests and dialog</sub></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/age.jpg" alt="Age of Defiance"><br><sub><b>Age of Defiance</b>: a hero and their base's economy and missions</sub></td>
+    <td><img src="docs/screenshots/kingdom-creator.jpg" alt="Kingdom of Defiance character creator"><br><sub><b>Kingdom of Defiance</b>: character creator</sub></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/descent-classes.jpg" alt="The Descent class select"><br><sub><b>The Descent</b>: choosing a class</sub></td>
+    <td><img src="https://github.com/user-attachments/assets/77f5a78d-bbfe-4d62-b26e-9479ca03dd84" alt="TurnBasedWarfare"><br><sub><b>TurnBasedWarfare</b></sub></td>
+  </tr>
+  <tr>
+    <td><img src="https://github.com/user-attachments/assets/efcaa562-b040-4789-a5a4-14e14ddbe2a0" alt="The editor"><br><sub><b>Editor</b>: terrain module</sub></td>
+    <td><img src="https://github.com/user-attachments/assets/3f63d70f-cdd1-43f6-97fc-65805144735d" alt="Editor themes"><br><sub><b>Editor</b>: themes</sub></td>
+  </tr>
+</table>
 
 ## Repository layout
 
