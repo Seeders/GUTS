@@ -3,6 +3,8 @@
 #
 #   deploy/deploy.sh site                 the GUTS site (this repo + projects/*) -> /srv/site
 #   deploy/deploy.sh age|kingdom|realm|heroarena|descent|wiki    a game -> /srv/games/<slug>
+#   deploy/deploy.sh descent-wiki         the Descent's player wiki (built here: tools/wiki/build.mjs) -> /wiki/descent/
+#   deploy/deploy.sh nginx                nginx.conf only (no gateway restart: games keep running)
 #   deploy/deploy.sh setup                nginx, the gateway and the services (after a change to them)
 #
 # Needs the `gutsengine` host in ~/.ssh/config (the deploy key). A game deploys its last commit, built
@@ -57,6 +59,16 @@ case "${1:-}" in
         # pre-compressed copies for nginx (gzip_static), only where missing or stale
         ssh "$HOST" "cd /srv/games/$slug && find resources dist -type f \( -name '*.glb' -o -name '*.json' -o -name '*.js' -o -name '*.gltf' \) -size +1k             -exec sh -c 'for f; do [ \"\$f.gz\" -nt \"\$f\" ] || gzip -6 -k -f \"\$f\"; done' _ {} + && chown -R guts:guts resources dist"
         ;;
+    descent-wiki)
+        (cd "$PROJECTS/Descent" && node tools/wiki/build.mjs >/dev/null 2>&1)
+        ssh "$HOST" "mkdir -p /srv/wikis/descent"
+        scp "$PROJECTS/Descent/tools/wiki/out/wiki.html" "$HOST:/srv/wikis/descent/index.html"
+        ssh "$HOST" "cd /srv/wikis/descent && gzip -6 -k -f index.html && chown -R guts:guts /srv/wikis"
+        ;;
+    nginx)
+        scp "$HERE/nginx.conf" "$HOST:/etc/nginx/sites-available/gutsengine"
+        ssh "$HOST" "nginx -t && certbot --nginx -d gutsengine.app -d www.gutsengine.app --non-interactive --reinstall --redirect >/dev/null && systemctl reload nginx"
+        ;;
     setup)
         scp "$HERE/gateway.mjs" "$HERE/package.json" "$HOST:/srv/gateway/"
         scp "$HERE/guts-site.service" "$HERE/guts-gateway.service" "$HOST:/etc/systemd/system/"
@@ -65,6 +77,6 @@ case "${1:-}" in
             && ln -sfn /etc/nginx/sites-available/gutsengine /etc/nginx/sites-enabled/gutsengine && rm -f /etc/nginx/sites-enabled/default \
             && nginx -t && certbot --nginx -d gutsengine.app -d www.gutsengine.app --non-interactive --reinstall --redirect >/dev/null             && systemctl reload nginx && systemctl daemon-reload && systemctl enable --now guts-site guts-gateway && systemctl restart guts-gateway"
         ;;
-    *) echo "usage: $0 site|age|kingdom|realm|heroarena|descent|wiki|setup"; exit 1 ;;
+    *) echo "usage: $0 site|age|kingdom|realm|heroarena|descent|wiki|descent-wiki|nginx|setup"; exit 1 ;;
 esac
 echo done
